@@ -174,8 +174,8 @@
             <span v-if="submitting" class="btn-loading"></span>
             {{ submitting ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Thêm mới') }}
           </button>
-        </div>
       </div>
+    </div>
     </div>
 
     <!-- Delete Confirmation Dialog -->

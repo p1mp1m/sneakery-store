@@ -3,7 +3,7 @@
     <!-- Page Header -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Quản lý thương hiệu</h1>
+      <h1 class="page-title">Quản lý thương hiệu</h1>
         <p class="page-subtitle">Quản lý các thương hiệu giày sneaker</p>
       </div>
       <button @click="openCreateModal" class="btn btn-primary">
@@ -24,7 +24,7 @@
       <h3>Chưa có thương hiệu nào</h3>
       <p>Nhấn "Thêm thương hiệu" để tạo thương hiệu đầu tiên</p>
     </div>
-
+    
     <!-- Brands Grid -->
     <div v-else class="brands-grid">
       <div 
@@ -40,14 +40,14 @@
             @error="handleImageError"
           />
           <div v-else class="logo-placeholder">
-            <i class="material-icons">branding_watermark</i>
+        <i class="material-icons">branding_watermark</i>
           </div>
         </div>
         
         <div class="brand-info">
           <h3 class="brand-name">{{ brand.name }}</h3>
           <p class="brand-slug">{{ brand.slug }}</p>
-        </div>
+          </div>
 
         <div class="brand-actions">
           <button 
@@ -125,9 +125,9 @@
                 alt="Logo preview"
                 @error="handlePreviewError"
               />
-            </div>
           </div>
         </div>
+      </div>
 
         <div class="modal-footer">
           <button @click="closeModal" class="btn btn-secondary">
@@ -142,7 +142,7 @@
             {{ submitting ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Thêm mới') }}
           </button>
         </div>
-      </div>
+    </div>
     </div>
 
     <!-- Delete Confirmation Dialog -->

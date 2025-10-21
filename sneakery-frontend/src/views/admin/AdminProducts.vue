@@ -3,7 +3,7 @@
     <!-- Page Header -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Quản lý sản phẩm</h1>
+      <h1 class="page-title">Quản lý sản phẩm</h1>
         <p class="page-subtitle">Quản lý sản phẩm và các biến thể (variants)</p>
       </div>
       <button @click="openCreateModal" class="btn btn-primary">
@@ -34,7 +34,7 @@
           </option>
         </select>
       </div>
-
+      
       <div class="filter-group">
         <label>Trạng thái:</label>
         <select v-model="filters.status" @change="applyFilters" class="form-control">
@@ -97,11 +97,11 @@
             <td class="text-center">
               <div class="action-buttons">
                 <button @click="openEditModal(product)" class="btn-icon">
-                  <i class="material-icons">edit</i>
-                </button>
+                <i class="material-icons">edit</i>
+              </button>
                 <button @click="confirmDelete(product)" class="btn-icon danger">
-                  <i class="material-icons">delete</i>
-                </button>
+                <i class="material-icons">delete</i>
+              </button>
               </div>
             </td>
           </tr>
@@ -152,19 +152,19 @@
           <!-- Basic Info -->
           <div class="section-title">Thông tin cơ bản</div>
           
-          <div class="form-group">
+            <div class="form-group">
             <label class="form-label required">Tên sản phẩm</label>
-            <input 
+              <input 
               v-model="formData.name"
-              type="text" 
-              class="form-control"
+                type="text" 
+                class="form-control"
               placeholder="Ví dụ: Nike Air Force 1 '07"
               @input="generateSlug"
-            />
+              />
             <span v-if="formErrors.name" class="form-error">{{ formErrors.name }}</span>
-          </div>
-
-          <div class="form-group">
+            </div>
+            
+            <div class="form-group">
             <label class="form-label required">Slug</label>
             <input 
               v-model="formData.slug"
@@ -187,7 +187,7 @@
               </select>
               <span v-if="formErrors.brandId" class="form-error">{{ formErrors.brandId }}</span>
             </div>
-
+            
             <div class="form-group">
               <label class="form-label">Trạng thái</label>
               <select v-model="formData.isActive" class="form-control">
@@ -199,15 +199,15 @@
 
           <div class="form-group">
             <label class="form-label">Mô tả</label>
-            <textarea 
+              <textarea 
               v-model="formData.description"
-              class="form-control"
-              rows="3"
+                class="form-control"
+                rows="3"
               placeholder="Mô tả chi tiết về sản phẩm..."
-            ></textarea>
-          </div>
-
-          <div class="form-group">
+              ></textarea>
+            </div>
+            
+              <div class="form-group">
             <label class="form-label required">Danh mục</label>
             <div class="checkbox-group">
               <label v-for="category in categories" :key="category.id" class="checkbox-label">
@@ -220,8 +220,8 @@
               </label>
             </div>
             <span v-if="formErrors.categoryIds" class="form-error">{{ formErrors.categoryIds }}</span>
-          </div>
-
+              </div>
+              
           <!-- Variants -->
           <div class="section-title">
             Biến thể sản phẩm (Variants)
@@ -253,50 +253,50 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group">
+              <div class="form-group">
                   <label class="form-label required">SKU</label>
-                  <input 
+                <input 
                     v-model="variant.sku"
                     type="text" 
                     class="form-control-sm"
                     placeholder="VD: NIKE-AF1-WHT-42"
                   />
-                </div>
-
-                <div class="form-group">
+            </div>
+            
+              <div class="form-group">
                   <label class="form-label required">Size</label>
-                  <input 
+                <input 
                     v-model="variant.size"
-                    type="text" 
+                  type="text" 
                     class="form-control-sm"
                     placeholder="VD: 42, 43, 44"
-                  />
-                </div>
-
-                <div class="form-group">
+                />
+              </div>
+              
+              <div class="form-group">
                   <label class="form-label required">Màu sắc</label>
-                  <input 
+                <input 
                     v-model="variant.color"
-                    type="text" 
+                  type="text" 
                     class="form-control-sm"
                     placeholder="VD: Trắng, Đen"
-                  />
-                </div>
+                />
               </div>
-
-              <div class="form-row">
-                <div class="form-group">
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
                   <label class="form-label required">Giá gốc (VNĐ)</label>
-                  <input 
+                <input 
                     v-model.number="variant.priceBase"
-                    type="number" 
+                  type="number" 
                     class="form-control-sm"
-                    min="0"
+                  min="0"
                     step="1000"
-                  />
-                </div>
-
-                <div class="form-group">
+                />
+              </div>
+              
+              <div class="form-group">
                   <label class="form-label">Giá sale (VNĐ)</label>
                   <input 
                     v-model.number="variant.priceSale"
@@ -305,7 +305,7 @@
                     min="0"
                     step="1000"
                   />
-                </div>
+              </div>
 
                 <div class="form-group">
                   <label class="form-label required">Tồn kho</label>
@@ -315,8 +315,8 @@
                     class="form-control-sm"
                     min="0"
                   />
-                </div>
-              </div>
+            </div>
+        </div>
 
               <div class="form-group">
                 <label class="form-label">URL hình ảnh</label>
@@ -1334,7 +1334,7 @@ onMounted(async () => {
     align-items: flex-start;
     gap: 1rem;
   }
-
+  
   .form-row {
     grid-template-columns: 1fr;
   }

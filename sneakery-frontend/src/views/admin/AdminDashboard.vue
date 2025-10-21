@@ -120,7 +120,7 @@
               <rect x="14" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <rect x="3" y="14" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </div>
+        </div>
           <h3>Quản lý thương hiệu</h3>
           <p>Thêm và chỉnh sửa thương hiệu</p>
         </router-link>
@@ -148,8 +148,8 @@
           <h3>Phân tích</h3>
           <p>Xem báo cáo và thống kê</p>
         </router-link>
-      </div>
-    </div>
+              </div>
+            </div>
 
     <!-- Charts Section -->
     <div class="charts-section">
@@ -167,12 +167,12 @@
               :labels="revenueChart.labels"
               :datasets="revenueChart.datasets"
             />
-          </div>
         </div>
+      </div>
 
         <!-- Order Status Chart -->
-        <div class="chart-card">
-          <div class="chart-header">
+      <div class="chart-card">
+        <div class="chart-header">
             <h3>Trạng thái đơn hàng</h3>
             <span class="chart-subtitle">Phân bổ theo trạng thái</span>
           </div>
@@ -301,20 +301,20 @@ const topProductsChart = ref({
 });
 
 const recentActivities = ref([
-  {
-    id: 1,
+      {
+        id: 1,
     type: 'order',
     text: 'Đơn hàng mới #ORD-20241021-001 được tạo',
     timestamp: new Date(Date.now() - 5 * 60 * 1000)
-  },
-  {
-    id: 2,
+      },
+      {
+        id: 2,
     type: 'user',
     text: 'Người dùng mới đăng ký: nguyenvana@gmail.com',
     timestamp: new Date(Date.now() - 15 * 60 * 1000)
-  },
-  {
-    id: 3,
+      },
+      {
+        id: 3,
     type: 'product',
     text: 'Sản phẩm "Nike Air Max 270" đã hết hàng',
     timestamp: new Date(Date.now() - 30 * 60 * 1000)
@@ -714,7 +714,7 @@ onMounted(() => {
   .welcome-title {
     font-size: var(--text-3xl);
   }
-
+  
   .stats-grid {
     grid-template-columns: 1fr;
     gap: var(--space-4);
