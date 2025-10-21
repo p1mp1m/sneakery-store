@@ -20,9 +20,35 @@
           v-model="filters.search" 
           @input="debounceSearch"
           type="text" 
-          placeholder="Tìm theo tên sản phẩm..."
-          class="form-control-sm"
+          placeholder="Tìm theo tên hoặc slug..."
+          class="form-control"
         />
+      </div>
+
+      <div class="filter-group">
+        <label>Thương hiệu:</label>
+        <select v-model="filters.brandId" @change="applyFilters" class="form-control">
+          <option :value="null">Tất cả thương hiệu</option>
+          <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+            {{ brand.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Trạng thái:</label>
+        <select v-model="filters.status" @change="applyFilters" class="form-control">
+          <option value="all">Tất cả</option>
+          <option value="active">Đang bán</option>
+          <option value="inactive">Ngừng bán</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button @click="resetFilters" class="btn btn-secondary btn-sm">
+          <i class="material-icons">clear</i>
+          Xóa bộ lọc
+        </button>
       </div>
     </div>
 
@@ -321,42 +347,26 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
-      <div class="modal modal-sm" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">Xác nhận xóa</h2>
-          <button @click="showDeleteModal = false" class="modal-close">
-            <i class="material-icons">close</i>
-          </button>
-        </div>
-
-        <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa sản phẩm <strong>{{ productToDelete?.name }}</strong>?</p>
-          <p class="text-error">Hành động này không thể hoàn tác!</p>
-        </div>
-
-        <div class="modal-footer">
-          <button @click="showDeleteModal = false" class="btn btn-secondary">
-            Hủy
-          </button>
-          <button 
-            @click="handleDelete" 
-            class="btn btn-danger"
-            :disabled="deleting"
-          >
-            <span v-if="deleting" class="btn-loading"></span>
-            {{ deleting ? 'Đang xóa...' : 'Xóa' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showDeleteModal"
+      type="danger"
+      title="Xác nhận xóa sản phẩm"
+      :message="`Bạn có chắc chắn muốn xóa sản phẩm \"${productToDelete?.name}\"?`"
+      description="Hành động này không thể hoàn tác!"
+      confirm-text="Xóa sản phẩm"
+      cancel-text="Hủy"
+      :loading="deleting"
+      @confirm="handleDelete"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 
 const adminStore = useAdminStore()
 
@@ -376,8 +386,13 @@ const deleting = ref(false)
 const productToDelete = ref(null)
 
 const filters = ref({
-  search: ''
+  search: '',
+  brandId: null,
+  status: 'all'
 })
+
+// Debounce timer
+let searchTimeout = null
 
 const formData = ref({
   name: '',
@@ -532,25 +547,69 @@ const removeVariant = (index) => {
 const validateForm = () => {
   formErrors.value = {}
   
+  // Validate name
   if (!formData.value.name || formData.value.name.trim() === '') {
     formErrors.value.name = 'Tên sản phẩm không được để trống'
+  } else if (formData.value.name.trim().length < 3) {
+    formErrors.value.name = 'Tên sản phẩm phải có ít nhất 3 ký tự'
+  } else if (formData.value.name.trim().length > 200) {
+    formErrors.value.name = 'Tên sản phẩm không được vượt quá 200 ký tự'
   }
   
+  // Validate slug
   if (!formData.value.slug || formData.value.slug.trim() === '') {
     formErrors.value.slug = 'Slug không được để trống'
+  } else if (!/^[a-z0-9-]+$/.test(formData.value.slug)) {
+    formErrors.value.slug = 'Slug chỉ được chứa chữ thường, số và dấu gạch ngang'
+  } else if (formData.value.slug.length < 3) {
+    formErrors.value.slug = 'Slug phải có ít nhất 3 ký tự'
+  } else if (formData.value.slug.length > 200) {
+    formErrors.value.slug = 'Slug không được vượt quá 200 ký tự'
   }
   
+  // Validate brand
   if (!formData.value.brandId) {
     formErrors.value.brandId = 'Vui lòng chọn thương hiệu'
   }
   
+  // Validate categories
   if (formData.value.categoryIds.length === 0) {
     formErrors.value.categoryIds = 'Vui lòng chọn ít nhất 1 danh mục'
   }
   
+  // Validate variants
   if (formData.value.variants.length === 0) {
-    alert('Vui lòng thêm ít nhất 1 variant!')
+    formErrors.value.variants = 'Vui lòng thêm ít nhất 1 variant'
     return false
+  }
+  
+  // Validate each variant
+  for (let i = 0; i < formData.value.variants.length; i++) {
+    const v = formData.value.variants[i]
+    if (!v.sku || v.sku.trim() === '') {
+      formErrors.value.variants = `Variant ${i + 1}: SKU không được để trống`
+      return false
+    }
+    if (!v.size || v.size.trim() === '') {
+      formErrors.value.variants = `Variant ${i + 1}: Size không được để trống`
+      return false
+    }
+    if (!v.color || v.color.trim() === '') {
+      formErrors.value.variants = `Variant ${i + 1}: Màu không được để trống`
+      return false
+    }
+    if (!v.priceBase || Number(v.priceBase) <= 0) {
+      formErrors.value.variants = `Variant ${i + 1}: Giá gốc phải lớn hơn 0`
+      return false
+    }
+    if (v.priceSale && Number(v.priceSale) >= Number(v.priceBase)) {
+      formErrors.value.variants = `Variant ${i + 1}: Giá sale phải nhỏ hơn giá gốc`
+      return false
+    }
+    if (Number(v.stockQuantity) < 0) {
+      formErrors.value.variants = `Variant ${i + 1}: Số lượng tồn kho không được âm`
+      return false
+    }
   }
   
   return Object.keys(formErrors.value).length === 0
@@ -558,6 +617,10 @@ const validateForm = () => {
 
 const handleSubmit = async () => {
   if (!validateForm()) {
+    ElMessage.warning({
+      message: 'Vui lòng kiểm tra lại thông tin form!',
+      duration: 3000
+    })
     return
   }
 
@@ -585,16 +648,52 @@ const handleSubmit = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateProduct(formData.value.id, payload)
+      ElMessage.success({
+        message: `Đã cập nhật sản phẩm "${formData.value.name}" thành công!`,
+        duration: 3000
+      })
     } else {
       await adminStore.createProduct(payload)
+      ElMessage.success({
+        message: `Đã thêm sản phẩm "${formData.value.name}" thành công!`,
+        duration: 3000
+      })
     }
     
     await fetchProducts()
     closeModal()
-    alert(isEditMode.value ? 'Cập nhật sản phẩm thành công!' : 'Thêm sản phẩm thành công!')
   } catch (error) {
     console.error('Lỗi khi lưu sản phẩm:', error)
-    alert('Có lỗi xảy ra! Vui lòng thử lại.')
+    
+    // Handle specific error messages from server
+    let errorMessage = 'Có lỗi xảy ra! Vui lòng thử lại.'
+    
+    if (error.response) {
+      const status = error.response.status
+      const data = error.response.data
+      
+      if (status === 400) {
+        if (data.validationErrors) {
+          const firstError = Object.values(data.validationErrors)[0]
+          if (firstError && firstError.length > 0) {
+            errorMessage = firstError[0]
+          }
+        } else if (data.message) {
+          errorMessage = data.message
+        }
+      } else if (status === 409) {
+        errorMessage = 'Tên, slug hoặc SKU đã tồn tại. Vui lòng chọn tên khác.'
+      } else if (status === 500) {
+        errorMessage = 'Lỗi server. Vui lòng liên hệ quản trị viên.'
+      }
+    } else if (error.request) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
+    }
+    
+    ElMessage.error({
+      message: errorMessage,
+      duration: 5000
+    })
   } finally {
     submitting.value = false
   }
@@ -609,13 +708,13 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteProduct(productToDelete.value.id)
+    ElMessage.success(`Đã xóa sản phẩm "${productToDelete.value.name}" thành công!`)
     await fetchProducts()
     showDeleteModal.value = false
     productToDelete.value = null
-    alert('Xóa sản phẩm thành công!')
   } catch (error) {
     console.error('Lỗi khi xóa sản phẩm:', error)
-    alert('Không thể xóa sản phẩm này!')
+    ElMessage.error('Không thể xóa sản phẩm này. Vui lòng thử lại!')
   } finally {
     deleting.value = false
   }
@@ -636,6 +735,21 @@ const debounceSearch = (() => {
     }, 500)
   }
 })()
+
+const applyFilters = () => {
+  currentPage.value = 0
+  fetchProducts()
+}
+
+const resetFilters = () => {
+  filters.value = {
+    search: '',
+    brandId: null,
+    status: 'all'
+  }
+  currentPage.value = 0
+  fetchProducts()
+}
 
 // Lifecycle
 onMounted(async () => {
@@ -675,10 +789,14 @@ onMounted(async () => {
 
 .filters-section {
   background: white;
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 1rem;
+  align-items: end;
 }
 
 .filter-group {
@@ -691,6 +809,37 @@ onMounted(async () => {
   font-weight: 500;
   color: #374151;
   font-size: 0.875rem;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.filter-actions .btn {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-actions .btn i {
+  font-size: 1.125rem;
+}
+
+.form-control {
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .form-control-sm {

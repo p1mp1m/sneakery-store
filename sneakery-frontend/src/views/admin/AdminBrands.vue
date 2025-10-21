@@ -145,42 +145,26 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
-      <div class="modal modal-sm" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">Xác nhận xóa</h2>
-          <button @click="showDeleteModal = false" class="modal-close">
-            <i class="material-icons">close</i>
-          </button>
-        </div>
-
-        <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa thương hiệu <strong>{{ brandToDelete?.name }}</strong>?</p>
-          <p class="text-error">Hành động này không thể hoàn tác!</p>
-        </div>
-
-        <div class="modal-footer">
-          <button @click="showDeleteModal = false" class="btn btn-secondary">
-            Hủy
-          </button>
-          <button 
-            @click="handleDelete" 
-            class="btn btn-danger"
-            :disabled="deleting"
-          >
-            <span v-if="deleting" class="btn-loading"></span>
-            {{ deleting ? 'Đang xóa...' : 'Xóa' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showDeleteModal"
+      type="danger"
+      title="Xác nhận xóa thương hiệu"
+      :message="`Bạn có chắc chắn muốn xóa thương hiệu \"${brandToDelete?.name}\"?`"
+      description="Hành động này không thể hoàn tác!"
+      confirm-text="Xóa thương hiệu"
+      cancel-text="Hủy"
+      :loading="deleting"
+      @confirm="handleDelete"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 
 const adminStore = useAdminStore()
 
@@ -210,7 +194,10 @@ const fetchBrands = async () => {
     brands.value = adminStore.brands
   } catch (error) {
     console.error('Lỗi khi tải danh sách thương hiệu:', error)
-    alert('Không thể tải danh sách thương hiệu!')
+    ElMessage.error({
+      message: 'Không thể tải danh sách thương hiệu. Vui lòng thử lại!',
+      duration: 5000
+    })
   } finally {
     loading.value = false
   }
@@ -267,12 +254,32 @@ const generateSlug = () => {
 const validateForm = () => {
   formErrors.value = {}
   
+  // Validate name
   if (!formData.value.name || formData.value.name.trim() === '') {
     formErrors.value.name = 'Tên thương hiệu không được để trống'
+  } else if (formData.value.name.trim().length < 2) {
+    formErrors.value.name = 'Tên thương hiệu phải có ít nhất 2 ký tự'
+  } else if (formData.value.name.trim().length > 100) {
+    formErrors.value.name = 'Tên thương hiệu không được vượt quá 100 ký tự'
   }
   
+  // Validate slug
   if (!formData.value.slug || formData.value.slug.trim() === '') {
     formErrors.value.slug = 'Slug không được để trống'
+  } else if (!/^[a-z0-9-]+$/.test(formData.value.slug)) {
+    formErrors.value.slug = 'Slug chỉ được chứa chữ thường, số và dấu gạch ngang'
+  } else if (formData.value.slug.length < 2) {
+    formErrors.value.slug = 'Slug phải có ít nhất 2 ký tự'
+  } else if (formData.value.slug.length > 100) {
+    formErrors.value.slug = 'Slug không được vượt quá 100 ký tự'
+  }
+  
+  // Validate logo URL (optional)
+  if (formData.value.logoUrl && formData.value.logoUrl.trim() !== '') {
+    const urlPattern = /^https?:\/\/.+/
+    if (!urlPattern.test(formData.value.logoUrl)) {
+      formErrors.value.logoUrl = 'Logo URL phải là địa chỉ hợp lệ (bắt đầu bằng http:// hoặc https://)'
+    }
   }
   
   return Object.keys(formErrors.value).length === 0
@@ -280,6 +287,10 @@ const validateForm = () => {
 
 const handleSubmit = async () => {
   if (!validateForm()) {
+    ElMessage.warning({
+      message: 'Vui lòng kiểm tra lại thông tin form!',
+      duration: 3000
+    })
     return
   }
 
@@ -288,16 +299,56 @@ const handleSubmit = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateBrand(formData.value.id, formData.value)
+      ElMessage.success({
+        message: `Đã cập nhật thương hiệu "${formData.value.name}" thành công!`,
+        duration: 3000
+      })
     } else {
       await adminStore.createBrand(formData.value)
+      ElMessage.success({
+        message: `Đã thêm thương hiệu "${formData.value.name}" thành công!`,
+        duration: 3000
+      })
     }
     
     await fetchBrands()
     closeModal()
-    alert(isEditMode.value ? 'Cập nhật thương hiệu thành công!' : 'Thêm thương hiệu thành công!')
   } catch (error) {
     console.error('Lỗi khi lưu thương hiệu:', error)
-    alert('Có lỗi xảy ra! Vui lòng thử lại.')
+    
+    // Handle specific error messages from server
+    let errorMessage = 'Có lỗi xảy ra! Vui lòng thử lại.'
+    
+    if (error.response) {
+      // Server responded with error
+      const status = error.response.status
+      const data = error.response.data
+      
+      if (status === 400) {
+        // Validation error from server
+        if (data.validationErrors) {
+          // Display first validation error
+          const firstError = Object.values(data.validationErrors)[0]
+          if (firstError && firstError.length > 0) {
+            errorMessage = firstError[0]
+          }
+        } else if (data.message) {
+          errorMessage = data.message
+        }
+      } else if (status === 409) {
+        errorMessage = 'Tên hoặc slug đã tồn tại. Vui lòng chọn tên khác.'
+      } else if (status === 500) {
+        errorMessage = 'Lỗi server. Vui lòng liên hệ quản trị viên.'
+      }
+    } else if (error.request) {
+      // Network error
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
+    }
+    
+    ElMessage.error({
+      message: errorMessage,
+      duration: 5000
+    })
   } finally {
     submitting.value = false
   }
@@ -312,13 +363,13 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteBrand(brandToDelete.value.id)
+    ElMessage.success(`Đã xóa thương hiệu "${brandToDelete.value.name}" thành công!`)
     await fetchBrands()
     showDeleteModal.value = false
     brandToDelete.value = null
-    alert('Xóa thương hiệu thành công!')
   } catch (error) {
     console.error('Lỗi khi xóa thương hiệu:', error)
-    alert('Không thể xóa thương hiệu này!')
+    ElMessage.error('Không thể xóa thương hiệu này. Vui lòng thử lại!')
   } finally {
     deleting.value = false
   }

@@ -30,10 +30,20 @@ public class AdminOrderController {
     @GetMapping
     public ResponseEntity<Page<AdminOrderListDto>> getAllOrders(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String status
     ) {
-        // Tham số Pageable này cũng phải là org.springframework.data.domain.Pageable
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        
+        // Nếu có search hoặc status filter, sử dụng method với filters
+        if ((search != null && !search.trim().isEmpty()) || 
+            (status != null && !status.trim().isEmpty())) {
+            Page<AdminOrderListDto> orderPage = adminOrderService.getAllOrdersWithFilters(search, status, pageable);
+            return ResponseEntity.ok(orderPage);
+        }
+        
+        // Nếu không có filter, sử dụng method mặc định
         Page<AdminOrderListDto> orderPage = adminOrderService.getAllOrders(pageable);
         return ResponseEntity.ok(orderPage);
     }

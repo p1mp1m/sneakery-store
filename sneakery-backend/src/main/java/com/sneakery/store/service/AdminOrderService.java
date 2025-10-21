@@ -32,8 +32,17 @@ public class AdminOrderService {
     private final OrderStatusHistoryRepository statusHistoryRepository;
 
     @Transactional(readOnly = true)
-    public Page<AdminOrderListDto> getAllOrders(Pageable pageable) { // Tham số này phải là org.springframework.data.domain.Pageable
+    public Page<AdminOrderListDto> getAllOrders(Pageable pageable) {
         Page<Order> orderPage = orderRepository.findAllWithUser(pageable);
+        return orderPage.map(this::convertToOrderListDto);
+    }
+
+    /**
+     * Lấy danh sách đơn hàng với search và filter
+     */
+    @Transactional(readOnly = true)
+    public Page<AdminOrderListDto> getAllOrdersWithFilters(String search, String status, Pageable pageable) {
+        Page<Order> orderPage = orderRepository.findAllWithUserAndFilters(search, status, pageable);
         return orderPage.map(this::convertToOrderListDto);
     }
 

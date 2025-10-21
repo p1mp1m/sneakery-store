@@ -39,6 +39,31 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             countQuery = "SELECT count(o) FROM Order o")
     Page<Order> findAllWithUser(Pageable pageable);
 
+    /**
+     * Tìm kiếm và lọc đơn hàng cho Admin với search và status
+     * Search: tìm theo ID, tên khách hàng, email khách hàng
+     * Status: lọc theo trạng thái đơn hàng
+     */
+    @Query(value = "SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.user u " +
+            "WHERE (:search IS NULL OR :search = '' OR " +
+            "CAST(o.id AS string) LIKE %:search% OR " +
+            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:status IS NULL OR :status = '' OR o.status = :status)",
+            countQuery = "SELECT count(DISTINCT o) FROM Order o " +
+            "LEFT JOIN o.user u " +
+            "WHERE (:search IS NULL OR :search = '' OR " +
+            "CAST(o.id AS string) LIKE %:search% OR " +
+            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:status IS NULL OR :status = '' OR o.status = :status)")
+    Page<Order> findAllWithUserAndFilters(
+            @Param("search") String search,
+            @Param("status") String status,
+            Pageable pageable
+    );
+
     @Query("SELECT o FROM Order o " +
             "LEFT JOIN FETCH o.user " +
             "LEFT JOIN FETCH o.orderDetails od " +

@@ -178,46 +178,26 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
-      <div class="modal modal-sm" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">Xác nhận xóa</h2>
-          <button @click="showDeleteModal = false" class="modal-close">
-            <i class="material-icons">close</i>
-          </button>
-        </div>
-
-        <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa danh mục <strong>{{ categoryToDelete?.name }}</strong>?</p>
-          <p v-if="hasChildren(categoryToDelete?.id)" class="text-warning">
-            <i class="material-icons">warning</i>
-            Danh mục này có danh mục con. Các danh mục con cũng sẽ bị xóa!
-          </p>
-          <p class="text-error">Hành động này không thể hoàn tác!</p>
-        </div>
-
-        <div class="modal-footer">
-          <button @click="showDeleteModal = false" class="btn btn-secondary">
-            Hủy
-          </button>
-          <button 
-            @click="handleDelete" 
-            class="btn btn-danger"
-            :disabled="deleting"
-          >
-            <span v-if="deleting" class="btn-loading"></span>
-            {{ deleting ? 'Đang xóa...' : 'Xóa' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showDeleteModal"
+      type="danger"
+      title="Xác nhận xóa danh mục"
+      :message="`Bạn có chắc chắn muốn xóa danh mục '${categoryToDelete?.name}'?`"
+      :description="getDeleteWarning(categoryToDelete?.id)"
+      confirm-text="Xóa danh mục"
+      cancel-text="Hủy"
+      :loading="deleting"
+      @confirm="handleDelete"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 
 const adminStore = useAdminStore()
 
@@ -253,6 +233,13 @@ const hasChildren = (categoryId) => {
   return categories.value.some(cat => cat.parentId === categoryId)
 }
 
+const getDeleteWarning = (categoryId) => {
+  if (hasChildren(categoryId)) {
+    return '⚠️ Danh mục này có danh mục con. Các danh mục con cũng sẽ bị xóa! Hành động này không thể hoàn tác!'
+  }
+  return 'Hành động này không thể hoàn tác!'
+}
+
 const fetchCategories = async () => {
   try {
     loading.value = true
@@ -260,7 +247,10 @@ const fetchCategories = async () => {
     categories.value = adminStore.categories
   } catch (error) {
     console.error('Lỗi khi tải danh sách danh mục:', error)
-    alert('Không thể tải danh sách danh mục!')
+    ElMessage.error({
+      message: 'Không thể tải danh sách danh mục. Vui lòng thử lại!',
+      duration: 5000
+    })
   } finally {
     loading.value = false
   }
@@ -317,12 +307,24 @@ const generateSlug = () => {
 const validateForm = () => {
   formErrors.value = {}
   
+  // Validate name
   if (!formData.value.name || formData.value.name.trim() === '') {
     formErrors.value.name = 'Tên danh mục không được để trống'
+  } else if (formData.value.name.trim().length < 2) {
+    formErrors.value.name = 'Tên danh mục phải có ít nhất 2 ký tự'
+  } else if (formData.value.name.trim().length > 100) {
+    formErrors.value.name = 'Tên danh mục không được vượt quá 100 ký tự'
   }
   
+  // Validate slug
   if (!formData.value.slug || formData.value.slug.trim() === '') {
     formErrors.value.slug = 'Slug không được để trống'
+  } else if (!/^[a-z0-9-]+$/.test(formData.value.slug)) {
+    formErrors.value.slug = 'Slug chỉ được chứa chữ thường, số và dấu gạch ngang'
+  } else if (formData.value.slug.length < 2) {
+    formErrors.value.slug = 'Slug phải có ít nhất 2 ký tự'
+  } else if (formData.value.slug.length > 100) {
+    formErrors.value.slug = 'Slug không được vượt quá 100 ký tự'
   }
   
   return Object.keys(formErrors.value).length === 0
@@ -330,6 +332,10 @@ const validateForm = () => {
 
 const handleSubmit = async () => {
   if (!validateForm()) {
+    ElMessage.warning({
+      message: 'Vui lòng kiểm tra lại thông tin form!',
+      duration: 3000
+    })
     return
   }
 
@@ -338,16 +344,52 @@ const handleSubmit = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateCategory(formData.value.id, formData.value)
+      ElMessage.success({
+        message: `Đã cập nhật danh mục "${formData.value.name}" thành công!`,
+        duration: 3000
+      })
     } else {
       await adminStore.createCategory(formData.value)
+      ElMessage.success({
+        message: `Đã thêm danh mục "${formData.value.name}" thành công!`,
+        duration: 3000
+      })
     }
     
     await fetchCategories()
     closeModal()
-    alert(isEditMode.value ? 'Cập nhật danh mục thành công!' : 'Thêm danh mục thành công!')
   } catch (error) {
     console.error('Lỗi khi lưu danh mục:', error)
-    alert('Có lỗi xảy ra! Vui lòng thử lại.')
+    
+    // Handle specific error messages from server
+    let errorMessage = 'Có lỗi xảy ra! Vui lòng thử lại.'
+    
+    if (error.response) {
+      const status = error.response.status
+      const data = error.response.data
+      
+      if (status === 400) {
+        if (data.validationErrors) {
+          const firstError = Object.values(data.validationErrors)[0]
+          if (firstError && firstError.length > 0) {
+            errorMessage = firstError[0]
+          }
+        } else if (data.message) {
+          errorMessage = data.message
+        }
+      } else if (status === 409) {
+        errorMessage = 'Tên hoặc slug đã tồn tại. Vui lòng chọn tên khác.'
+      } else if (status === 500) {
+        errorMessage = 'Lỗi server. Vui lòng liên hệ quản trị viên.'
+      }
+    } else if (error.request) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
+    }
+    
+    ElMessage.error({
+      message: errorMessage,
+      duration: 5000
+    })
   } finally {
     submitting.value = false
   }
@@ -362,13 +404,13 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteCategory(categoryToDelete.value.id)
+    ElMessage.success(`Đã xóa danh mục "${categoryToDelete.value.name}" thành công!`)
     await fetchCategories()
     showDeleteModal.value = false
     categoryToDelete.value = null
-    alert('Xóa danh mục thành công!')
   } catch (error) {
     console.error('Lỗi khi xóa danh mục:', error)
-    alert('Không thể xóa danh mục này!')
+    ElMessage.error('Không thể xóa danh mục này. Vui lòng thử lại!')
   } finally {
     deleting.value = false
   }

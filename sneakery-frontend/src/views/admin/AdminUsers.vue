@@ -33,7 +33,7 @@
             <td>{{ user.email }}</td>
             <td>{{ user.phoneNumber || 'N/A' }}</td>
             <td>
-              <select v-model="user.role" @change="updateUserRole(user)" class="role-select">
+              <select v-model="user.role" @change="confirmRoleChange(user, $event)" class="role-select">
                 <option value="USER">User</option>
                 <option value="ADMIN">Admin</option>
               </select>
@@ -44,7 +44,7 @@
               </span>
             </td>
             <td class="text-center">
-              <button @click="toggleUserStatus(user)" class="btn-sm" :class="user.isActive ? 'btn-danger' : 'btn-success'">
+              <button @click="confirmToggleStatus(user)" class="btn-sm" :class="user.isActive ? 'btn-danger' : 'btn-success'">
                 {{ user.isActive ? 'Khóa' : 'Mở khóa' }}
               </button>
             </td>
@@ -52,16 +52,56 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Role Change Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showRoleConfirm"
+      type="warning"
+      title="Xác nhận thay đổi vai trò"
+      :message="`Bạn có chắc chắn muốn thay đổi vai trò của ${userToUpdate?.fullName} từ \"${getRoleLabel(oldRole)}\" sang \"${getRoleLabel(newRole)}\"?`"
+      description="Hành động này sẽ thay đổi quyền hạn của người dùng."
+      confirm-text="Xác nhận"
+      cancel-text="Hủy"
+      :loading="updating"
+      @confirm="handleRoleUpdate"
+      @cancel="handleCancelRoleChange"
+    />
+
+    <!-- Status Toggle Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showStatusConfirm"
+      :type="userToToggle?.isActive ? 'warning' : 'info'"
+      :title="userToToggle?.isActive ? 'Xác nhận khóa tài khoản' : 'Xác nhận mở khóa tài khoản'"
+      :message="`Bạn có chắc chắn muốn ${userToToggle?.isActive ? 'khóa' : 'mở khóa'} tài khoản của ${userToToggle?.fullName}?`"
+      :description="userToToggle?.isActive ? 'Người dùng sẽ không thể đăng nhập sau khi bị khóa.' : 'Người dùng sẽ có thể đăng nhập lại sau khi mở khóa.'"
+      :confirm-text="userToToggle?.isActive ? 'Khóa tài khoản' : 'Mở khóa'"
+      cancel-text="Hủy"
+      :loading="updating"
+      @confirm="handleToggleStatus"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 
 const adminStore = useAdminStore()
 const users = ref([])
 const loading = ref(false)
+
+// Role change confirmation
+const showRoleConfirm = ref(false)
+const userToUpdate = ref(null)
+const oldRole = ref('')
+const newRole = ref('')
+const updating = ref(false)
+
+// Status toggle confirmation
+const showStatusConfirm = ref(false)
+const userToToggle = ref(null)
 
 const fetchUsers = async () => {
   try {
@@ -75,25 +115,77 @@ const fetchUsers = async () => {
   }
 }
 
-const updateUserRole = async (user) => {
+const confirmRoleChange = (user, event) => {
+  const select = event.target
+  oldRole.value = user._originalRole || user.role
+  newRole.value = select.value
+  
+  if (oldRole.value === newRole.value) {
+    return
+  }
+  
+  userToUpdate.value = user
+  if (!user._originalRole) {
+    user._originalRole = oldRole.value
+  }
+  
+  showRoleConfirm.value = true
+}
+
+const handleRoleUpdate = async () => {
   try {
-    await adminStore.updateUserRole(user.id, user.role)
-    alert('Cập nhật vai trò thành công!')
+    updating.value = true
+    await adminStore.updateUserRole(userToUpdate.value.id, newRole.value)
+    ElMessage.success(`Đã cập nhật vai trò của ${userToUpdate.value.fullName} thành công!`)
+    
+    userToUpdate.value._originalRole = newRole.value
+    showRoleConfirm.value = false
   } catch (error) {
     console.error('Lỗi khi cập nhật vai trò:', error)
-    alert('Không thể cập nhật vai trò!')
-    fetchUsers()
+    ElMessage.error('Không thể cập nhật vai trò. Vui lòng thử lại!')
+    
+    userToUpdate.value.role = oldRole.value
+  } finally {
+    updating.value = false
   }
 }
 
-const toggleUserStatus = async (user) => {
+const handleCancelRoleChange = () => {
+  if (userToUpdate.value) {
+    userToUpdate.value.role = oldRole.value
+  }
+  showRoleConfirm.value = false
+}
+
+const getRoleLabel = (role) => {
+  const labels = {
+    'USER': 'Người dùng',
+    'ADMIN': 'Quản trị viên',
+    'MODERATOR': 'Điều hành viên'
+  }
+  return labels[role] || role
+}
+
+const confirmToggleStatus = (user) => {
+  userToToggle.value = user
+  showStatusConfirm.value = true
+}
+
+const handleToggleStatus = async () => {
   try {
-    await adminStore.updateUserStatus(user.id, !user.isActive)
-    user.isActive = !user.isActive
-    alert(user.isActive ? 'Mở khóa tài khoản thành công!' : 'Khóa tài khoản thành công!')
+    updating.value = true
+    const newStatus = !userToToggle.value.isActive
+    await adminStore.updateUserStatus(userToToggle.value.id, newStatus)
+    
+    userToToggle.value.isActive = newStatus
+    ElMessage.success(`Đã ${newStatus ? 'mở khóa' : 'khóa'} tài khoản ${userToToggle.value.fullName} thành công!`)
+    
+    showStatusConfirm.value = false
   } catch (error) {
     console.error('Lỗi khi cập nhật trạng thái:', error)
-    alert('Không thể cập nhật trạng thái!')
+    ElMessage.error('Không thể cập nhật trạng thái. Vui lòng thử lại!')
+  } finally {
+    updating.value = false
   }
 }
 

@@ -7,6 +7,47 @@
       </div>
     </div>
 
+    <!-- Search & Filters -->
+    <div class="filters-section">
+      <div class="search-box">
+        <i class="material-icons search-icon">search</i>
+        <input
+          v-model="filters.search"
+          @input="debounceSearch"
+          type="text"
+          placeholder="Tìm theo mã đơn, tên hoặc email khách hàng..."
+          class="search-input"
+        />
+        <button
+          v-if="filters.search"
+          @click="clearSearch"
+          class="clear-btn"
+          title="Xóa tìm kiếm"
+        >
+          <i class="material-icons">close</i>
+        </button>
+      </div>
+
+      <div class="filter-controls">
+        <div class="filter-group">
+          <label>Trạng thái</label>
+          <select v-model="filters.status" @change="applyFilters" class="filter-select">
+            <option value="">Tất cả</option>
+            <option value="Pending">Chờ xử lý</option>
+            <option value="Processing">Đang xử lý</option>
+            <option value="Shipped">Đã gửi hàng</option>
+            <option value="Completed">Hoàn thành</option>
+            <option value="Cancelled">Đã hủy</option>
+          </select>
+        </div>
+
+        <button @click="resetFilters" class="btn-reset" title="Xóa tất cả bộ lọc">
+          <i class="material-icons">refresh</i>
+          Reset
+        </button>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
@@ -43,7 +84,7 @@
             <td>
               <select 
                 v-model="order.status" 
-                @change="updateOrderStatus(order)"
+                @change="confirmStatusChange(order, $event)"
                 class="status-select"
                 :class="`status-${order.status?.toLowerCase()}`"
               >
@@ -63,20 +104,20 @@
           </tr>
         </tbody>
       </table>
-    </div>
+          </div>
 
     <!-- Pagination -->
     <div v-if="!loading && orders.length > 0" class="pagination-container">
       <div class="pagination-info">
         Hiển thị {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} 
         trong tổng số {{ totalItems }} đơn hàng
-      </div>
+          </div>
       <div class="pagination">
         <button :disabled="currentPage === 0" @click="changePage(currentPage - 1)" class="page-btn">Trước</button>
         <span class="page-info">Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
         <button :disabled="currentPage >= totalPages - 1" @click="changePage(currentPage + 1)" class="page-btn">Sau</button>
-      </div>
           </div>
+        </div>
 
     <!-- Order Detail Modal -->
     <div v-if="showDetailModal" class="modal-overlay" @click="showDetailModal = false">
@@ -92,15 +133,31 @@
           </div>
         <div class="modal-footer">
           <button @click="showDetailModal = false" class="btn btn-secondary">Đóng</button>
-        </div>
       </div>
     </div>
+    </div>
+
+    <!-- Status Change Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showStatusConfirm"
+      type="warning"
+      title="Xác nhận thay đổi trạng thái"
+      :message="`Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng #${orderToUpdate?.id} từ \"${getStatusLabel(oldStatus)}\" sang \"${getStatusLabel(newStatus)}\"?`"
+      description="Hành động này sẽ cập nhật trạng thái đơn hàng."
+      confirm-text="Xác nhận"
+      cancel-text="Hủy"
+      :loading="updating"
+      @confirm="handleStatusUpdate"
+      @cancel="handleCancelStatusChange"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 
 const adminStore = useAdminStore()
 
@@ -112,30 +169,121 @@ const totalItems = ref(0)
 const showDetailModal = ref(false)
 const selectedOrder = ref(null)
 
+// Search & Filter state
+const filters = ref({
+  search: '',
+  status: ''
+})
+let searchTimeout = null
+
+// Status change confirmation
+const showStatusConfirm = ref(false)
+const orderToUpdate = ref(null)
+const oldStatus = ref('')
+const newStatus = ref('')
+const updating = ref(false)
+
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value))
 
 const fetchOrders = async () => {
   try {
     loading.value = true
-    const result = await adminStore.fetchOrders(currentPage.value, pageSize.value)
+    const result = await adminStore.fetchOrders(currentPage.value, pageSize.value, filters.value)
     orders.value = result.content || []
     totalItems.value = result.totalElements || 0
   } catch (error) {
     console.error('Lỗi khi tải danh sách đơn hàng:', error)
+    ElMessage.error('Không thể tải danh sách đơn hàng.')
   } finally {
     loading.value = false
   }
 }
 
-const updateOrderStatus = async (order) => {
+const debounceSearch = () => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 0 // Reset về trang đầu khi search
+    fetchOrders()
+  }, 500) // Debounce 500ms
+}
+
+const clearSearch = () => {
+  filters.value.search = ''
+  currentPage.value = 0
+  fetchOrders()
+}
+
+const applyFilters = () => {
+  currentPage.value = 0 // Reset về trang đầu khi filter
+  fetchOrders()
+}
+
+const resetFilters = () => {
+  filters.value.search = ''
+  filters.value.status = ''
+  currentPage.value = 0
+  fetchOrders()
+}
+
+const confirmStatusChange = (order, event) => {
+  // Get the old and new status
+  const select = event.target
+  oldStatus.value = order._originalStatus || order.status
+  newStatus.value = select.value
+  
+  // If no change, do nothing
+  if (oldStatus.value === newStatus.value) {
+    return
+  }
+  
+  // Store order reference and original status
+  orderToUpdate.value = order
+  if (!order._originalStatus) {
+    order._originalStatus = oldStatus.value
+  }
+  
+  // Show confirmation dialog
+  showStatusConfirm.value = true
+}
+
+const handleStatusUpdate = async () => {
   try {
-    await adminStore.updateOrderStatus(order.id, order.status)
-    alert('Cập nhật trạng thái thành công!')
+    updating.value = true
+    await adminStore.updateOrderStatus(orderToUpdate.value.id, newStatus.value)
+    ElMessage.success(`Đã cập nhật trạng thái đơn hàng #${orderToUpdate.value.id} thành công!`)
+    
+    // Update the original status
+    orderToUpdate.value._originalStatus = newStatus.value
+    
+    showStatusConfirm.value = false
   } catch (error) {
     console.error('Lỗi khi cập nhật trạng thái:', error)
-    alert('Không thể cập nhật trạng thái!')
-    fetchOrders() // Reload to restore
+    ElMessage.error('Không thể cập nhật trạng thái. Vui lòng thử lại!')
+    
+    // Restore old status on error
+    orderToUpdate.value.status = oldStatus.value
+  } finally {
+    updating.value = false
   }
+}
+
+const handleCancelStatusChange = () => {
+  // Restore the old status
+  if (orderToUpdate.value) {
+    orderToUpdate.value.status = oldStatus.value
+  }
+  showStatusConfirm.value = false
+}
+
+const getStatusLabel = (status) => {
+  const labels = {
+    'Pending': 'Chờ xử lý',
+    'Processing': 'Đang xử lý',
+    'Shipped': 'Đã gửi hàng',
+    'Completed': 'Hoàn thành',
+    'Cancelled': 'Đã hủy'
+  }
+  return labels[status] || status
 }
 
 const viewOrderDetail = (order) => {
@@ -163,10 +311,130 @@ onMounted(() => {
 
 <style scoped>
 /* Reuse common styles */
-.admin-orders {max-width: 1400px;margin: 0 auto;}
+.admin-orders {max-width: 1400px;margin: 0 auto;padding: 2rem 1rem;}
 .page-header {margin-bottom: 2rem;}
 .page-title {font-size: 1.875rem;font-weight: 700;color: #1e293b;margin: 0 0 0.5rem 0;}
 .page-subtitle {color: #64748b;margin: 0;}
+
+/* ===== SEARCH & FILTERS ===== */
+.filters-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-box {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.25rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 3rem 0.75rem 3rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.clear-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.375rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #94a3b8;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-btn:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn-reset {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: 2px solid #e2e8f0;
+  background: white;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #64748b;
+}
+
+.btn-reset:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-reset i {
+  font-size: 1.125rem;
+}
 .loading-container,.empty-state {background: white;border-radius: 12px;padding: 3rem;text-align: center;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);}
 .loading-spinner {width: 48px;height: 48px;border: 4px solid #e2e8f0;border-top-color: #3b82f6;border-radius: 50%;animation: spin 1s linear infinite;margin: 0 auto 1rem;}
 @keyframes spin {to { transform: rotate(360deg); }}
