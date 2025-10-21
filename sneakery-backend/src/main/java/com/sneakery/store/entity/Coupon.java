@@ -1,0 +1,49 @@
+package com.sneakery.store.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+@Entity
+@Table(name = "Coupons")
+public class Coupon {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id; // CSDL của bạn dùng 'int'
+
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
+
+    @Column(name = "discount_type")
+    private String discountType; // 'amount' hoặc 'percent'
+
+    @Column(name = "value", nullable = false)
+    private BigDecimal value;
+
+    @Column(name = "start_at", nullable = false)
+    private LocalDateTime startAt;
+
+    @Column(name = "end_at", nullable = false)
+    private LocalDateTime endAt;
+
+    @Column(name = "max_uses")
+    private Integer maxUses;
+
+    @Column(name = "uses_count")
+    private Integer usesCount;
+
+    // Quan hệ ngược lại: Một Coupon có thể được dùng cho nhiều Order
+    @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)
+    @JsonIgnore // Tránh vòng lặp JSON
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Order> orders;
+}

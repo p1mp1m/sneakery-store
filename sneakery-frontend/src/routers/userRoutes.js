@@ -1,0 +1,110 @@
+// User Routes
+import { useAuthStore } from '@/stores/auth'
+
+// Lazy load layout
+const DefaultLayout = () => import('@/layouts/DefaultLayout.vue')
+
+// User Pages
+const UserDashboard = () => import('@/views/UserDashboard.vue')
+const UserProfile = () => import('@/views/UserProfile.vue')
+const UserOrders = () => import('@/views/UserOrders.vue')
+const WishlistPage = () => import('@/views/WishlistPage.vue')
+const CartPage = () => import('@/views/CartPage.vue')
+const CheckoutPage = () => import('@/views/CheckoutPage.vue')
+
+const userRoutes = [
+  {
+    path: '/user',
+    component: DefaultLayout,
+    meta: { requiresAuth: true, isUserRoute: true },
+    redirect: '/user/dashboard',
+    children: [
+      {
+        path: 'dashboard',
+        name: 'UserDashboard',
+        component: UserDashboard,
+        meta: { 
+          requiresAuth: true,
+          isUserRoute: true,
+          title: 'Tổng quan',
+          icon: 'dashboard'
+        }
+      },
+      {
+        path: 'profile',
+        name: 'UserProfile',
+        component: UserProfile,
+        meta: { 
+          requiresAuth: true,
+          isUserRoute: true,
+          title: 'Hồ sơ',
+          icon: 'person'
+        }
+      },
+      {
+        path: 'orders',
+        name: 'UserOrders',
+        component: UserOrders,
+        meta: { 
+          requiresAuth: true,
+          isUserRoute: true,
+          title: 'Đơn hàng',
+          icon: 'shopping_bag'
+        }
+      },
+      {
+        path: 'wishlist',
+        name: 'Wishlist',
+        component: WishlistPage,
+        meta: { 
+          requiresAuth: true,
+          isUserRoute: true,
+          title: 'Yêu thích',
+          icon: 'favorite'
+        }
+      },
+      {
+        path: 'cart',
+        name: 'UserCart',
+        component: CartPage,
+        meta: { 
+          requiresAuth: true,
+          isUserRoute: true,
+          title: 'Giỏ hàng',
+          icon: 'shopping_cart'
+        }
+      },
+      {
+        path: 'checkout',
+        name: 'UserCheckout',
+        component: CheckoutPage,
+        meta: { 
+          requiresAuth: true,
+          isUserRoute: true,
+          title: 'Thanh toán',
+          icon: 'payment'
+        }
+      }
+    ]
+  }
+]
+
+// User route guard - Chặn nếu chưa đăng nhập
+export const userGuard = async (to, from, next) => {
+  const authStore = useAuthStore()
+  
+  if (!authStore.isAuthenticated) {
+    // Chưa đăng nhập → redirect đến login
+    next({
+      path: '/login',
+      query: { redirect: to.fullPath }
+    })
+    return
+  }
+  
+  // Đã đăng nhập → cho phép truy cập
+  next()
+}
+
+export default userRoutes
+
