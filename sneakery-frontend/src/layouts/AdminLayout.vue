@@ -70,11 +70,11 @@
               <div v-if="showUserMenu" class="user-menu-dropdown">
                 <a href="#" class="menu-item">
                   <i class="material-icons">person</i>
-                  Profile
+                  Hồ sơ
                 </a>
                 <a href="#" class="menu-item">
                   <i class="material-icons">settings</i>
-                  Settings
+                  Cài đặt
                 </a>
                 <hr class="menu-divider">
                 <a href="#" class="menu-item" @click="handleLogout">
@@ -468,6 +468,20 @@ document.addEventListener('click', (e) => {
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 4px;
+  color: #1e293b;
+}
+
+.mobile-menu-btn i {
+  color: #64748b;
+  font-size: 24px;
+}
+
+.mobile-menu-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.mobile-menu-btn:hover i {
+  color: #667eea;
 }
 
 .page-title {
@@ -475,6 +489,17 @@ document.addEventListener('click', (e) => {
   font-weight: 600;
   color: #1e293b;
   margin: 0;
+}
+
+.header-left,
+.header-right {
+  color: #1e293b;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .header-right {
@@ -500,8 +525,16 @@ document.addEventListener('click', (e) => {
   transition: all 0.2s;
 }
 
+.action-btn i {
+  color: #64748b;
+}
+
 .action-btn:hover {
   background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.action-btn:hover i {
   color: #1e293b;
 }
 
@@ -534,10 +567,19 @@ document.addEventListener('click', (e) => {
   padding: 0.5rem;
   border-radius: 8px;
   transition: all 0.2s;
+  color: #1e293b;
+}
+
+.user-menu-btn i {
+  color: #64748b;
 }
 
 .user-menu-btn:hover {
   background-color: #f1f5f9;
+}
+
+.user-menu-btn:hover i {
+  color: #1e293b;
 }
 
 .user-avatar-small {
@@ -549,6 +591,12 @@ document.addEventListener('click', (e) => {
   align-items: center;
   justify-content: center;
   color: #64748b;
+}
+
+.user-name {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .user-menu-dropdown {
@@ -570,11 +618,21 @@ document.addEventListener('click', (e) => {
   padding: 0.75rem 1rem;
   color: #374151;
   text-decoration: none;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+}
+
+.menu-item i {
+  color: #64748b;
+  font-size: 20px;
 }
 
 .menu-item:hover {
   background-color: #f9fafb;
+  color: #1e293b;
+}
+
+.menu-item:hover i {
+  color: #667eea;
 }
 
 .menu-divider {
