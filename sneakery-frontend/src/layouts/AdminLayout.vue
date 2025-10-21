@@ -42,51 +42,6 @@
 
     <!-- Main Content -->
     <div class="admin-main">
-      <!-- Top Header -->
-      <header class="admin-header">
-        <div class="header-left">
-          <button class="mobile-menu-btn" @click="toggleSidebar">
-            <i class="material-icons">menu</i>
-          </button>
-          <h1 class="page-title">{{ currentPageTitle }}</h1>
-        </div>
-        
-        <div class="header-right">
-          <div class="header-actions">
-            <button class="action-btn" @click="toggleNotifications">
-              <i class="material-icons">notifications</i>
-              <span v-if="notificationCount > 0" class="notification-badge">{{ notificationCount }}</span>
-            </button>
-            
-            <div class="user-menu">
-              <button class="user-menu-btn" @click="toggleUserMenu">
-                <div class="user-avatar-small">
-                  <i class="material-icons">person</i>
-                </div>
-                <span class="user-name">{{ adminUser?.email }}</span>
-                <i class="material-icons">arrow_drop_down</i>
-              </button>
-              
-              <div v-if="showUserMenu" class="user-menu-dropdown">
-                <a href="#" class="menu-item">
-                  <i class="material-icons">person</i>
-                  Hồ sơ
-                </a>
-                <a href="#" class="menu-item">
-                  <i class="material-icons">settings</i>
-                  Cài đặt
-                </a>
-                <hr class="menu-divider">
-                <a href="#" class="menu-item" @click="handleLogout">
-                  <i class="material-icons">logout</i>
-                  Đăng xuất
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <!-- Page Content -->
       <main class="admin-content">
         <router-view />
@@ -103,19 +58,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
 
-const router = useRouter()
 const route = useRoute()
 const adminStore = useAdminStore()
 
 // State
 const sidebarCollapsed = ref(false)
-const showUserMenu = ref(false)
-const notificationCount = ref(0)
 const isMobile = ref(false)
 
 // Admin routes for sidebar
@@ -130,38 +81,9 @@ const adminRoutes = [
   { path: '/admin/settings', name: 'AdminSettings', meta: { title: 'Cài đặt', icon: 'settings' } }
 ]
 
-// Computed
-const currentPageTitle = computed(() => {
-  const currentRoute = adminRoutes.find(r => r.name === route.name)
-  return currentRoute?.meta.title || 'Admin Panel'
-})
-
-const adminUser = computed(() => adminStore.adminUser)
-
 // Methods
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
-}
-
-const toggleUserMenu = () => {
-  showUserMenu.value = !showUserMenu.value
-}
-
-const toggleNotifications = () => {
-  // TODO: Implement notifications
-  ElMessage.info('Tính năng thông báo sẽ được cập nhật sớm!')
-}
-
-const handleLogout = async () => {
-  try {
-    adminStore.reset()
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    ElMessage.success('Đăng xuất thành công!')
-    router.push('/login')
-  } catch (error) {
-    ElMessage.error('Có lỗi khi đăng xuất!')
-  }
 }
 
 const checkMobile = () => {
@@ -182,13 +104,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
-})
-
-// Close user menu when clicking outside
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.user-menu')) {
-    showUserMenu.value = false
-  }
 })
 </script>
 
@@ -444,203 +359,6 @@ document.addEventListener('click', (e) => {
   max-width: calc(100vw - 90px);
 }
 
-/* ===== HEADER ===== */
-.admin-header {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 1rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.mobile-menu-btn {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  color: #1e293b;
-}
-
-.mobile-menu-btn i {
-  color: #64748b;
-  font-size: 24px;
-}
-
-.mobile-menu-btn:hover {
-  background-color: #f1f5f9;
-}
-
-.mobile-menu-btn:hover i {
-  color: #667eea;
-}
-
-.page-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
-}
-
-.header-left,
-.header-right {
-  color: #1e293b;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.action-btn {
-  position: relative;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  color: #64748b;
-  transition: all 0.2s;
-}
-
-.action-btn i {
-  color: #64748b;
-}
-
-.action-btn:hover {
-  background-color: #f1f5f9;
-  color: #1e293b;
-}
-
-.action-btn:hover i {
-  color: #1e293b;
-}
-
-.notification-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background-color: #ef4444;
-  color: white;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.user-menu {
-  position: relative;
-}
-
-.user-menu-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.2s;
-  color: #1e293b;
-}
-
-.user-menu-btn i {
-  color: #64748b;
-}
-
-.user-menu-btn:hover {
-  background-color: #f1f5f9;
-}
-
-.user-menu-btn:hover i {
-  color: #1e293b;
-}
-
-.user-avatar-small {
-  width: 32px;
-  height: 32px;
-  background-color: #e2e8f0;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-}
-
-.user-name {
-  color: #1e293b;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.user-menu-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-width: 200px;
-  z-index: 1000;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  color: #374151;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.menu-item i {
-  color: #64748b;
-  font-size: 20px;
-}
-
-.menu-item:hover {
-  background-color: #f9fafb;
-  color: #1e293b;
-}
-
-.menu-item:hover i {
-  color: #667eea;
-}
-
-.menu-divider {
-  border: none;
-  border-top: 1px solid #e2e8f0;
-  margin: 0.5rem 0;
-}
-
 /* ===== CONTENT ===== */
 .admin-content {
   flex: 1;
@@ -688,37 +406,8 @@ document.addEventListener('click', (e) => {
     max-width: 100vw;
   }
   
-  .mobile-menu-btn {
-    display: block;
-  }
-  
-  .admin-header {
-    padding: 1rem;
-  }
-  
   .admin-content {
     padding: 1rem;
-  }
-  
-  .page-title {
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .admin-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-  
-  .header-right {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .user-menu-btn .user-name {
-    display: none;
   }
 }
 

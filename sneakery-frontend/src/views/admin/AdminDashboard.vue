@@ -20,33 +20,83 @@
     </transition-group>
 
     <!-- Dashboard Header -->
-    <div class="dashboard-header">
+    <!-- <div class="dashboard-header"> -->
+      <!-- Decorative Background Elements -->
+      <div class="header-decoration">
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
+        <div class="decoration-circle circle-3"></div>
+        <div class="decoration-wave"></div>
+      </div>
+      
+      <div class="header-content">
       <div class="welcome-section">
-        <h1 class="welcome-title animate-slide-in">
-          Dashboard Admin 🚀
+          <div class="header-icon animate-fade-in">
+            <i class="material-icons">dashboard</i>
+          </div>
+          <div class="welcome-text">
+            <h1 class="welcome-title animate-slide-in">
+              <span class="gradient-text">Chào mừng trở lại,</span>
+              <span class="admin-name">{{ adminUser?.email?.split('@')[0] || 'Admin' }}</span>
         </h1>
-        <p class="welcome-subtitle animate-slide-in delay-1">
+            <p class="welcome-subtitle animate-slide-in delay-1">
+              <i class="material-icons">shield</i>
           Quản lý và giám sát hệ thống Sneakery Store
         </p>
-        <div class="header-stats animate-slide-in delay-2">
-          <div class="mini-stat">
-            <i class="material-icons">access_time</i>
-            <span>{{ currentTime }}</span>
-          </div>
-          <div class="mini-stat">
-            <i class="material-icons">event</i>
-            <span>{{ currentDate }}</span>
+      </div>
+        </div>
+
+        <div class="header-info">
+          <!-- Profile Card with Menu -->
+          <div class="profile-card animate-slide-in delay-2">
+            <div class="profile-main">
+              <div class="profile-avatar">
+                <div class="avatar-wrapper">
+                  <i class="material-icons">person</i>
+                  <div class="avatar-status"></div>
+                </div>
+              </div>
+              <div class="profile-details">
+                <div class="profile-name">{{ adminUser?.email?.split('@')[0] || 'Admin' }}</div>
+                <div class="profile-role">
+                  <i class="material-icons">admin_panel_settings</i>
+                  <span>{{ adminUser?.role || 'ADMIN' }}</span>
+                </div>
+                <div class="profile-time">
+                  <i class="material-icons">schedule</i>
+                  <span>{{ currentTime }}</span>
+                  <span class="separator">•</span>
+                  <span>{{ currentDate }}</span>
+                </div>
+              </div>
+              <button class="profile-menu-toggle" @click="toggleProfileMenu">
+                <i class="material-icons">{{ showProfileMenu ? 'expand_less' : 'expand_more' }}</i>
+              </button>
+            </div>
+            
+            <!-- Dropdown Menu -->
+            <transition name="dropdown">
+              <div v-if="showProfileMenu" class="profile-menu-dropdown">
+                <a href="#" class="menu-item" @click.prevent="handleProfileEdit">
+                  <i class="material-icons">person_outline</i>
+                  <span>Chỉnh sửa hồ sơ</span>
+                  <i class="material-icons arrow">chevron_right</i>
+                </a>
+                <a href="#" class="menu-item" @click.prevent="handleSettings">
+                  <i class="material-icons">settings</i>
+                  <span>Cài đặt</span>
+                  <i class="material-icons arrow">chevron_right</i>
+                </a>
+                <div class="menu-divider"></div>
+                <a href="#" class="menu-item logout-item" @click.prevent="handleLogout">
+                  <i class="material-icons">logout</i>
+                  <span>Đăng xuất</span>
+                  <i class="material-icons arrow">chevron_right</i>
+                </a>
+              </div>
+            </transition>
           </div>
         </div>
-      </div>
-      <div class="header-badge animate-bounce-in">
-        <el-avatar :size="80" class="avatar pulse">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </el-avatar>
       </div>
     </div>
 
@@ -129,10 +179,6 @@
           <i class="material-icons">bolt</i>
           Quản lý nhanh
         </h2>
-        <button class="refresh-btn" @click="refreshData" :class="{ spinning: refreshing }">
-          <i class="material-icons">refresh</i>
-          <span>Làm mới</span>
-        </button>
       </div>
       <div class="actions-grid">
         <router-link to="/admin/products" class="action-card hover-lift">
@@ -319,21 +365,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAdminStore } from '@/stores/admin';
 import LineChart from '@/components/charts/LineChart.vue';
 import BarChart from '@/components/charts/BarChart.vue';
 import DoughnutChart from '@/components/charts/DoughnutChart.vue';
 
+const router = useRouter();
 const adminStore = useAdminStore();
+
+// Computed
+const adminUser = computed(() => adminStore.adminUser);
 
 // State
 const loading = ref(false);
-const refreshing = ref(false);
 const selectedPeriod = ref('7d');
 const currentTime = ref('');
 const currentDate = ref('');
 const notifications = ref([]);
+const showProfileMenu = ref(false);
 let notificationIdCounter = 0;
 
 const stats = ref({
@@ -511,23 +562,34 @@ const loadDashboardData = async () => {
   }
 };
 
-const refreshData = async () => {
-  refreshing.value = true;
-  try {
-    await loadDashboardData();
-    showNotification('success', 'Đã làm mới', 'Dữ liệu đã được cập nhật');
-  } catch (error) {
-    showNotification('error', 'Lỗi', 'Không thể làm mới dữ liệu');
-  } finally {
-    setTimeout(() => {
-      refreshing.value = false;
-    }, 1000);
-  }
-};
-
 const changePeriod = (period) => {
   selectedPeriod.value = period;
   showNotification('info', 'Thay đổi chu kỳ', `Đang hiển thị dữ liệu ${period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày'}`);
+};
+
+const toggleProfileMenu = () => {
+  showProfileMenu.value = !showProfileMenu.value;
+};
+
+const handleProfileEdit = () => {
+  showProfileMenu.value = false;
+  showNotification('info', 'Chỉnh sửa hồ sơ', 'Chức năng đang được phát triển');
+};
+
+const handleSettings = () => {
+  showProfileMenu.value = false;
+  showNotification('info', 'Cài đặt', 'Chức năng đang được phát triển');
+};
+
+const handleLogout = () => {
+  showProfileMenu.value = false;
+  showNotification('success', 'Đăng xuất', 'Đang đăng xuất...');
+  setTimeout(() => {
+    adminStore.reset();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/login');
+  }, 1000);
 };
 
 // Lifecycle
@@ -541,6 +603,13 @@ onMounted(() => {
   setTimeout(() => {
     showNotification('info', 'Chào mừng!', 'Chào mừng bạn quay trở lại Admin Dashboard');
   }, 500);
+
+  // Close profile menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.profile-card')) {
+      showProfileMenu.value = false;
+    }
+  });
 });
 
 onUnmounted(() => {
@@ -785,99 +854,401 @@ onUnmounted(() => {
 
 /* ===== DASHBOARD HEADER ===== */
 .dashboard-header {
+  margin-bottom: 20px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+}
+
+/* Decorative Elements */
+.header-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.decoration-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+}
+
+.circle-1 {
+  width: 350px;
+  height: 350px;
+  top: -150px;
+  right: -100px;
+  animation: float 15s ease-in-out infinite;
+}
+
+.circle-2 {
+  width: 250px;
+  height: 250px;
+  bottom: -100px;
+  left: -50px;
+  animation: float 12s ease-in-out infinite reverse;
+}
+
+.circle-3 {
+  width: 150px;
+  height: 150px;
+  top: 50%;
+  right: 20%;
+  animation: float 18s ease-in-out infinite;
+  opacity: 0.5;
+}
+
+.decoration-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 0 0 16px 16px;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(20px, -20px) scale(1.05);
+  }
+}
+
+/* Header Content */
+.header-content {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding: 16px 18px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
-  color: #ffffff;
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  max-width: 100%;
-  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-}
-
-.dashboard-header::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.dashboard-header::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -5%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
-  border-radius: 50%;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .welcome-section {
-  position: relative;
-  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.header-icon i {
+  font-size: 32px;
+  color: #ffffff;
+}
+
+.welcome-text {
+  color: #ffffff;
 }
 
 .welcome-title {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   margin: 0 0 8px 0;
-  line-height: 1.25;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  color: #ffffff;
+  line-height: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #ffffff 0%, #f0f0f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.admin-name {
+  font-size: 1.75rem;
+  font-weight: 800;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-transform: capitalize;
 }
 
 .welcome-subtitle {
-  font-size: 0.875rem;
-  opacity: 0.9;
-  margin: 0 0 12px 0;
-  line-height: 1.5;
-  color: #ffffff;
-}
-
-.header-stats {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.mini-stat {
+  font-size: 0.9375rem;
+  opacity: 0.95;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
-  background: rgba(255, 255, 255, 0.15);
-  padding: 6px 12px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.95);
 }
 
-.mini-stat i {
-  font-size: 16px;
-  color: #ffffff;
+.welcome-subtitle i {
+  font-size: 18px;
 }
 
-.header-badge {
+/* Profile Card */
+.profile-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(30px);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   position: relative;
-  z-index: 1;
+  overflow: visible;
+  min-width: 320px;
 }
 
-.header-badge .avatar {
-  background: rgba(255, 255, 255, 0.2);
+.profile-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+}
+
+.profile-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar-wrapper {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+}
+
+.avatar-wrapper i {
+  font-size: 32px;
   color: #ffffff;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.avatar-status {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  background: #10b981;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.8);
+  animation: pulse-status 2s ease-in-out infinite;
+}
+
+@keyframes pulse-status {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.15);
+  }
+}
+
+.profile-details {
+  flex: 1;
+  min-width: 0;
+  color: #ffffff;
+}
+
+.profile-name {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: capitalize;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 3px 8px;
+  border-radius: 12px;
   backdrop-filter: blur(10px);
+  margin-bottom: 6px;
+}
+
+.profile-role i {
+  font-size: 14px;
+}
+
+.profile-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.profile-time i {
+  font-size: 13px;
+}
+
+.profile-time .separator {
+  margin: 0 4px;
+  opacity: 0.6;
+}
+
+.profile-menu-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.profile-menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.profile-menu-toggle i {
+  font-size: 22px;
+}
+
+/* Dropdown Menu */
+.profile-menu-dropdown {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #1e293b;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.menu-item i {
+  font-size: 20px;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.menu-item span {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.menu-item i.arrow {
+  font-size: 18px;
+  color: #94a3b8;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background: rgba(102, 126, 234, 0.08);
+  padding-left: 20px;
+}
+
+.menu-item:hover i {
+  color: #5a67d8;
+  transform: scale(1.1);
+}
+
+.menu-item:hover i.arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.logout-item {
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.logout-item i {
+  color: #ef4444;
+}
+
+.logout-item:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.logout-item:hover i {
+  color: #dc2626;
+}
+
+.menu-divider {
+  height: 1px;
+  background: rgba(226, 232, 240, 0.6);
+  margin: 4px 0;
+}
+
+/* Dropdown Animation */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top;
+}
+
+.dropdown-enter-from {
+  opacity: 0;
+  transform: scaleY(0.8) translateY(-10px);
+}
+
+.dropdown-leave-to {
+  opacity: 0;
+  transform: scaleY(0.8) translateY(-10px);
 }
 
 /* ===== STATS GRID ===== */
@@ -1028,7 +1399,6 @@ onUnmounted(() => {
   font-size: 20px;
 }
 
-.refresh-btn,
 .view-all-btn {
   display: flex;
   align-items: center;
@@ -1045,14 +1415,9 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
-.refresh-btn:hover,
 .view-all-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.refresh-btn.spinning i {
-  animation: spin 1s linear infinite;
 }
 
 /* ===== QUICK ACTIONS ===== */
@@ -1436,18 +1801,74 @@ onUnmounted(() => {
   }
 
   .dashboard-header {
+    padding: 20px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .welcome-section {
     flex-direction: column;
     text-align: center;
-    gap: var(--space-3);
-    padding: var(--space-4);
+    gap: 12px;
+  }
+
+  .header-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .header-icon i {
+    font-size: 28px;
   }
 
   .welcome-title {
-    font-size: var(--text-xl);
+    font-size: 1.375rem;
   }
 
-  .header-stats {
+  .admin-name {
+    font-size: 1.375rem;
+  }
+
+  .welcome-subtitle {
+    font-size: 0.875rem;
     justify-content: center;
+  }
+
+  .profile-card {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .profile-main {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .profile-details {
+    align-items: center;
+    text-align: center;
+  }
+
+  .profile-name {
+    font-size: 1rem;
+  }
+
+  .profile-time {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .profile-menu-toggle {
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  .circle-1, .circle-2, .circle-3 {
+    display: none;
   }
   
   .stats-grid {
