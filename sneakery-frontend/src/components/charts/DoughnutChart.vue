@@ -1,0 +1,99 @@
+<template>
+  <canvas ref="chartCanvas"></canvas>
+</template>
+
+<script setup>
+import { ref, onMounted, watch } from 'vue'
+import {
+  Chart,
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+// Register Chart.js components
+Chart.register(
+  DoughnutController,
+  ArcElement,
+  Tooltip,
+  Legend
+)
+
+const props = defineProps({
+  labels: {
+    type: Array,
+    required: true
+  },
+  datasets: {
+    type: Array,
+    required: true
+  },
+  options: {
+    type: Object,
+    default: () => ({})
+  }
+})
+
+const chartCanvas = ref(null)
+let chartInstance = null
+
+const createChart = () => {
+  if (chartInstance) {
+    chartInstance.destroy()
+  }
+
+  const ctx = chartCanvas.value.getContext('2d')
+  
+  chartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: props.labels,
+      datasets: props.datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            padding: 15,
+            font: {
+              size: 12
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 12,
+          titleFont: {
+            size: 14
+          },
+          bodyFont: {
+            size: 13
+          }
+        }
+      },
+      ...props.options
+    }
+  })
+}
+
+onMounted(() => {
+  createChart()
+})
+
+watch(() => [props.labels, props.datasets], () => {
+  createChart()
+}, { deep: true })
+</script>
+
+<style scoped>
+canvas {
+  max-height: 100%;
+}
+</style>
+

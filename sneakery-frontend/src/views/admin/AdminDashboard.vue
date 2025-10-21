@@ -151,6 +151,55 @@
       </div>
     </div>
 
+    <!-- Charts Section -->
+    <div class="charts-section">
+      <h2 class="section-title">Biểu đồ thống kê</h2>
+      
+      <div class="charts-grid">
+        <!-- Revenue Chart -->
+        <div class="chart-card large">
+          <div class="chart-header">
+            <h3>Doanh thu 7 ngày gần đây</h3>
+            <span class="chart-subtitle">Đơn vị: VNĐ</span>
+          </div>
+          <div class="chart-container">
+            <LineChart 
+              :labels="revenueChart.labels"
+              :datasets="revenueChart.datasets"
+            />
+          </div>
+        </div>
+
+        <!-- Order Status Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Trạng thái đơn hàng</h3>
+            <span class="chart-subtitle">Phân bổ theo trạng thái</span>
+          </div>
+          <div class="chart-container">
+            <DoughnutChart 
+              :labels="orderStatusChart.labels"
+              :datasets="orderStatusChart.datasets"
+            />
+          </div>
+        </div>
+
+        <!-- Top Products Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Top 5 sản phẩm bán chạy</h3>
+            <span class="chart-subtitle">Số lượng đã bán</span>
+          </div>
+          <div class="chart-container">
+            <BarChart 
+              :labels="topProductsChart.labels"
+              :datasets="topProductsChart.datasets"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Recent Activity -->
     <div class="recent-activity">
       <h2 class="section-title">Hoạt động gần đây</h2>
@@ -184,6 +233,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useAdminStore } from '@/stores/admin';
+import LineChart from '@/components/charts/LineChart.vue';
+import BarChart from '@/components/charts/BarChart.vue';
+import DoughnutChart from '@/components/charts/DoughnutChart.vue';
 
 const adminStore = useAdminStore();
 
@@ -194,6 +246,58 @@ const stats = ref({
   totalOrders: 0,
   totalProducts: 0,
   totalUsers: 0
+});
+
+// Chart Data
+const revenueChart = ref({
+  labels: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+  datasets: [
+    {
+      label: 'Doanh thu',
+      data: [12000000, 19000000, 15000000, 25000000, 22000000, 30000000, 28000000],
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: true,
+      tension: 0.4
+    }
+  ]
+});
+
+const orderStatusChart = ref({
+  labels: ['Chờ xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
+  datasets: [
+    {
+      data: [15, 25, 18, 120, 8],
+      backgroundColor: [
+        'rgba(251, 191, 36, 0.8)',  // Pending - yellow
+        'rgba(59, 130, 246, 0.8)',  // Processing - blue
+        'rgba(168, 85, 247, 0.8)',  // Shipping - purple
+        'rgba(34, 197, 94, 0.8)',   // Completed - green
+        'rgba(239, 68, 68, 0.8)'    // Cancelled - red
+      ],
+      borderColor: [
+        'rgb(251, 191, 36)',
+        'rgb(59, 130, 246)',
+        'rgb(168, 85, 247)',
+        'rgb(34, 197, 94)',
+        'rgb(239, 68, 68)'
+      ],
+      borderWidth: 2
+    }
+  ]
+});
+
+const topProductsChart = ref({
+  labels: ['Nike Air Max', 'Adidas Ultra Boost', 'New Balance 574', 'Converse Chuck', 'Vans Old Skool'],
+  datasets: [
+    {
+      label: 'Số lượng bán',
+      data: [85, 72, 63, 58, 49],
+      backgroundColor: 'rgba(59, 130, 246, 0.8)',
+      borderColor: 'rgb(59, 130, 246)',
+      borderWidth: 1
+    }
+  ]
 });
 
 const recentActivities = ref([
@@ -470,6 +574,58 @@ onMounted(() => {
   line-height: var(--leading-relaxed);
 }
 
+/* ===== CHARTS SECTION ===== */
+.charts-section {
+  margin-bottom: var(--space-12);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-6);
+}
+
+.chart-card {
+  background: var(--bg-card);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-normal);
+}
+
+.chart-card.large {
+  grid-column: span 2;
+}
+
+.chart-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.chart-header {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.chart-header h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.chart-subtitle {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-weight: var(--font-medium);
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
 /* ===== RECENT ACTIVITY ===== */
 .recent-activity {
   margin-bottom: var(--space-12);
@@ -567,6 +723,18 @@ onMounted(() => {
   .actions-grid {
     grid-template-columns: 1fr;
     gap: var(--space-4);
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card.large {
+    grid-column: span 1;
+  }
+
+  .chart-container {
+    height: 250px;
   }
 }
 </style>
