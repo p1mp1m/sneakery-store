@@ -5,12 +5,12 @@ import { useAuthStore } from '@/stores/auth'
 const DefaultLayout = () => import('@/layouts/DefaultLayout.vue')
 
 // User Pages
-const UserDashboard = () => import('@/views/UserDashboard.vue')
-const UserProfile = () => import('@/views/UserProfile.vue')
-const UserOrders = () => import('@/views/UserOrders.vue')
-const WishlistPage = () => import('@/views/WishlistPage.vue')
-const CartPage = () => import('@/views/CartPage.vue')
-const CheckoutPage = () => import('@/views/CheckoutPage.vue')
+const UserDashboard = () => import('@/views/user/UserDashboard.vue')
+const UserProfile = () => import('@/views/user/UserProfile.vue')
+const UserOrders = () => import('@/views/user/UserOrders.vue')
+const WishlistPage = () => import('@/views/user/WishlistPage.vue')
+const CartPage = () => import('@/views/user/CartPage.vue')
+const CheckoutPage = () => import('@/views/user/CheckoutPage.vue')
 
 const userRoutes = [
   {

@@ -6,7 +6,7 @@
         <!-- Logo/Brand -->
         <router-link to="/" class="navbar-brand">
           <div class="brand-logo">
-            <img src="@/assets/logo.png" alt="Sneakery Store" class="logo-image" />
+            <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
             <span class="brand-text">Sneakery Store</span>
           </div>
         </router-link>
@@ -198,7 +198,7 @@
         <div class="footer-content">
           <div class="footer-brand">
             <div class="brand-logo">
-              <img src="@/assets/logo.png" alt="Sneakery Store" class="logo-image" />
+              <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
               <span class="brand-text">Sneakery Store</span>
             </div>
             <p class="footer-description">

@@ -7,9 +7,9 @@ import { userGuard } from './userRoutes';
 import DefaultLayout from '../layouts/DefaultLayout.vue';
 
 // Import các trang của bạn
-import HomePage from '../views/HomePage.vue';
-import LoginPage from '../views/LoginPage.vue';
-import RegisterPage from '../views/RegisterPage.vue';
+import HomePage from '../views/common/HomePage.vue';
+import LoginPage from '../views/common/LoginPage.vue';
+import RegisterPage from '../views/common/RegisterPage.vue';
 
 // Import admin & user routes
 import adminRoutes from './adminRoutes';
@@ -29,12 +29,12 @@ const routes = [
       {
         path: 'products',
         name: 'products',
-        component: () => import('../views/ProductListPage.vue'),
+        component: () => import('../views/common/ProductListPage.vue'),
       },
       {
         path: 'products/:id',
         name: 'product-detail',
-        component: () => import('../views/ProductDetailPage.vue'),
+        component: () => import('../views/common/ProductDetailPage.vue'),
       },
     ]
   },

@@ -12,7 +12,8 @@ class ProductService {
                 size: size
             }
         });
-        return response.data;
+        // Trả về response để có thể truy cập response.data ở component
+        return response;
     }
 
     // Lấy chi tiết sản phẩm theo ID

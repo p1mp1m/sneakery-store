@@ -15,7 +15,7 @@
               <div class="slide-pattern"></div>
               <div class="slide-text">
                 <div class="slide-logo">
-                  <img src="@/assets/logo.png" alt="Sneakery Store" class="logo-image" />
+                  <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
                 </div>
                 <h1 class="slide-title">{{ slide.title }}</h1>
                 <p class="slide-subtitle">{{ slide.subtitle }}</p>

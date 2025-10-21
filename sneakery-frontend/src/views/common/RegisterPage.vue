@@ -1,24 +1,24 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <div class="login-card">
+  <div class="register-page">
+    <div class="register-container">
+      <div class="register-card">
         <!-- Header -->
-        <div class="login-header">
+        <div class="register-header">
           <div class="brand-logo">
-            <img src="@/assets/logo.png" alt="Sneakery Store" class="logo-image" />
+            <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
             <h1 class="brand-title">Sneakery Store</h1>
           </div>
-          <p class="login-subtitle">Đăng nhập vào tài khoản của bạn</p>
+          <p class="register-subtitle">Tạo tài khoản mới để tham gia cộng đồng sneaker</p>
         </div>
 
-        <!-- Login Form -->
-        <el-form
-          ref="loginFormRef"
-          :model="loginForm"
-          :rules="rules"
-          class="login-form"
-          @submit.prevent="handleLogin(loginFormRef)"
-        >
+        <!-- Register Form -->
+      <el-form
+        ref="registerFormRef"
+        :model="registerForm"
+        :rules="rules"
+          class="register-form"
+        @submit.prevent="handleRegister(registerFormRef)"
+      >
           <!-- Error Message -->
           <el-alert
             v-if="serverError"
@@ -29,57 +29,79 @@
             class="error-alert"
           />
 
+          <!-- Success Message -->
+          <el-alert
+            v-if="successMessage"
+            :title="successMessage"
+            type="success"
+            show-icon
+            :closable="false"
+            class="error-alert"
+          />
+
+          <!-- Full Name Field -->
+          <el-form-item prop="fullName">
+            <el-input
+              v-model="registerForm.fullName"
+              placeholder="Nhập họ và tên"
+              size="large"
+              :prefix-icon="UserIcon"
+              clearable
+            />
+        </el-form-item>
+
           <!-- Email Field -->
           <el-form-item prop="email">
             <el-input
-              v-model="loginForm.email"
+              v-model="registerForm.email"
               type="email"
               placeholder="Nhập email của bạn"
               size="large"
               :prefix-icon="EmailIcon"
               clearable
             />
-          </el-form-item>
+        </el-form-item>
 
           <!-- Password Field -->
           <el-form-item prop="password">
-            <el-input
-              v-model="loginForm.password"
-              type="password"
-              placeholder="Nhập mật khẩu"
-              size="large"
+          <el-input
+            v-model="registerForm.password"
+            type="password"
+            placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+            size="large"
               :prefix-icon="LockIcon"
-              show-password
+            show-password
+              clearable
+          />
+        </el-form-item>
+        
+          <!-- Phone Number Field -->
+          <el-form-item prop="phoneNumber">
+            <el-input
+              v-model="registerForm.phoneNumber"
+              placeholder="Nhập số điện thoại (tùy chọn)"
+              size="large"
+              :prefix-icon="PhoneIcon"
               clearable
             />
-          </el-form-item>
-
-          <!-- Remember Me & Forgot Password -->
-          <div class="form-options">
-            <el-checkbox v-model="rememberMe" size="large">
-              Ghi nhớ đăng nhập
-            </el-checkbox>
-            <a href="#" class="forgot-password" @click.prevent="handleForgotPassword">
-              Quên mật khẩu?
-            </a>
-          </div>
+        </el-form-item>
 
           <!-- Submit Button -->
           <el-form-item>
-            <el-button
+          <el-button
               type="primary"
-              size="large"
-              class="login-button"
-              :loading="loading"
+            size="large"
+              class="register-button"
+            :loading="loading"
               native-type="submit"
               block
-            >
-              <span v-if="!loading">Đăng nhập</span>
-              <span v-else>Đang đăng nhập...</span>
-            </el-button>
-          </el-form-item>
-        </el-form>
-
+          >
+              <span v-if="!loading">Tạo tài khoản</span>
+              <span v-else>Đang tạo tài khoản...</span>
+          </el-button>
+        </el-form-item>
+      </el-form>
+      
         <!-- Divider -->
         <div class="divider">
           <span class="divider-text">Hoặc</span>
@@ -88,15 +110,15 @@
         <!-- Social Login -->
         <div class="social-login">
           <GoogleButton 
-            text="Đăng nhập với Google"
+            text="Đăng ký với Google"
             :loading="false"
             @click="handleGoogleLogin"
           />
         </div>
 
-        <!-- Register Link -->
-        <div class="register-link">
-          <p>Chưa có tài khoản? <router-link to="/register">Đăng ký ngay</router-link></p>
+        <!-- Login Link -->
+        <div class="login-link">
+          <p>Đã có tài khoản? <a href="/login">Đăng nhập ngay</a></p>
         </div>
       </div>
 
@@ -115,6 +137,7 @@
               </div>
               <span>Sản phẩm chính hãng 100%</span>
             </div>
+            
             <div class="feature-item">
               <div class="feature-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -123,6 +146,7 @@
               </div>
               <span>Giao hàng nhanh chóng</span>
             </div>
+            
             <div class="feature-item">
               <div class="feature-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -149,6 +173,29 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 // Icons
+const UserIcon = () => h('svg', {
+  width: '20',
+  height: '20',
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    d: 'M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21',
+    stroke: 'currentColor',
+    'stroke-width': '2',
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round'
+  }),
+  h('circle', {
+    cx: '12',
+    cy: '7',
+    r: '4',
+    stroke: 'currentColor',
+    'stroke-width': '2'
+  })
+]);
+
 const EmailIcon = () => h('svg', {
   width: '20',
   height: '20',
@@ -198,57 +245,66 @@ const LockIcon = () => h('svg', {
   })
 ]);
 
-// Form state
-const loginFormRef = ref(null);
+const PhoneIcon = () => h('svg', {
+  width: '20',
+  height: '20',
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  xmlns: 'http://www.w3.org/2000/svg'
+}, [
+  h('path', {
+    d: 'M22 16.92V19.92C22.0011 20.1985 21.9441 20.4742 21.8325 20.7293C21.7209 20.9845 21.5573 21.2136 21.3521 21.4019C21.1468 21.5901 20.9046 21.7335 20.6407 21.8227C20.3769 21.9119 20.0974 21.9451 19.82 21.92C16.7428 21.5856 13.787 20.5341 11.19 18.85C8.77382 17.3147 6.72533 15.2662 5.18999 12.85C3.49997 10.2412 2.44824 7.271 2.11999 4.18C2.095 3.90347 2.12787 3.62476 2.21649 3.36162C2.30512 3.09849 2.44756 2.85669 2.63476 2.65162C2.82196 2.44655 3.0498 2.28271 3.30379 2.17052C3.55777 2.05833 3.83233 2.00026 4.10999 2H7.10999C7.59531 1.99522 8.06691 2.16708 8.43376 2.48353C8.80061 2.79999 9.04076 3.23945 9.10999 3.72C9.23662 4.68007 9.47144 5.62273 9.80999 6.53C9.94454 6.88792 9.97366 7.27691 9.89391 7.65088C9.81415 8.02485 9.62886 8.36811 9.35999 8.64L8.08999 9.91C9.51355 12.4135 11.5865 14.4864 14.09 15.91L15.36 14.64C15.6319 14.3711 15.9751 14.1858 16.3491 14.1061C16.7231 14.0263 17.1121 14.0555 17.47 14.19C18.3773 14.5286 19.3199 14.7634 20.28 14.89C20.7658 14.9596 21.2094 15.2032 21.5265 15.5735C21.8437 15.9438 22.0122 16.4196 22 16.92Z',
+    stroke: 'currentColor',
+    'stroke-width': '2',
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round'
+  })
+]);
+
+const registerFormRef = ref(null);
 const loading = ref(false);
 const serverError = ref('');
-const rememberMe = ref(false);
+const successMessage = ref('');
 
-const loginForm = ref({
+const registerForm = ref({
+  fullName: '',
   email: '',
-  password: ''
+  password: '',
+  phoneNumber: ''
 });
 
-// Validation rules
 const rules = {
+  fullName: [{ required: true, message: 'Vui lòng nhập họ tên', trigger: 'blur' }],
   email: [
     { required: true, message: 'Vui lòng nhập email', trigger: 'blur' },
-    { type: 'email', message: 'Email không hợp lệ', trigger: 'blur' }
+    { type: 'email', message: 'Email không đúng định dạng', trigger: ['blur', 'change'] }
   ],
   password: [
     { required: true, message: 'Vui lòng nhập mật khẩu', trigger: 'blur' },
     { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự', trigger: 'blur' }
-  ]
+  ],
 };
 
-// Methods
-const handleLogin = async (formEl) => {
+const handleRegister = async (formEl) => {
   if (!formEl) return;
   
   await formEl.validate(async (valid) => {
     if (valid) {
       loading.value = true;
       serverError.value = '';
+      successMessage.value = '';
       
       try {
-        await authStore.login(loginForm.value);
+        const response = await authStore.register(registerForm.value);
+        successMessage.value = response + " Tự động chuyển đến trang đăng nhập...";
+        ElMessage.success('Đăng ký thành công!');
         
-        // 🔐 PHÂN QUYỀN: Redirect theo role
-        const user = authStore.currentUser;
-        // console.log('LoginPage - User after login:', user); // Debug
-        // console.log('LoginPage - User role:', user?.role); // Debug
-        
-        if (user.role === 'ADMIN' || user.role === 'MODERATOR') {
-          ElMessage.success(`Chào mừng Admin ${user.fullName}!`);
-          // console.log('Redirecting to /admin/dashboard'); // Debug
-          router.push('/admin/dashboard');
-        } else {
-          ElMessage.success(`Chào mừng ${user.fullName}!`);
-          // console.log('Redirecting to /user/dashboard'); // Debug
-          router.push('/user/dashboard');
-        }
+        // Chuyển trang sau 2 giây
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
       } catch (error) {
-        serverError.value = error.response?.data?.message || 'Email hoặc mật khẩu không chính xác.';
+        serverError.value = error.response?.data?.message || 'Đã có lỗi xảy ra, vui lòng thử lại.';
         ElMessage.error(serverError.value);
       } finally {
         loading.value = false;
@@ -257,18 +313,14 @@ const handleLogin = async (formEl) => {
   });
 };
 
-const handleForgotPassword = () => {
-  ElMessage.info('Tính năng quên mật khẩu sẽ được cập nhật sớm!');
-};
-
 const handleGoogleLogin = () => {
-  ElMessage.info('Tính năng đăng nhập Google sẽ được cập nhật sớm!');
+  ElMessage.info('Tính năng đăng ký Google sẽ được cập nhật sớm!');
 };
 </script>
 
 <style scoped>
-/* ===== LOGIN PAGE ===== */
-.login-page {
+/* ===== REGISTER PAGE ===== */
+.register-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -278,7 +330,7 @@ const handleGoogleLogin = () => {
   padding-top: 90px; /* Space for fixed navbar */
 }
 
-.login-container {
+.register-container {
   width: 100%;
   max-width: 1000px;
   background: var(--white);
@@ -292,7 +344,7 @@ const handleGoogleLogin = () => {
   align-items: center;
 }
 
-.login-card {
+.register-card {
   background: transparent;
   border-radius: 0;
   padding: 0;
@@ -300,8 +352,8 @@ const handleGoogleLogin = () => {
   border: none;
 }
 
-/* ===== LOGIN HEADER ===== */
-.login-header {
+/* ===== REGISTER HEADER ===== */
+.register-header {
   text-align: center;
   margin-bottom: var(--space-8);
 }
@@ -311,7 +363,7 @@ const handleGoogleLogin = () => {
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
 }
 
 .logo-image {
@@ -330,14 +382,14 @@ const handleGoogleLogin = () => {
   padding: 0;
 }
 
-.login-subtitle {
-  color: var(--text-secondary);
+.register-subtitle {
   font-size: var(--text-base);
+  color: var(--text-secondary);
   margin: 0;
 }
 
-/* ===== LOGIN FORM ===== */
-.login-form {
+/* ===== REGISTER FORM ===== */
+.register-form {
   margin-bottom: var(--space-8);
 }
 
@@ -345,26 +397,7 @@ const handleGoogleLogin = () => {
   margin-bottom: var(--space-5);
 }
 
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-8);
-}
-
-.forgot-password {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  transition: color var(--transition-fast);
-}
-
-.forgot-password:hover {
-  color: var(--primary-hover);
-}
-
-.login-button {
+.register-button {
   width: 100%;
   height: 50px;
   font-size: var(--text-base);
@@ -382,14 +415,14 @@ const handleGoogleLogin = () => {
   cursor: pointer;
 }
 
-.login-button:hover {
+.register-button:hover {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   border-color: #334155;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(30, 41, 59, 0.4);
 }
 
-.login-button:active {
+.register-button:active {
   transform: translateY(0);
   box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
 }
@@ -407,6 +440,7 @@ const handleGoogleLogin = () => {
   font-weight: var(--font-medium);
 }
 
+
 /* ===== SOCIAL LOGIN ===== */
 .social-login {
   margin-bottom: var(--space-8);
@@ -414,26 +448,26 @@ const handleGoogleLogin = () => {
 
 /* Google button styles are now handled by GoogleButton component */
 
-/* ===== REGISTER LINK ===== */
-.register-link {
+/* ===== LOGIN LINK ===== */
+.login-link {
   text-align: center;
 }
 
-.register-link p {
+.login-link p {
   color: var(--text-secondary);
   font-size: var(--text-sm);
   margin: 0;
 }
 
-.register-link a {
+.login-link a {
   color: var(--primary-color);
   text-decoration: none;
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-medium);
   transition: color var(--transition-fast);
 }
 
-.register-link a:hover {
-  color: var(--primary-hover);
+.login-link a:hover {
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 
@@ -488,34 +522,35 @@ const handleGoogleLogin = () => {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  color: var(--white);
   font-size: var(--text-base);
   font-weight: var(--font-medium);
-  color: var(--white);
 }
 
 .feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.feature-icon svg {
   color: var(--white);
+  flex-shrink: 0;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
-  .login-container {
+  .register-container {
     grid-template-columns: 1fr;
     max-width: 450px;
   }
   
-  .login-card {
+  .register-page {
+    padding: var(--space-4);
+  }
+  
+  .register-card {
     padding: var(--space-6);
   }
   
@@ -523,7 +558,7 @@ const handleGoogleLogin = () => {
     font-size: var(--text-xl);
   }
   
-  .login-subtitle {
+  .register-subtitle {
     font-size: var(--text-sm);
   }
   
@@ -537,18 +572,18 @@ const handleGoogleLogin = () => {
 }
 
 @media (max-width: 480px) {
-  .login-page {
+  .register-page {
     padding: var(--space-3);
   }
   
-  .login-card {
-    padding: var(--space-5);
+  .register-card {
+    padding: var(--space-6);
   }
   
-  .form-options {
-    flex-direction: column;
-    gap: var(--space-4);
-    align-items: flex-start;
+  .register-btn,
+  .social-btn {
+    height: 45px;
+    font-size: var(--text-sm);
   }
 }
 </style>
