@@ -396,60 +396,15 @@ const handleGoogleLogin = () => {
 
 /* ===== DIVIDER ===== */
 .divider {
-  position: relative;
   text-align: center;
-  margin: var(--space-10) 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    #e5e7eb 20%,
-    #d1d5db 50%,
-    #e5e7eb 80%,
-    transparent
-  );
-}
-
-.divider::before {
-  background: linear-gradient(
-    to right,
-    transparent,
-    #e5e7eb 50%,
-    #d1d5db
-  );
-}
-
-.divider::after {
-  background: linear-gradient(
-    to left,
-    transparent,
-    #e5e7eb 50%,
-    #d1d5db
-  );
+  margin: var(--space-8) 0;
+  border: none; /* Bỏ border */
 }
 
 .divider-text {
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 0 var(--space-4);
-  white-space: nowrap;
-  background: linear-gradient(135deg, #64748b, #94a3b8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
 }
 
 /* ===== SOCIAL LOGIN ===== */

@@ -3,7 +3,7 @@
     <!-- Page Header -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Quản lý danh mục</h1>
+      <h1 class="page-title">Quản lý danh mục</h1>
         <p class="page-subtitle">Quản lý danh mục sản phẩm với cấu trúc phân cấp</p>
       </div>
       <button @click="openCreateModal" class="btn btn-primary">
@@ -17,10 +17,10 @@
       <div class="loading-spinner"></div>
       <p>Đang tải danh sách danh mục...</p>
     </div>
-
+    
     <!-- Empty State -->
     <div v-else-if="categories.length === 0" class="empty-state">
-      <i class="material-icons">category</i>
+        <i class="material-icons">category</i>
       <h3>Chưa có danh mục nào</h3>
       <p>Nhấn "Thêm danh mục" để tạo danh mục đầu tiên</p>
     </div>
@@ -44,7 +44,7 @@
                   <div class="category-name">
                     <i class="material-icons">folder</i>
                     <strong>{{ category.name }}</strong>
-                  </div>
+          </div>
                 </td>
                 <td><code>{{ category.slug }}</code></td>
                 <td><span class="badge badge-secondary">Danh mục gốc</span></td>
@@ -55,7 +55,7 @@
                       class="btn-icon"
                       title="Chỉnh sửa"
                     >
-                      <i class="material-icons">edit</i>
+            <i class="material-icons">edit</i>
                     </button>
                     <button 
                       @click="confirmDelete(category)" 
@@ -64,7 +64,7 @@
                     >
                       <i class="material-icons">delete</i>
                     </button>
-                  </div>
+          </div>
                 </td>
               </tr>
               <!-- Child categories -->
@@ -78,7 +78,7 @@
                     <div class="category-name child-indent">
                       <i class="material-icons">subdirectory_arrow_right</i>
                       {{ child.name }}
-                    </div>
+          </div>
                   </td>
                   <td><code>{{ child.slug }}</code></td>
                   <td>{{ category.name }}</td>
@@ -96,7 +96,7 @@
                         class="btn-icon danger"
                         title="Xóa"
                       >
-                        <i class="material-icons">delete</i>
+            <i class="material-icons">delete</i>
                       </button>
                     </div>
                   </td>

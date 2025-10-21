@@ -9,11 +9,11 @@
       <div class="loading-spinner"></div>
       <p>Đang tải...</p>
     </div>
-
+    
     <div v-else-if="users.length === 0" class="empty-state">
-      <i class="material-icons">people</i>
+        <i class="material-icons">people</i>
       <h3>Chưa có người dùng</h3>
-    </div>
+          </div>
 
     <div v-else class="table-container">
       <table class="table">

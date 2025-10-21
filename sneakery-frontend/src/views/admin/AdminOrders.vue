@@ -2,7 +2,7 @@
   <div class="admin-orders">
     <div class="page-header">
       <div>
-        <h1 class="page-title">Quản lý đơn hàng</h1>
+      <h1 class="page-title">Quản lý đơn hàng</h1>
         <p class="page-subtitle">Theo dõi và cập nhật trạng thái đơn hàng</p>
       </div>
     </div>
@@ -12,10 +12,10 @@
       <div class="loading-spinner"></div>
       <p>Đang tải danh sách đơn hàng...</p>
     </div>
-
+    
     <!-- Empty State -->
     <div v-else-if="orders.length === 0" class="empty-state">
-      <i class="material-icons">shopping_cart</i>
+        <i class="material-icons">shopping_cart</i>
       <h3>Chưa có đơn hàng nào</h3>
     </div>
 
@@ -57,7 +57,7 @@
             <td>{{ formatDate(order.createdAt) }}</td>
             <td class="text-center">
               <button @click="viewOrderDetail(order)" class="btn-icon" title="Xem chi tiết">
-                <i class="material-icons">visibility</i>
+            <i class="material-icons">visibility</i>
               </button>
             </td>
           </tr>
@@ -76,7 +76,7 @@
         <span class="page-info">Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
         <button :disabled="currentPage >= totalPages - 1" @click="changePage(currentPage + 1)" class="page-btn">Sau</button>
       </div>
-    </div>
+          </div>
 
     <!-- Order Detail Modal -->
     <div v-if="showDetailModal" class="modal-overlay" @click="showDetailModal = false">
@@ -86,10 +86,10 @@
           <button @click="showDetailModal = false" class="modal-close">
             <i class="material-icons">close</i>
           </button>
-        </div>
+          </div>
         <div class="modal-body">
           <p class="text-muted">Xem chi tiết đơn hàng (API chi tiết sẽ được tích hợp sau)</p>
-        </div>
+          </div>
         <div class="modal-footer">
           <button @click="showDetailModal = false" class="btn btn-secondary">Đóng</button>
         </div>
