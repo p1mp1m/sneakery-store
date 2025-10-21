@@ -6,10 +6,16 @@
       <h1 class="page-title">Quản lý sản phẩm</h1>
         <p class="page-subtitle">Quản lý sản phẩm và các biến thể (variants)</p>
       </div>
-      <button @click="openCreateModal" class="btn btn-primary">
-        <i class="material-icons">add</i>
-        Thêm sản phẩm
-      </button>
+      <div class="header-actions">
+        <button @click="exportToExcel" class="btn btn-secondary btn-export">
+          <i class="material-icons">download</i>
+          Export Excel
+        </button>
+        <button @click="openCreateModal" class="btn btn-primary">
+          <i class="material-icons">add</i>
+          Thêm sản phẩm
+        </button>
+      </div>
     </div>
 
     <!-- Filters -->
@@ -66,10 +72,36 @@
     </div>
 
     <!-- Products Table -->
+    <!-- Bulk Action Bar -->
+    <div v-if="selectedProducts.length > 0" class="bulk-action-bar">
+      <div class="bulk-info">
+        <i class="material-icons">check_circle</i>
+        Đã chọn <strong>{{ selectedProducts.length }}</strong> sản phẩm
+      </div>
+      <div class="bulk-actions">
+        <button @click="bulkDelete" class="btn btn-danger">
+          <i class="material-icons">delete</i>
+          Xóa {{ selectedProducts.length }} sản phẩm
+        </button>
+        <button @click="clearSelection" class="btn btn-secondary">
+          <i class="material-icons">clear</i>
+          Bỏ chọn
+        </button>
+      </div>
+    </div>
+
     <div v-else class="table-container">
       <table class="products-table">
         <thead>
           <tr>
+            <th style="width: 40px;">
+              <input 
+                type="checkbox" 
+                :checked="isAllSelected"
+                @change="toggleSelectAll"
+                class="checkbox-input"
+              />
+            </th>
             <th>Tên sản phẩm</th>
             <th>Thương hiệu</th>
             <th>Số variants</th>
@@ -79,6 +111,14 @@
         </thead>
         <tbody>
           <tr v-for="product in products" :key="product.id">
+            <td>
+              <input 
+                type="checkbox" 
+                :checked="selectedProducts.includes(product.id)"
+                @change="toggleSelect(product.id)"
+                class="checkbox-input"
+              />
+            </td>
             <td>
               <div class="product-name">{{ product.name }}</div>
               <div class="product-slug">{{ product.slug }}</div>
@@ -352,7 +392,7 @@
       v-model="showDeleteModal"
       type="danger"
       title="Xác nhận xóa sản phẩm"
-      :message="`Bạn có chắc chắn muốn xóa sản phẩm \"${productToDelete?.name}\"?`"
+      :message="`Bạn có chắc chắn muốn xóa sản phẩm '${productToDelete?.name}'?`"
       description="Hành động này không thể hoàn tác!"
       confirm-text="Xóa sản phẩm"
       cancel-text="Hủy"
@@ -367,6 +407,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import * as XLSX from 'xlsx'
 
 const adminStore = useAdminStore()
 
@@ -384,6 +425,9 @@ const isEditMode = ref(false)
 const submitting = ref(false)
 const deleting = ref(false)
 const productToDelete = ref(null)
+
+// Bulk selection state
+const selectedProducts = ref([])
 
 const filters = ref({
   search: '',
@@ -408,6 +452,65 @@ const formErrors = ref({})
 
 // Computed
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value))
+
+const isAllSelected = computed(() => {
+  return products.value.length > 0 && selectedProducts.value.length === products.value.length
+})
+
+// Methods
+// Bulk selection methods
+const toggleSelect = (productId) => {
+  const index = selectedProducts.value.indexOf(productId)
+  if (index > -1) {
+    selectedProducts.value.splice(index, 1)
+  } else {
+    selectedProducts.value.push(productId)
+  }
+}
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedProducts.value = []
+  } else {
+    selectedProducts.value = products.value.map(p => p.id)
+  }
+}
+
+const clearSelection = () => {
+  selectedProducts.value = []
+}
+
+const bulkDelete = async () => {
+  if (!confirm(`Bạn có chắc chắn muốn xóa ${selectedProducts.value.length} sản phẩm đã chọn?`)) {
+    return
+  }
+
+  try {
+    loading.value = true
+    
+    // Delete each product
+    for (const productId of selectedProducts.value) {
+      await adminStore.deleteProduct(productId)
+    }
+    
+    ElMessage.success({
+      message: `Đã xóa ${selectedProducts.value.length} sản phẩm thành công!`,
+      duration: 3000
+    })
+    
+    // Clear selection and refresh list
+    selectedProducts.value = []
+    await fetchProducts()
+  } catch (error) {
+    console.error('Lỗi khi xóa hàng loạt:', error)
+    ElMessage.error({
+      message: 'Có lỗi xảy ra khi xóa sản phẩm!',
+      duration: 3000
+    })
+  } finally {
+    loading.value = false
+  }
+}
 
 // Methods
 const fetchProducts = async () => {
@@ -751,6 +854,47 @@ const resetFilters = () => {
   fetchProducts()
 }
 
+// Export to Excel
+const exportToExcel = () => {
+  try {
+    // Chuẩn bị data để export
+    const exportData = products.value.map((product, index) => ({
+      'STT': index + 1,
+      'Tên sản phẩm': product.name,
+      'Slug': product.slug,
+      'Thương hiệu': product.brand?.name || 'N/A',
+      'Số lượng biến thể': product.variants?.length || 0,
+      'Trạng thái': product.isActive ? 'Đang bán' : 'Ngừng bán',
+      'Mô tả': product.description || ''
+    }))
+
+    // Tạo worksheet từ data
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    
+    // Tạo workbook
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sản phẩm')
+    
+    // Tạo tên file với timestamp
+    const timestamp = new Date().toISOString().slice(0, 10)
+    const filename = `san-pham_${timestamp}.xlsx`
+    
+    // Download file
+    XLSX.writeFile(workbook, filename)
+    
+    ElMessage.success({
+      message: `Đã export ${exportData.length} sản phẩm thành công!`,
+      duration: 3000
+    })
+  } catch (error) {
+    console.error('Lỗi khi export Excel:', error)
+    ElMessage.error({
+      message: 'Không thể export dữ liệu. Vui lòng thử lại!',
+      duration: 3000
+    })
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   await Promise.all([
@@ -785,6 +929,74 @@ onMounted(async () => {
 .page-subtitle {
   color: #64748b;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Bulk Action Bar */
+.bulk-action-bar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.bulk-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+}
+
+.bulk-info i {
+  font-size: 24px;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.bulk-actions .btn {
+  border: 2px solid white;
+  font-weight: 500;
+}
+
+.bulk-actions .btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .filters-section {

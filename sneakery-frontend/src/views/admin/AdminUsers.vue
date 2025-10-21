@@ -1,8 +1,14 @@
 <template>
   <div class="admin-users">
     <div class="page-header">
+      <div>
       <h1 class="page-title">Quản lý người dùng</h1>
-      <p class="page-subtitle">Quản lý phân quyền và trạng thái tài khoản</p>
+        <p class="page-subtitle">Quản lý phân quyền và trạng thái tài khoản</p>
+      </div>
+      <button @click="exportToExcel" class="btn btn-secondary btn-export">
+        <i class="material-icons">download</i>
+        Export Excel
+      </button>
     </div>
 
     <!-- Search & Filters -->
@@ -63,10 +69,43 @@
       <h3>Chưa có người dùng</h3>
           </div>
 
+    <!-- Bulk Action Bar for Users -->
+    <div v-if="selectedUsers.length > 0" class="bulk-action-bar">
+      <div class="bulk-info">
+        <i class="material-icons">check_circle</i>
+        Đã chọn <strong>{{ selectedUsers.length }}</strong> người dùng
+          </div>
+      <div class="bulk-actions">
+        <select v-model="bulkAction" class="bulk-action-select">
+          <option value="">-- Chọn hành động --</option>
+          <option value="lock">Khóa tài khoản</option>
+          <option value="unlock">Mở khóa tài khoản</option>
+          <option value="role-user">Đặt vai trò: USER</option>
+          <option value="role-admin">Đặt vai trò: ADMIN</option>
+        </select>
+        <button @click="executeBulkAction" :disabled="!bulkAction" class="btn btn-primary">
+          <i class="material-icons">done_all</i>
+          Thực hiện
+        </button>
+        <button @click="clearUserSelection" class="btn btn-secondary">
+          <i class="material-icons">clear</i>
+          Bỏ chọn
+        </button>
+          </div>
+        </div>
+
     <div v-else class="table-container">
       <table class="table">
         <thead>
           <tr>
+            <th style="width: 40px;">
+              <input 
+                type="checkbox" 
+                :checked="isAllUsersSelected"
+                @change="toggleSelectAllUsers"
+                class="checkbox-input"
+              />
+            </th>
             <th>Họ tên</th>
             <th>Email</th>
             <th>Số điện thoại</th>
@@ -77,6 +116,14 @@
         </thead>
         <tbody>
           <tr v-for="user in users" :key="user.id">
+            <td>
+              <input 
+                type="checkbox" 
+                :checked="selectedUsers.includes(user.id)"
+                @change="toggleSelectUser(user.id)"
+                class="checkbox-input"
+              />
+            </td>
             <td>{{ user.fullName }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.phoneNumber || 'N/A' }}</td>
@@ -117,12 +164,12 @@
     <!-- Role Change Confirmation Dialog -->
     <ConfirmDialog
       v-model="showRoleConfirm"
-      type="warning"
-      title="Xác nhận thay đổi vai trò"
-      :message="`Bạn có chắc chắn muốn thay đổi vai trò của ${userToUpdate?.fullName} từ \"${getRoleLabel(oldRole)}\" sang \"${getRoleLabel(newRole)}\"?`"
-      description="Hành động này sẽ thay đổi quyền hạn của người dùng."
-      confirm-text="Xác nhận"
-      cancel-text="Hủy"
+      :type="'warning'"
+      :title="'Xác nhận thay đổi vai trò'"
+      :message="`Bạn có chắc chắn muốn thay đổi vai trò của ${userToUpdate?.fullName} từ '${getRoleLabel(oldRole)}' sang '${getRoleLabel(newRole)}'?`"
+      :description="'Hành động này sẽ thay đổi quyền hạn của người dùng.'"
+      :confirm-text="'Xác nhận'"
+      :cancel-text="'Hủy'"
       :loading="updating"
       @confirm="handleRoleUpdate"
       @cancel="handleCancelRoleChange"
@@ -148,6 +195,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import * as XLSX from 'xlsx'
 
 const adminStore = useAdminStore()
 const users = ref([])
@@ -155,6 +203,10 @@ const loading = ref(false)
 const currentPage = ref(0)
 const pageSize = ref(10)
 const totalItems = ref(0)
+
+// Bulk selection state
+const selectedUsers = ref([])
+const bulkAction = ref('')
 
 // Search & Filter state
 const filters = ref({
@@ -176,6 +228,85 @@ const showStatusConfirm = ref(false)
 const userToToggle = ref(null)
 
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value))
+
+const isAllUsersSelected = computed(() => {
+  return users.value.length > 0 && selectedUsers.value.length === users.value.length
+})
+
+// Bulk selection methods
+const toggleSelectUser = (userId) => {
+  const index = selectedUsers.value.indexOf(userId)
+  if (index > -1) {
+    selectedUsers.value.splice(index, 1)
+  } else {
+    selectedUsers.value.push(userId)
+  }
+}
+
+const toggleSelectAllUsers = () => {
+  if (isAllUsersSelected.value) {
+    selectedUsers.value = []
+  } else {
+    selectedUsers.value = users.value.map(u => u.id)
+  }
+}
+
+const clearUserSelection = () => {
+  selectedUsers.value = []
+  bulkAction.value = ''
+}
+
+const executeBulkAction = async () => {
+  if (!bulkAction.value) {
+    ElMessage.warning('Vui lòng chọn hành động!')
+    return
+  }
+
+  const actionMap = {
+    'lock': 'khóa',
+    'unlock': 'mở khóa',
+    'role-user': 'đặt vai trò USER cho',
+    'role-admin': 'đặt vai trò ADMIN cho'
+  }
+
+  if (!confirm(`Bạn có chắc chắn muốn ${actionMap[bulkAction.value]} ${selectedUsers.value.length} người dùng?`)) {
+    return
+  }
+
+  try {
+    loading.value = true
+    
+    for (const userId of selectedUsers.value) {
+      if (bulkAction.value === 'lock') {
+        await adminStore.updateUserStatus(userId, false)
+      } else if (bulkAction.value === 'unlock') {
+        await adminStore.updateUserStatus(userId, true)
+      } else if (bulkAction.value === 'role-user') {
+        await adminStore.updateUserRole(userId, 'USER')
+      } else if (bulkAction.value === 'role-admin') {
+        await adminStore.updateUserRole(userId, 'ADMIN')
+      }
+    }
+    
+    ElMessage.success({
+      message: `Đã ${actionMap[bulkAction.value]} ${selectedUsers.value.length} người dùng thành công!`,
+      duration: 3000
+    })
+    
+    // Clear selection and refresh list
+    selectedUsers.value = []
+    bulkAction.value = ''
+    await fetchUsers()
+  } catch (error) {
+    console.error('Lỗi khi thực hiện hàng loạt:', error)
+    ElMessage.error({
+      message: 'Có lỗi xảy ra khi thực hiện hành động!',
+      duration: 3000
+    })
+  } finally {
+    loading.value = false
+  }
+}
 
 const fetchUsers = async () => {
   try {
@@ -216,6 +347,47 @@ const resetFilters = () => {
   filters.value.isActive = ''
   currentPage.value = 0
   fetchUsers()
+}
+
+// Export to Excel
+const exportToExcel = () => {
+  try {
+    // Chuẩn bị data để export
+    const exportData = users.value.map((user, index) => ({
+      'STT': index + 1,
+      'ID': user.id,
+      'Họ và tên': user.fullName || 'N/A',
+      'Email': user.email || 'N/A',
+      'Số điện thoại': user.phoneNumber || 'N/A',
+      'Vai trò': getRoleLabel(user.role),
+      'Trạng thái': user.isActive ? 'Hoạt động' : 'Bị khóa'
+    }))
+
+    // Tạo worksheet từ data
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    
+    // Tạo workbook
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Người dùng')
+    
+    // Tạo tên file với timestamp
+    const timestamp = new Date().toISOString().slice(0, 10)
+    const filename = `nguoi-dung_${timestamp}.xlsx`
+    
+    // Download file
+    XLSX.writeFile(workbook, filename)
+    
+    ElMessage.success({
+      message: `Đã export ${exportData.length} người dùng thành công!`,
+      duration: 3000
+    })
+  } catch (error) {
+    console.error('Lỗi khi export Excel:', error)
+    ElMessage.error({
+      message: 'Không thể export dữ liệu. Vui lòng thử lại!',
+      duration: 3000
+    })
+  }
 }
 
 const changePage = (page) => {
@@ -303,7 +475,99 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.admin-users{max-width:1400px;margin:0 auto;padding:2rem 1rem}.page-header{margin-bottom:2rem}.page-title{font-size:1.875rem;font-weight:700;color:#1e293b;margin:0 0 .5rem}.page-subtitle{color:#64748b;margin:0}
+.admin-users{max-width:1400px;margin:0 auto;padding:2rem 1rem}
+.page-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom:2rem
+}
+.page-title{font-size:1.875rem;font-weight:700;color:#1e293b;margin:0 0 .5rem}
+.page-subtitle{color:#64748b;margin:0}
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Bulk Action Bar */
+.bulk-action-bar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.bulk-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+}
+
+.bulk-info i {
+  font-size: 24px;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.bulk-action-select {
+  padding: 0.5rem 1rem;
+  border: 2px solid white;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.bulk-action-select option {
+  background: #1e293b;
+  color: white;
+}
+
+.bulk-actions .btn {
+  border: 2px solid white;
+  font-weight: 500;
+}
+
+.bulk-actions .btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.bulk-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* ===== SEARCH & FILTERS ===== */
 .filters-section {

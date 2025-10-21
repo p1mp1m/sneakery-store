@@ -5,6 +5,10 @@
       <h1 class="page-title">Quản lý đơn hàng</h1>
         <p class="page-subtitle">Theo dõi và cập nhật trạng thái đơn hàng</p>
       </div>
+      <button @click="exportToExcel" class="btn btn-secondary btn-export">
+        <i class="material-icons">download</i>
+        Export Excel
+      </button>
     </div>
 
     <!-- Search & Filters -->
@@ -60,11 +64,45 @@
       <h3>Chưa có đơn hàng nào</h3>
     </div>
 
+    <!-- Bulk Action Bar for Orders -->
+    <div v-if="selectedOrders.length > 0" class="bulk-action-bar">
+      <div class="bulk-info">
+        <i class="material-icons">check_circle</i>
+        Đã chọn <strong>{{ selectedOrders.length }}</strong> đơn hàng
+      </div>
+      <div class="bulk-actions">
+        <select v-model="bulkStatus" class="bulk-status-select">
+          <option value="">-- Chọn trạng thái mới --</option>
+          <option value="Pending">Chờ xử lý</option>
+          <option value="Processing">Đang xử lý</option>
+          <option value="Shipped">Đã gửi hàng</option>
+          <option value="Completed">Hoàn thành</option>
+          <option value="Cancelled">Đã hủy</option>
+        </select>
+        <button @click="bulkUpdateStatus" :disabled="!bulkStatus" class="btn btn-primary">
+          <i class="material-icons">update</i>
+          Cập nhật trạng thái
+        </button>
+        <button @click="clearOrderSelection" class="btn btn-secondary">
+          <i class="material-icons">clear</i>
+          Bỏ chọn
+        </button>
+      </div>
+    </div>
+
     <!-- Orders List -->
     <div v-else class="table-container">
       <table class="table">
         <thead>
           <tr>
+            <th style="width: 40px;">
+              <input 
+                type="checkbox" 
+                :checked="isAllOrdersSelected"
+                @change="toggleSelectAllOrders"
+                class="checkbox-input"
+              />
+            </th>
             <th>Mã đơn</th>
             <th>Khách hàng</th>
             <th>Tổng tiền</th>
@@ -75,6 +113,14 @@
         </thead>
         <tbody>
           <tr v-for="order in orders" :key="order.id">
+            <td>
+              <input 
+                type="checkbox" 
+                :checked="selectedOrders.includes(order.id)"
+                @change="toggleSelectOrder(order.id)"
+                class="checkbox-input"
+              />
+            </td>
             <td><code>{{ order.id }}</code></td>
             <td>
               <div>{{ order.customerName }}</div>
@@ -158,6 +204,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import * as XLSX from 'xlsx'
 
 const adminStore = useAdminStore()
 
@@ -168,6 +215,10 @@ const pageSize = ref(10)
 const totalItems = ref(0)
 const showDetailModal = ref(false)
 const selectedOrder = ref(null)
+
+// Bulk selection state
+const selectedOrders = ref([])
+const bulkStatus = ref('')
 
 // Search & Filter state
 const filters = ref({
@@ -184,6 +235,71 @@ const newStatus = ref('')
 const updating = ref(false)
 
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value))
+
+const isAllOrdersSelected = computed(() => {
+  return orders.value.length > 0 && selectedOrders.value.length === orders.value.length
+})
+
+// Bulk selection methods
+const toggleSelectOrder = (orderId) => {
+  const index = selectedOrders.value.indexOf(orderId)
+  if (index > -1) {
+    selectedOrders.value.splice(index, 1)
+  } else {
+    selectedOrders.value.push(orderId)
+  }
+}
+
+const toggleSelectAllOrders = () => {
+  if (isAllOrdersSelected.value) {
+    selectedOrders.value = []
+  } else {
+    selectedOrders.value = orders.value.map(o => o.id)
+  }
+}
+
+const clearOrderSelection = () => {
+  selectedOrders.value = []
+  bulkStatus.value = ''
+}
+
+const bulkUpdateStatus = async () => {
+  if (!bulkStatus.value) {
+    ElMessage.warning('Vui lòng chọn trạng thái!')
+    return
+  }
+
+  if (!confirm(`Bạn có chắc chắn muốn cập nhật ${selectedOrders.value.length} đơn hàng sang trạng thái "${getStatusLabel(bulkStatus.value)}"?`)) {
+    return
+  }
+
+  try {
+    loading.value = true
+    
+    // Update status for each order
+    for (const orderId of selectedOrders.value) {
+      await adminStore.updateOrderStatus(orderId, bulkStatus.value)
+    }
+    
+    ElMessage.success({
+      message: `Đã cập nhật ${selectedOrders.value.length} đơn hàng thành công!`,
+      duration: 3000
+    })
+    
+    // Clear selection and refresh list
+    selectedOrders.value = []
+    bulkStatus.value = ''
+    await fetchOrders()
+  } catch (error) {
+    console.error('Lỗi khi cập nhật hàng loạt:', error)
+    ElMessage.error({
+      message: 'Có lỗi xảy ra khi cập nhật đơn hàng!',
+      duration: 3000
+    })
+  } finally {
+    loading.value = false
+  }
+}
 
 const fetchOrders = async () => {
   try {
@@ -223,6 +339,47 @@ const resetFilters = () => {
   filters.value.status = ''
   currentPage.value = 0
   fetchOrders()
+}
+
+// Export to Excel
+const exportToExcel = () => {
+  try {
+    // Chuẩn bị data để export
+    const exportData = orders.value.map((order, index) => ({
+      'STT': index + 1,
+      'Mã đơn hàng': `#${order.id}`,
+      'Khách hàng': order.customerName || 'N/A',
+      'Email': order.customerEmail || 'N/A',
+      'Tổng tiền': new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount),
+      'Trạng thái': getStatusLabel(order.status),
+      'Ngày đặt': new Date(order.createdAt).toLocaleString('vi-VN')
+    }))
+
+    // Tạo worksheet từ data
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    
+    // Tạo workbook
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Đơn hàng')
+    
+    // Tạo tên file với timestamp
+    const timestamp = new Date().toISOString().slice(0, 10)
+    const filename = `don-hang_${timestamp}.xlsx`
+    
+    // Download file
+    XLSX.writeFile(workbook, filename)
+    
+    ElMessage.success({
+      message: `Đã export ${exportData.length} đơn hàng thành công!`,
+      duration: 3000
+    })
+  } catch (error) {
+    console.error('Lỗi khi export Excel:', error)
+    ElMessage.error({
+      message: 'Không thể export dữ liệu. Vui lòng thử lại!',
+      duration: 3000
+    })
+  }
 }
 
 const confirmStatusChange = (order, event) => {
@@ -312,9 +469,97 @@ onMounted(() => {
 <style scoped>
 /* Reuse common styles */
 .admin-orders {max-width: 1400px;margin: 0 auto;padding: 2rem 1rem;}
-.page-header {margin-bottom: 2rem;}
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
 .page-title {font-size: 1.875rem;font-weight: 700;color: #1e293b;margin: 0 0 0.5rem 0;}
 .page-subtitle {color: #64748b;margin: 0;}
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Bulk Action Bar */
+.bulk-action-bar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.bulk-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+}
+
+.bulk-info i {
+  font-size: 24px;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.bulk-status-select {
+  padding: 0.5rem 1rem;
+  border: 2px solid white;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.bulk-status-select option {
+  background: #1e293b;
+  color: white;
+}
+
+.bulk-actions .btn {
+  border: 2px solid white;
+  font-weight: 500;
+}
+
+.bulk-actions .btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.bulk-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* ===== SEARCH & FILTERS ===== */
 .filters-section {
