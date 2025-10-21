@@ -1,9 +1,12 @@
 <template>
   <div class="admin-categories">
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header animate-fade-in">
       <div>
-      <h1 class="page-title">Quản lý danh mục</h1>
+        <h1 class="page-title">
+          <i class="material-icons">category</i>
+          Quản lý danh mục
+        </h1>
         <p class="page-subtitle">Quản lý danh mục sản phẩm với cấu trúc phân cấp</p>
       </div>
       <button @click="openCreateModal" class="btn btn-primary">
@@ -13,20 +16,20 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
+    <div v-if="loading" class="loading-container animate-fade-in">
       <div class="loading-spinner"></div>
       <p>Đang tải danh sách danh mục...</p>
     </div>
     
     <!-- Empty State -->
-    <div v-else-if="categories.length === 0" class="empty-state">
-        <i class="material-icons">category</i>
+    <div v-else-if="categories.length === 0" class="empty-state animate-fade-up">
+      <i class="material-icons">category</i>
       <h3>Chưa có danh mục nào</h3>
       <p>Nhấn "Thêm danh mục" để tạo danh mục đầu tiên</p>
     </div>
 
     <!-- Categories List -->
-    <div v-else class="categories-list">
+    <div v-else class="categories-list animate-fade-up">
       <div class="table-container">
         <table class="table">
           <thead>
@@ -439,12 +442,23 @@ onMounted(() => {
 .page-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--admin-text-primary);
   margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-title .material-icons {
+  font-size: 2rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .page-subtitle {
-  color: #64748b;
+  color: var(--admin-text-secondary);
   margin: 0;
 }
 

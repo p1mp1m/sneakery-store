@@ -1,10 +1,6 @@
 package com.sneakery.store.service;
 
-import com.sneakery.store.dto.CategoryDto;
-import com.sneakery.store.dto.AdminProductDetailDto;
-import com.sneakery.store.dto.AdminProductListDto;
-import com.sneakery.store.dto.AdminProductRequestDto;
-import com.sneakery.store.dto.AdminVariantRequestDto;
+import com.sneakery.store.dto.*;
 import com.sneakery.store.entity.Brand;
 import com.sneakery.store.entity.Category;
 import com.sneakery.store.entity.Product;
@@ -14,18 +10,23 @@ import com.sneakery.store.repository.BrandRepository;
 import com.sneakery.store.repository.CategoryRepository;
 import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminProductService {
@@ -34,6 +35,7 @@ public class AdminProductService {
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final ProductVariantRepository variantRepository;
+    private final EntityManager entityManager;
 
     /**
      * API 1: Tạo sản phẩm mới
@@ -243,5 +245,448 @@ public class AdminProductService {
                 .categories(categoryDtos)
                 .variants(variantDtos)
                 .build();
+    }
+
+    // =================================================================
+    // CÁC TÍNH NĂNG NÂNG CAO MỚI
+    // =================================================================
+
+    /**
+     * API 6: Import sản phẩm từ danh sách Excel
+     * Mỗi item trong list là 1 dòng từ Excel
+     */
+    @Transactional
+    public ProductImportResultDto importProducts(List<ProductImportDto> importList) {
+        log.info("Bắt đầu import {} sản phẩm", importList.size());
+        
+        ProductImportResultDto result = ProductImportResultDto.builder()
+                .totalRows(importList.size())
+                .successCount(0)
+                .errorCount(0)
+                .build();
+
+        // Map để cache brands và categories đã tìm kiếm
+        Map<String, Brand> brandCache = new HashMap<>();
+        Map<String, Category> categoryCache = new HashMap<>();
+        
+        // Map để nhóm variants theo product (cùng tên + brand = cùng product)
+        Map<String, Product> productMap = new HashMap<>();
+
+        for (ProductImportDto dto : importList) {
+            try {
+                // 1. Tìm hoặc tạo Brand
+                Brand brand = brandCache.computeIfAbsent(dto.getBrandName().trim(), 
+                    brandName -> findOrCreateBrand(brandName));
+
+                // 2. Tìm hoặc tạo Categories
+                Set<Category> categories = parseAndFindCategories(dto.getCategories(), categoryCache);
+
+                // 3. Tạo key để nhóm product
+                String productKey = dto.getProductName().trim() + "_" + brand.getId();
+                
+                // 4. Lấy hoặc tạo Product
+                Product product = productMap.computeIfAbsent(productKey, key -> {
+                    Product p = new Product();
+                    p.setName(dto.getProductName().trim());
+                    p.setSlug(generateSlugFromName(dto.getProductSlug(), dto.getProductName()));
+                    p.setDescription(dto.getDescription());
+                    p.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
+                    p.setBrand(brand);
+                    p.setCategories(categories);
+                    p.setVariants(new ArrayList<>());
+                    return p;
+                });
+
+                // 5. Tạo Variant và thêm vào Product
+                ProductVariant variant = new ProductVariant();
+                variant.setProduct(product);
+                variant.setSku(dto.getSku().trim());
+                variant.setSize(dto.getSize().trim());
+                variant.setColor(dto.getColor().trim());
+                variant.setPriceBase(dto.getPriceBase());
+                variant.setPriceSale(dto.getPriceSale());
+                variant.setStockQuantity(dto.getStockQuantity());
+                variant.setImageUrl(dto.getImageUrl());
+
+                product.getVariants().add(variant);
+
+                result.getSuccessItems().add(dto);
+                result.setSuccessCount(result.getSuccessCount() + 1);
+
+            } catch (Exception e) {
+                log.error("Lỗi import dòng {}: {}", dto.getRowNumber(), e.getMessage());
+                dto.setErrorMessage(e.getMessage());
+                result.getErrorItems().add(dto);
+                result.setErrorCount(result.getErrorCount() + 1);
+            }
+        }
+
+        // 6. Lưu tất cả products (sẽ cascade-save variants)
+        productMap.values().forEach(productRepository::save);
+
+        result.setMessage(String.format("Import hoàn tất: %d thành công, %d lỗi", 
+            result.getSuccessCount(), result.getErrorCount()));
+        
+        log.info("Kết thúc import: {}", result.getMessage());
+        return result;
+    }
+
+    /**
+     * API 7: Bulk Update sản phẩm
+     */
+    @Transactional
+    public ProductBulkUpdateResultDto bulkUpdateProducts(ProductBulkUpdateRequestDto request) {
+        log.info("Bulk update {} sản phẩm với action: {}", request.getProductIds().size(), request.getAction());
+        
+        ProductBulkUpdateResultDto result = ProductBulkUpdateResultDto.builder()
+                .totalRequested(request.getProductIds().size())
+                .successCount(0)
+                .errorCount(0)
+                .build();
+
+        for (Long productId : request.getProductIds()) {
+            try {
+                Product product = productRepository.findById(productId)
+                        .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm ID: " + productId));
+
+                switch (request.getAction()) {
+                    case "UPDATE_STATUS":
+                        product.setIsActive(request.getIsActive());
+                        break;
+                        
+                    case "UPDATE_BRAND":
+                        Brand brand = brandRepository.findById(request.getBrandId())
+                                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
+                        product.setBrand(brand);
+                        break;
+                        
+                    case "ADD_CATEGORY":
+                        Category categoryToAdd = categoryRepository.findById(request.getCategoryId())
+                                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Danh mục không tồn tại"));
+                        product.getCategories().add(categoryToAdd);
+                        break;
+                        
+                    case "REMOVE_CATEGORY":
+                        product.getCategories().removeIf(cat -> cat.getId().equals(request.getCategoryId()));
+                        break;
+                        
+                    default:
+                        throw new ApiException(HttpStatus.BAD_REQUEST, "Action không hợp lệ: " + request.getAction());
+                }
+
+                productRepository.save(product);
+                result.getSuccessIds().add(productId);
+                result.setSuccessCount(result.getSuccessCount() + 1);
+
+            } catch (Exception e) {
+                log.error("Lỗi bulk update product {}: {}", productId, e.getMessage());
+                result.getErrorIds().add(productId);
+                result.setErrorCount(result.getErrorCount() + 1);
+            }
+        }
+
+        result.setMessage(String.format("Bulk update hoàn tất: %d thành công, %d lỗi", 
+            result.getSuccessCount(), result.getErrorCount()));
+        
+        return result;
+    }
+
+    /**
+     * API 8: Advanced Filter với Criteria API
+     */
+    @Transactional(readOnly = true)
+    public Page<AdminProductListDto> getProductsWithAdvancedFilter(ProductAdvancedFilterDto filter, Pageable pageable) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        
+        // Query cho data
+        CriteriaQuery<Product> query = cb.createQuery(Product.class);
+        Root<Product> product = query.from(Product.class);
+        
+        // Join với các bảng liên quan
+        Join<Product, Brand> brand = product.join("brand", JoinType.LEFT);
+        Join<Product, ProductVariant> variant = product.join("variants", JoinType.LEFT);
+        
+        List<Predicate> predicates = buildFilterPredicates(cb, product, brand, variant, filter);
+
+        query.select(product).distinct(true).where(predicates.toArray(new Predicate[0]));
+
+        // Thêm sorting
+        if (filter.getSortBy() != null) {
+            query.orderBy(buildSortOrder(cb, product, variant, filter));
+        }
+
+        // Execute query
+        List<Product> products = entityManager.createQuery(query)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+
+        // Count query
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<Product> countRoot = countQuery.from(Product.class);
+        Join<Product, Brand> countBrand = countRoot.join("brand", JoinType.LEFT);
+        Join<Product, ProductVariant> countVariant = countRoot.join("variants", JoinType.LEFT);
+        
+        List<Predicate> countPredicates = buildFilterPredicates(cb, countRoot, countBrand, countVariant, filter);
+        countQuery.select(cb.countDistinct(countRoot)).where(countPredicates.toArray(new Predicate[0]));
+        
+        Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+        // Convert to DTO
+        List<AdminProductListDto> dtos = products.stream()
+                .map(this::convertToListDto)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtos, pageable, total);
+    }
+
+    /**
+     * API 9: Duplicate (nhân bản) sản phẩm
+     */
+    @Transactional
+    public AdminProductDetailDto duplicateProduct(Long productId) {
+        // 1. Tìm product gốc
+        Product original = productRepository.findByIdWithDetails(productId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
+
+        // 2. Tạo product mới (copy)
+        Product duplicate = new Product();
+        duplicate.setName(original.getName() + " (Copy)");
+        duplicate.setSlug(original.getSlug() + "-copy-" + System.currentTimeMillis());
+        duplicate.setDescription(original.getDescription());
+        duplicate.setIsActive(false); // Mặc định tắt để admin kiểm tra trước
+        duplicate.setBrand(original.getBrand());
+        duplicate.setCategories(new HashSet<>(original.getCategories()));
+
+        // 3. Copy variants
+        List<ProductVariant> duplicateVariants = original.getVariants().stream()
+                .map(v -> {
+                    ProductVariant newVariant = new ProductVariant();
+                    newVariant.setProduct(duplicate);
+                    newVariant.setSku(v.getSku() + "-COPY");
+                    newVariant.setSize(v.getSize());
+                    newVariant.setColor(v.getColor());
+                    newVariant.setPriceBase(v.getPriceBase());
+                    newVariant.setPriceSale(v.getPriceSale());
+                    newVariant.setStockQuantity(0); // Đặt về 0 để admin cập nhật
+                    newVariant.setImageUrl(v.getImageUrl());
+                    return newVariant;
+                })
+                .collect(Collectors.toList());
+        
+        duplicate.setVariants(duplicateVariants);
+
+        // 4. Lưu
+        Product saved = productRepository.save(duplicate);
+        return convertToAdminDetailDto(saved);
+    }
+
+    /**
+     * API 10: Lấy thống kê sản phẩm
+     */
+    @Transactional(readOnly = true)
+    public ProductStatsDto getProductStatistics() {
+        Long totalProducts = productRepository.count();
+        Long totalVariants = variantRepository.count();
+        
+        // Đếm active/inactive
+        long activeProducts = productRepository.findAll().stream()
+                .filter(p -> p.getIsActive() != null && p.getIsActive())
+                .count();
+        long inactiveProducts = totalProducts - activeProducts;
+
+        // Tồn kho
+        List<ProductVariant> allVariants = variantRepository.findAll();
+        Long totalStock = allVariants.stream()
+                .mapToLong(v -> v.getStockQuantity() != null ? v.getStockQuantity() : 0)
+                .sum();
+        
+        Long lowStockCount = allVariants.stream()
+                .filter(v -> v.getStockQuantity() != null && v.getStockQuantity() > 0 && v.getStockQuantity() <= 10)
+                .count();
+        
+        Long outOfStockCount = allVariants.stream()
+                .filter(v -> v.getStockQuantity() != null && v.getStockQuantity() == 0)
+                .count();
+
+        // Giá
+        BigDecimal avgPrice = allVariants.stream()
+                .map(v -> v.getPriceSale() != null ? v.getPriceSale() : v.getPriceBase())
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(allVariants.size()), RoundingMode.HALF_UP);
+
+        BigDecimal maxPrice = allVariants.stream()
+                .map(v -> v.getPriceSale() != null ? v.getPriceSale() : v.getPriceBase())
+                .filter(Objects::nonNull)
+                .max(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+
+        BigDecimal minPrice = allVariants.stream()
+                .map(v -> v.getPriceSale() != null ? v.getPriceSale() : v.getPriceBase())
+                .filter(Objects::nonNull)
+                .min(BigDecimal::compareTo)
+                .orElse(BigDecimal.ZERO);
+
+        return ProductStatsDto.builder()
+                .totalProducts(totalProducts)
+                .totalVariants(totalVariants)
+                .activeProducts(activeProducts)
+                .inactiveProducts(inactiveProducts)
+                .totalStock(totalStock)
+                .lowStockCount(lowStockCount)
+                .outOfStockCount(outOfStockCount)
+                .avgPrice(avgPrice)
+                .maxPrice(maxPrice)
+                .minPrice(minPrice)
+                .totalBrands(brandRepository.findAll().size())
+                .totalCategories(categoryRepository.findAll().size())
+                .build();
+    }
+
+    // =================================================================
+    // HELPER METHODS CHO ADVANCED FEATURES
+    // =================================================================
+
+    /**
+     * Tìm hoặc tạo Brand từ tên
+     */
+    private Brand findOrCreateBrand(String brandName) {
+        return brandRepository.findAll().stream()
+                .filter(b -> b.getName().equalsIgnoreCase(brandName))
+                .findFirst()
+                .orElseGet(() -> {
+                    Brand newBrand = new Brand();
+                    newBrand.setName(brandName);
+                    newBrand.setSlug(generateSlugFromName(null, brandName));
+                    return brandRepository.save(newBrand);
+                });
+    }
+
+    /**
+     * Parse string categories và tìm hoặc tạo mới
+     */
+    private Set<Category> parseAndFindCategories(String categoriesStr, Map<String, Category> cache) {
+        String[] catNames = categoriesStr.split(",");
+        Set<Category> categories = new HashSet<>();
+        
+        for (String catName : catNames) {
+            String trimmed = catName.trim();
+            Category category = cache.computeIfAbsent(trimmed, name -> {
+                return categoryRepository.findAll().stream()
+                        .filter(c -> c.getName().equalsIgnoreCase(name))
+                        .findFirst()
+                        .orElseGet(() -> {
+                            Category newCat = new Category();
+                            newCat.setName(name);
+                            newCat.setSlug(generateSlugFromName(null, name));
+                            return categoryRepository.save(newCat);
+                        });
+            });
+            categories.add(category);
+        }
+        
+        return categories;
+    }
+
+    /**
+     * Tạo slug từ tên
+     */
+    private String generateSlugFromName(String slug, String name) {
+        if (slug != null && !slug.trim().isEmpty()) {
+            return slug.trim().toLowerCase()
+                    .replaceAll("[^a-z0-9\\s-]", "")
+                    .replaceAll("\\s+", "-");
+        }
+        
+        return name.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-")
+                .replaceAll("-+", "-");
+    }
+
+    /**
+     * Build predicates cho advanced filter
+     */
+    private List<Predicate> buildFilterPredicates(CriteriaBuilder cb, Root<Product> product, 
+                                                    Join<Product, Brand> brand, 
+                                                    Join<Product, ProductVariant> variant,
+                                                    ProductAdvancedFilterDto filter) {
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Search
+        if (filter.getSearch() != null && !filter.getSearch().trim().isEmpty()) {
+            String searchPattern = "%" + filter.getSearch().toLowerCase() + "%";
+            predicates.add(cb.or(
+                    cb.like(cb.lower(product.get("name")), searchPattern),
+                    cb.like(cb.lower(product.get("slug")), searchPattern)
+            ));
+        }
+
+        // Brand
+        if (filter.getBrandId() != null) {
+            predicates.add(cb.equal(brand.get("id"), filter.getBrandId()));
+        }
+
+        // Status
+        if (filter.getStatus() != null && !filter.getStatus().equals("all")) {
+            predicates.add(cb.equal(product.get("isActive"), filter.getStatus().equals("active")));
+        }
+
+        // Category
+        if (filter.getCategoryId() != null) {
+            Join<Product, Category> categories = product.join("categories", JoinType.INNER);
+            predicates.add(cb.equal(categories.get("id"), filter.getCategoryId()));
+        }
+
+        // Price range
+        if (filter.getMinPrice() != null) {
+            predicates.add(cb.greaterThanOrEqualTo(variant.get("priceBase"), filter.getMinPrice()));
+        }
+        if (filter.getMaxPrice() != null) {
+            predicates.add(cb.lessThanOrEqualTo(variant.get("priceBase"), filter.getMaxPrice()));
+        }
+
+        // Stock level
+        if (filter.getStockLevel() != null && !filter.getStockLevel().equals("all")) {
+            int threshold = filter.getLowStockThreshold() != null ? filter.getLowStockThreshold() : 10;
+            
+            switch (filter.getStockLevel()) {
+                case "in_stock":
+                    predicates.add(cb.greaterThan(variant.get("stockQuantity"), threshold));
+                    break;
+                case "low_stock":
+                    predicates.add(cb.and(
+                            cb.greaterThan(variant.get("stockQuantity"), 0),
+                            cb.lessThanOrEqualTo(variant.get("stockQuantity"), threshold)
+                    ));
+                    break;
+                case "out_of_stock":
+                    predicates.add(cb.equal(variant.get("stockQuantity"), 0));
+                    break;
+            }
+        }
+
+        return predicates;
+    }
+
+    /**
+     * Build sort order
+     */
+    private Order buildSortOrder(CriteriaBuilder cb, Root<Product> product, 
+                                   Join<Product, ProductVariant> variant,
+                                   ProductAdvancedFilterDto filter) {
+        boolean isAsc = "asc".equalsIgnoreCase(filter.getSortDirection());
+        
+        switch (filter.getSortBy()) {
+            case "price":
+                return isAsc ? cb.asc(variant.get("priceBase")) : cb.desc(variant.get("priceBase"));
+            case "stock":
+                return isAsc ? cb.asc(variant.get("stockQuantity")) : cb.desc(variant.get("stockQuantity"));
+            case "name":
+                return isAsc ? cb.asc(product.get("name")) : cb.desc(product.get("name"));
+            default:
+                return cb.desc(product.get("id"));
+        }
     }
 }

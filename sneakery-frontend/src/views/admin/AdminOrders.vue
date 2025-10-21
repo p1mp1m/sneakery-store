@@ -1,8 +1,12 @@
 <template>
   <div class="admin-orders">
-    <div class="page-header">
+    <!-- Page Header -->
+    <div class="page-header animate-fade-in">
       <div>
-      <h1 class="page-title">Quản lý đơn hàng</h1>
+        <h1 class="page-title">
+          <i class="material-icons">shopping_bag</i>
+          Quản lý đơn hàng
+        </h1>
         <p class="page-subtitle">Theo dõi và cập nhật trạng thái đơn hàng</p>
       </div>
       <button @click="exportToExcel" class="btn btn-secondary btn-export">
@@ -12,7 +16,7 @@
     </div>
 
     <!-- Search & Filters -->
-    <div class="filters-section">
+    <div class="filters-section animate-fade-up">
       <div class="search-box">
         <i class="material-icons search-icon">search</i>
         <input
@@ -53,14 +57,14 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
+    <div v-if="loading" class="loading-container animate-fade-in">
       <div class="loading-spinner"></div>
       <p>Đang tải danh sách đơn hàng...</p>
     </div>
     
     <!-- Empty State -->
-    <div v-else-if="orders.length === 0" class="empty-state">
-        <i class="material-icons">shopping_cart</i>
+    <div v-else-if="orders.length === 0" class="empty-state animate-fade-up">
+      <i class="material-icons">shopping_cart</i>
       <h3>Chưa có đơn hàng nào</h3>
     </div>
 
@@ -91,8 +95,8 @@
     </div>
 
     <!-- Orders List -->
-    <div v-else class="table-container">
-      <table class="table">
+    <div v-else class="table-card animate-fade-up">
+      <table class="admin-table">
         <thead>
           <tr>
             <th style="width: 40px;">
@@ -475,8 +479,23 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 2rem;
 }
-.page-title {font-size: 1.875rem;font-weight: 700;color: #1e293b;margin: 0 0 0.5rem 0;}
-.page-subtitle {color: #64748b;margin: 0;}
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.page-title .material-icons {
+  font-size: 2rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-subtitle {color: var(--admin-text-secondary);margin: 0;}
 .btn-export {
   display: flex;
   align-items: center;

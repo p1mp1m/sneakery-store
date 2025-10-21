@@ -1,9 +1,12 @@
 <template>
   <div class="admin-analytics">
-    <!-- Header với bộ lọc thời gian -->
-    <div class="analytics-header">
+    <!-- Page Header -->
+    <div class="analytics-header animate-fade-in">
       <div class="header-left">
-        <h1 class="page-title">📊 Phân tích & Báo cáo</h1>
+        <h1 class="page-title">
+          <i class="material-icons">analytics</i>
+          Phân tích & Báo cáo
+        </h1>
         <p class="page-subtitle">Xem chi tiết hiệu suất kinh doanh và xu hướng</p>
       </div>
       <div class="header-right">
@@ -16,46 +19,80 @@
       </div>
     </div>
 
-    <!-- Tổng quan nhanh -->
-    <div class="quick-stats">
-      <div class="stat-card revenue">
-        <div class="stat-icon">💰</div>
-        <div class="stat-content">
-          <h3>Tổng doanh thu</h3>
-          <p class="stat-value">{{ formatCurrency(totalRevenue) }}</p>
-          <span class="stat-change positive">+12.5% so với kỳ trước</span>
+    <!-- Stats Grid - Sử dụng stats-grid từ admin-panel.css -->
+    <div class="stats-grid animate-fade-up">
+      <div class="stats-card success">
+        <div class="stats-header">
+          <div class="stats-info">
+            <p class="stats-label">Tổng doanh thu</p>
+            <h3 class="stats-value">{{ formatCurrency(totalRevenue) }}</h3>
+          </div>
+          <div class="stats-icon success">
+            <i class="material-icons">attach_money</i>
+          </div>
         </div>
+        <p class="stats-change positive">
+          <i class="material-icons">trending_up</i>
+          +12.5% so với kỳ trước
+        </p>
       </div>
-      <div class="stat-card orders">
-        <div class="stat-icon">📦</div>
-        <div class="stat-content">
-          <h3>Tổng đơn hàng</h3>
-          <p class="stat-value">{{ totalOrders }}</p>
-          <span class="stat-change positive">+8.3% so với kỳ trước</span>
+
+      <div class="stats-card info">
+        <div class="stats-header">
+          <div class="stats-info">
+            <p class="stats-label">Tổng đơn hàng</p>
+            <h3 class="stats-value">{{ totalOrders.toLocaleString() }}</h3>
+          </div>
+          <div class="stats-icon info">
+            <i class="material-icons">shopping_cart</i>
+          </div>
         </div>
+        <p class="stats-change positive">
+          <i class="material-icons">trending_up</i>
+          +8.3% so với kỳ trước
+        </p>
       </div>
-      <div class="stat-card customers">
-        <div class="stat-icon">👥</div>
-        <div class="stat-content">
-          <h3>Khách hàng mới</h3>
-          <p class="stat-value">{{ newCustomers }}</p>
-          <span class="stat-change positive">+15.7% so với kỳ trước</span>
+
+      <div class="stats-card warning">
+        <div class="stats-header">
+          <div class="stats-info">
+            <p class="stats-label">Khách hàng mới</p>
+            <h3 class="stats-value">{{ newCustomers }}</h3>
+          </div>
+          <div class="stats-icon warning">
+            <i class="material-icons">group_add</i>
+          </div>
         </div>
+        <p class="stats-change positive">
+          <i class="material-icons">trending_up</i>
+          +15.7% so với kỳ trước
+        </p>
       </div>
-      <div class="stat-card avg-order">
-        <div class="stat-icon">📈</div>
-        <div class="stat-content">
-          <h3>Đơn hàng TB</h3>
-          <p class="stat-value">{{ formatCurrency(avgOrderValue) }}</p>
-          <span class="stat-change negative">-2.1% so với kỳ trước</span>
+
+      <div class="stats-card danger">
+        <div class="stats-header">
+          <div class="stats-info">
+            <p class="stats-label">Đơn hàng TB</p>
+            <h3 class="stats-value">{{ formatCurrency(avgOrderValue) }}</h3>
+          </div>
+          <div class="stats-icon danger">
+            <i class="material-icons">trending_down</i>
+          </div>
         </div>
+        <p class="stats-change negative">
+          <i class="material-icons">trending_down</i>
+          -2.1% so với kỳ trước
+        </p>
       </div>
     </div>
 
     <!-- Biểu đồ doanh thu chi tiết -->
-    <div class="analytics-section">
+    <div class="analytics-section animate-slide-in">
       <div class="section-header">
-        <h2>📈 Doanh thu theo thời gian</h2>
+        <h2>
+          <i class="material-icons">show_chart</i>
+          Doanh thu theo thời gian
+        </h2>
         <div class="chart-controls">
           <button 
             v-for="type in ['day', 'week', 'month']" 
@@ -77,11 +114,14 @@
     </div>
 
     <!-- Biểu đồ 2 cột -->
-    <div class="charts-grid-2">
+    <div class="charts-grid-2 animate-slide-in">
       <!-- Phân tích đơn hàng theo trạng thái -->
       <div class="analytics-section">
         <div class="section-header">
-          <h2>📊 Đơn hàng theo trạng thái</h2>
+          <h2>
+            <i class="material-icons">pie_chart</i>
+            Đơn hàng theo trạng thái
+          </h2>
         </div>
         <div class="chart-card">
           <DoughnutChart 
@@ -95,7 +135,10 @@
       <!-- Top sản phẩm bán chạy -->
       <div class="analytics-section">
         <div class="section-header">
-          <h2>🏆 Top sản phẩm bán chạy</h2>
+          <h2>
+            <i class="material-icons">emoji_events</i>
+            Top sản phẩm bán chạy
+          </h2>
         </div>
         <div class="chart-card">
           <BarChart 
@@ -108,9 +151,12 @@
     </div>
 
     <!-- Phân tích theo danh mục -->
-    <div class="analytics-section">
+    <div class="analytics-section animate-slide-in">
       <div class="section-header">
-        <h2>🏷️ Doanh thu theo danh mục</h2>
+        <h2>
+          <i class="material-icons">category</i>
+          Doanh thu theo danh mục
+        </h2>
       </div>
       <div class="chart-card">
         <BarChart 
@@ -122,11 +168,14 @@
     </div>
 
     <!-- Biểu đồ 2 cột - Phân tích khách hàng -->
-    <div class="charts-grid-2">
+    <div class="charts-grid-2 animate-slide-in">
       <!-- Khách hàng mới theo thời gian -->
       <div class="analytics-section">
         <div class="section-header">
-          <h2>👤 Khách hàng mới</h2>
+          <h2>
+            <i class="material-icons">person_add</i>
+            Khách hàng mới
+          </h2>
         </div>
         <div class="chart-card">
           <LineChart 
@@ -140,7 +189,10 @@
       <!-- Tỷ lệ chuyển đổi -->
       <div class="analytics-section">
         <div class="section-header">
-          <h2>🎯 Tỷ lệ chuyển đổi</h2>
+          <h2>
+            <i class="material-icons">track_changes</i>
+            Tỷ lệ chuyển đổi
+          </h2>
         </div>
         <div class="chart-card">
           <div class="conversion-funnel">
@@ -175,12 +227,15 @@
     </div>
 
     <!-- Bảng top sản phẩm chi tiết -->
-    <div class="analytics-section">
+    <div class="analytics-section animate-slide-in">
       <div class="section-header">
-        <h2>📋 Chi tiết sản phẩm bán chạy</h2>
+        <h2>
+          <i class="material-icons">format_list_numbered</i>
+          Chi tiết sản phẩm bán chạy
+        </h2>
       </div>
       <div class="table-card">
-        <table class="analytics-table">
+        <table class="admin-table">
           <thead>
             <tr>
               <th>Hạng</th>
@@ -193,13 +248,14 @@
           </thead>
           <tbody>
             <tr v-for="(product, index) in topProductsTable" :key="index">
-              <td><span class="rank">{{ index + 1 }}</span></td>
+              <td><span class="rank-badge">{{ index + 1 }}</span></td>
               <td><strong>{{ product.name }}</strong></td>
               <td>{{ product.category }}</td>
               <td>{{ product.sold }}</td>
               <td>{{ formatCurrency(product.revenue) }}</td>
               <td>
-                <span :class="['growth', product.growth > 0 ? 'positive' : 'negative']">
+                <span :class="['growth-badge', product.growth > 0 ? 'positive' : 'negative']">
+                  <i class="material-icons">{{ product.growth > 0 ? 'trending_up' : 'trending_down' }}</i>
                   {{ product.growth > 0 ? '+' : '' }}{{ product.growth }}%
                 </span>
               </td>
@@ -407,201 +463,33 @@ const loadAnalytics = () => {
 </script>
 
 <style scoped>
-.admin-analytics {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-/* Header */
-.analytics-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
-  gap: 2rem;
-}
-
-.header-left {
-  flex: 1;
-}
+/* Minimal custom CSS - phần lớn sử dụng từ admin-panel.css */
 
 .page-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 0.5rem;
-}
-
-.page-subtitle {
-  color: #64748b;
-  font-size: 1rem;
-  margin: 0;
-}
-
-.header-right {
   display: flex;
-  gap: 1rem;
-}
-
-.period-select {
-  padding: 0.625rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: white;
-  font-size: 0.875rem;
-  color: #1e293b;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.period-select:hover {
-  border-color: #3b82f6;
-}
-
-.period-select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Quick Stats */
-.quick-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  transition: all 0.3s;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.stat-icon {
-  font-size: 2.5rem;
-  line-height: 1;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-content h3 {
-  font-size: 0.875rem;
-  color: #64748b;
-  margin: 0 0 0.5rem;
-  font-weight: 500;
-}
-
-.stat-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 0.5rem;
-}
-
-.stat-change {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.stat-change.positive {
-  color: #10b981;
-}
-
-.stat-change.negative {
-  color: #ef4444;
-}
-
-/* Analytics Section */
-.analytics-section {
-  margin-bottom: 2rem;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
 }
 
-.section-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
+.page-title .material-icons {
+  font-size: 2rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.chart-controls {
+.stats-change {
   display: flex;
-  gap: 0.5rem;
-  background: #f1f5f9;
-  padding: 0.25rem;
-  border-radius: 8px;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-.btn-chart-type {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 500;
+.stats-change .material-icons {
+  font-size: 1rem;
 }
 
-.btn-chart-type:hover {
-  color: #1e293b;
-}
-
-.btn-chart-type.active {
-  background: white;
-  color: #3b82f6;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* Chart Cards */
-.chart-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  height: 350px;
-}
-
-.chart-card.large {
-  height: 400px;
-}
-
-/* Chart card với funnel cần height auto */
-.chart-card:has(.conversion-funnel) {
-  height: auto;
-  min-height: 350px;
-}
-
-/* Charts Grid */
-.charts-grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-/* Conversion Funnel */
+/* Conversion Funnel - Custom styling */
 .conversion-funnel {
   display: flex;
   flex-direction: column;
@@ -614,136 +502,63 @@ const loadAnalytics = () => {
 }
 
 .funnel-bar {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: var(--gradient-primary);
   padding: 0.875rem 1.25rem;
-  border-radius: 8px;
+  border-radius: var(--admin-radius-md);
   color: white;
   font-weight: 500;
-  transition: all 0.3s;
+  transition: var(--admin-transition);
   font-size: 0.9rem;
 }
 
 .funnel-bar:hover {
   transform: translateX(8px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* Table */
-.table-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow-x: auto;
-  overflow-y: visible;
-}
-
-.analytics-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-
-.analytics-table thead {
-  background: #f8fafc;
-}
-
-.analytics-table th {
-  padding: 1rem 1.5rem;
-  text-align: left;
-  font-weight: 600;
-  color: #475569;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-
-.analytics-table td {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #f1f5f9;
-  color: #1e293b;
-  vertical-align: middle;
-}
-
-.analytics-table tbody tr {
-  transition: background 0.2s;
-}
-
-.analytics-table tbody tr:hover {
-  background: #f8fafc;
-}
-
-.rank {
+/* Rank Badge */
+.rank-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: var(--gradient-primary);
   color: white;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 0.875rem;
 }
 
-.growth {
+/* Growth Badge */
+.growth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   font-weight: 600;
   font-size: 0.875rem;
 }
 
-.growth.positive {
+.growth-badge .material-icons {
+  font-size: 1rem;
+}
+
+.growth-badge.positive {
   color: #10b981;
 }
 
-.growth.negative {
+.growth-badge.negative {
   color: #ef4444;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .charts-grid-2 {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-card {
-    height: 300px;
-  }
-
-  .chart-card.large {
-    height: 350px;
-  }
+/* Chart Card Special Height */
+.chart-card:has(.conversion-funnel) {
+  height: auto;
+  min-height: 350px;
 }
 
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-  .admin-analytics {
-    padding: 1rem;
-  }
-
-  .analytics-header {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .header-right {
-    width: 100%;
-  }
-
-  .period-select {
-    width: 100%;
-  }
-
-  .quick-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .chart-card {
-    height: 280px;
-  }
-
-  .chart-card.large {
-    height: 320px;
-  }
-
   .conversion-funnel {
     padding: 0.75rem 0.25rem;
   }
@@ -753,17 +568,7 @@ const loadAnalytics = () => {
     font-size: 0.8rem;
   }
 
-  .analytics-table {
-    font-size: 0.8rem;
-    min-width: 500px;
-  }
-
-  .analytics-table th,
-  .analytics-table td {
-    padding: 0.75rem 0.75rem;
-  }
-
-  .rank {
+  .rank-badge {
     width: 28px;
     height: 28px;
     font-size: 0.8rem;

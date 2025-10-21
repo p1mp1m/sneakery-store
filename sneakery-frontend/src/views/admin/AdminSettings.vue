@@ -1,8 +1,14 @@
 <template>
   <div class="admin-settings">
-    <div class="page-header">
-      <h1 class="page-title">Cài đặt hệ thống</h1>
-      <p class="page-subtitle">Quản lý cấu hình cửa hàng và hệ thống</p>
+    <!-- Page Header -->
+    <div class="page-header animate-fade-in">
+      <div>
+        <h1 class="page-title">
+          <i class="material-icons">settings</i>
+          Cài đặt hệ thống
+        </h1>
+        <p class="page-subtitle">Quản lý cấu hình cửa hàng và hệ thống</p>
+      </div>
     </div>
 
     <!-- Settings Navigation Tabs -->
@@ -252,9 +258,9 @@
               <h3>Thanh toán khi nhận hàng (COD)</h3>
               <p>Khách hàng thanh toán tiền mặt khi nhận hàng</p>
             </div>
-            <label class="switch">
+            <label class="toggle-switch">
               <input v-model="paymentSettings.cod.enabled" type="checkbox" />
-              <span class="slider"></span>
+              <span class="toggle-slider"></span>
             </label>
           </div>
         </div>
@@ -265,9 +271,9 @@
               <h3>Chuyển khoản ngân hàng</h3>
               <p>Khách hàng chuyển khoản trước khi nhận hàng</p>
             </div>
-            <label class="switch">
+            <label class="toggle-switch">
               <input v-model="paymentSettings.bankTransfer.enabled" type="checkbox" />
-              <span class="slider"></span>
+              <span class="toggle-slider"></span>
             </label>
           </div>
 
@@ -308,9 +314,9 @@
               <h3>Thanh toán online (VNPay, MoMo...)</h3>
               <p>Tích hợp cổng thanh toán trực tuyến</p>
             </div>
-            <label class="switch">
+            <label class="toggle-switch">
               <input v-model="paymentSettings.online.enabled" type="checkbox" />
-              <span class="slider"></span>
+              <span class="toggle-slider"></span>
             </label>
           </div>
 
@@ -444,119 +450,24 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ===== ADMIN SETTINGS PAGE ===== */
-.admin-settings {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-  padding-top: 90px;
-}
-
-.page-header {
-  margin-bottom: 2rem;
-}
+/* Minimal custom CSS - sử dụng chủ yếu từ admin-panel.css */
 
 .page-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 0.5rem;
-}
-
-.page-subtitle {
-  color: #64748b;
-  margin: 0;
-}
-
-/* ===== TABS ===== */
-.settings-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  border-bottom: 2px solid #e2e8f0;
-  overflow-x: auto;
-}
-
-.tab-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.875rem 1.5rem;
-  border: none;
-  background: none;
-  color: #64748b;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  white-space: nowrap;
+  gap: 0.75rem;
 }
 
-.tab-btn i {
-  font-size: 1.25rem;
+.page-title .material-icons {
+  font-size: 2rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.tab-btn:hover {
-  color: #3b82f6;
-}
-
-.tab-btn.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-}
-
-/* ===== SETTINGS SECTION ===== */
-.settings-section {
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.section-header {
-  margin-bottom: 1.5rem;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 0.5rem;
-}
-
-.section-subtitle {
-  color: #64748b;
-  margin: 0;
-  font-size: 0.9375rem;
-}
-
-.settings-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-}
-
-/* ===== FORM ELEMENTS ===== */
+/* Form Group - override để compatibility */
 .form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -564,199 +475,60 @@ onMounted(() => {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--admin-text-secondary);
   margin-bottom: 0.5rem;
 }
 
-.form-control {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  transition: all 0.2s;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-check {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.form-check-input {
-  width: 1.25rem;
-  height: 1.25rem;
-  cursor: pointer;
-}
-
-.form-check-label {
-  font-size: 0.9375rem;
-  color: #475569;
-  cursor: pointer;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e2e8f0;
-}
-
-/* ===== BUTTONS ===== */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn i {
-  font-size: 1.125rem;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-secondary {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.btn-secondary:hover {
-  background: #e2e8f0;
-}
-
-/* ===== PAYMENT METHODS ===== */
+/* Payment Methods - Custom styles */
 .payment-method {
   padding: 1.5rem;
-  background: #f8fafc;
-  border-radius: 12px;
+  background: var(--admin-bg-primary);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
   margin-bottom: 1.5rem;
+  transition: var(--admin-transition);
+}
+
+.payment-method:hover {
+  box-shadow: var(--admin-shadow-md);
 }
 
 .payment-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
 }
 
 .payment-header h3 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--admin-text-primary);
   margin: 0 0 0.25rem;
 }
 
 .payment-header p {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--admin-text-secondary);
   margin: 0;
 }
 
 .payment-details {
   padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--admin-border);
 }
 
-/* ===== TOGGLE SWITCH ===== */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 52px;
-  height: 28px;
+.text-muted {
+  color: var(--admin-text-muted);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #cbd5e1;
-  transition: 0.3s;
-  border-radius: 28px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 22px;
-  width: 22px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: 0.3s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: #3b82f6;
-}
-
-input:checked + .slider:before {
-  transform: translateX(24px);
-}
-
-/* ===== RESPONSIVE ===== */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .settings-tabs {
-    gap: 0.25rem;
-  }
-
-  .tab-btn {
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
-  }
-
-  .tab-btn i {
-    font-size: 1.125rem;
-  }
-
-  .settings-card {
-    padding: 1.5rem;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
-
   .payment-header {
     flex-direction: column;
     align-items: flex-start;

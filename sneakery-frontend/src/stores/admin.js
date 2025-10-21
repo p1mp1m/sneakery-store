@@ -165,6 +165,82 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  const getProductById = async (id) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const product = await AdminService.getProductById(id)
+      return product
+    } catch (err) {
+      error.value = err.message || 'Lỗi khi tải chi tiết sản phẩm'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Advanced product features
+  const importProducts = async (productList) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const result = await AdminService.importProducts(productList)
+      return result
+    } catch (err) {
+      error.value = err.message || 'Lỗi khi import sản phẩm'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const bulkUpdateProducts = async (bulkData) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const result = await AdminService.bulkUpdateProducts(bulkData)
+      return result
+    } catch (err) {
+      error.value = err.message || 'Lỗi khi cập nhật hàng loạt'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const duplicateProduct = async (productId) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const product = await AdminService.duplicateProduct(productId)
+      return product
+    } catch (err) {
+      error.value = err.message || 'Lỗi khi nhân bản sản phẩm'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const getProductStatistics = async () => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const stats = await AdminService.getProductStatistics()
+      return stats
+    } catch (err) {
+      error.value = err.message || 'Lỗi khi tải thống kê sản phẩm'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Order management
   const fetchOrders = async (page = 0, size = 10, filters = {}) => {
     try {
@@ -431,6 +507,11 @@ export const useAdminStore = defineStore('admin', () => {
     createProduct,
     updateProduct,
     deleteProduct,
+    getProductById,
+    importProducts,
+    bulkUpdateProducts,
+    duplicateProduct,
+    getProductStatistics,
     fetchOrders,
     updateOrderStatus,
     fetchUsers,

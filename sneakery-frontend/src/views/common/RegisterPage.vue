@@ -4,11 +4,7 @@
       <div class="register-card">
         <!-- Header -->
         <div class="register-header">
-          <div class="brand-logo">
-            <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
-            <h1 class="brand-title">Sneakery Store</h1>
-          </div>
-          <p class="register-subtitle">Tạo tài khoản mới để tham gia cộng đồng sneaker</p>
+          <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
         </div>
 
         <!-- Register Form -->
@@ -327,7 +323,7 @@ const handleGoogleLogin = () => {
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
-  padding-top: 90px; /* Space for fixed navbar */
+  padding-top: 40px; /* Space for fixed navbar */
 }
 
 .register-container {
@@ -358,34 +354,12 @@ const handleGoogleLogin = () => {
   margin-bottom: var(--space-8);
 }
 
-.brand-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-6);
-}
-
 .logo-image {
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto var(--space-6);
+  display: block;
   object-fit: contain;
-}
-
-.brand-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  margin: 0;
-  color: #d1d5db;
-  border: none;
-  background: none;
-  padding: 0;
-}
-
-.register-subtitle {
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  margin: 0;
 }
 
 /* ===== REGISTER FORM ===== */
@@ -554,12 +528,9 @@ const handleGoogleLogin = () => {
     padding: var(--space-6);
   }
   
-  .brand-title {
-    font-size: var(--text-xl);
-  }
-  
-  .register-subtitle {
-    font-size: var(--text-sm);
+  .logo-image {
+    width: 100px;
+    height: 100px;
   }
   
   .welcome-title {
@@ -578,6 +549,11 @@ const handleGoogleLogin = () => {
   
   .register-card {
     padding: var(--space-6);
+  }
+  
+  .logo-image {
+    width: 80px;
+    height: 80px;
   }
   
   .register-btn,

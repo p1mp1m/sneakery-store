@@ -1,9 +1,12 @@
 <template>
   <div class="admin-brands">
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header animate-fade-in">
       <div>
-      <h1 class="page-title">Quản lý thương hiệu</h1>
+        <h1 class="page-title">
+          <i class="material-icons">branding_watermark</i>
+          Quản lý thương hiệu
+        </h1>
         <p class="page-subtitle">Quản lý các thương hiệu giày sneaker</p>
       </div>
       <button @click="openCreateModal" class="btn btn-primary">
@@ -13,20 +16,20 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
+    <div v-if="loading" class="loading-container animate-fade-in">
       <div class="loading-spinner"></div>
       <p>Đang tải danh sách thương hiệu...</p>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="brands.length === 0" class="empty-state">
+    <div v-else-if="brands.length === 0" class="empty-state animate-fade-up">
       <i class="material-icons">branding_watermark</i>
       <h3>Chưa có thương hiệu nào</h3>
       <p>Nhấn "Thêm thương hiệu" để tạo thương hiệu đầu tiên</p>
     </div>
     
     <!-- Brands Grid -->
-    <div v-else class="brands-grid">
+    <div v-else class="brands-grid animate-fade-up">
       <div 
         v-for="brand in brands" 
         :key="brand.id"
@@ -407,12 +410,23 @@ onMounted(() => {
 .page-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--admin-text-primary);
   margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-title .material-icons {
+  font-size: 2rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .page-subtitle {
-  color: #64748b;
+  color: var(--admin-text-secondary);
   margin: 0;
 }
 

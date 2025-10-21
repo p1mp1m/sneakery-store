@@ -1,8 +1,12 @@
 <template>
   <div class="admin-users">
-    <div class="page-header">
+    <!-- Page Header -->
+    <div class="page-header animate-fade-in">
       <div>
-      <h1 class="page-title">Quản lý người dùng</h1>
+        <h1 class="page-title">
+          <i class="material-icons">people</i>
+          Quản lý người dùng
+        </h1>
         <p class="page-subtitle">Quản lý phân quyền và trạng thái tài khoản</p>
       </div>
       <button @click="exportToExcel" class="btn btn-secondary btn-export">
@@ -12,7 +16,7 @@
     </div>
 
     <!-- Search & Filters -->
-    <div class="filters-section">
+    <div class="filters-section animate-fade-up">
       <div class="search-box">
         <i class="material-icons search-icon">search</i>
         <input
@@ -59,15 +63,17 @@
       </div>
     </div>
     
-    <div v-if="loading" class="loading-container">
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-container animate-fade-in">
       <div class="loading-spinner"></div>
-      <p>Đang tải...</p>
+      <p>Đang tải danh sách người dùng...</p>
     </div>
     
-    <div v-else-if="users.length === 0" class="empty-state">
-        <i class="material-icons">people</i>
+    <!-- Empty State -->
+    <div v-else-if="users.length === 0" class="empty-state animate-fade-up">
+      <i class="material-icons">people</i>
       <h3>Chưa có người dùng</h3>
-          </div>
+    </div>
 
     <!-- Bulk Action Bar for Users -->
     <div v-if="selectedUsers.length > 0" class="bulk-action-bar">
@@ -94,8 +100,9 @@
           </div>
         </div>
 
-    <div v-else class="table-container">
-      <table class="table">
+    <!-- Users List -->
+    <div v-else class="table-card animate-fade-up">
+      <table class="admin-table">
         <thead>
           <tr>
             <th style="width: 40px;">
@@ -482,8 +489,23 @@ onMounted(() => {
   align-items: center;
   margin-bottom:2rem
 }
-.page-title{font-size:1.875rem;font-weight:700;color:#1e293b;margin:0 0 .5rem}
-.page-subtitle{color:#64748b;margin:0}
+.page-title{
+  font-size:1.875rem;
+  font-weight:700;
+  color:var(--admin-text-primary);
+  margin:0 0 .5rem;
+  display:flex;
+  align-items:center;
+  gap:0.75rem
+}
+.page-title .material-icons{
+  font-size:2rem;
+  background:var(--gradient-primary);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text
+}
+.page-subtitle{color:var(--admin-text-secondary);margin:0}
 .btn-export {
   display: flex;
   align-items: center;

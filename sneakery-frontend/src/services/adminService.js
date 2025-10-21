@@ -138,6 +138,59 @@ class AdminService {
     }
   }
 
+  // ===== ADVANCED PRODUCT FEATURES =====
+  
+  /**
+   * Import sản phẩm từ Excel
+   * @param {Array} productList - Danh sách sản phẩm đã parse từ Excel
+   */
+  async importProducts(productList) {
+    try {
+      const response = await adminApi.post('/products/import', productList)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  /**
+   * Bulk update sản phẩm
+   * @param {Object} bulkData - { productIds: [], action: '', isActive/brandId/categoryId }
+   */
+  async bulkUpdateProducts(bulkData) {
+    try {
+      const response = await adminApi.post('/products/bulk-update', bulkData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  /**
+   * Nhân bản (duplicate) sản phẩm
+   * @param {Number} productId - ID sản phẩm cần nhân bản
+   */
+  async duplicateProduct(productId) {
+    try {
+      const response = await adminApi.post(`/products/${productId}/duplicate`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  /**
+   * Lấy thống kê sản phẩm
+   */
+  async getProductStatistics() {
+    try {
+      const response = await adminApi.get('/products/statistics')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   async uploadProductImage(productId, file) {
     try {
       const formData = new FormData()

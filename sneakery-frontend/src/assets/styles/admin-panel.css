@@ -1175,3 +1175,574 @@ select.form-control {
   to { transform: rotate(360deg); }
 }
 
+/* ================================================================
+   12. ANALYTICS STYLES - Styles cho trang phân tích
+   ================================================================ */
+
+/* Analytics Header */
+.analytics-header {
+  background: var(--admin-bg-secondary);
+  padding: 2rem;
+  border-radius: var(--admin-radius-lg);
+  margin-bottom: 2rem;
+  box-shadow: var(--admin-shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-left h1 {
+  margin-bottom: 0.5rem;
+}
+
+.header-right {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.period-select {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  background: var(--admin-bg-secondary);
+  transition: var(--admin-transition);
+  cursor: pointer;
+}
+
+.period-select:hover {
+  border-color: #667eea;
+}
+
+.period-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Quick Stats Grid */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Charts Grid - 2 columns */
+.charts-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Analytics Section */
+.analytics-section {
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-chart-type {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  background: var(--admin-bg-secondary);
+  color: var(--admin-text-primary);
+  cursor: pointer;
+  transition: var(--admin-transition);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.btn-chart-type:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.btn-chart-type.active {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+}
+
+/* ================================================================
+   13. SETTINGS STYLES - Styles cho trang cài đặt
+   ================================================================ */
+
+/* Settings Tabs Navigation */
+.settings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  background: var(--admin-bg-secondary);
+  padding: 0.5rem;
+  border-radius: var(--admin-radius-lg);
+  box-shadow: var(--admin-shadow-sm);
+  overflow-x: auto;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  border-radius: var(--admin-radius-md);
+  transition: var(--admin-transition);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: var(--admin-text-primary);
+}
+
+.tab-btn.active {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.tab-btn .material-icons {
+  font-size: 1.25rem;
+}
+
+/* Settings Section */
+.settings-section {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  color: var(--admin-text-secondary);
+  font-size: 0.9375rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Settings Card */
+.settings-card {
+  background: var(--admin-bg-secondary);
+  border-radius: var(--admin-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--admin-shadow-sm);
+  margin-bottom: 2rem;
+}
+
+/* Form Row - 2 columns layout */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--admin-border);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: var(--admin-transition);
+  border-radius: 28px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: var(--admin-transition);
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--gradient-primary);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+/* ================================================================
+   14. BRANDS GRID - Styles cho danh sách thương hiệu
+   ================================================================ */
+
+/* Brands Grid Layout */
+.brands-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Brand Card */
+.brand-card {
+  background: var(--admin-bg-secondary);
+  border-radius: var(--admin-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--admin-shadow-sm);
+  transition: var(--admin-transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.brand-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--admin-shadow-lg);
+}
+
+.brand-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* Brand Logo */
+.brand-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--admin-radius-lg);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  background: var(--admin-bg-primary);
+  border: 2px solid var(--admin-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--admin-transition);
+}
+
+.brand-card:hover .brand-logo {
+  border-color: #667eea;
+  transform: scale(1.05);
+}
+
+.brand-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e2e8f0 100%);
+}
+
+.logo-placeholder .material-icons {
+  font-size: 3rem;
+  color: var(--admin-text-muted);
+}
+
+/* Brand Info */
+.brand-info {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.brand-slug {
+  font-size: 0.875rem;
+  color: var(--admin-text-secondary);
+  font-family: var(--font-mono);
+  background: var(--admin-bg-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--admin-radius-sm);
+  display: inline-block;
+}
+
+/* Brand Actions */
+.brand-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--admin-radius-md);
+  background: var(--admin-bg-primary);
+  color: var(--admin-text-primary);
+  cursor: pointer;
+  transition: var(--admin-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.btn-icon:hover {
+  transform: scale(1.1);
+  box-shadow: var(--admin-shadow-md);
+}
+
+.btn-icon.danger {
+  color: #ef4444;
+}
+
+.btn-icon.danger:hover {
+  background: #fef2f2;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-icon .material-icons {
+  font-size: 1.25rem;
+}
+
+/* ================================================================
+   15. CATEGORIES HIERARCHY - Styles cho danh mục phân cấp
+   ================================================================ */
+
+/* Categories List */
+.categories-list {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Category Row */
+.category-row {
+  transition: var(--admin-transition);
+}
+
+.category-row.root {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+}
+
+.category-row.child {
+  background: var(--admin-bg-secondary);
+}
+
+.category-row:hover {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+}
+
+/* Category Name */
+.category-name {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+.category-name .material-icons {
+  color: #667eea;
+  font-size: 1.25rem;
+}
+
+.child-indent {
+  padding-left: 2rem;
+  position: relative;
+}
+
+.child-indent::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  width: 1rem;
+  height: 2px;
+  background: var(--admin-border);
+}
+
+.child-indent .material-icons {
+  color: var(--admin-text-secondary);
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+/* Table Container */
+.table-container {
+  background: var(--admin-bg-secondary);
+  border-radius: var(--admin-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--admin-shadow-sm);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead {
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.table th:first-child {
+  border-top-left-radius: var(--admin-radius-md);
+}
+
+.table th:last-child {
+  border-top-right-radius: var(--admin-radius-md);
+}
+
+.table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 0.9375rem;
+}
+
+.table tbody tr {
+  transition: var(--admin-transition);
+  background: var(--admin-bg-secondary);
+}
+
+.table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Code tag styling */
+code {
+  font-family: var(--font-mono);
+  background: var(--admin-bg-primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--admin-radius-sm);
+  font-size: 0.875rem;
+  color: #667eea;
+}
+
+/* ================================================================
+   16. RESPONSIVE UPDATES
+   ================================================================ */
+
+@media (max-width: 768px) {
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-right {
+    width: 100%;
+  }
+  
+  .period-select {
+    width: 100%;
+  }
+  
+  .charts-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .settings-tabs {
+    overflow-x: scroll;
+  }
+  
+  .brands-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
