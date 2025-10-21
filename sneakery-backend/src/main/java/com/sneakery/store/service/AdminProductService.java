@@ -2,6 +2,7 @@ package com.sneakery.store.service;
 
 import com.sneakery.store.dto.CategoryDto;
 import com.sneakery.store.dto.AdminProductDetailDto;
+import com.sneakery.store.dto.AdminProductListDto;
 import com.sneakery.store.dto.AdminProductRequestDto;
 import com.sneakery.store.dto.AdminVariantRequestDto;
 import com.sneakery.store.entity.Brand;
@@ -118,9 +119,27 @@ public class AdminProductService {
      * API 4: Lấy danh sách (phân trang)
      */
     @Transactional(readOnly = true)
-    public Page<Product> getAllProductsForAdmin(Pageable pageable) {
-        // Trả về Entity, Controller tự xử lý
-        return productRepository.findAll(pageable);
+    public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
+        // Lấy Entity từ repository
+        Page<Product> productPage = productRepository.findAll(pageable);
+        
+        // Convert Entity sang DTO để tránh lỗi Jackson serialization với Hibernate proxy
+        return productPage.map(this::convertToListDto);
+    }
+    
+    /**
+     * Helper method: Convert Product Entity sang AdminProductListDto
+     */
+    private AdminProductListDto convertToListDto(Product product) {
+        return AdminProductListDto.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .slug(product.getSlug())
+                .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
+                .brandName(product.getBrand() != null ? product.getBrand().getName() : "N/A")
+                .isActive(product.getIsActive())
+                .variantCount(product.getVariants() != null ? product.getVariants().size() : 0)
+                .build();
     }
 
     /**

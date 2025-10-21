@@ -20,13 +20,13 @@
     </transition-group>
 
     <!-- Dashboard Header -->
-    <!-- <div class="dashboard-header"> -->
+    <div class="dashboard-header">
       <!-- Decorative Background Elements -->
       <div class="header-decoration">
         <div class="decoration-circle circle-1"></div>
         <div class="decoration-circle circle-2"></div>
         <div class="decoration-circle circle-3"></div>
-        <div class="decoration-wave"></div>
+        <div class="decoration-wave"></div> 
       </div>
       
       <div class="header-content">
@@ -79,7 +79,7 @@
               <div v-if="showProfileMenu" class="profile-menu-dropdown">
                 <a href="#" class="menu-item" @click.prevent="handleProfileEdit">
                   <i class="material-icons">person_outline</i>
-                  <span>Chỉnh sửa hồ sơ</span>
+                  <span>Hồ sơ</span>
                   <i class="material-icons arrow">chevron_right</i>
                 </a>
                 <a href="#" class="menu-item" @click.prevent="handleSettings">
@@ -87,7 +87,11 @@
                   <span>Cài đặt</span>
                   <i class="material-icons arrow">chevron_right</i>
                 </a>
-                <div class="menu-divider"></div>
+                <a href="#" class="menu-item" @click.prevent="handleChangePassword">
+                  <i class="material-icons">lock</i>
+                  <span>Đổi mật khẩu</span>
+                  <i class="material-icons arrow">chevron_right</i>
+                </a>
                 <a href="#" class="menu-item logout-item" @click.prevent="handleLogout">
                   <i class="material-icons">logout</i>
                   <span>Đăng xuất</span>
@@ -368,12 +372,14 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAdminStore } from '@/stores/admin';
+import { useAuthStore } from '@/stores/auth';
 import LineChart from '@/components/charts/LineChart.vue';
 import BarChart from '@/components/charts/BarChart.vue';
 import DoughnutChart from '@/components/charts/DoughnutChart.vue';
 
 const router = useRouter();
 const adminStore = useAdminStore();
+const authStore = useAuthStore();
 
 // Computed
 const adminUser = computed(() => adminStore.adminUser);
@@ -573,27 +579,41 @@ const toggleProfileMenu = () => {
 
 const handleProfileEdit = () => {
   showProfileMenu.value = false;
-  showNotification('info', 'Chỉnh sửa hồ sơ', 'Chức năng đang được phát triển');
+  showNotification('info', 'Hồ sơ', 'Chức năng đang được phát triển');
 };
 
 const handleSettings = () => {
   showProfileMenu.value = false;
-  showNotification('info', 'Cài đặt', 'Chức năng đang được phát triển');
+  router.push('/admin/settings');
+};
+
+const handleChangePassword = () => {
+  showProfileMenu.value = false;
+  showNotification('info', 'Đổi mật khẩu', 'Chức năng đang được phát triển');
 };
 
 const handleLogout = () => {
   showProfileMenu.value = false;
   showNotification('success', 'Đăng xuất', 'Đang đăng xuất...');
   setTimeout(() => {
+    // Logout từ auth store (clear user state)
+    authStore.logout();
+    
+    // Reset admin store
     adminStore.reset();
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
+    
+    // Clear all localStorage
+    localStorage.clear();
+    
+    // Force reload và redirect về login
+    window.location.href = '/login';
   }, 1000);
 };
 
 // Lifecycle
 let timeInterval;
+let handleClickOutside;
+
 onMounted(() => {
   loadDashboardData();
   updateDateTime();
@@ -605,16 +625,20 @@ onMounted(() => {
   }, 500);
 
   // Close profile menu when clicking outside
-  document.addEventListener('click', (e) => {
+  handleClickOutside = (e) => {
     if (!e.target.closest('.profile-card')) {
       showProfileMenu.value = false;
     }
-  });
+  };
+  document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval);
+  }
+  if (handleClickOutside) {
+    document.removeEventListener('click', handleClickOutside);
   }
 });
 </script>
@@ -1212,12 +1236,13 @@ onUnmounted(() => {
   transform: translateX(0);
 }
 
-.logout-item {
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
-}
-
 .logout-item i {
   color: #ef4444;
+}
+
+.logout-item span {
+  color: #ef4444;
+  font-weight: 600;
 }
 
 .logout-item:hover {
@@ -1228,10 +1253,8 @@ onUnmounted(() => {
   color: #dc2626;
 }
 
-.menu-divider {
-  height: 1px;
-  background: rgba(226, 232, 240, 0.6);
-  margin: 4px 0;
+.logout-item:hover span {
+  color: #dc2626;
 }
 
 /* Dropdown Animation */

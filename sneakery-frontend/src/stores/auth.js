@@ -8,6 +8,11 @@ export const useAuthStore = defineStore('auth', () => {
     // Lấy thông tin user từ localStorage khi khởi tạo
     const user = ref(JSON.parse(localStorage.getItem('user')));
     const token = computed(() => user.value?.accessToken);
+    
+    // Khôi phục token khi app reload nếu user đã đăng nhập
+    if (user.value?.accessToken && !localStorage.getItem('token')) {
+        localStorage.setItem('token', user.value.accessToken);
+    }
 
     // === GETTERS ===
     const isAuthenticated = computed(() => !!user.value);
@@ -17,12 +22,19 @@ export const useAuthStore = defineStore('auth', () => {
     async function login(credentials) {
         // Gọi API service để đăng nhập
         const responseData = await AuthService.login(credentials);
-        // console.log('Auth Store - Login response:', responseData); // Debug
+        console.log('Auth Store - Login response:', responseData); // Debug
         
         // Lưu thông tin vào state và localStorage
         user.value = responseData;
         localStorage.setItem('user', JSON.stringify(responseData));
-        // console.log('Auth Store - User saved:', user.value); // Debug
+        
+        // Lưu token riêng để adminService có thể sử dụng
+        if (responseData.accessToken) {
+            localStorage.setItem('token', responseData.accessToken);
+        }
+        
+        console.log('Auth Store - User saved:', user.value); // Debug
+        console.log('Auth Store - Token saved:', responseData.accessToken); // Debug
     }
 
     async function register(userData) {
@@ -35,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
         // Xóa thông tin khỏi state và localStorage
         user.value = null;
         localStorage.removeItem('user');
+        localStorage.removeItem('token');
     }
 
     // Trả về state, getters, và actions để các component khác có thể sử dụng

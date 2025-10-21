@@ -133,7 +133,7 @@ export const adminGuard = async (to, from, next) => {
   }
   
   // Là ADMIN/MODERATOR → Cho phép truy cập
-  console.log('✅ Admin access granted:', user.email, '- Role:', user.role)
+  console.log('✅ Admin access granted:', user.fullName || user.userId, '- Role:', user.role)
   next()
 }
 

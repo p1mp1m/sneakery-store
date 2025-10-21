@@ -137,7 +137,7 @@
           </router-link>
 
           <template v-if="authStore.isAuthenticated">
-            <router-link to="/dashboard" class="mobile-nav-link" @click="closeMobileMenu">
+            <router-link to="/user/dashboard" class="mobile-nav-link" @click="closeMobileMenu">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <rect x="14" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -146,14 +146,14 @@
               </svg>
               <span>Dashboard</span>
             </router-link>
-            <router-link to="/profile" class="mobile-nav-link" @click="closeMobileMenu">
+            <router-link to="/user/profile" class="mobile-nav-link" @click="closeMobileMenu">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span>Thông tin cá nhân</span>
             </router-link>
-            <router-link to="/orders" class="mobile-nav-link" @click="closeMobileMenu">
+            <router-link to="/user/orders" class="mobile-nav-link" @click="closeMobileMenu">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L18 21H6L5 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>

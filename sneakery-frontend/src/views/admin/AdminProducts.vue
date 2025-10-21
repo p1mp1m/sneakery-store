@@ -1,25 +1,33 @@
 <template>
   <div class="admin-products">
     <!-- Page Header -->
-    <div class="page-header">
-      <div>
-      <h1 class="page-title">Quản lý sản phẩm</h1>
-        <p class="page-subtitle">Quản lý sản phẩm và các biến thể (variants)</p>
-      </div>
-      <div class="header-actions">
-        <button @click="exportToExcel" class="btn btn-secondary btn-export">
-          <i class="material-icons">download</i>
-          Export Excel
-        </button>
-        <button @click="openCreateModal" class="btn btn-primary">
-          <i class="material-icons">add</i>
-          Thêm sản phẩm
-        </button>
+    <div class="page-header animate-fade-in">
+      <div class="header-content">
+        <div>
+          <h1 class="page-title">
+            <i class="material-icons">inventory_2</i>
+            Quản lý sản phẩm
+          </h1>
+          <p class="page-subtitle">
+            <i class="material-icons">info</i>
+            Quản lý sản phẩm và các biến thể (variants)
+          </p>
+        </div>
+        <div class="header-actions">
+          <button @click="exportToExcel" class="btn btn-secondary btn-export">
+            <i class="material-icons">download</i>
+            Export Excel
+          </button>
+          <button @click="openCreateModal" class="btn btn-primary">
+            <i class="material-icons">add</i>
+            Thêm sản phẩm
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="filters-section">
+    <div class="filters-section animate-fade-up">
       <div class="filter-group">
         <label>Tìm kiếm:</label>
         <input 
@@ -59,38 +67,40 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container">
+    <div v-if="loading" class="loading-container animate-fade-in">
       <div class="loading-spinner"></div>
       <p>Đang tải danh sách sản phẩm...</p>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="products.length === 0" class="empty-state">
+    <div v-else-if="products.length === 0" class="empty-state animate-fade-up">
       <i class="material-icons">inventory</i>
       <h3>Chưa có sản phẩm nào</h3>
       <p>Nhấn "Thêm sản phẩm" để tạo sản phẩm đầu tiên</p>
     </div>
 
-    <!-- Products Table -->
-    <!-- Bulk Action Bar -->
-    <div v-if="selectedProducts.length > 0" class="bulk-action-bar">
-      <div class="bulk-info">
-        <i class="material-icons">check_circle</i>
-        Đã chọn <strong>{{ selectedProducts.length }}</strong> sản phẩm
+    <!-- Products Table & Bulk Actions -->
+    <div v-else>
+      <!-- Bulk Action Bar -->
+      <div v-if="selectedProducts.length > 0" class="bulk-action-bar">
+        <div class="bulk-info">
+          <i class="material-icons">check_circle</i>
+          Đã chọn <strong>{{ selectedProducts.length }}</strong> sản phẩm
+        </div>
+        <div class="bulk-actions">
+          <button @click="bulkDelete" class="btn btn-danger btn-sm">
+            <i class="material-icons">delete</i>
+            Xóa {{ selectedProducts.length }} sản phẩm
+          </button>
+          <button @click="clearSelection" class="btn btn-secondary btn-sm">
+            <i class="material-icons">clear</i>
+            Bỏ chọn
+          </button>
+        </div>
       </div>
-      <div class="bulk-actions">
-        <button @click="bulkDelete" class="btn btn-danger">
-          <i class="material-icons">delete</i>
-          Xóa {{ selectedProducts.length }} sản phẩm
-        </button>
-        <button @click="clearSelection" class="btn btn-secondary">
-          <i class="material-icons">clear</i>
-          Bỏ chọn
-        </button>
-      </div>
-    </div>
 
-    <div v-else class="table-container">
+      <!-- Products Table -->
+      <div class="table-container animate-fade-up">
       <table class="products-table">
         <thead>
           <tr>
@@ -123,10 +133,10 @@
               <div class="product-name">{{ product.name }}</div>
               <div class="product-slug">{{ product.slug }}</div>
             </td>
-            <td>{{ product.brand?.name || 'N/A' }}</td>
+            <td>{{ product.brandName || 'N/A' }}</td>
             <td>
               <span class="badge badge-info">
-                {{ product.variants?.length || 0 }} variants
+                {{ product.variantCount || 0 }} variants
               </span>
             </td>
             <td>
@@ -147,32 +157,35 @@
           </tr>
         </tbody>
       </table>
-    </div>
-
-    <!-- Pagination -->
-    <div v-if="!loading && products.length > 0" class="pagination-container">
-      <div class="pagination-info">
-        Hiển thị {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} 
-        trong tổng số {{ totalItems }} sản phẩm
       </div>
-      <div class="pagination">
-        <button 
-          :disabled="currentPage === 0"
-          @click="changePage(currentPage - 1)"
-          class="page-btn"
-        >
-          Trước
-        </button>
-        <span class="page-info">
-          Trang {{ currentPage + 1 }} / {{ totalPages }}
-        </span>
-        <button 
-          :disabled="currentPage >= totalPages - 1"
-          @click="changePage(currentPage + 1)"
-          class="page-btn"
-        >
-          Sau
-        </button>
+
+      <!-- Pagination -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          Hiển thị {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} 
+          trong tổng số {{ totalItems }} sản phẩm
+        </div>
+        <div class="pagination">
+          <button 
+            :disabled="currentPage === 0"
+            @click="changePage(currentPage - 1)"
+            class="page-btn"
+          >
+            <i class="material-icons">chevron_left</i>
+            Trước
+          </button>
+          <span class="page-info">
+            Trang {{ currentPage + 1 }} / {{ totalPages }}
+          </span>
+          <button 
+            :disabled="currentPage >= totalPages - 1"
+            @click="changePage(currentPage + 1)"
+            class="page-btn"
+          >
+            Sau
+            <i class="material-icons">chevron_right</i>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -516,7 +529,16 @@ const bulkDelete = async () => {
 const fetchProducts = async () => {
   try {
     loading.value = true
-    const result = await adminStore.fetchProducts(currentPage.value, pageSize.value, filters.value)
+    
+    // adminService sẽ tự động filter ra undefined/null/empty
+    // Chỉ cần đảm bảo không gửi giá trị 'all'
+    const filterParams = {
+      search: filters.value.search,
+      brandId: filters.value.brandId,
+      status: filters.value.status !== 'all' ? filters.value.status : undefined
+    }
+    
+    const result = await adminStore.fetchProducts(currentPage.value, pageSize.value, filterParams)
     products.value = result.content || []
     totalItems.value = result.totalElements || 0
   } catch (error) {
@@ -862,10 +884,9 @@ const exportToExcel = () => {
       'STT': index + 1,
       'Tên sản phẩm': product.name,
       'Slug': product.slug,
-      'Thương hiệu': product.brand?.name || 'N/A',
-      'Số lượng biến thể': product.variants?.length || 0,
-      'Trạng thái': product.isActive ? 'Đang bán' : 'Ngừng bán',
-      'Mô tả': product.description || ''
+      'Thương hiệu': product.brandName || 'N/A',
+      'Số lượng biến thể': product.variantCount || 0,
+      'Trạng thái': product.isActive ? 'Đang bán' : 'Ngừng bán'
     }))
 
     // Tạo worksheet từ data
@@ -906,29 +927,181 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Styles from previous AdminBrands/AdminCategories - use similar approach */
+/* ===================================================================
+   🎨 ADMIN PRODUCTS - MODERN CSS DESIGN SYSTEM
+   ===================================================================
+   Professional styling cho trang quản lý sản phẩm
+   =================================================================== */
+
+/* ===== ANIMATIONS ===== */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(20px, -20px) scale(1.05);
+  }
+}
+
+/* Animation Classes */
+.animate-slide-in {
+  animation: slideIn 0.6s ease-out;
+}
+
+.animate-slide-in.delay-1 {
+  animation-delay: 0.2s;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+.animate-slide-in.delay-2 {
+  animation-delay: 0.4s;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease-out;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.8s ease-out;
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* ===== PAGE LAYOUT ===== */
 .admin-products {
   max-width: 1400px;
   margin: 0 auto;
 }
 
+/* ===== PAGE HEADER ===== */
 .page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  padding: 2rem 2.5rem;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.header-content {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
 }
 
 .page-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #1e293b;
+  color: #ffffff;
   margin: 0 0 0.5rem 0;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .page-subtitle {
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.95);
   margin: 0;
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-subtitle i {
+  font-size: 18px;
 }
 
 .header-actions {
@@ -940,20 +1113,54 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+  transition: all 0.3s ease;
 }
 
-/* Bulk Action Bar */
+.btn-export:hover {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== BULK ACTION BAR ===== */
 .bulk-action-bar {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #ffffff;
   padding: 1rem 1.5rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
   animation: slideIn 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.bulk-action-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .bulk-info {
@@ -973,7 +1180,7 @@ onMounted(async () => {
 }
 
 .bulk-actions .btn {
-  border: 2px solid white;
+  border: 2px solid #ffffff;
   font-weight: 500;
 }
 
@@ -999,16 +1206,25 @@ onMounted(async () => {
   }
 }
 
+/* ===== FILTERS SECTION ===== */
 .filters-section {
-  background: white;
+  background: #ffffff;
   padding: 1.5rem;
   border-radius: 12px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   display: grid;
   grid-template-columns: 2fr 1fr 1fr auto;
   gap: 1rem;
   align-items: end;
+  animation: fadeUp 0.6s ease-out;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
+}
+
+.filters-section:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: rgba(102, 126, 234, 0.2);
 }
 
 .filter-group {
@@ -1039,6 +1255,7 @@ onMounted(async () => {
   font-size: 1.125rem;
 }
 
+/* ===== FORM CONTROLS ===== */
 .form-control {
   padding: 0.625rem 0.875rem;
   border: 1px solid #d1d5db;
@@ -1062,9 +1279,10 @@ onMounted(async () => {
   width: 100%;
 }
 
+/* ===== LOADING & EMPTY STATES ===== */
 .loading-container,
 .empty-state {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
   padding: 3rem;
   text-align: center;
@@ -1101,11 +1319,20 @@ onMounted(async () => {
   color: #64748b;
 }
 
+/* ===== PRODUCTS TABLE ===== */
 .table-container {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  animation: fadeUp 0.6s ease-out;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
+}
+
+.table-container:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: rgba(102, 126, 234, 0.2);
 }
 
 .products-table {
@@ -1114,8 +1341,8 @@ onMounted(async () => {
 }
 
 .products-table thead {
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .products-table th {
@@ -1126,16 +1353,34 @@ onMounted(async () => {
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  position: relative;
+}
+
+.products-table th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
 }
 
 .products-table td {
   padding: 1rem;
   color: #1e293b;
   border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.products-table tbody tr {
+  transition: all 0.3s ease;
 }
 
 .products-table tbody tr:hover {
-  background: #f8fafc;
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.03) 0%, rgba(102, 126, 234, 0.05) 50%, rgba(102, 126, 234, 0.03) 100%);
+  transform: translateX(4px);
+  box-shadow: -4px 0 0 0 rgba(102, 126, 234, 0.3);
 }
 
 .product-name {
@@ -1149,6 +1394,7 @@ onMounted(async () => {
   font-family: monospace;
 }
 
+/* ===== STATUS BADGES ===== */
 .status-badge {
   display: inline-block;
   padding: 0.25rem 0.625rem;
@@ -1180,6 +1426,7 @@ onMounted(async () => {
   color: #1e40af;
 }
 
+/* ===== ACTION BUTTONS ===== */
 .text-center {
   text-align: center;
 }
@@ -1193,95 +1440,141 @@ onMounted(async () => {
 .btn-icon {
   padding: 0.375rem;
   border: 1px solid #d1d5db;
-  background: white;
+  background: #ffffff;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.btn-icon:hover::before {
+  width: 100%;
+  height: 100%;
 }
 
 .btn-icon:hover {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
   border-color: #3b82f6;
   color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.btn-icon.danger::before {
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .btn-icon.danger:hover {
-  background: #fef2f2;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
   border-color: #ef4444;
   color: #ef4444;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
+/* ===== PAGINATION ===== */
 .pagination-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 1.5rem;
-  padding: 1rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  animation: fadeUp 0.6s ease-out;
 }
 
 .pagination-info {
   color: #64748b;
   font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .pagination {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .page-btn {
   padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
-  background: white;
-  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  color: #64748b;
 }
 
 .page-btn:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .page-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }
 
 .page-info {
-  font-weight: 500;
-  color: #374151;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 8px;
 }
 
+/* ===== MODAL ===== */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal {
-  background: white;
-  border-radius: 12px;
+  background: #ffffff;
+  border-radius: 16px;
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: bounceIn 0.5s ease-out;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .modal-lg {
@@ -1293,51 +1586,74 @@ onMounted(async () => {
 }
 
 .modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
+}
+
+.modal-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.5), transparent);
 }
 
 .modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.375rem;
+  font-weight: 700;
   color: #1e293b;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-title i {
+  color: #667eea;
+  font-size: 1.5rem;
 }
 
 .modal-close {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
-  background: none;
+  background: rgba(226, 232, 240, 0.5);
   color: #64748b;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-close:hover {
-  background: #f1f5f9;
-  color: #1e293b;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #ef4444;
+  transform: rotate(90deg) scale(1.1);
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 2rem;
 }
 
 .modal-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-top: 2px solid #e2e8f0;
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
 }
 
+/* ===== FORM ELEMENTS ===== */
 .section-title {
   font-size: 1.125rem;
   font-weight: 600;
@@ -1402,6 +1718,7 @@ onMounted(async () => {
   margin-top: 0.25rem;
 }
 
+/* ===== CATEGORIES & CHECKBOXES ===== */
 .checkbox-group {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1426,6 +1743,7 @@ onMounted(async () => {
   cursor: pointer;
 }
 
+/* ===== VARIANTS SECTION ===== */
 .empty-variants {
   padding: 2rem;
   text-align: center;
@@ -1464,7 +1782,7 @@ onMounted(async () => {
 .btn-icon-sm {
   padding: 0.25rem;
   border: 1px solid #d1d5db;
-  background: white;
+  background: #ffffff;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
@@ -1476,49 +1794,77 @@ onMounted(async () => {
   color: #ef4444;
 }
 
+/* ===== BUTTONS ===== */
 .btn {
   padding: 0.625rem 1.25rem;
   border: none;
-  border-radius: 6px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left 0.5s;
+}
+
+.btn:hover::before {
+  left: 100%;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #2563eb;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
 .btn-secondary {
-  background: #f1f5f9;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   color: #475569;
+  border: 1px solid #cbd5e0;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #e2e8f0;
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .btn-danger {
-  background: #ef4444;
-  color: white;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #dc2626;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
 }
 
 .btn-sm {
@@ -1530,16 +1876,18 @@ onMounted(async () => {
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
+/* ===== UTILITIES ===== */
 .text-error {
   color: #ef4444;
   font-size: 0.875rem;
 }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;
@@ -1559,4 +1907,8 @@ onMounted(async () => {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===================================================================
+   End of Admin Products Styles
+   =================================================================== */
 </style>

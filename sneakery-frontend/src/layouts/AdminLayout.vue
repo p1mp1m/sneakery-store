@@ -1,22 +1,20 @@
 <template>
   <div class="admin-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
-    <!-- Nút Toggle Sidebar - Fixed Position -->
-    <button 
-      class="sidebar-toggle-btn"
-      @click="toggleSidebar"
-      :class="{ 'collapsed': sidebarCollapsed }"
-      :title="sidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
-    >
-      <i class="material-icons">{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</i>
-    </button>
-
     <!-- Admin Sidebar -->
     <aside class="admin-sidebar" :class="{ 'collapsed': sidebarCollapsed }">
       <div class="sidebar-header">
         <div class="brand">
           <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo" />
-          <span v-if="!sidebarCollapsed" class="brand-text">Admin Panel</span>
         </div>
+        <!-- Nút Toggle Sidebar - Trong Sidebar -->
+        <button 
+          class="sidebar-toggle-btn"
+          @click="toggleSidebar"
+          type="button"
+          :title="sidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
+        >
+          <i class="material-icons">{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</i>
+        </button>
       </div>
 
       <nav class="sidebar-nav">
@@ -83,7 +81,9 @@ const adminRoutes = [
 
 // Methods
 const toggleSidebar = () => {
+  console.log('Toggle sidebar clicked! Current state:', sidebarCollapsed.value)
   sidebarCollapsed.value = !sidebarCollapsed.value
+  console.log('New state:', sidebarCollapsed.value)
 }
 
 const checkMobile = () => {
@@ -98,8 +98,8 @@ onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
   
-  // Check admin status
-  adminStore.checkAdminStatus()
+  // Check admin status - Không cần vì router guard đã kiểm tra
+  // adminStore.checkAdminStatus()
 })
 
 onUnmounted(() => {
@@ -118,46 +118,51 @@ onUnmounted(() => {
 
 /* ===== NÚT TOGGLE SIDEBAR ===== */
 .sidebar-toggle-btn {
-  position: fixed;
-  top: 20px;
-  left: 240px;
-  z-index: 1001;
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: scale(1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-toggle-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: linear-gradient(135deg, rgba(118, 75, 162, 0.9), rgba(102, 126, 234, 0.9));
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .sidebar-toggle-btn:active {
-  transform: scale(0.95);
+  transform: translateY(-50%) scale(0.95);
 }
 
-.sidebar-toggle-btn.collapsed {
-  left: 70px;
+.sidebar-toggle-btn:focus {
+  outline: 2px solid rgba(102, 126, 234, 0.6);
+  outline-offset: 2px;
 }
 
 .sidebar-toggle-btn i {
   font-size: 20px;
   transition: transform 0.3s ease;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .sidebar-toggle-btn:hover i {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 /* ===== SIDEBAR ===== */
@@ -182,44 +187,61 @@ onUnmounted(() => {
 }
 
 .sidebar-header {
-  padding: 0.75rem 0.75rem;
+  padding: 1rem 0.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 56px;
+  justify-content: space-between;
+  min-height: 80px;
+  position: relative;
+  z-index: 5;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.75rem;
   transition: all 0.3s ease;
+  flex: 1;
 }
 
 .logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  transition: transform 0.3s ease;
+  width: 200px;
+  height: 100px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  object-fit: contain;
 }
 
 .admin-sidebar.collapsed .logo {
-  transform: scale(1.15);
-  width: 36px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
 }
 
-.brand-text {
-  font-size: 1rem;
-  font-weight: 600;
-  white-space: nowrap;
-  opacity: 1;
-  transition: opacity 0.3s ease;
+.admin-sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 1rem 0.5rem;
 }
 
-.admin-sidebar.collapsed .brand-text {
-  opacity: 0;
+.admin-sidebar.collapsed .brand {
+  justify-content: center;
+}
+
+.admin-sidebar.collapsed .sidebar-toggle-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 50%;
+  transform: translateX(50%);
+  top: auto;
+}
+
+.admin-sidebar.collapsed .sidebar-toggle-btn:hover {
+  transform: translateX(50%) scale(1.08);
+}
+
+.admin-sidebar.collapsed .sidebar-toggle-btn:active {
+  transform: translateX(50%) scale(0.95);
 }
 
 /* ===== NAVIGATION ===== */
@@ -366,6 +388,8 @@ onUnmounted(() => {
   overflow-y: auto;
   max-width: 100%;
   width: 100%;
+  position: relative;
+  z-index: 1; /* Đảm bảo content ở dưới nút toggle */
 }
 
 /* ===== MOBILE OVERLAY ===== */
@@ -381,10 +405,6 @@ onUnmounted(() => {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .sidebar-toggle-btn {
-    display: none;
-  }
-
   .admin-sidebar {
     transform: translateX(-100%);
   }
@@ -408,6 +428,15 @@ onUnmounted(() => {
   
   .admin-content {
     padding: 1rem;
+  }
+  
+  .sidebar-header {
+    min-height: 70px;
+  }
+  
+  .logo {
+    width: 48px;
+    height: 48px;
   }
 }
 

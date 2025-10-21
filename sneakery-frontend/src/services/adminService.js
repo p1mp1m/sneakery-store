@@ -82,10 +82,18 @@ class AdminService {
   // ===== PRODUCT MANAGEMENT =====
   async getProducts(page = 0, size = 10, filters = {}) {
     try {
+      // Lọc bỏ các giá trị undefined/null/empty để tránh gửi "undefined" trong URL
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
       const params = new URLSearchParams({
         page: page.toString(),
         size: size.toString(),
-        ...filters
+        ...cleanFilters
       })
       const response = await adminApi.get(`/products?${params}`)
       return response.data
@@ -150,10 +158,18 @@ class AdminService {
   // ===== ORDER MANAGEMENT =====
   async getOrders(page = 0, size = 10, filters = {}) {
     try {
+      // Lọc bỏ các giá trị undefined/null/empty để tránh gửi "undefined" trong URL
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
       const params = new URLSearchParams({
         page: page.toString(),
         size: size.toString(),
-        ...filters
+        ...cleanFilters
       })
       const response = await adminApi.get(`/orders?${params}`)
       return response.data
@@ -183,10 +199,18 @@ class AdminService {
   // ===== USER MANAGEMENT =====
   async getUsers(page = 0, size = 10, filters = {}) {
     try {
+      // Lọc bỏ các giá trị undefined/null/empty để tránh gửi "undefined" trong URL
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
       const params = new URLSearchParams({
         page: page.toString(),
         size: size.toString(),
-        ...filters
+        ...cleanFilters
       })
       const response = await adminApi.get(`/users?${params}`)
       return response.data
