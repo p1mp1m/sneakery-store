@@ -105,11 +105,11 @@ const adminRoutes = [
   }
 ]
 
-// Admin route guard - Chỉ cho phép ADMIN/MODERATOR
+// Admin route guard - Chỉ cho phép ADMIN/MODERATOR, chặn USER thường
 export const adminGuard = async (to, from, next) => {
   const authStore = useAuthStore()
   
-  // Kiểm tra xem đã đăng nhập chưa
+  // Kiểm tra đăng nhập
   if (!authStore.isAuthenticated) {
     // Chưa đăng nhập → redirect về login
     next({
@@ -119,22 +119,21 @@ export const adminGuard = async (to, from, next) => {
     return
   }
   
-  // Kiểm tra role từ authStore
+  // Kiểm tra role
   const user = authStore.currentUser
-  // console.log('Admin Guard - Current user:', user) // Debug log
   
   if (!user || (user.role !== 'ADMIN' && user.role !== 'MODERATOR')) {
-    // Không phải ADMIN/MODERATOR → Chặn
-    // console.log('Access denied - User role:', user?.role) // Debug log
+    // Không phải ADMIN/MODERATOR → Chặn và redirect về user panel
+    console.warn('⛔ Access Denied: User không có quyền truy cập Admin Panel')
     next({
       path: '/user/dashboard',
-      query: { error: 'access_denied' }
+      query: { error: 'admin_access_denied' }
     })
     return
   }
   
   // Là ADMIN/MODERATOR → Cho phép truy cập
-  // console.log('Admin access granted for user:', user.email) // Debug log
+  console.log('✅ Admin access granted:', user.email, '- Role:', user.role)
   next()
 }
 

@@ -89,10 +89,11 @@ const userRoutes = [
   }
 ]
 
-// User route guard - Chặn nếu chưa đăng nhập
+// User route guard - Chặn ADMIN/MODERATOR và người chưa đăng nhập
 export const userGuard = async (to, from, next) => {
   const authStore = useAuthStore()
   
+  // Kiểm tra đăng nhập
   if (!authStore.isAuthenticated) {
     // Chưa đăng nhập → redirect đến login
     next({
@@ -102,7 +103,19 @@ export const userGuard = async (to, from, next) => {
     return
   }
   
-  // Đã đăng nhập → cho phép truy cập
+  // Kiểm tra role - Chặn ADMIN/MODERATOR truy cập user routes
+  const user = authStore.currentUser
+  
+  if (user && (user.role === 'ADMIN' || user.role === 'MODERATOR')) {
+    // Là ADMIN/MODERATOR → Chuyển về admin panel
+    next({
+      path: '/admin/dashboard',
+      query: { error: 'admin_only_panel' }
+    })
+    return
+  }
+  
+  // Là USER thường → cho phép truy cập
   next()
 }
 
