@@ -18,6 +18,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -32,7 +37,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // Tắt CSRF vì dùng JWT
-                .cors(cors -> {}) // Bật CORS (sử dụng cấu hình từ WebMvcConfigurer)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Bật CORS với cấu hình chi tiết
 
                 // Cấu hình quy tắc truy cập
                 .authorizeHttpRequests(auth -> auth
@@ -87,5 +92,48 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    /**
+     * Cấu hình CORS cho phép frontend truy cập
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Cho phép các origin (frontend URLs)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5173",  // Vite dev server mặc định
+            "http://localhost:5174",  // Vite dev server port thay thế
+            "http://localhost:3000"   // React/Next.js dev server
+        ));
+        
+        // Cho phép các HTTP methods
+        configuration.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
+        ));
+        
+        // Cho phép các headers
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization", 
+            "Content-Type", 
+            "Accept",
+            "X-Requested-With"
+        ));
+        
+        // Cho phép gửi credentials (cookies, authorization headers)
+        configuration.setAllowCredentials(true);
+        
+        // Thời gian cache preflight request (giây)
+        configuration.setMaxAge(3600L);
+        
+        // Expose headers cho client đọc được
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        
+        // Áp dụng cấu hình cho tất cả các endpoints
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
     }
 }

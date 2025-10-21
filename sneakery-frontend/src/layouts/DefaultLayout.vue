@@ -5,10 +5,7 @@
       <div class="navbar-container">
         <!-- Logo/Brand -->
         <router-link to="/" class="navbar-brand">
-          <div class="brand-logo">
-            <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
-            <span class="brand-text">Sneakery Store</span>
-          </div>
+          <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
         </router-link>
 
         <!-- Desktop Navigation -->
@@ -197,10 +194,7 @@
       <div class="footer-container">
         <div class="footer-content">
           <div class="footer-brand">
-            <div class="brand-logo">
-              <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
-              <span class="brand-text">Sneakery Store</span>
-            </div>
+            <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
             <p class="footer-description">
               Cửa hàng giày sneaker hàng đầu với những sản phẩm chất lượng cao và thiết kế độc đáo.
             </p>
@@ -392,39 +386,21 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #ffffff;
-  font-weight: var(--font-bold);
-  font-size: var(--text-xl);
-  transition: color var(--transition-fast);
+  transition: transform var(--transition-fast);
   border: none;
   background: none;
   padding: 0;
 }
 
-.navbar-brand:hover {
-  color: var(--primary-color);
-}
-
-.brand-logo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.brand-logo .logo-image {
-  width: 48px;
-  height: 48px;
+.navbar-brand .logo-image {
+  width: 120px;
+  height: 120px;
   object-fit: contain;
   transition: transform var(--transition-fast);
 }
 
-.navbar-brand:hover .brand-logo .logo-image {
+.navbar-brand:hover .logo-image {
   transform: scale(1.1);
-}
-
-.brand-text {
-  font-weight: var(--font-bold);
-  letter-spacing: -0.025em;
 }
 
 /* ===== DESKTOP NAVIGATION ===== */
@@ -740,20 +716,11 @@ onUnmounted(() => {
   max-width: 400px;
 }
 
-.footer-brand .brand-logo {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  color: var(--primary-color);
-  font-weight: var(--font-bold);
-  font-size: var(--text-lg);
-}
-
-.footer-brand .brand-logo .logo-image {
-  width: 40px;
-  height: 40px;
+.footer-brand .logo-image {
+  width: 120px;
+  height: 120px;
   object-fit: contain;
+  margin-bottom: var(--space-4);
 }
 
 .footer-description {
@@ -874,8 +841,14 @@ onUnmounted(() => {
     top: 60px;
   }
   
-  .brand-text {
-    font-size: var(--text-lg);
+  .navbar-brand .logo-image {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .footer-brand .logo-image {
+    width: 100px;
+    height: 100px;
   }
   
   .footer-links {
