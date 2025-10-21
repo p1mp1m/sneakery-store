@@ -1,7 +1,11 @@
 package com.sneakery.store.repository;
 
 import com.sneakery.store.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -25,4 +29,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return true nếu email đã tồn tại, false nếu chưa
      */
     boolean existsByEmail(String email);
+
+    /**
+     * Tìm kiếm và lọc người dùng cho Admin với search, role, status
+     * Search: tìm theo email, fullName, phoneNumber
+     * Role: lọc theo vai trò (USER, ADMIN, MODERATOR)
+     * Status: lọc theo trạng thái (active/inactive)
+     */
+    @Query("SELECT u FROM User u " +
+            "WHERE (:search IS NULL OR :search = '' OR " +
+            "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(u.phoneNumber) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:role IS NULL OR :role = '' OR u.role = :role) " +
+            "AND (:isActive IS NULL OR u.isActive = :isActive)")
+    Page<User> findAllWithFilters(
+            @Param("search") String search,
+            @Param("role") String role,
+            @Param("isActive") Boolean isActive,
+            Pageable pageable
+    );
 }
