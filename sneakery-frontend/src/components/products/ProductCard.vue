@@ -64,7 +64,7 @@ const addToCart = (event) => {
   event.preventDefault(); // Prevent navigation
   event.stopPropagation();
   // TODO: Implement add to cart functionality
-  console.log('Add to cart:', product.value);
+  // console.log('Add to cart:', product.value); // Debug
 };
 </script>
   

@@ -121,11 +121,11 @@ export const adminGuard = async (to, from, next) => {
   
   // Kiểm tra role từ authStore
   const user = authStore.currentUser
-  console.log('Admin Guard - Current user:', user) // Debug log
+  // console.log('Admin Guard - Current user:', user) // Debug log
   
   if (!user || (user.role !== 'ADMIN' && user.role !== 'MODERATOR')) {
     // Không phải ADMIN/MODERATOR → Chặn
-    console.log('Access denied - User role:', user?.role) // Debug log
+    // console.log('Access denied - User role:', user?.role) // Debug log
     next({
       path: '/user/dashboard',
       query: { error: 'access_denied' }
@@ -134,7 +134,7 @@ export const adminGuard = async (to, from, next) => {
   }
   
   // Là ADMIN/MODERATOR → Cho phép truy cập
-  console.log('Admin access granted for user:', user.email) // Debug log
+  // console.log('Admin access granted for user:', user.email) // Debug log
   next()
 }
 

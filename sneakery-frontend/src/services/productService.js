@@ -4,14 +4,32 @@ import axios from 'axios';
 const API_URL = '/api/products';
 
 class ProductService {
-    // Sửa lại hàm để nhận page và size
-    getProducts(page, size) {
-        return axios.get(API_URL, {
+    // Lấy danh sách sản phẩm với phân trang
+    async getProducts(page = 0, size = 10) {
+        const response = await axios.get(API_URL, {
             params: {
                 page: page,
                 size: size
             }
         });
+        return response.data;
+    }
+
+    // Lấy chi tiết sản phẩm theo ID
+    async getProductById(id) {
+        const response = await axios.get(`${API_URL}/${id}`);
+        return response.data;
+    }
+
+    // Tìm kiếm sản phẩm với filters
+    async searchProducts(keyword = '', filters = {}) {
+        const response = await axios.get(`${API_URL}/search`, {
+            params: {
+                keyword: keyword,
+                ...filters
+            }
+        });
+        return response.data;
     }
 }
 

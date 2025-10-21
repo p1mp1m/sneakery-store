@@ -17,12 +17,12 @@ export const useAuthStore = defineStore('auth', () => {
     async function login(credentials) {
         // Gọi API service để đăng nhập
         const responseData = await AuthService.login(credentials);
-        console.log('Auth Store - Login response:', responseData); // Debug
+        // console.log('Auth Store - Login response:', responseData); // Debug
         
         // Lưu thông tin vào state và localStorage
         user.value = responseData;
         localStorage.setItem('user', JSON.stringify(responseData));
-        console.log('Auth Store - User saved:', user.value); // Debug
+        // console.log('Auth Store - User saved:', user.value); // Debug
     }
 
     async function register(userData) {

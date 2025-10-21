@@ -401,7 +401,7 @@ const formatCurrency = (value) => {
 }
 
 const loadAnalytics = () => {
-  console.log('Loading analytics for period:', selectedPeriod.value)
+  // console.log('Loading analytics for period:', selectedPeriod.value) // Debug
   // TODO: Call API to load analytics data
 }
 </script>

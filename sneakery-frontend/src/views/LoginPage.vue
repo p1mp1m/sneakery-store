@@ -235,16 +235,16 @@ const handleLogin = async (formEl) => {
         
         // 🔐 PHÂN QUYỀN: Redirect theo role
         const user = authStore.currentUser;
-        console.log('LoginPage - User after login:', user); // Debug
-        console.log('LoginPage - User role:', user?.role); // Debug
+        // console.log('LoginPage - User after login:', user); // Debug
+        // console.log('LoginPage - User role:', user?.role); // Debug
         
         if (user.role === 'ADMIN' || user.role === 'MODERATOR') {
           ElMessage.success(`Chào mừng Admin ${user.fullName}!`);
-          console.log('Redirecting to /admin/dashboard'); // Debug
+          // console.log('Redirecting to /admin/dashboard'); // Debug
           router.push('/admin/dashboard');
         } else {
           ElMessage.success(`Chào mừng ${user.fullName}!`);
-          console.log('Redirecting to /user/dashboard'); // Debug
+          // console.log('Redirecting to /user/dashboard'); // Debug
           router.push('/user/dashboard');
         }
       } catch (error) {
