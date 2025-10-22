@@ -1,5 +1,5 @@
 <template>
-  <div class="product-variants-page">
+  <div class="admin-page product-variants-page">
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">

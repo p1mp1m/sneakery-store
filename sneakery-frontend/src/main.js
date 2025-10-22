@@ -10,6 +10,8 @@ import 'element-plus/dist/index.css'
 import './assets/styles/main.css'
 import './assets/styles/components.css'
 import './assets/styles/admin-panel.css'
+import './assets/styles/admin-design-system.css'
+import './assets/styles/admin-dashboard-shared.css'
 
 const app = createApp(App)
 const pinia = createPinia() // 👈 2. Tạo một instance của Pinia

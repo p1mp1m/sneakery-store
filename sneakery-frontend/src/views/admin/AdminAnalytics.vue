@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-analytics">
+  <div class="admin-page admin-analytics">
     <!-- Page Header -->
     <div class="analytics-header animate-fade-in">
       <div class="header-left">

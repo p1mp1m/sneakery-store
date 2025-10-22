@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-dashboard">
+  <div class="admin-page admin-dashboard">
     <!-- Notification Toast Container -->
     <transition-group name="toast" tag="div" class="toast-container">
       <div 

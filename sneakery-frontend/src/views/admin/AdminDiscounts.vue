@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-discounts">
+  <div class="admin-page admin-discounts">
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">

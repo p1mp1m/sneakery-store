@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-warranty">
+  <div class="admin-page admin-warranty">
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">

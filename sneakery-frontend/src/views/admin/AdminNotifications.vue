@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-notifications">
+  <div class="admin-page admin-notifications">
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">

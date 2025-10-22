@@ -1,18 +1,22 @@
 <template>
-  <div class="admin-categories">
+  <div class="admin-page admin-categories">
     <!-- Page Header -->
-    <div class="page-header animate-fade-in">
-      <div>
-        <h1 class="page-title">
-          <i class="material-icons">category</i>
-          Quản lý danh mục
-        </h1>
-        <p class="page-subtitle">Quản lý danh mục sản phẩm với cấu trúc phân cấp</p>
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="page-title">
+            <i class="material-icons">category</i>
+            Quản lý danh mục
+          </h1>
+          <p class="page-subtitle">Quản lý danh mục sản phẩm với cấu trúc phân cấp</p>
+        </div>
+        <div class="header-actions">
+          <button @click="openCreateModal" class="btn btn-primary">
+            <i class="material-icons">add</i>
+            Thêm danh mục
+          </button>
+        </div>
       </div>
-      <button @click="openCreateModal" class="btn btn-primary">
-        <i class="material-icons">add</i>
-        Thêm danh mục
-      </button>
     </div>
 
     <!-- Loading State -->

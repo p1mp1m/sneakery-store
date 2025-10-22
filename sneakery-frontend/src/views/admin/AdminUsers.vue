@@ -1,18 +1,22 @@
 <template>
-  <div class="admin-users">
+  <div class="admin-page admin-users">
     <!-- Page Header -->
-    <div class="page-header animate-fade-in">
-      <div>
-        <h1 class="page-title">
-          <i class="material-icons">people</i>
-          Quản lý người dùng
-        </h1>
-        <p class="page-subtitle">Quản lý phân quyền và trạng thái tài khoản</p>
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="page-title">
+            <i class="material-icons">people</i>
+            Quản lý người dùng
+          </h1>
+          <p class="page-subtitle">Quản lý phân quyền và trạng thái tài khoản</p>
+        </div>
+        <div class="header-actions">
+          <button @click="exportToExcel" class="btn btn-secondary">
+            <i class="material-icons">download</i>
+            Export Excel
+          </button>
+        </div>
       </div>
-      <button @click="exportToExcel" class="btn btn-secondary btn-export">
-        <i class="material-icons">download</i>
-        Export Excel
-      </button>
     </div>
 
     <!-- Search & Filters -->

@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-orders">
+  <div class="admin-page admin-orders">
     <!-- Page Header -->
     <div class="page-header animate-fade-in">
       <div>

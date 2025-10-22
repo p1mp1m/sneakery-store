@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-returns">
+  <div class="admin-page admin-returns">
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">

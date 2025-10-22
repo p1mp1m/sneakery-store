@@ -1,18 +1,22 @@
 <template>
-  <div class="admin-brands">
+  <div class="admin-page admin-brands">
     <!-- Page Header -->
-    <div class="page-header animate-fade-in">
-      <div>
-        <h1 class="page-title">
-          <i class="material-icons">branding_watermark</i>
-          Quản lý thương hiệu
-        </h1>
-        <p class="page-subtitle">Quản lý các thương hiệu giày sneaker</p>
+    <div class="page-header">
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="page-title">
+            <i class="material-icons">branding_watermark</i>
+            Quản lý thương hiệu
+          </h1>
+          <p class="page-subtitle">Quản lý các thương hiệu giày sneaker</p>
+        </div>
+        <div class="header-actions">
+          <button @click="openCreateModal" class="btn btn-primary">
+            <i class="material-icons">add</i>
+            Thêm thương hiệu
+          </button>
+        </div>
       </div>
-      <button @click="openCreateModal" class="btn btn-primary">
-        <i class="material-icons">add</i>
-        Thêm thương hiệu
-      </button>
     </div>
 
     <!-- Loading State -->
