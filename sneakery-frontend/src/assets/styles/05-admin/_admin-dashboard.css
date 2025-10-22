@@ -1,0 +1,151 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * 📊 ADMIN DASHBOARD
+ * ═══════════════════════════════════════════════════════════════════════
+ * Dashboard header, profile card, and quick actions
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+
+/* Dashboard Header */
+.dashboard-header {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.6) 50%, rgba(30, 41, 59, 0.8) 100%);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-6);
+  margin-bottom: var(--space-8);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.header-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.welcome-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.welcome-title {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--dark-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.gradient-text {
+  background: var(--gradient-purple);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.welcome-subtitle {
+  color: var(--dark-text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Profile Card */
+.profile-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  backdrop-filter: blur(10px);
+}
+
+.profile-main {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.avatar-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+}
+
+.profile-name {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--dark-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.profile-role {
+  color: var(--dark-text-tertiary);
+  font-size: var(--text-sm);
+}
+
+/* Quick Actions */
+.quick-actions {
+  margin-bottom: var(--space-8);
+}
+
+.section-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--dark-text-primary);
+  margin-bottom: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.action-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
+}
+
+.action-card:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(167, 139, 250, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(167, 139, 250, 0.2);
+}
+
+.action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+}
+
+.action-card h3 {
+  color: var(--dark-text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+}
+
+.action-card p {
+  color: var(--dark-text-tertiary);
+  font-size: var(--text-sm);
+}
+

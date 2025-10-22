@@ -6,8 +6,8 @@ import router from './routers/index.js'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 
-// Import custom CSS - All-in-One Style
-import './assets/styles/style.css' // 🔥 TẤT CẢ CSS trong 1 file duy nhất
+// Import custom CSS - Modular Architecture
+import './assets/styles/main.css' // 🎨 Modular CSS Architecture với 25+ files
 
 const app = createApp(App)
 const pinia = createPinia() // 👈 2. Tạo một instance của Pinia

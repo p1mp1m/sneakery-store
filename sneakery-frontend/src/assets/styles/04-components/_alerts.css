@@ -1,0 +1,123 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * ⚠️ ALERT & TOAST COMPONENTS
+ * ═══════════════════════════════════════════════════════════════════════
+ * Alerts, toasts, and notification components
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+
+/* Alert Component */
+.alert {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.alert-icon {
+  flex-shrink: 0;
+  font-size: var(--text-xl);
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-title {
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-1);
+}
+
+.alert-message {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+
+/* Alert Variants */
+.alert-success {
+  background-color: var(--color-success-light);
+  color: var(--color-success-dark);
+  border-color: var(--color-success);
+}
+
+.alert-warning {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
+  border-color: var(--color-warning);
+}
+
+.alert-error {
+  background-color: var(--color-error-light);
+  color: var(--color-error-dark);
+  border-color: var(--color-error);
+}
+
+.alert-info {
+  background-color: var(--color-info-light);
+  color: var(--color-info-dark);
+  border-color: var(--color-info);
+}
+
+/* Toast Notification */
+.toast {
+  min-width: 300px;
+  max-width: 500px;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  border-left: 4px solid;
+  animation: toastSlideIn 0.3s ease-out;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toast-success {
+  border-left-color: var(--color-success);
+}
+
+.toast-warning {
+  border-left-color: var(--color-warning);
+}
+
+.toast-error {
+  border-left-color: var(--color-error);
+}
+
+.toast-info {
+  border-left-color: var(--color-info);
+}
+
+/* Toast Container */
+.toast-container {
+  position: fixed;
+  top: var(--space-6);
+  right: var(--space-6);
+  z-index: var(--z-tooltip);
+}
+
+@media (max-width: 640px) {
+  .toast {
+    min-width: auto;
+    max-width: calc(100vw - var(--space-8));
+  }
+  
+  .toast-container {
+    right: var(--space-4);
+    left: var(--space-4);
+  }
+}
+

@@ -1,0 +1,124 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * 📋 ADMIN TABLES
+ * ═══════════════════════════════════════════════════════════════════════
+ * Enhanced tables, filters, and bulk actions for admin panel
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+
+/* Admin Table Container */
+.table-container {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* Admin Table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.admin-table th {
+  padding: var(--space-4) var(--space-6);
+  text-align: left;
+  font-weight: var(--font-semibold);
+  color: var(--color-white);
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-table td {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+  color: var(--dark-text-secondary);
+}
+
+.admin-table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(167, 139, 250, 0.05);
+}
+
+/* Filters Section */
+.filters-section {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  backdrop-filter: blur(10px);
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.filter-label {
+  font-weight: var(--font-medium);
+  color: var(--dark-text-primary);
+  font-size: var(--text-sm);
+}
+
+.filter-input,
+.filter-select {
+  padding: var(--space-3) var(--space-4);
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--dark-text-primary);
+  transition: all var(--transition-fast);
+}
+
+.filter-input:hover,
+.filter-select:hover {
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+}
+
+/* Bulk Actions Bar */
+.bulk-action-bar {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  backdrop-filter: blur(10px);
+}
+
+.bulk-info {
+  color: var(--dark-text-primary);
+  font-weight: var(--font-medium);
+}
+
+.bulk-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+

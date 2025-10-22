@@ -1,0 +1,112 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * 👤 USER PROFILE
+ * ═══════════════════════════════════════════════════════════════════════
+ * User dashboard, profile, and orders
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+
+/* User Dashboard */
+.user-dashboard {
+  padding: var(--space-8) 0;
+}
+
+.dashboard-header {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  margin-bottom: var(--space-8);
+  backdrop-filter: blur(10px);
+}
+
+.welcome-title {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: #f1f5f9;
+  margin-bottom: var(--space-2);
+}
+
+.welcome-subtitle {
+  color: #94a3b8;
+  font-size: var(--text-lg);
+}
+
+/* Action Cards */
+.action-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
+}
+
+.action-card:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(167, 139, 250, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(167, 139, 250, 0.2);
+}
+
+.action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+}
+
+.action-card h3 {
+  color: #f1f5f9;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+}
+
+.action-card p {
+  color: #94a3b8;
+  font-size: var(--text-sm);
+}
+
+/* Order Card */
+.order-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
+  backdrop-filter: blur(10px);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+}
+
+.order-id {
+  font-weight: var(--font-semibold);
+  color: #e2e8f0;
+}
+
+.order-date {
+  color: #94a3b8;
+  font-size: var(--text-sm);
+}
+
+.order-total {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: #c4b5fd;
+}
+

@@ -1,0 +1,231 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * 🌙 DARK THEME
+ * ═══════════════════════════════════════════════════════════════════════
+ * Dark mode variables and component overrides
+ * Ensures consistent dark theme across all panels
+ * ═══════════════════════════════════════════════════════════════════════
+ */
+
+/* Dark Theme Root Variables Override */
+body, 
+[data-theme="dark"],
+.dark-mode {
+  /* Backgrounds */
+  --bg-primary: var(--dark-bg-primary);
+  --bg-secondary: var(--dark-bg-secondary);
+  --bg-tertiary: var(--dark-bg-tertiary);
+  --bg-card: var(--dark-bg-card);
+  
+  /* Text Colors */
+  --text-primary: var(--dark-text-primary);
+  --text-secondary: var(--dark-text-secondary);
+  --text-tertiary: var(--dark-text-tertiary);
+  --text-muted: var(--dark-text-muted);
+  
+  /* Borders */
+  --border-color: var(--dark-border);
+  --border-light: rgba(167, 139, 250, 0.1);
+  --border-dark: rgba(167, 139, 250, 0.25);
+  
+  /* Shadows - darker */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Component Overrides for Dark Theme */
+
+/* Cards in Dark Mode */
+.card,
+.card-enhanced,
+.product-card,
+.stat-card,
+.stats-card,
+.action-card,
+.category-card {
+  background: var(--dark-bg-card);
+  border-color: var(--dark-border);
+  backdrop-filter: blur(10px);
+}
+
+.card:hover,
+.card-enhanced:hover,
+.product-card:hover,
+.stat-card:hover,
+.stats-card:hover,
+.action-card:hover,
+.category-card:hover {
+  border-color: var(--dark-border-hover);
+  background: var(--dark-bg-glass);
+}
+
+/* Forms in Dark Mode */
+.form-control,
+.input-enhanced,
+.filter-input,
+.filter-select {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: var(--dark-border);
+  color: var(--dark-text-primary);
+}
+
+.form-control:focus,
+.input-enhanced:focus,
+.filter-input:focus,
+.filter-select:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+}
+
+.form-control::placeholder,
+.input-enhanced::placeholder {
+  color: var(--dark-text-muted);
+}
+
+/* Buttons in Dark Mode */
+.btn-secondary {
+  background-color: rgba(30, 41, 59, 0.6);
+  color: var(--dark-text-primary);
+  border-color: var(--dark-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(30, 41, 59, 0.9);
+  border-color: var(--dark-border-hover);
+}
+
+.btn-outline {
+  color: var(--dark-text-secondary);
+  border-color: var(--dark-border);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: rgba(167, 139, 250, 0.15);
+  color: var(--dark-text-primary);
+  border-color: var(--dark-border-hover);
+}
+
+/* Tables in Dark Mode */
+.table,
+.admin-table,
+.table-enhanced {
+  background: transparent;
+}
+
+.table thead,
+.admin-table thead {
+  background: var(--gradient-primary);
+}
+
+.table tbody tr:hover,
+.admin-table tbody tr:hover {
+  background: rgba(167, 139, 250, 0.05);
+}
+
+.table td,
+.admin-table td {
+  border-color: rgba(167, 139, 250, 0.1);
+  color: var(--dark-text-secondary);
+}
+
+/* Modals in Dark Mode */
+.modal {
+  background-color: var(--dark-bg-secondary);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--dark-border);
+}
+
+/* Alerts & Toasts in Dark Mode */
+.toast {
+  background-color: var(--dark-bg-secondary);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+}
+
+/* Badge Adjustments for Dark Mode */
+.badge-primary {
+  background-color: rgba(167, 139, 250, 0.2);
+  color: #c4b5fd;
+}
+
+.badge-success {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+}
+
+.badge-warning {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.badge-error {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+/* Skeleton Loaders in Dark Mode */
+.skeleton,
+.skeleton-enhanced {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.6) 0%,
+    rgba(30, 41, 59, 0.8) 50%,
+    rgba(15, 23, 42, 0.6) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+/* Pagination in Dark Mode */
+.pagination-btn,
+.page-number {
+  background-color: var(--dark-bg-card);
+  border-color: var(--dark-border);
+  color: var(--dark-text-primary);
+}
+
+.pagination-btn:hover:not(:disabled),
+.page-number:hover {
+  background-color: rgba(167, 139, 250, 0.2);
+  border-color: var(--dark-border-hover);
+}
+
+.pagination-btn.active,
+.page-number.active {
+  background: var(--gradient-purple);
+  border-color: transparent;
+  color: var(--color-white);
+}
+
+/* Custom Scrollbar for Dark Mode */
+::-webkit-scrollbar-track {
+  background: var(--dark-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.5);
+}
+
+/* Special Effects for Dark Mode */
+.glassmorphism {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.4);
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+}
+
