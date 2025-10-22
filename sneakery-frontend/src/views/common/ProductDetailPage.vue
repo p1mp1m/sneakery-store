@@ -1,5 +1,5 @@
 <template>
-  <div class="product-detail-page">
+  <div class="user-page product-detail-page">
     <!-- Loading State -->
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
@@ -697,6 +697,47 @@ watch(() => route.params.id, () => {
   .action-buttons {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===== DARK THEME OVERRIDES ===== */
+.product-detail-page {
+  background: transparent;
+}
+
+.breadcrumb a,
+.breadcrumb span {
+  color: #94a3b8;
+}
+
+.breadcrumb .current {
+  color: #c4b5fd;
+}
+
+.product-brand {
+  color: #a78bfa !important;
+}
+
+.product-title {
+  color: #f1f5f9 !important;
+}
+
+.product-price {
+  color: #c4b5fd !important;
+}
+
+.product-description,
+.product-detail-page p {
+  color: #e2e8f0;
+}
+
+.product-detail-page h2,
+.product-detail-page h3 {
+  color: #f1f5f9;
+}
+
+.loading-container,
+.error-container {
+  color: #e2e8f0;
 }
 </style>
 

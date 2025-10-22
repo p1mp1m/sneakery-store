@@ -1,5 +1,5 @@
 <template>
-  <div class="orders-page">
+  <div class="user-page orders-page">
     <div class="orders-container">
       <h1 class="page-title">Đơn hàng của tôi</h1>
 

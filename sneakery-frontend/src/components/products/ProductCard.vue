@@ -92,7 +92,7 @@ const addToCart = (event) => {
 }
 
 /* ─────────────────────────────────────────────────────────────────────
-   2. Card Container
+   2. Card Container - Dark Theme
    ───────────────────────────────────────────────────────────────────── */
 .product-card {
   /* Layout */
@@ -102,20 +102,22 @@ const addToCart = (event) => {
   position: relative;
   overflow: hidden;
   
-  /* Visual */
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
+  /* Visual - Dark */
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
   border-radius: var(--radius-xl);
+  backdrop-filter: blur(10px);
   
   /* Effects */
   transition: all var(--transition-normal);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .product-card:hover {
   transform: translateY(-8px);
-  box-shadow: var(--shadow-glow);
-  border-color: var(--primary-light);
+  box-shadow: 0 12px 30px rgba(167, 139, 250, 0.3);
+  border-color: rgba(167, 139, 250, 0.4);
+  background: rgba(30, 41, 59, 0.8);
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -125,7 +127,7 @@ const addToCart = (event) => {
   position: relative;
   overflow: hidden;
   aspect-ratio: 1 / 1;
-  background: var(--bg-tertiary);
+  background: rgba(15, 23, 42, 0.6);
 }
 
 .product-image {
@@ -178,23 +180,24 @@ const addToCart = (event) => {
   align-items: center;
   justify-content: center;
   
-  /* Visual */
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
+  /* Visual - Dark */
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(167, 139, 250, 0.3);
   border-radius: var(--radius-full);
-  color: var(--text-secondary);
+  color: #e2e8f0;
   
   /* Effects */
   cursor: pointer;
   backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: all var(--transition-normal);
 }
 
 .btn-icon:hover {
-  background: var(--white);
+  background: rgba(30, 41, 59, 0.95);
+  border-color: rgba(167, 139, 250, 0.5);
   transform: scale(1.1);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 20px rgba(167, 139, 250, 0.3);
 }
 
 .btn-icon:active {
@@ -222,7 +225,7 @@ const addToCart = (event) => {
   padding: var(--space-4);
 }
 
-/* Brand Label */
+/* Brand Label - Dark */
 .brand-name {
   /* Typography */
   font-size: var(--text-xs);
@@ -231,20 +234,20 @@ const addToCart = (event) => {
   letter-spacing: 0.5px;
   line-height: var(--leading-normal);
   
-  /* Visual */
-  color: var(--text-muted);
+  /* Visual - Dark */
+  color: #94a3b8;
   margin-bottom: var(--space-2);
 }
 
-/* Product Title */
+/* Product Title - Dark */
 .product-name {
   /* Typography */
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   line-height: var(--leading-snug);
   
-  /* Visual */
-  color: var(--text-primary);
+  /* Visual - Dark */
+  color: #f1f5f9;
   margin: 0 0 var(--space-3) 0;
   min-height: 40px;
   
@@ -269,14 +272,14 @@ const addToCart = (event) => {
   margin-top: auto;
 }
 
-/* Price Display */
+/* Price Display - Dark */
 .price {
   /* Typography */
   font-size: var(--text-lg);
   font-weight: var(--font-bold);
   
-  /* Visual */
-  color: var(--primary-color);
+  /* Visual - Dark */
+  color: #c4b5fd;
   flex: 1;
 }
 

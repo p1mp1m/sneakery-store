@@ -1,5 +1,5 @@
 <template>
-  <div class="cart-page">
+  <div class="user-page cart-page">
     <div class="cart-container">
       <h1 class="page-title">Giỏ hàng của bạn</h1>
 
@@ -64,7 +64,7 @@
         </div>
 
         <!-- Cart Summary -->
-        <div class="cart-summary">
+        <div class="cart-summary card-enhanced">
           <h2>Tổng đơn hàng</h2>
           
           <div class="summary-row">
@@ -486,5 +486,71 @@ onMounted(() => {
   .cart-summary {
     position: static;
   }
+}
+
+/* ===== DARK THEME OVERRIDES ===== */
+.cart-page {
+  background: transparent !important;
+}
+
+.page-title {
+  color: #f1f5f9;
+}
+
+.empty-cart h2 {
+  color: #f1f5f9;
+}
+
+.empty-cart p {
+  color: #94a3b8;
+}
+
+.cart-item {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(167, 139, 250, 0.15) !important;
+  backdrop-filter: blur(10px);
+}
+
+.cart-item:hover {
+  border-color: rgba(167, 139, 250, 0.3) !important;
+}
+
+.item-name {
+  color: #f1f5f9 !important;
+}
+
+.item-brand {
+  color: #94a3b8 !important;
+}
+
+.item-price {
+  color: #c4b5fd !important;
+}
+
+.variant-tag {
+  background: rgba(167, 139, 250, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+.cart-summary {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(167, 139, 250, 0.15) !important;
+  backdrop-filter: blur(10px);
+}
+
+.cart-summary h2 {
+  color: #f1f5f9;
+}
+
+.summary-row span {
+  color: #e2e8f0;
+}
+
+.total-price {
+  color: #c4b5fd !important;
+}
+
+.loading-container p {
+  color: #94a3b8;
 }
 </style>

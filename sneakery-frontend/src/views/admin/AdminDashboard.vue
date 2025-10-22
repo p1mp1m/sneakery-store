@@ -104,10 +104,10 @@
       </div>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- Stats Cards - Enhanced -->
     <div class="stats-grid">
-      <div class="stat-card animate-fade-up" style="animation-delay: 0.1s">
-        <div class="stat-icon revenue-icon">
+      <div class="stat-card stat-card-enhanced animate-fade-up hover-lift" style="animation-delay: 0.1s">
+        <div class="stat-icon stat-icon-enhanced revenue-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M17 5H9.5C8.11929 5 7 6.11929 7 7.5S8.11929 10 9.5 10H14.5C15.8807 10 17 11.1193 17 12.5S15.8807 15 14.5 15H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -123,8 +123,8 @@
         </div>
       </div>
 
-      <div class="stat-card animate-fade-up" style="animation-delay: 0.2s">
-        <div class="stat-icon orders-icon">
+      <div class="stat-card stat-card-enhanced animate-fade-up hover-lift" style="animation-delay: 0.2s">
+        <div class="stat-icon stat-icon-enhanced orders-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L18 21H6L5 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -139,8 +139,8 @@
         </div>
       </div>
 
-      <div class="stat-card animate-fade-up" style="animation-delay: 0.3s">
-        <div class="stat-icon products-icon">
+      <div class="stat-card stat-card-enhanced animate-fade-up hover-lift" style="animation-delay: 0.3s">
+        <div class="stat-icon stat-icon-enhanced products-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M21 16V8C21 7.46957 20.7893 6.96086 20.4142 6.58579C20.0391 6.21071 19.5304 6 19 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V16C3 16.5304 3.21071 17.0391 3.58579 17.4142C3.96086 17.7893 4.46957 18 5 18H19C19.5304 18 20.0391 17.7893 20.4142 17.4142C20.7893 17.0391 21 16.5304 21 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M16 6V4C16 3.46957 15.7893 2.96086 15.4142 2.58579C15.0391 2.21071 14.5304 2 14 2H10C9.46957 2 8.96086 2.21071 8.58579 2.58579C8.21071 2.96086 8 3.46957 8 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -156,8 +156,8 @@
         </div>
       </div>
 
-      <div class="stat-card animate-fade-up" style="animation-delay: 0.4s">
-        <div class="stat-icon users-icon">
+      <div class="stat-card stat-card-enhanced animate-fade-up hover-lift" style="animation-delay: 0.4s">
+        <div class="stat-icon stat-icon-enhanced users-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -185,8 +185,8 @@
         </h2>
       </div>
       <div class="actions-grid">
-        <router-link to="/admin/products" class="action-card hover-lift">
-          <div class="action-icon">
+        <router-link to="/admin/products" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon animate-float">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M21 16V8C21 7.46957 20.7893 6.96086 20.4142 6.58579C20.0391 6.21071 19.5304 6 19 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V16C3 16.5304 3.21071 17.0391 3.58579 17.4142C3.96086 17.7893 4.46957 18 5 18H19C19.5304 18 20.0391 17.7893 20.4142 17.4142C20.7893 17.0391 21 16.5304 21 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -196,7 +196,7 @@
           <div class="action-badge">{{ stats?.totalProducts || 0 }}</div>
         </router-link>
 
-        <router-link to="/admin/orders" class="action-card hover-lift">
+        <router-link to="/admin/orders" class="action-card card-enhanced hover-lift hover-glow">
           <div class="action-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L18 21H6L5 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

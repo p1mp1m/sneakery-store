@@ -1,5 +1,5 @@
 <template>
-  <div class="profile-page">
+  <div class="user-page profile-page">
     <div class="profile-container">
       <h1 class="page-title">Thông tin cá nhân</h1>
 

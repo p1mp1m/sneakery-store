@@ -1,5 +1,5 @@
 <template>
-  <div class="user-dashboard">
+  <div class="user-page user-dashboard">
     <!-- Header -->
     <div class="dashboard-header">
       <div class="welcome-section">
@@ -757,5 +757,86 @@ onMounted(() => {
   .products-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
+}
+
+/* ===== DARK THEME OVERRIDES ===== */
+.user-dashboard {
+  background: transparent !important;
+}
+
+.welcome-title,
+.section-title {
+  color: #f1f5f9 !important;
+}
+
+.welcome-subtitle {
+  color: #94a3b8 !important;
+}
+
+.stat-card {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(167, 139, 250, 0.15) !important;
+  backdrop-filter: blur(10px);
+}
+
+.stat-card:hover {
+  border-color: rgba(167, 139, 250, 0.3) !important;
+}
+
+.stat-number {
+  color: #f1f5f9 !important;
+}
+
+.stat-label {
+  color: #94a3b8 !important;
+}
+
+.action-card {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(167, 139, 250, 0.15) !important;
+}
+
+.action-card:hover {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(167, 139, 250, 0.3) !important;
+}
+
+.action-card h3 {
+  color: #f1f5f9 !important;
+}
+
+.action-card p {
+  color: #94a3b8 !important;
+}
+
+.recent-order {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(167, 139, 250, 0.15) !important;
+}
+
+.order-id,
+.order-date {
+  color: #94a3b8 !important;
+}
+
+.order-total {
+  color: #c4b5fd !important;
+}
+
+.product-card {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border: 1px solid rgba(167, 139, 250, 0.15) !important;
+}
+
+.product-card:hover {
+  border-color: rgba(167, 139, 250, 0.3) !important;
+}
+
+.product-name {
+  color: #f1f5f9 !important;
+}
+
+.product-price {
+  color: #c4b5fd !important;
 }
 </style>

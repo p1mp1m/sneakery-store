@@ -1,5 +1,5 @@
 <template>
-  <div class="checkout-page">
+  <div class="user-page checkout-page">
     <div class="checkout-container">
       <h1 class="page-title">Thanh toán</h1>
 

@@ -1,9 +1,9 @@
 <template>
-  <div class="products-page">
+  <div class="user-page products-page">
     <!-- Header -->
     <div class="page-header">
-      <h1 class="text-3xl font-bold">Tất cả sản phẩm</h1>
-      <p class="text-secondary">Khám phá bộ sưu tập giày sneaker của chúng tôi</p>
+      <h1 style="color: #f1f5f9; font-size: 2.25rem; font-weight: 700;">Tất cả sản phẩm</h1>
+      <p style="color: #94a3b8;">Khám phá bộ sưu tập giày sneaker của chúng tôi</p>
     </div>
 
     <!-- Filters & Products Grid -->
@@ -182,19 +182,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ===== DARK THEME - ProductListPage ===== */
+
 .products-page {
   max-width: 1400px;
   margin: 0 auto;
   padding: var(--space-6);
-}
-
-.page-header {
-  text-align: center;
-  margin-bottom: var(--space-8);
-}
-
-.page-header h1 {
-  margin-bottom: var(--space-2);
+  background: transparent;
 }
 
 .products-container {
@@ -203,9 +197,11 @@ onMounted(() => {
   gap: var(--space-6);
 }
 
-/* Filters Sidebar */
+/* Filters Sidebar - Dark */
 .filters-sidebar {
-  background: var(--bg-secondary);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  backdrop-filter: blur(10px);
   padding: var(--space-6);
   border-radius: var(--radius-lg);
   height: fit-content;
@@ -221,6 +217,7 @@ onMounted(() => {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   margin-bottom: var(--space-3);
+  color: #f1f5f9;
 }
 
 .filter-options {
@@ -237,17 +234,20 @@ onMounted(() => {
   padding: var(--space-2);
   border-radius: var(--radius-md);
   transition: var(--transition-fast);
+  color: #e2e8f0;
 }
 
 .filter-option:hover {
-  background: var(--bg-tertiary);
+  background: rgba(167, 139, 250, 0.15);
 }
 
 .filter-option input {
   cursor: pointer;
+  accent-color: #a78bfa;
 }
 
-/* Products Grid */
+/* products-grid, product-card, product-image, product-brand đã có trong style.css */
+
 .products-main {
   min-height: 500px;
 }
@@ -261,70 +261,14 @@ onMounted(() => {
   justify-content: center;
   min-height: 400px;
   gap: var(--space-4);
+  color: #e2e8f0;
 }
 
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
+.loading-container p,
+.error-container p {
+  color: #94a3b8;
 }
 
-.product-card {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition: var(--transition-normal);
-  cursor: pointer;
-}
-
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.product-image {
-  width: 100%;
-  height: 250px;
-  overflow: hidden;
-  background: var(--bg-tertiary);
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-info {
-  padding: var(--space-4);
-}
-
-.product-brand {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-1);
-}
-
-.product-name {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.product-price {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--primary-color);
-  margin-bottom: var(--space-3);
-}
-
-/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
@@ -335,10 +279,34 @@ onMounted(() => {
 
 .page-info {
   font-size: var(--text-base);
-  color: var(--text-secondary);
+  color: #e2e8f0;
 }
 
-/* Responsive */
+/* Dark Theme Overrides */
+.products-page .product-card {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.products-page .product-card:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+.products-page .product-brand {
+  color: #94a3b8;
+}
+
+.products-page .product-name {
+  color: #f1f5f9;
+}
+
+.products-page .product-price {
+  color: #c4b5fd;
+}
+
+/* Responsive - Custom */
 @media (max-width: 1024px) {
   .products-container {
     grid-template-columns: 1fr;
@@ -346,23 +314,6 @@ onMounted(() => {
 
   .filters-sidebar {
     position: static;
-  }
-}
-
-@media (max-width: 768px) {
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--space-4);
-  }
-
-  .product-image {
-    height: 200px;
-  }
-}
-
-@media (max-width: 480px) {
-  .products-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

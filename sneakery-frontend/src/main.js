@@ -6,12 +6,8 @@ import router from './routers/index.js'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 
-// Import custom CSS
-import './assets/styles/main.css'
-import './assets/styles/components.css'
-import './assets/styles/admin-panel.css'
-import './assets/styles/admin-design-system.css'
-import './assets/styles/admin-dashboard-shared.css'
+// Import custom CSS - All-in-One Style
+import './assets/styles/style.css' // 🔥 TẤT CẢ CSS trong 1 file duy nhất
 
 const app = createApp(App)
 const pinia = createPinia() // 👈 2. Tạo một instance của Pinia
