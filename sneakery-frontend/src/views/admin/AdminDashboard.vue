@@ -657,32 +657,34 @@ onUnmounted(() => {
 }
 
 .toast-notification {
-  background: white;
-  border-radius: 12px;
+  background: var(--dark-bg-card);
+  border-radius: var(--radius-xl);
   padding: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-glass-lg);
   display: flex;
   align-items: flex-start;
   gap: 12px;
   border-left: 4px solid;
   min-width: 320px;
   animation: slideInRight 0.3s ease;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .toast-notification.success {
-  border-color: #22c55e;
+  border-color: var(--success-color);
 }
 
 .toast-notification.error {
-  border-color: #ef4444;
+  border-color: var(--error-color);
 }
 
 .toast-notification.warning {
-  border-color: #f59e0b;
+  border-color: var(--warning-color);
 }
 
 .toast-notification.info {
-  border-color: #3b82f6;
+  border-color: var(--info-color);
 }
 
 .toast-notification > i {
@@ -691,19 +693,19 @@ onUnmounted(() => {
 }
 
 .toast-notification.success > i {
-  color: #22c55e;
+  color: var(--success-color);
 }
 
 .toast-notification.error > i {
-  color: #ef4444;
+  color: var(--error-color);
 }
 
 .toast-notification.warning > i {
-  color: #f59e0b;
+  color: var(--warning-color);
 }
 
 .toast-notification.info > i {
-  color: #3b82f6;
+  color: var(--info-color);
 }
 
 .toast-content {
@@ -715,27 +717,27 @@ onUnmounted(() => {
   font-weight: 600;
   font-size: 14px;
   margin: 0 0 4px 0;
-  color: #1e293b;
+  color: var(--dark-text-primary);
 }
 
 .toast-message {
   font-size: 13px;
   margin: 0;
-  color: #64748b;
+  color: var(--dark-text-secondary);
 }
 
 .toast-close {
   background: none;
   border: none;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--dark-text-tertiary);
   padding: 0;
   flex-shrink: 0;
-  transition: color 0.2s;
+  transition: color var(--transition-fast);
 }
 
 .toast-close:hover {
-  color: #1e293b;
+  color: var(--dark-text-primary);
 }
 
 .toast-enter-active,
@@ -753,11 +755,17 @@ onUnmounted(() => {
   transform: translateX(-100px);
 }
 
+/* ===== ADMIN PAGE WRAPPER ===== */
+.admin-page {
+  max-width: 1600px; /* Giới hạn width tối đa cho màn hình lớn */
+  margin: 0 auto; /* Căn giữa */
+  width: 100%;
+}
+
 /* ===== ADMIN DASHBOARD ===== */
 .admin-dashboard {
   max-width: 100%;
   width: 100%;
-  margin: 0 auto;
   padding: 0;
   min-height: calc(100vh - 70px);
   overflow-x: hidden;
@@ -878,8 +886,8 @@ onUnmounted(() => {
 
 /* ===== DASHBOARD HEADER ===== */
 .dashboard-header {
-  margin-bottom: 20px;
-  padding: 24px 28px;
+  margin-bottom: 16px; /* Giảm từ 24px → 16px */
+  padding: 20px 24px;
   background: var(--dark-bg-card);
   border-radius: var(--radius-xl);
   position: relative;
@@ -969,8 +977,8 @@ onUnmounted(() => {
 }
 
 .header-icon {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   background: var(--gradient-purple-soft);
   border-radius: var(--radius-lg);
   display: flex;
@@ -982,7 +990,7 @@ onUnmounted(() => {
 }
 
 .header-icon i {
-  font-size: 32px;
+  font-size: 28px;
   color: var(--primary-light);
 }
 
@@ -991,9 +999,9 @@ onUnmounted(() => {
 }
 
 .welcome-title {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   line-height: 1.2;
   display: flex;
   flex-direction: column;
@@ -1012,7 +1020,7 @@ onUnmounted(() => {
 }
 
 .admin-name {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 800;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   text-transform: capitalize;
@@ -1034,28 +1042,29 @@ onUnmounted(() => {
 
 /* Profile Card */
 .profile-card {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(30px);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 16px;
+  background: var(--dark-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 2px solid var(--dark-border-light);
+  border-radius: var(--radius-xl);
   padding: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-glass-md);
   position: relative;
   overflow: visible;
-  min-width: 320px;
+  min-width: 280px;
 }
 
 .profile-card:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-glow-purple);
+  border-color: var(--dark-border-medium);
 }
 
 .profile-main {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 12px 14px;
 }
 
 .profile-avatar {
@@ -1064,21 +1073,21 @@ onUnmounted(() => {
 }
 
 .avatar-wrapper {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 14px;
+  width: 48px;
+  height: 48px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow-glow-purple);
+  transition: all var(--transition-fast);
 }
 
 .avatar-wrapper i {
-  font-size: 32px;
-  color: #ffffff;
+  font-size: 28px;
+  color: white;
 }
 
 .avatar-status {
@@ -1108,16 +1117,16 @@ onUnmounted(() => {
 .profile-details {
   flex: 1;
   min-width: 0;
-  color: #ffffff;
+  color: var(--dark-text-primary);
 }
 
 .profile-name {
-  font-size: 1.0625rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--dark-text-primary);
   text-transform: capitalize;
   margin-bottom: 4px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1128,9 +1137,9 @@ onUnmounted(() => {
   align-items: center;
   gap: 5px;
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--primary-light);
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--gradient-purple-soft);
   padding: 3px 8px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
@@ -1146,7 +1155,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 4px;
   font-size: 0.6875rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--dark-text-secondary);
   font-weight: 500;
 }
 
@@ -1160,23 +1169,26 @@ onUnmounted(() => {
 }
 
 .profile-menu-toggle {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
+  background: var(--gradient-purple-soft);
+  border: 1px solid var(--dark-border-light);
+  border-radius: var(--radius-lg);
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: #ffffff;
+  transition: all var(--transition-fast);
+  color: var(--primary-light);
   flex-shrink: 0;
+  backdrop-filter: blur(10px);
 }
 
 .profile-menu-toggle:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--primary-gradient);
   transform: scale(1.05);
+  box-shadow: var(--shadow-glow-purple);
+  color: white;
 }
 
 .profile-menu-toggle i {
@@ -1185,12 +1197,15 @@ onUnmounted(() => {
 
 /* Dropdown Menu */
 .profile-menu-dropdown {
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 0 0 14px 14px;
+  background: var(--dark-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-top: 1px solid var(--dark-border-light);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-glass-lg);
+  border: 1px solid var(--dark-border-color);
+  border-top-color: var(--dark-border-medium);
 }
 
 .menu-item {
@@ -1198,17 +1213,23 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  color: #1e293b;
+  color: var(--dark-text-primary);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   cursor: pointer;
   position: relative;
+  border-bottom: 1px solid var(--dark-border-color);
+}
+
+.menu-item:last-child {
+  border-bottom: none;
 }
 
 .menu-item i {
   font-size: 20px;
-  color: #667eea;
+  color: var(--primary-color);
   flex-shrink: 0;
+  transition: all var(--transition-fast);
 }
 
 .menu-item span {
@@ -1219,52 +1240,58 @@ onUnmounted(() => {
 
 .menu-item i.arrow {
   font-size: 18px;
-  color: #94a3b8;
+  color: var(--dark-text-tertiary);
   opacity: 0;
   transform: translateX(-4px);
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .menu-item:hover {
-  background: rgba(102, 126, 234, 0.08);
+  background: var(--gradient-purple-soft);
   padding-left: 20px;
 }
 
 .menu-item:hover i {
-  color: #5a67d8;
+  color: var(--primary-light);
   transform: scale(1.1);
 }
 
 .menu-item:hover i.arrow {
   opacity: 1;
   transform: translateX(0);
+  color: var(--primary-light);
 }
 
 .logout-item i {
-  color: #ef4444;
+  color: var(--error-color);
 }
 
 .logout-item span {
-  color: #ef4444;
+  color: var(--error-color);
   font-weight: 600;
 }
 
 .logout-item:hover {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(239, 68, 68, 0.15);
 }
 
 .logout-item:hover i {
   color: #dc2626;
+  transform: scale(1.1);
 }
 
 .logout-item:hover span {
   color: #dc2626;
 }
 
+.logout-item:hover i.arrow {
+  color: #dc2626;
+}
+
 /* Dropdown Animation */
 .dropdown-enter-active,
 .dropdown-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal);
   transform-origin: top;
 }
 
@@ -1281,21 +1308,32 @@ onUnmounted(() => {
 /* ===== STATS GRID ===== */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+  margin-top: 8px; /* Tạo khoảng cách với header */
   width: 100%;
   max-width: 100%;
+  position: relative;
+  z-index: 1; /* Ưu tiên hơn sections bên dưới khi hover */
+}
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .stat-card {
   background: var(--dark-bg-card);
-  padding: 12px;
+  padding: 16px;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-glass-sm);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
   border: 1px solid var(--dark-border-color);
   transition: all var(--transition-slow);
   min-width: 0;
@@ -1304,6 +1342,7 @@ onUnmounted(() => {
   overflow: hidden;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
+  text-align: center;
 }
 
 .stat-card::before {
@@ -1322,9 +1361,10 @@ onUnmounted(() => {
 }
 
 .stat-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-glow-purple);
   border-color: var(--dark-border-medium);
+  z-index: 10; /* Đảm bảo card hover nằm trên các card khác */
 }
 
 .stat-icon {
@@ -1364,12 +1404,16 @@ onUnmounted(() => {
 .stat-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .stat-content h3 {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin: 0 0 4px 0;
+  margin: 0;
   color: var(--dark-text-primary);
   line-height: 1.2;
 }
@@ -1377,8 +1421,10 @@ onUnmounted(() => {
 .stat-label {
   color: var(--dark-text-tertiary);
   font-size: 0.75rem;
-  margin: 0 0 6px 0;
+  margin: 0;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .stat-trend {
@@ -1410,13 +1456,13 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .section-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--dark-text-primary);
   margin: 0;
   display: flex;
   align-items: center;
@@ -1424,7 +1470,7 @@ onUnmounted(() => {
 }
 
 .section-title i {
-  color: #667eea;
+  color: var(--primary-color);
   font-size: 20px;
 }
 
@@ -1432,55 +1478,77 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: white;
   border: none;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-glow-purple);
 }
 
 .view-all-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 24px rgba(167, 139, 250, 0.5);
+  background: var(--primary-gradient-hover);
 }
 
 /* ===== QUICK ACTIONS ===== */
 .quick-actions {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  margin-top: 16px; /* Tạo khoảng cách cho shadow của stat cards */
   width: 100%;
   max-width: 100%;
+  position: relative;
+  z-index: 0; /* Đảm bảo không che hover của sections phía trên */
 }
 
 .actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
   width: 100%;
   max-width: 100%;
+  position: relative;
+  z-index: 1; /* Ưu tiên hơn sections bên dưới khi hover */
+}
+
+@media (max-width: 1400px) {
+  .actions-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .action-card {
-  background: #ffffff;
-  padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--dark-bg-card);
+  padding: 20px 16px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass-sm);
   text-decoration: none;
   color: inherit;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid #e2e8f0;
+  transition: all var(--transition-slow);
+  border: 1px solid var(--dark-border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   min-width: 0;
   width: 100%;
   position: relative;
   overflow: hidden;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  min-height: 140px;
 }
 
 .action-card::before {
@@ -1490,9 +1558,11 @@ onUnmounted(() => {
   right: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+  background: linear-gradient(45deg, transparent, rgba(167, 139, 250, 0.15), transparent);
   transform: rotate(45deg);
   transition: all 0.5s;
+  z-index: 0; /* Đặt phía sau nội dung */
+  pointer-events: none; /* Không chặn tương tác */
 }
 
 .action-card:hover::before {
@@ -1511,24 +1581,27 @@ onUnmounted(() => {
 }
 
 .hover-lift:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
-  border-color: #e6f0ff;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow-purple);
+  border-color: var(--dark-border-medium);
+  z-index: 10; /* Đảm bảo card hover nằm trên các card khác */
 }
 
 .action-icon {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 10px;
+  width: 56px;
+  height: 56px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  margin-bottom: 12px;
+  color: white;
+  margin-bottom: 16px;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-  transition: all 0.3s;
+  box-shadow: var(--shadow-glow-purple);
+  transition: all var(--transition-fast);
+  position: relative;
+  z-index: 1; /* Hiển thị phía trên ::before */
 }
 
 .action-card:hover .action-icon {
@@ -1536,47 +1609,57 @@ onUnmounted(() => {
 }
 
 .action-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
 }
 
 .action-card h3 {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  margin: 0 0 4px 0;
-  color: #1e293b;
+  margin: 0 0 6px 0;
+  color: var(--dark-text-primary);
+  line-height: 1.3;
+  position: relative;
+  z-index: 1; /* Hiển thị phía trên ::before */
 }
 
 .action-card p {
-  font-size: 0.75rem;
-  color: #64748b;
+  font-size: 0.6875rem;
+  color: var(--dark-text-tertiary);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.4;
+  position: relative;
+  z-index: 1; /* Hiển thị phía trên ::before */
 }
 
 .action-badge {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: var(--primary-gradient);
   color: white;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: 11px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+  box-shadow: var(--shadow-glow-purple);
+  z-index: 2; /* Hiển thị trên cùng */
 }
 
 .action-badge.new {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background: linear-gradient(135deg, var(--success-color) 0%, #38f9d7 100%);
+  box-shadow: 0 2px 8px rgba(52, 211, 153, 0.4);
 }
 
 /* ===== CHARTS SECTION ===== */
 .charts-section {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  margin-top: 16px; /* Tạo khoảng cách cho shadow của action cards */
   width: 100%;
   max-width: 100%;
+  position: relative;
+  z-index: 0; /* Đảm bảo không che hover của sections phía trên */
 }
 
 .chart-controls {
@@ -1585,50 +1668,54 @@ onUnmounted(() => {
 }
 
 .period-btn {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--dark-bg-card);
+  border: 1px solid var(--dark-border-color);
   padding: 6px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  color: #64748b;
-  transition: all 0.3s;
+  color: var(--dark-text-secondary);
+  transition: all var(--transition-fast);
 }
 
 .period-btn:hover {
-  border-color: #667eea;
-  color: #667eea;
+  border-color: var(--primary-color);
+  color: var(--primary-light);
 }
 
 .period-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: white;
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-glow-purple);
 }
 
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 16px;
   width: 100%;
   max-width: 100%;
+  position: relative;
+  z-index: 1; /* Ưu tiên hơn sections bên dưới khi hover */
 }
 
 .chart-card {
-  background: #ffffff;
+  background: var(--dark-bg-card);
   padding: 10px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass-sm);
+  border: 1px solid var(--dark-border-color);
+  transition: all var(--transition-slow);
   min-width: 0;
   width: 100%;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .chart-card.large {
@@ -1636,8 +1723,10 @@ onUnmounted(() => {
 }
 
 .chart-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-glow-purple);
   transform: translateY(-4px);
+  border-color: var(--dark-border-medium);
+  z-index: 10; /* Đảm bảo card hover nằm trên các card khác */
 }
 
 .shine-effect {
@@ -1672,21 +1761,21 @@ onUnmounted(() => {
 .chart-header {
   margin-bottom: 6px;
   padding-bottom: 4px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--dark-border-subtle);
   flex-shrink: 0;
 }
 
 .chart-header h3 {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--dark-text-primary);
   margin: 0 0 2px 0;
   line-height: 1.2;
 }
 
 .chart-subtitle {
   font-size: 9px;
-  color: #94a3b8;
+  color: var(--dark-text-tertiary);
   font-weight: 500;
   line-height: 1.1;
 }
@@ -1711,19 +1800,24 @@ onUnmounted(() => {
 
 /* ===== RECENT ACTIVITY ===== */
 .recent-activity {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  margin-top: 16px; /* Tạo khoảng cách cho shadow của chart cards */
   width: 100%;
   max-width: 100%;
+  position: relative;
+  z-index: 0; /* Đảm bảo không che hover của sections phía trên */
 }
 
 .activity-card {
-  background: #ffffff;
+  background: var(--dark-bg-card);
   padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass-sm);
+  border: 1px solid var(--dark-border-color);
   width: 100%;
   max-width: 100%;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .activity-list {
@@ -1742,7 +1836,7 @@ onUnmounted(() => {
 }
 
 .hover-highlight:hover {
-  background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+  background: var(--gradient-purple-soft);
   transform: translateX(4px);
 }
 
@@ -1783,7 +1877,7 @@ onUnmounted(() => {
 
 .activity-text {
   font-size: 0.875rem;
-  color: #1e293b;
+  color: var(--dark-text-primary);
   margin: 0 0 4px 0;
   line-height: 1.4;
   font-weight: 500;
@@ -1791,30 +1885,35 @@ onUnmounted(() => {
 
 .activity-time {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--dark-text-tertiary);
   font-weight: 500;
 }
 
 .activity-action {
   background: none;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--dark-border-color);
   padding: 6px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  color: #64748b;
-  transition: all 0.3s;
+  color: var(--dark-text-tertiary);
+  transition: all var(--transition-fast);
   flex-shrink: 0;
 }
 
 .activity-action:hover {
-  background: #667eea;
-  border-color: #667eea;
+  background: var(--primary-gradient);
+  border-color: var(--primary-color);
   color: white;
   transform: scale(1.1);
+  box-shadow: var(--shadow-glow-purple);
 }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
+  .admin-page {
+    max-width: 100%;
+  }
+
   .admin-dashboard {
     padding: 0;
   }
@@ -1912,7 +2011,7 @@ onUnmounted(() => {
 
   .charts-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 16px;
   }
 
   .chart-card.large {

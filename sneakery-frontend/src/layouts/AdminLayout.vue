@@ -600,12 +600,12 @@ onUnmounted(() => {
 /* ===== CONTENT ===== */
 .admin-content {
   flex: 1;
-  padding: 2rem;
+  padding: 1.25rem; /* Giảm từ 1.5rem → 1.25rem (20px) để gọn gàng hơn */
   overflow-y: auto;
   max-width: 100%;
   width: 100%;
   position: relative;
-  z-index: 1; /* Đảm bảo content ở dưới nút toggle */
+  /* Bỏ z-index để cards bên trong có thể hover đúng */
 }
 
 /* ===== MOBILE OVERLAY ===== */
@@ -643,7 +643,7 @@ onUnmounted(() => {
   }
   
   .admin-content {
-    padding: 1rem;
+    padding: 0.875rem; /* Mobile: 14px */
   }
   
   .sidebar-header {
