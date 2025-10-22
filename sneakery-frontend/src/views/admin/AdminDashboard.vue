@@ -207,7 +207,7 @@
           <div class="action-badge">{{ stats?.totalOrders || 0 }}</div>
         </router-link>
 
-        <router-link to="/admin/users" class="action-card hover-lift">
+        <router-link to="/admin/users" class="action-card card-enhanced hover-lift hover-glow">
           <div class="action-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -219,7 +219,7 @@
           <div class="action-badge">{{ stats?.totalUsers || 0 }}</div>
         </router-link>
 
-        <router-link to="/admin/brands" class="action-card hover-lift">
+        <router-link to="/admin/brands" class="action-card card-enhanced hover-lift hover-glow">
           <div class="action-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -233,7 +233,7 @@
           <div class="action-badge">12</div>
         </router-link>
 
-        <router-link to="/admin/categories" class="action-card hover-lift">
+        <router-link to="/admin/categories" class="action-card card-enhanced hover-lift hover-glow">
           <div class="action-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M4 19H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -246,7 +246,7 @@
           <div class="action-badge">8</div>
         </router-link>
 
-        <router-link to="/admin/analytics" class="action-card hover-lift">
+        <router-link to="/admin/analytics" class="action-card card-enhanced hover-lift hover-glow">
           <div class="action-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M18 20V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1310,6 +1310,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
+  padding: 20px;
   margin-bottom: 24px;
   margin-top: 8px; /* Tạo khoảng cách với header */
   width: 100%;
@@ -1510,6 +1511,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 20px;
+  padding: 20px;
   width: 100%;
   max-width: 100%;
   position: relative;
@@ -1707,7 +1709,6 @@ onUnmounted(() => {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-glass-sm);
   border: 1px solid var(--dark-border-color);
-  transition: all var(--transition-slow);
   min-width: 0;
   width: 100%;
   position: relative;
@@ -1720,13 +1721,6 @@ onUnmounted(() => {
 
 .chart-card.large {
   grid-column: span 2;
-}
-
-.chart-card:hover {
-  box-shadow: var(--shadow-glow-purple);
-  transform: translateY(-4px);
-  border-color: var(--dark-border-medium);
-  z-index: 10; /* Đảm bảo card hover nằm trên các card khác */
 }
 
 .shine-effect {
