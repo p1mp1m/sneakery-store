@@ -6,16 +6,17 @@
         <div class="brand">
           <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo" />
         </div>
-        <!-- Nút Toggle Sidebar - Trong Sidebar -->
-        <button 
-          class="sidebar-toggle-btn"
-          @click="toggleSidebar"
-          type="button"
-          :title="sidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
-        >
-          <i class="material-icons">{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</i>
-        </button>
       </div>
+
+      <!-- Nút Toggle - Ngoài header -->
+      <button 
+        class="sidebar-toggle-btn"
+        @click="toggleSidebar"
+        type="button"
+        :title="sidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
+      >
+        <i class="material-icons">{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</i>
+      </button>
 
       <nav class="sidebar-nav">
         <ul class="nav-list">
@@ -259,7 +260,7 @@ onUnmounted(() => {
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
+  background: linear-gradient(180deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 100%);
   position: relative;
   overflow-x: hidden;
 }
@@ -267,46 +268,46 @@ onUnmounted(() => {
 /* ===== NÚT TOGGLE SIDEBAR ===== */
 .sidebar-toggle-btn {
   position: absolute;
-  top: 50%;
+  top: 100px;
   right: 12px;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  background: var(--primary-gradient);
+  border: 2px solid var(--primary-color);
+  border-radius: 50%;
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 200;
+  box-shadow: 
+    0 4px 16px rgba(167, 139, 250, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-toggle-btn:hover {
-  background: linear-gradient(135deg, rgba(118, 75, 162, 0.9), rgba(102, 126, 234, 0.9));
-  border-color: rgba(255, 255, 255, 0.6);
-  transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  background: var(--primary-gradient-hover);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-glow-purple);
 }
 
 .sidebar-toggle-btn:active {
-  transform: translateY(-50%) scale(0.95);
+  transform: scale(0.95);
 }
 
 .sidebar-toggle-btn:focus {
-  outline: 2px solid rgba(102, 126, 234, 0.6);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 
+    var(--shadow-glow-purple),
+    0 0 0 3px rgba(167, 139, 250, 0.3);
 }
 
 .sidebar-toggle-btn i {
   font-size: 20px;
   transition: transform 0.3s ease;
   line-height: 1;
-  pointer-events: none;
 }
 
 .sidebar-toggle-btn:hover i {
@@ -316,18 +317,21 @@ onUnmounted(() => {
 /* ===== SIDEBAR ===== */
 .admin-sidebar {
   width: 260px;
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-  color: white;
+  background: var(--dark-bg-card);
+  color: var(--dark-text-primary);
   display: flex;
   flex-direction: column;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-slow);
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
   z-index: 1000;
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-glass-lg);
   overflow: hidden;
+  border-right: 1px solid var(--dark-border-color);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .admin-sidebar.collapsed {
@@ -336,7 +340,7 @@ onUnmounted(() => {
 
 .sidebar-header {
   padding: 1rem 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--dark-border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -363,29 +367,29 @@ onUnmounted(() => {
 }
 
 .admin-sidebar.collapsed .logo {
-  width: 48px;
-  height: 48px;
+  display: none;
+}
+
+.admin-sidebar.collapsed .brand {
+  display: none;
 }
 
 .admin-sidebar.collapsed .sidebar-header {
   justify-content: center;
-  padding: 1rem 0.5rem;
+  padding: 0.75rem 0.5rem;
+  min-height: auto;
 }
 
-.admin-sidebar.collapsed .brand {
-  justify-content: center;
-}
-
+/* Khi collapsed - nút ở cuối trang, giữa sidebar */
 .admin-sidebar.collapsed .sidebar-toggle-btn {
-  position: absolute;
-  bottom: 16px;
+  top: auto;
+  bottom: 20px;
   right: 50%;
   transform: translateX(50%);
-  top: auto;
 }
 
 .admin-sidebar.collapsed .sidebar-toggle-btn:hover {
-  transform: translateX(50%) scale(1.08);
+  transform: translateX(50%) scale(1.1);
 }
 
 .admin-sidebar.collapsed .sidebar-toggle-btn:active {
@@ -405,16 +409,16 @@ onUnmounted(() => {
 }
 
 .sidebar-nav::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(167, 139, 250, 0.05);
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: rgba(167, 139, 250, 0.2);
+  border-radius: var(--radius-sm);
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(167, 139, 250, 0.3);
 }
 
 .nav-list {
@@ -442,28 +446,28 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.625rem;
   padding: 0.625rem 0.75rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--dark-text-secondary);
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal);
   position: relative;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: visible;
   margin: 0.125rem 0;
   border: 1.5px solid transparent;
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-color: rgba(102, 126, 234, 0.3);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+  background: rgba(167, 139, 250, 0.1);
+  color: var(--dark-text-primary);
+  border-color: var(--dark-border-light);
+  box-shadow: var(--shadow-glass-sm);
 }
 
 .nav-link.active {
-  background: linear-gradient(90deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.15) 100%);
-  color: #a78bfa;
+  background: var(--gradient-purple-soft);
+  color: var(--primary-light);
   font-weight: 600;
-  border-color: rgba(102, 126, 234, 0.5);
+  border-color: var(--dark-border-medium);
 }
 
 .nav-link i {
@@ -480,13 +484,13 @@ onUnmounted(() => {
 }
 
 .nav-link:hover i {
-  color: #c4b5fd;
+  color: var(--primary-light);
   transform: scale(1.1) rotate(3deg);
   filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.5));
 }
 
 .nav-link.active i {
-  color: #a78bfa;
+  color: var(--primary-color);
   transform: scale(1.05);
   filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.7));
 }
@@ -522,8 +526,8 @@ onUnmounted(() => {
 /* ===== SIDEBAR FOOTER ===== */
 .sidebar-footer {
   padding: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--dark-border-color);
+  background: rgba(15, 23, 42, 0.4);
 }
 
 .admin-info {
@@ -531,19 +535,19 @@ onUnmounted(() => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
 }
 
 .admin-info:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(167, 139, 250, 0.1);
 }
 
 .admin-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -563,13 +567,13 @@ onUnmounted(() => {
 .admin-name {
   font-size: 0.9rem;
   font-weight: 600;
-  color: white;
+  color: var(--dark-text-primary);
   margin-bottom: 0.125rem;
 }
 
 .admin-role {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--dark-text-tertiary);
   font-weight: 500;
   letter-spacing: 0.5px;
 }
@@ -707,17 +711,17 @@ onUnmounted(() => {
   left: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   color: white;
   padding: 0.375rem 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-size: 0.8125rem;
   font-weight: 500;
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-glass-md);
   z-index: 1001;
 }
 
@@ -740,17 +744,17 @@ onUnmounted(() => {
   width: 20px !important;
   min-width: 20px !important;
   height: 20px !important;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--dark-text-tertiary);
   flex-shrink: 0;
 }
 
 .nav-parent:hover .expand-icon {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--dark-text-primary);
 }
 
 .nav-parent.open .expand-icon {
   transform: rotate(180deg);
-  color: #a78bfa;
+  color: var(--primary-color);
 }
 
 /* Submenu container - Đẹp và hiện đại */
@@ -758,17 +762,17 @@ onUnmounted(() => {
   list-style: none;
   padding: 0.625rem 0.375rem;
   margin: 0.25rem 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.25) 100%);
-  border-radius: 10px;
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  border-left: 3px solid rgba(167, 139, 250, 0.5);
+  background: var(--dark-bg-glass-dark);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--dark-border-light);
+  border-left: 3px solid var(--primary-color);
   display: flex !important;
   flex-direction: column !important;
   width: 100%;
   overflow: visible;
-  box-shadow: 
-    inset 0 2px 8px rgba(0, 0, 0, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-glass-sm);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .submenu-item {
@@ -786,12 +790,12 @@ onUnmounted(() => {
   gap: 0.5rem;
   padding: 0.5rem 0.625rem 0.5rem 1.875rem !important;
   font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--dark-text-secondary);
   background: transparent;
   border: 1.5px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal);
   font-weight: 500;
   text-decoration: none;
   margin: 0.1875rem 0.25rem;
@@ -810,22 +814,22 @@ onUnmounted(() => {
   transform: translateY(-50%);
   width: 5px;
   height: 5px;
-  background: rgba(255, 255, 255, 0.35);
+  background: var(--dark-text-quaternary);
   border-radius: 50%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal);
 }
 
 /* Hover state - Đẹp và mượt */
 .nav-child:hover {
-  background: linear-gradient(90deg, rgba(167, 139, 250, 0.2) 0%, rgba(102, 126, 234, 0.12) 100%);
-  border-color: rgba(167, 139, 250, 0.35);
-  color: white;
+  background: var(--gradient-purple-soft);
+  border-color: var(--dark-border-light);
+  color: var(--dark-text-primary);
   padding-left: 2rem !important;
-  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);
+  box-shadow: var(--shadow-glass-sm);
 }
 
 .nav-child:hover::before {
-  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+  background: var(--primary-gradient);
   width: 6px;
   height: 6px;
   left: 0.875rem;
@@ -834,17 +838,15 @@ onUnmounted(() => {
 
 /* Active state - Nổi bật */
 .nav-child.active {
-  background: linear-gradient(90deg, rgba(167, 139, 250, 0.3) 0%, rgba(102, 126, 234, 0.2) 100%);
-  border-color: rgba(167, 139, 250, 0.6);
-  color: #e9d5ff;
+  background: var(--gradient-purple-soft);
+  border-color: var(--dark-border-medium);
+  color: var(--primary-light);
   font-weight: 600;
-  box-shadow: 
-    0 2px 10px rgba(167, 139, 250, 0.25),
-    inset 0 1px 2px rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-glass-md);
 }
 
 .nav-child.active::before {
-  background: linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%);
+  background: var(--primary-gradient);
   width: 7px;
   height: 7px;
   box-shadow: 
@@ -858,8 +860,8 @@ onUnmounted(() => {
   width: 18px !important;
   min-width: 18px !important;
   height: 18px !important;
-  color: rgba(255, 255, 255, 0.75);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--dark-text-tertiary);
+  transition: all var(--transition-normal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -867,12 +869,12 @@ onUnmounted(() => {
 }
 
 .nav-child:hover .material-icons {
-  color: #c4b5fd;
+  color: var(--primary-light);
   transform: scale(1.15);
 }
 
 .nav-child.active .material-icons {
-  color: #e9d5ff;
+  color: var(--primary-light);
   transform: scale(1.1);
   filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.7));
 }
@@ -944,12 +946,12 @@ onUnmounted(() => {
 
 /* Parent active state */
 .nav-parent.active {
-  background: linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%);
-  border-color: rgba(102, 126, 234, 0.4);
+  background: var(--gradient-purple-soft);
+  border-color: var(--dark-border-medium);
 }
 
 .nav-parent.active .material-icons:first-child {
-  color: #c4b5fd;
+  color: var(--primary-light);
 }
 
 /* Responsive cho submenu */

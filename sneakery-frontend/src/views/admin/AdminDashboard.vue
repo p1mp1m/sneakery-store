@@ -880,11 +880,14 @@ onUnmounted(() => {
 .dashboard-header {
   margin-bottom: 20px;
   padding: 24px 28px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-  border-radius: 16px;
+  background: var(--dark-bg-card);
+  border-radius: var(--radius-xl);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+  box-shadow: var(--shadow-glass-md);
+  border: 1px solid var(--dark-border-color);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 /* Decorative Elements */
@@ -968,22 +971,23 @@ onUnmounted(() => {
 .header-icon {
   width: 56px;
   height: 56px;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 14px;
+  background: var(--gradient-purple-soft);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-glass-sm);
+  border: 1px solid var(--dark-border-light);
 }
 
 .header-icon i {
   font-size: 32px;
-  color: #ffffff;
+  color: var(--primary-light);
 }
 
 .welcome-text {
-  color: #ffffff;
+  color: var(--dark-text-primary);
 }
 
 .welcome-title {
@@ -997,7 +1001,7 @@ onUnmounted(() => {
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, #ffffff 0%, #f0f0f0 100%);
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1010,7 +1014,7 @@ onUnmounted(() => {
 .admin-name {
   font-size: 1.75rem;
   font-weight: 800;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   text-transform: capitalize;
 }
 
@@ -1021,7 +1025,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--dark-text-secondary);
 }
 
 .welcome-subtitle i {
@@ -1285,19 +1289,21 @@ onUnmounted(() => {
 }
 
 .stat-card {
-  background: #ffffff;
+  background: var(--dark-bg-card);
   padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass-sm);
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--dark-border-color);
+  transition: all var(--transition-slow);
   min-width: 0;
   width: 100%;
   position: relative;
   overflow: hidden;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .stat-card::before {
@@ -1317,8 +1323,8 @@ onUnmounted(() => {
 
 .stat-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
-  border-color: #e6f0ff;
+  box-shadow: var(--shadow-glow-purple);
+  border-color: var(--dark-border-medium);
 }
 
 .stat-icon {
@@ -1364,12 +1370,12 @@ onUnmounted(() => {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 4px 0;
-  color: #1e293b;
+  color: var(--dark-text-primary);
   line-height: 1.2;
 }
 
 .stat-label {
-  color: #64748b;
+  color: var(--dark-text-tertiary);
   font-size: 0.75rem;
   margin: 0 0 6px 0;
   font-weight: 500;
