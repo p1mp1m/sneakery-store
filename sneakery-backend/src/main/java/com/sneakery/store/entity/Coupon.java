@@ -22,11 +22,20 @@ public class Coupon {
     @Column(name = "code", nullable = false, unique = true)
     private String code;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "discount_type")
-    private String discountType; // 'amount' hoặc 'percent'
+    private String discountType; // 'percent' hoặc 'fixed'
 
     @Column(name = "value", nullable = false)
     private BigDecimal value;
+
+    @Column(name = "max_discount_amount")
+    private BigDecimal maxDiscountAmount;
+
+    @Column(name = "min_order_amount")
+    private BigDecimal minOrderAmount;
 
     @Column(name = "start_at", nullable = false)
     private LocalDateTime startAt;
@@ -39,6 +48,12 @@ public class Coupon {
 
     @Column(name = "uses_count")
     private Integer usesCount;
+
+    @Column(name = "max_uses_per_user")
+    private Integer maxUsesPerUser;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
 
     // Quan hệ ngược lại: Một Coupon có thể được dùng cho nhiều Order
     @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)

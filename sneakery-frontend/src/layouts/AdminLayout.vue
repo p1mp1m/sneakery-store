@@ -19,21 +19,52 @@
 
       <nav class="sidebar-nav">
         <ul class="nav-list">
-          <li 
-            v-for="route in adminRoutes" 
-            :key="route.name"
-            class="nav-item"
-          >
-            <router-link 
-              :to="route.path" 
-              class="nav-link"
-              :class="{ 'active': $route.name === route.name }"
-              :title="sidebarCollapsed ? route.meta.title : ''"
-            >
-              <i class="material-icons">{{ route.meta.icon }}</i>
-              <span v-if="!sidebarCollapsed" class="nav-text">{{ route.meta.title }}</span>
-            </router-link>
-          </li>
+          <template v-for="route in adminRoutes" :key="route.id || route.name">
+            <!-- Menu có submenu (dropdown) -->
+            <li v-if="route.children" class="nav-item nav-item-parent">
+              <a 
+                class="nav-link nav-parent"
+                :class="{ 'active': isSubmenuActive(route.children), 'open': isMenuOpen(route.id) }"
+                @click.prevent="toggleMenu(route.id)"
+                href="#"
+              >
+                <i class="material-icons">{{ route.meta.icon }}</i>
+                <span v-if="!sidebarCollapsed" class="nav-text">{{ route.meta.title }}</span>
+                <i v-if="!sidebarCollapsed" class="material-icons expand-icon">
+                  {{ isMenuOpen(route.id) ? 'expand_less' : 'expand_more' }}
+                </i>
+              </a>
+              
+              <!-- Submenu dropdown -->
+              <transition name="submenu">
+                <ul v-if="isMenuOpen(route.id) && !sidebarCollapsed" class="submenu">
+                  <li v-for="child in route.children" :key="child.name" class="submenu-item">
+                    <router-link
+                      :to="child.path"
+                      class="nav-link nav-child"
+                      :class="{ 'active': $route.name === child.name }"
+                    >
+                      <i class="material-icons">{{ child.meta.icon }}</i>
+                      <span class="nav-text">{{ child.meta.title }}</span>
+                    </router-link>
+                  </li>
+                </ul>
+              </transition>
+            </li>
+
+            <!-- Menu thường (không có submenu) -->
+            <li v-else class="nav-item">
+              <router-link 
+                :to="route.path" 
+                class="nav-link"
+                :class="{ 'active': $route.name === route.name }"
+                :title="sidebarCollapsed ? route.meta.title : ''"
+              >
+                <i class="material-icons">{{ route.meta.icon }}</i>
+                <span v-if="!sidebarCollapsed" class="nav-text">{{ route.meta.title }}</span>
+              </router-link>
+            </li>
+          </template>
         </ul>
       </nav>
 
@@ -69,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAdminStore } from '@/stores/admin'
 
@@ -79,22 +110,69 @@ const adminStore = useAdminStore()
 // State
 const sidebarCollapsed = ref(false)
 const isMobile = ref(false)
+const openMenus = ref([]) // Danh sách các menu đang mở
 
-// Admin routes for sidebar
+// Admin routes for sidebar với submenu
 const adminRoutes = [
-  { path: '/admin/dashboard', name: 'AdminDashboard', meta: { title: 'Trang chủ', icon: 'home' } },
-  { path: '/admin/sales', name: 'AdminSales', meta: { title: 'Bán Hàng', icon: 'shopping_cart' } },
-  { path: '/admin/orders', name: 'AdminOrders', meta: { title: 'Quản lý hóa đơn', icon: 'receipt' } },
-  { path: '/admin/products', name: 'AdminProducts', meta: { title: 'Quản lý sản phẩm', icon: 'inventory' } },
-  { path: '/admin/brands', name: 'AdminBrands', meta: { title: 'Quản lý biến thể', icon: 'style' } },
-  { path: '/admin/categories', name: 'AdminCategories', meta: { title: 'Thuộc tính sản phẩm', icon: 'tune' } },
-  { path: '/admin/users', name: 'AdminUsers', meta: { title: 'Quản lý tài khoản & người dùng', icon: 'people' } },
-  { path: '/admin/discounts', name: 'AdminDiscounts', meta: { title: 'Quản lý giảm giá', icon: 'percent' } },
-  { path: '/admin/returns', name: 'AdminReturns', meta: { title: 'Quản lý tra hàng', icon: 'assignment_return' } },
-  { path: '/admin/warranty', name: 'AdminWarranty', meta: { title: 'Quản lý bảo hành', icon: 'verified_user' } },
-  { path: '/admin/analytics', name: 'AdminAnalytics', meta: { title: 'Thống kê', icon: 'analytics' } },
-  { path: '/admin/notifications', name: 'AdminNotifications', meta: { title: 'Quản lý thông báo', icon: 'notifications' } },
-  { path: '/admin/settings', name: 'AdminSettings', meta: { title: 'Quản lý hệ thống', icon: 'settings' } }
+  { 
+    path: '/admin/dashboard', 
+    name: 'AdminDashboard', 
+    meta: { title: 'Trang chủ', icon: 'home' } 
+  },
+  { 
+    path: '/admin/sales', 
+    name: 'AdminSales', 
+    meta: { title: 'Bán Hàng', icon: 'shopping_cart' } 
+  },
+  { 
+    path: '/admin/orders', 
+    name: 'AdminOrders', 
+    meta: { title: 'Quản lý hóa đơn', icon: 'receipt' } 
+  },
+  {
+    id: 'products-menu',
+    meta: { title: 'Quản lý sản phẩm', icon: 'inventory' },
+    children: [
+      { path: '/admin/products', name: 'AdminProducts', meta: { title: 'Danh sách sản phẩm', icon: 'list' } },
+      { path: '/admin/product-variants', name: 'AdminProductVariants', meta: { title: 'Quản lý biến thể', icon: 'style' } },
+      { path: '/admin/categories', name: 'AdminCategories', meta: { title: 'Thuộc tính sản phẩm', icon: 'tune' } }
+    ]
+  },
+  { 
+    path: '/admin/users', 
+    name: 'AdminUsers', 
+    meta: { title: 'Quản lý người dùng', icon: 'people' } 
+  },
+  { 
+    path: '/admin/discounts', 
+    name: 'AdminDiscounts', 
+    meta: { title: 'Quản lý giảm giá', icon: 'percent' } 
+  },
+  { 
+    path: '/admin/returns', 
+    name: 'AdminReturns', 
+    meta: { title: 'Quản lý trả hàng', icon: 'assignment_return' } 
+  },
+  { 
+    path: '/admin/warranty', 
+    name: 'AdminWarranty', 
+    meta: { title: 'Quản lý bảo hành', icon: 'verified_user' } 
+  },
+  { 
+    path: '/admin/analytics', 
+    name: 'AdminAnalytics', 
+    meta: { title: 'Thống kê', icon: 'analytics' } 
+  },
+  { 
+    path: '/admin/notifications', 
+    name: 'AdminNotifications', 
+    meta: { title: 'Quản lý thông báo', icon: 'notifications' } 
+  },
+  { 
+    path: '/admin/settings', 
+    name: 'AdminSettings', 
+    meta: { title: 'Quản lý hệ thống', icon: 'settings' } 
+  }
 ]
 
 // Methods
@@ -102,6 +180,42 @@ const toggleSidebar = () => {
   console.log('Toggle sidebar clicked! Current state:', sidebarCollapsed.value)
   sidebarCollapsed.value = !sidebarCollapsed.value
   console.log('New state:', sidebarCollapsed.value)
+}
+
+const toggleMenu = (menuId) => {
+  if (!menuId) {
+    console.error('toggleMenu: menuId is missing!')
+    return
+  }
+  
+  console.log('🔄 toggleMenu called for:', menuId)
+  console.log('📋 Before toggle - openMenus:', JSON.stringify(openMenus.value))
+  
+  const index = openMenus.value.indexOf(menuId)
+  if (index > -1) {
+    // Đóng menu
+    openMenus.value.splice(index, 1)
+    console.log('❌ Menu closed:', menuId)
+  } else {
+    // Mở menu
+    openMenus.value.push(menuId)
+    console.log('✅ Menu opened:', menuId)
+  }
+  
+  console.log('📋 After toggle - openMenus:', JSON.stringify(openMenus.value))
+  console.log('🎯 isMenuOpen result:', isMenuOpen(menuId))
+}
+
+const isMenuOpen = (menuId) => {
+  if (!menuId) return false
+  const isOpen = openMenus.value.includes(menuId)
+  return isOpen
+}
+
+// Kiểm tra xem route hiện tại có nằm trong submenu không
+const isSubmenuActive = (children) => {
+  if (!children) return false
+  return children.some(child => child.name === route.name)
 }
 
 const checkMobile = () => {
@@ -116,8 +230,24 @@ onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
   
-  // Check admin status - Không cần vì router guard đã kiểm tra
-  // adminStore.checkAdminStatus()
+  console.log('🚀 AdminLayout mounted')
+  console.log('📋 Admin routes:', adminRoutes)
+  console.log('📍 Current route:', route.name)
+  
+  // Tự động mở menu nếu route hiện tại nằm trong submenu
+  adminRoutes.forEach(menuItem => {
+    if (menuItem.children) {
+      console.log(`🔍 Checking menu: ${menuItem.id}`, menuItem.children)
+      if (isSubmenuActive(menuItem.children)) {
+        if (!openMenus.value.includes(menuItem.id)) {
+          openMenus.value.push(menuItem.id)
+          console.log('✅ Auto-opened menu:', menuItem.id)
+        }
+      }
+    }
+  })
+  
+  console.log('📊 Final openMenus:', JSON.stringify(openMenus.value))
 })
 
 onUnmounted(() => {
@@ -298,18 +428,27 @@ onUnmounted(() => {
   position: relative;
 }
 
+.nav-item-parent {
+  margin: 0 0.375rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 0.75rem);
+  overflow: visible;
+}
+
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.625rem;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   border-radius: 8px;
   overflow: visible;
-  margin: 0;
+  margin: 0.125rem 0;
   border: 1.5px solid transparent;
 }
 
@@ -585,5 +724,240 @@ onUnmounted(() => {
 .admin-sidebar.collapsed .nav-link:hover::after {
   opacity: 1;
   left: calc(100% + 12px);
+}
+
+/* ===== DROPDOWN MENU (SUBMENU) - THIẾT KẾ ĐẸP ===== */
+.nav-parent {
+  cursor: pointer !important;
+  position: relative;
+  user-select: none;
+}
+
+.expand-icon {
+  margin-left: auto;
+  font-size: 1.125rem !important;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 20px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.nav-parent:hover .expand-icon {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-parent.open .expand-icon {
+  transform: rotate(180deg);
+  color: #a78bfa;
+}
+
+/* Submenu container - Đẹp và hiện đại */
+.submenu {
+  list-style: none;
+  padding: 0.625rem 0.375rem;
+  margin: 0.25rem 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.25) 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-left: 3px solid rgba(167, 139, 250, 0.5);
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100%;
+  overflow: visible;
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.submenu-item {
+  margin: 0;
+  padding: 0;
+  display: block !important;
+  width: 100%;
+  list-style: none;
+}
+
+/* Menu con - Design mới đẹp hơn */
+.nav-child {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem 0.5rem 1.875rem !important;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.85);
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  text-decoration: none;
+  margin: 0.1875rem 0.25rem;
+  width: calc(100% - 0.5rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dot indicator trước mỗi submenu item */
+.nav-child::before {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover state - Đẹp và mượt */
+.nav-child:hover {
+  background: linear-gradient(90deg, rgba(167, 139, 250, 0.2) 0%, rgba(102, 126, 234, 0.12) 100%);
+  border-color: rgba(167, 139, 250, 0.35);
+  color: white;
+  padding-left: 2rem !important;
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);
+}
+
+.nav-child:hover::before {
+  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+  width: 6px;
+  height: 6px;
+  left: 0.875rem;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.7);
+}
+
+/* Active state - Nổi bật */
+.nav-child.active {
+  background: linear-gradient(90deg, rgba(167, 139, 250, 0.3) 0%, rgba(102, 126, 234, 0.2) 100%);
+  border-color: rgba(167, 139, 250, 0.6);
+  color: #e9d5ff;
+  font-weight: 600;
+  box-shadow: 
+    0 2px 10px rgba(167, 139, 250, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.nav-child.active::before {
+  background: linear-gradient(135deg, #e9d5ff 0%, #c4b5fd 100%);
+  width: 7px;
+  height: 7px;
+  box-shadow: 
+    0 0 14px rgba(167, 139, 250, 0.9),
+    0 0 24px rgba(167, 139, 250, 0.5);
+}
+
+/* Icons trong submenu */
+.nav-child .material-icons {
+  font-size: 1rem !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  color: rgba(255, 255, 255, 0.75);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-child:hover .material-icons {
+  color: #c4b5fd;
+  transform: scale(1.15);
+}
+
+.nav-child.active .material-icons {
+  color: #e9d5ff;
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.7));
+}
+
+/* Text trong submenu */
+.nav-child .nav-text {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  transition: all 0.3s ease;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.nav-child:hover .nav-text {
+  letter-spacing: 0.025em;
+}
+
+.nav-child.active .nav-text {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* Transition animation cho submenu - Mượt mà */
+.submenu-enter-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.submenu-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.submenu-enter-from {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  transform: translateY(-8px);
+}
+
+.submenu-enter-to {
+  opacity: 1;
+  max-height: 500px;
+  transform: translateY(0);
+}
+
+.submenu-leave-from {
+  opacity: 1;
+  max-height: 500px;
+  transform: translateY(0);
+}
+
+.submenu-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  transform: translateY(-8px);
+}
+
+/* Parent active state */
+.nav-parent.active {
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-color: rgba(102, 126, 234, 0.4);
+}
+
+.nav-parent.active .material-icons:first-child {
+  color: #c4b5fd;
+}
+
+/* Responsive cho submenu */
+.admin-sidebar.collapsed .submenu {
+  display: none;
+}
+
+.admin-sidebar.collapsed .nav-parent .expand-icon {
+  display: none;
 }
 </style>

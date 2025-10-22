@@ -192,7 +192,7 @@
       v-model="showStatusConfirm"
       type="warning"
       title="Xác nhận thay đổi trạng thái"
-      :message="`Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng #${orderToUpdate?.id} từ \"${getStatusLabel(oldStatus)}\" sang \"${getStatusLabel(newStatus)}\"?`"
+      :message="`Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng #${orderToUpdate?.id} từ '${getStatusLabel(oldStatus)}' sang '${getStatusLabel(newStatus)}'?`"
       description="Hành động này sẽ cập nhật trạng thái đơn hàng."
       confirm-text="Xác nhận"
       cancel-text="Hủy"

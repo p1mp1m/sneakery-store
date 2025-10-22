@@ -1325,26 +1325,22 @@ onMounted(async () => {
 
 <style scoped>
 /* =================================================================
-   ADMIN PRODUCTS - COMPLETE STYLES
+   ADMIN PRODUCTS - OPTIMIZED STYLES
    ================================================================= */
 
-/* Variables */
-:root {
-  --primary: #667eea;
-  --primary-dark: #5a67d8;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
-}
-
 /* =================================================================
-   PAGE LAYOUT
+   LAYOUT
    ================================================================= */
 .admin-products {
   padding: 2rem;
   max-width: 1600px;
   margin: 0 auto;
+  min-height: calc(100vh - 4rem);
+}
+
+/* Smooth scrolling cho toàn bộ trang */
+* {
+  scroll-behavior: smooth;
 }
 
 /* =================================================================
@@ -1401,7 +1397,7 @@ onMounted(async () => {
 /* Stats Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
@@ -1514,9 +1510,10 @@ onMounted(async () => {
 
 .filter-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-bottom: 1rem;
+  align-items: end;
 }
 
 .filter-row:last-child {
@@ -1591,11 +1588,13 @@ onMounted(async () => {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0;
 }
 
 .products-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
 .products-table thead {
@@ -1620,11 +1619,17 @@ onMounted(async () => {
 }
 
 .products-table tbody tr {
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 }
 
 .products-table tbody tr:hover {
   background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+  transform: translateX(2px);
+}
+
+.products-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .product-name {
@@ -1947,18 +1952,29 @@ onMounted(async () => {
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 0.875rem;
   color: #1e293b;
+  background-color: #ffffff;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-control:hover {
+  border-color: #cbd5e1;
 }
 
 .form-control:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background-color: #ffffff;
+}
+
+.form-control::placeholder {
+  color: #94a3b8;
 }
 
 .form-control-sm {
@@ -2163,54 +2179,89 @@ onMounted(async () => {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn:active::before {
+  width: 200px;
+  height: 200px;
 }
 
 .btn .material-icons {
   font-size: 1.125rem;
+  transition: transform 0.2s ease;
+}
+
+.btn:hover .material-icons {
+  transform: scale(1.1);
 }
 
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .btn-secondary {
   background: #f1f5f9;
   color: #475569;
+  border: 1px solid #e2e8f0;
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: #e2e8f0;
+  border-color: #cbd5e1;
 }
 
 .btn-success {
-  background: #10b981;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
 }
 
 .btn-success:hover:not(:disabled) {
-  background: #059669;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
 .btn-danger {
-  background: #ef4444;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #dc2626;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
 }
 
 .btn-sm {
@@ -2219,8 +2270,10 @@ onMounted(async () => {
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .btn-loading {
@@ -2292,7 +2345,7 @@ onMounted(async () => {
 }
 
 /* =================================================================
-   ANIMATIONS
+   ANIMATIONS & TRANSITIONS
    ================================================================= */
 @keyframes fadeIn {
   from {
@@ -2314,22 +2367,64 @@ onMounted(async () => {
   }
 }
 
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .animate-fade-up {
-  animation: fadeUp 0.5s ease-out;
+  animation: fadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
 }
 
 .animate-slide-in {
-  animation: slideInFromBottom 0.3s ease-out;
+  animation: slideInFromBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+/* Stagger animations cho các items */
+.stats-card {
+  animation-delay: calc(var(--index, 0) * 0.1s);
+}
+
+/* Performance optimization */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* =================================================================
-   RESPONSIVE
+   RESPONSIVE DESIGN
    ================================================================= */
-@media (max-width: 1024px) {
+
+/* Tablet Landscape (≤1200px) */
+@media (max-width: 1200px) {
   .admin-products {
     padding: 1.5rem;
   }
@@ -2339,70 +2434,92 @@ onMounted(async () => {
   }
 
   .filter-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .form-row {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* Tablet Portrait (≤768px) */
 @media (max-width: 768px) {
   .admin-products {
     padding: 1rem;
   }
 
+  .page-header {
+    padding: 1.5rem;
+  }
+
   .header-content {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
   }
 
   .header-actions {
     width: 100%;
-    flex-direction: column;
+    flex-wrap: wrap;
   }
 
   .header-actions button {
-    width: 100%;
+    flex: 1;
+    min-width: 140px;
   }
 
   .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .filter-row {
     grid-template-columns: 1fr;
   }
 
   .bulk-action-bar {
     flex-direction: column;
+    align-items: stretch;
     gap: 1rem;
   }
 
   .bulk-actions {
     width: 100%;
-    flex-direction: column;
+    justify-content: stretch;
   }
 
   .bulk-actions button {
-    width: 100%;
+    flex: 1;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .products-table {
+    min-width: 900px;
   }
 
   .pagination-container {
     flex-direction: column;
     gap: 1rem;
+    text-align: center;
   }
 
-  .page-btn span:not(.material-icons) {
-    display: none;
-  }
-
-  .table-container {
-    overflow-x: auto;
-  }
-
-  .products-table {
-    min-width: 800px;
+  .pagination {
+    justify-content: center;
   }
 
   .modal {
-    max-height: 95vh;
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
   }
 
-  .modal-body {
-    padding: 1.5rem;
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1.25rem;
   }
 
   .form-row {
@@ -2410,34 +2527,120 @@ onMounted(async () => {
   }
 }
 
-@media (max-width: 640px) {
+/* Mobile (≤480px) */
+@media (max-width: 480px) {
+  .admin-products {
+    padding: 0.75rem;
+  }
+
+  .page-header {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
   .page-title {
+    font-size: 1.25rem;
+  }
+
+  .page-title .material-icons {
     font-size: 1.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.75rem;
+  }
+
+  .header-actions {
+    flex-direction: column;
+  }
+
+  .header-actions button {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .stats-card {
+    padding: 1rem;
   }
 
   .stats-value {
     font-size: 1.5rem;
   }
 
-  .modal-header {
-    padding: 1rem 1.5rem;
+  .stats-icon {
+    width: 40px;
+    height: 40px;
   }
 
-  .modal-title {
+  .stats-icon .material-icons {
     font-size: 1.25rem;
   }
 
+  .filters-section {
+    padding: 1rem;
+  }
+
+  .bulk-action-bar {
+    padding: 0.75rem 1rem;
+  }
+
+  .bulk-actions {
+    flex-direction: column;
+  }
+
+  .products-table th,
+  .products-table td {
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .pagination-container {
+    padding: 1rem;
+  }
+
+  .page-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .page-btn span:not(.material-icons) {
+    display: none;
+  }
+
+  .modal {
+    margin: 0.5rem;
+    max-height: calc(100vh - 1rem);
+    border-radius: 12px;
+  }
+
+  .modal-header {
+    padding: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.125rem;
+  }
+
   .modal-body {
-    padding: 1rem 1.5rem;
+    padding: 1rem;
   }
 
   .modal-footer {
-    padding: 1rem 1.5rem;
+    padding: 1rem;
     flex-direction: column-reverse;
   }
 
   .modal-footer button {
     width: 100%;
+  }
+
+  .btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .btn .material-icons {
+    font-size: 1rem;
   }
 }
 </style>

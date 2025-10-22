@@ -6,12 +6,18 @@ const AdminLayout = () => import('@/layouts/AdminLayout.vue')
 
 // Admin Pages
 const AdminDashboard = () => import('@/views/admin/AdminDashboard.vue')
+const AdminSales = () => import('@/views/admin/AdminSales.vue')
 const AdminProducts = () => import('@/views/admin/AdminProducts.vue')
+const AdminProductVariants = () => import('@/views/admin/AdminProductVariants.vue')
 const AdminOrders = () => import('@/views/admin/AdminOrders.vue')
 const AdminUsers = () => import('@/views/admin/AdminUsers.vue')
 const AdminBrands = () => import('@/views/admin/AdminBrands.vue')
 const AdminCategories = () => import('@/views/admin/AdminCategories.vue')
+const AdminDiscounts = () => import('@/views/admin/AdminDiscounts.vue')
+const AdminReturns = () => import('@/views/admin/AdminReturns.vue')
+const AdminWarranty = () => import('@/views/admin/AdminWarranty.vue')
 const AdminAnalytics = () => import('@/views/admin/AdminAnalytics.vue')
+const AdminNotifications = () => import('@/views/admin/AdminNotifications.vue')
 const AdminSettings = () => import('@/views/admin/AdminSettings.vue')
 
 const adminRoutes = [
@@ -32,6 +38,26 @@ const adminRoutes = [
         }
       },
       {
+        path: 'sales',
+        name: 'AdminSales',
+        component: AdminSales,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Bán Hàng (POS)',
+          icon: 'shopping_cart'
+        }
+      },
+      {
+        path: 'orders',
+        name: 'AdminOrders',
+        component: AdminOrders,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Quản lý đơn hàng',
+          icon: 'receipt'
+        }
+      },
+      {
         path: 'products',
         name: 'AdminProducts',
         component: AdminProducts,
@@ -42,13 +68,13 @@ const adminRoutes = [
         }
       },
       {
-        path: 'orders',
-        name: 'AdminOrders',
-        component: AdminOrders,
+        path: 'product-variants',
+        name: 'AdminProductVariants',
+        component: AdminProductVariants,
         meta: { 
           requiresAdmin: true,
-          title: 'Quản lý đơn hàng',
-          icon: 'shopping_cart'
+          title: 'Quản lý biến thể',
+          icon: 'style'
         }
       },
       {
@@ -82,6 +108,36 @@ const adminRoutes = [
         }
       },
       {
+        path: 'discounts',
+        name: 'AdminDiscounts',
+        component: AdminDiscounts,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Quản lý giảm giá',
+          icon: 'percent'
+        }
+      },
+      {
+        path: 'returns',
+        name: 'AdminReturns',
+        component: AdminReturns,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Quản lý trả hàng',
+          icon: 'assignment_return'
+        }
+      },
+      {
+        path: 'warranty',
+        name: 'AdminWarranty',
+        component: AdminWarranty,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Quản lý bảo hành',
+          icon: 'verified_user'
+        }
+      },
+      {
         path: 'analytics',
         name: 'AdminAnalytics',
         component: AdminAnalytics,
@@ -89,6 +145,16 @@ const adminRoutes = [
           requiresAdmin: true,
           title: 'Phân tích & Báo cáo',
           icon: 'analytics'
+        }
+      },
+      {
+        path: 'notifications',
+        name: 'AdminNotifications',
+        component: AdminNotifications,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Quản lý thông báo',
+          icon: 'notifications'
         }
       },
       {

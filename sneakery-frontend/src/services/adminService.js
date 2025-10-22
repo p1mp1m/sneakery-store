@@ -402,6 +402,222 @@ class AdminService {
     }
   }
 
+  // ===== COUPONS =====
+  async getCoupons(page = 0, size = 10, filters = {}) {
+    try {
+      const params = { page, size, ...filters }
+      const response = await apiClient.get('/admin/coupons', { params })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getCouponById(id) {
+    try {
+      const response = await apiClient.get(`/admin/coupons/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createCoupon(couponData) {
+    try {
+      const response = await apiClient.post('/admin/coupons', couponData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateCoupon(id, couponData) {
+    try {
+      const response = await apiClient.put(`/admin/coupons/${id}`, couponData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteCoupon(id) {
+    try {
+      const response = await apiClient.delete(`/admin/coupons/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async toggleCouponStatus(id) {
+    try {
+      const response = await apiClient.put(`/admin/coupons/${id}/toggle-status`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async validateCoupon(code) {
+    try {
+      const response = await apiClient.get(`/admin/coupons/validate/${code}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== RETURNS =====
+  async getReturns(page = 0, size = 10, filters = {}) {
+    try {
+      const params = { page, size, ...filters }
+      const response = await apiClient.get('/admin/returns', { params })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getReturnById(id) {
+    try {
+      const response = await apiClient.get(`/admin/returns/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async approveReturn(id) {
+    try {
+      const response = await apiClient.put(`/admin/returns/${id}/approve`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async rejectReturn(id, reason) {
+    try {
+      const response = await apiClient.put(`/admin/returns/${id}/reject`, { reason })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateReturnStatus(id, status) {
+    try {
+      const response = await apiClient.put(`/admin/returns/${id}/status`, { status })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== WARRANTY =====
+  async getWarranties(page = 0, size = 10, filters = {}) {
+    try {
+      const params = { page, size, ...filters }
+      const response = await apiClient.get('/admin/warranties', { params })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getWarrantyById(id) {
+    try {
+      const response = await apiClient.get(`/admin/warranties/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async approveWarranty(id) {
+    try {
+      const response = await apiClient.put(`/admin/warranties/${id}/approve`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateWarrantyStatus(id, status) {
+    try {
+      const response = await apiClient.put(`/admin/warranties/${id}/status`, { status })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== NOTIFICATIONS =====
+  async getNotifications(page = 0, size = 10, filters = {}) {
+    try {
+      const params = { page, size, ...filters }
+      const response = await apiClient.get('/admin/notifications', { params })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getNotificationById(id) {
+    try {
+      const response = await apiClient.get(`/admin/notifications/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createNotification(notificationData) {
+    try {
+      const response = await apiClient.post('/admin/notifications', notificationData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateNotification(id, notificationData) {
+    try {
+      const response = await apiClient.put(`/admin/notifications/${id}`, notificationData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteNotification(id) {
+    try {
+      const response = await apiClient.delete(`/admin/notifications/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async sendNotification(id) {
+    try {
+      const response = await apiClient.post(`/admin/notifications/${id}/send`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== POS / SALES =====
+  async createPOSOrder(orderData) {
+    try {
+      const response = await apiClient.post('/admin/pos/orders', orderData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   // ===== UTILITY METHODS =====
   handleError(error) {
     if (error.response) {
