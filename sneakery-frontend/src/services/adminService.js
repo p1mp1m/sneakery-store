@@ -405,8 +405,19 @@ class AdminService {
   // ===== COUPONS =====
   async getCoupons(page = 0, size = 10, filters = {}) {
     try {
-      const params = { page, size, ...filters }
-      const response = await apiClient.get('/admin/coupons', { params })
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/coupons?${params}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -415,7 +426,7 @@ class AdminService {
 
   async getCouponById(id) {
     try {
-      const response = await apiClient.get(`/admin/coupons/${id}`)
+      const response = await adminApi.get(`/coupons/${id}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -424,7 +435,7 @@ class AdminService {
 
   async createCoupon(couponData) {
     try {
-      const response = await apiClient.post('/admin/coupons', couponData)
+      const response = await adminApi.post('/coupons', couponData)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -433,7 +444,7 @@ class AdminService {
 
   async updateCoupon(id, couponData) {
     try {
-      const response = await apiClient.put(`/admin/coupons/${id}`, couponData)
+      const response = await adminApi.put(`/coupons/${id}`, couponData)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -442,7 +453,7 @@ class AdminService {
 
   async deleteCoupon(id) {
     try {
-      const response = await apiClient.delete(`/admin/coupons/${id}`)
+      const response = await adminApi.delete(`/coupons/${id}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -451,7 +462,7 @@ class AdminService {
 
   async toggleCouponStatus(id) {
     try {
-      const response = await apiClient.put(`/admin/coupons/${id}/toggle-status`)
+      const response = await adminApi.put(`/coupons/${id}/toggle-status`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -460,7 +471,7 @@ class AdminService {
 
   async validateCoupon(code) {
     try {
-      const response = await apiClient.get(`/admin/coupons/validate/${code}`)
+      const response = await adminApi.get(`/coupons/validate/${code}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -470,8 +481,19 @@ class AdminService {
   // ===== RETURNS =====
   async getReturns(page = 0, size = 10, filters = {}) {
     try {
-      const params = { page, size, ...filters }
-      const response = await apiClient.get('/admin/returns', { params })
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/returns?${params}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -480,7 +502,7 @@ class AdminService {
 
   async getReturnById(id) {
     try {
-      const response = await apiClient.get(`/admin/returns/${id}`)
+      const response = await adminApi.get(`/returns/${id}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -489,7 +511,7 @@ class AdminService {
 
   async approveReturn(id) {
     try {
-      const response = await apiClient.put(`/admin/returns/${id}/approve`)
+      const response = await adminApi.put(`/returns/${id}/approve`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -498,7 +520,7 @@ class AdminService {
 
   async rejectReturn(id, reason) {
     try {
-      const response = await apiClient.put(`/admin/returns/${id}/reject`, { reason })
+      const response = await adminApi.put(`/returns/${id}/reject`, { reason })
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -507,7 +529,7 @@ class AdminService {
 
   async updateReturnStatus(id, status) {
     try {
-      const response = await apiClient.put(`/admin/returns/${id}/status`, { status })
+      const response = await adminApi.put(`/returns/${id}/status`, { status })
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -517,8 +539,19 @@ class AdminService {
   // ===== WARRANTY =====
   async getWarranties(page = 0, size = 10, filters = {}) {
     try {
-      const params = { page, size, ...filters }
-      const response = await apiClient.get('/admin/warranties', { params })
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/warranties?${params}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -527,7 +560,7 @@ class AdminService {
 
   async getWarrantyById(id) {
     try {
-      const response = await apiClient.get(`/admin/warranties/${id}`)
+      const response = await adminApi.get(`/warranties/${id}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -536,7 +569,7 @@ class AdminService {
 
   async approveWarranty(id) {
     try {
-      const response = await apiClient.put(`/admin/warranties/${id}/approve`)
+      const response = await adminApi.put(`/warranties/${id}/approve`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -545,7 +578,7 @@ class AdminService {
 
   async updateWarrantyStatus(id, status) {
     try {
-      const response = await apiClient.put(`/admin/warranties/${id}/status`, { status })
+      const response = await adminApi.put(`/warranties/${id}/status`, { status })
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -555,8 +588,19 @@ class AdminService {
   // ===== NOTIFICATIONS =====
   async getNotifications(page = 0, size = 10, filters = {}) {
     try {
-      const params = { page, size, ...filters }
-      const response = await apiClient.get('/admin/notifications', { params })
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/notifications?${params}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -565,7 +609,7 @@ class AdminService {
 
   async getNotificationById(id) {
     try {
-      const response = await apiClient.get(`/admin/notifications/${id}`)
+      const response = await adminApi.get(`/notifications/${id}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -574,7 +618,7 @@ class AdminService {
 
   async createNotification(notificationData) {
     try {
-      const response = await apiClient.post('/admin/notifications', notificationData)
+      const response = await adminApi.post('/notifications', notificationData)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -583,7 +627,7 @@ class AdminService {
 
   async updateNotification(id, notificationData) {
     try {
-      const response = await apiClient.put(`/admin/notifications/${id}`, notificationData)
+      const response = await adminApi.put(`/notifications/${id}`, notificationData)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -592,7 +636,7 @@ class AdminService {
 
   async deleteNotification(id) {
     try {
-      const response = await apiClient.delete(`/admin/notifications/${id}`)
+      const response = await adminApi.delete(`/notifications/${id}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -601,7 +645,7 @@ class AdminService {
 
   async sendNotification(id) {
     try {
-      const response = await apiClient.post(`/admin/notifications/${id}/send`)
+      const response = await adminApi.post(`/notifications/${id}/send`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -611,7 +655,7 @@ class AdminService {
   // ===== POS / SALES =====
   async createPOSOrder(orderData) {
     try {
-      const response = await apiClient.post('/admin/pos/orders', orderData)
+      const response = await adminApi.post('/pos/orders', orderData)
       return response.data
     } catch (error) {
       throw this.handleError(error)

@@ -26,14 +26,14 @@
     </div>
     
     <!-- Empty State -->
-    <div v-else-if="categories.length === 0" class="empty-state animate-fade-up">
+    <div v-else-if="!categories || categories.length === 0" class="empty-state animate-fade-up">
       <i class="material-icons">category</i>
       <h3>Chưa có danh mục nào</h3>
       <p>Nhấn "Thêm danh mục" để tạo danh mục đầu tiên</p>
     </div>
 
     <!-- Categories List -->
-    <div v-else class="categories-list animate-fade-up">
+    <div v-else-if="categories && categories.length > 0" class="categories-list animate-fade-up">
       <div class="table-container">
         <table class="table">
           <thead>

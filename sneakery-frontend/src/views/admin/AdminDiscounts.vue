@@ -412,6 +412,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+import adminService from '@/services/adminService'
 
 const adminStore = useAdminStore()
 
@@ -468,45 +470,46 @@ const visiblePages = computed(() => {
 const fetchCoupons = async () => {
   try {
     loading.value = true
-    // TODO: Call API lấy danh sách coupon
-    // Mock data
-    coupons.value = [
-      {
-        id: 1,
-        code: 'SUMMER2025',
-        description: 'Giảm giá mùa hè',
-        discountType: 'percent',
-        value: 15,
-        maxDiscountAmount: 100000,
-        minOrderAmount: 500000,
-        startAt: '2025-06-01T00:00:00',
-        endAt: '2025-08-31T23:59:59',
-        maxUses: 1000,
-        usesCount: 234,
-        maxUsesPerUser: 1,
-        isActive: true
-      },
-      {
-        id: 2,
-        code: 'FREESHIP',
-        description: 'Miễn phí vận chuyển',
-        discountType: 'fixed',
-        value: 30000,
-        maxDiscountAmount: null,
-        minOrderAmount: 300000,
-        startAt: '2025-01-01T00:00:00',
-        endAt: '2025-12-31T23:59:59',
-        maxUses: null,
-        usesCount: 567,
-        maxUsesPerUser: 3,
-        isActive: true
-      }
-    ]
-    totalElements.value = coupons.value.length
-    totalPages.value = Math.ceil(totalElements.value / pageSize.value)
-    updateStats()
+    const response = await adminService.getCoupons(currentPage.value, pageSize.value, filters)
+    
+    if (response && response.content) {
+      coupons.value = response.content
+      totalElements.value = response.totalElements || 0
+      totalPages.value = response.totalPages || 0
+      updateStats()
+    } else {
+      coupons.value = []
+      totalElements.value = 0
+      totalPages.value = 0
+    }
   } catch (error) {
     console.error('Lỗi tải coupons:', error)
+    
+    let errorMessage = 'Không thể tải danh sách mã giảm giá.'
+    
+    if (error.response) {
+      const status = error.response.status
+      if (status === 500) {
+        errorMessage = '⚠️ Lỗi server 500: Backend có thể chưa khởi động hoặc database chưa có table Coupons. Vui lòng kiểm tra backend!'
+      } else if (status === 404) {
+        errorMessage = 'API endpoint không tồn tại. Vui lòng kiểm tra backend!'
+      } else if (status === 403) {
+        errorMessage = 'Không có quyền truy cập. Vui lòng đăng nhập lại!'
+      }
+    } else if (error.request) {
+      errorMessage = '⚠️ Không thể kết nối đến backend server. Vui lòng kiểm tra:\n1. Backend đã chạy chưa?\n2. URL API có đúng không?'
+    }
+    
+    ElMessage.error({
+      message: errorMessage,
+      duration: 5000,
+      dangerouslyUseHTMLString: false
+    })
+    
+    // Set empty array để tránh undefined errors
+    coupons.value = []
+    totalElements.value = 0
+    totalPages.value = 0
   } finally {
     loading.value = false
   }
@@ -559,14 +562,68 @@ const editCoupon = (coupon) => {
 const saveCoupon = async () => {
   try {
     saving.value = true
-    // TODO: Call API tạo/cập nhật coupon
-    console.log('Save coupon:', formData)
-    alert('Lưu thành công!')
+    
+    // Chuẩn bị data để gửi lên server
+    const couponData = {
+      code: formData.code.toUpperCase().trim(),
+      description: formData.description?.trim() || null,
+      discountType: formData.discountType,
+      value: formData.value,
+      maxDiscountAmount: formData.maxDiscountAmount || null,
+      minOrderAmount: formData.minOrderAmount || null,
+      startAt: formData.startAt,
+      endAt: formData.endAt,
+      maxUses: formData.maxUses || null,
+      maxUsesPerUser: formData.maxUsesPerUser || 1,
+      isActive: formData.isActive
+    }
+    
+    if (editingCoupon.value) {
+      await adminService.updateCoupon(editingCoupon.value.id, couponData)
+      ElMessage.success({
+        message: `Đã cập nhật mã giảm giá "${couponData.code}" thành công!`,
+        duration: 3000
+      })
+    } else {
+      await adminService.createCoupon(couponData)
+      ElMessage.success({
+        message: `Đã tạo mã giảm giá "${couponData.code}" thành công!`,
+        duration: 3000
+      })
+    }
+    
     closeDialog()
     fetchCoupons()
   } catch (error) {
     console.error('Lỗi lưu coupon:', error)
-    alert('Có lỗi xảy ra!')
+    
+    let errorMessage = 'Có lỗi xảy ra! Vui lòng thử lại.'
+    if (error.response) {
+      const status = error.response.status
+      const data = error.response.data
+      
+      if (status === 400) {
+        if (data.validationErrors) {
+          const firstError = Object.values(data.validationErrors)[0]
+          if (firstError && firstError.length > 0) {
+            errorMessage = firstError[0]
+          }
+        } else if (data.message) {
+          errorMessage = data.message
+        }
+      } else if (status === 409) {
+        errorMessage = 'Mã giảm giá đã tồn tại. Vui lòng chọn mã khác.'
+      } else if (status === 500) {
+        errorMessage = 'Lỗi server. Vui lòng liên hệ quản trị viên.'
+      }
+    } else if (error.request) {
+      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
+    }
+    
+    ElMessage.error({
+      message: errorMessage,
+      duration: 5000
+    })
   } finally {
     saving.value = false
   }
@@ -574,30 +631,54 @@ const saveCoupon = async () => {
 
 const toggleCouponStatus = async (coupon) => {
   try {
-    // TODO: Call API
+    await adminService.toggleCouponStatus(coupon.id)
     coupon.isActive = !coupon.isActive
-    alert(`Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá!`)
+    ElMessage.success({
+      message: `Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá "${coupon.code}" thành công!`,
+      duration: 3000
+    })
   } catch (error) {
-    console.error('Lỗi:', error)
+    console.error('Lỗi toggle status:', error)
+    ElMessage.error({
+      message: 'Không thể thay đổi trạng thái. Vui lòng thử lại!',
+      duration: 3000
+    })
   }
 }
 
 const deleteCoupon = async (coupon) => {
-  if (!confirm(`Bạn có chắc muốn xóa mã "${coupon.code}"?`)) return
+  if (!confirm(`Bạn có chắc muốn xóa mã "${coupon.code}"? Hành động này không thể hoàn tác!`)) return
   
   try {
-    // TODO: Call API
-    console.log('Delete coupon:', coupon.id)
-    alert('Đã xóa!')
+    await adminService.deleteCoupon(coupon.id)
+    ElMessage.success({
+      message: `Đã xóa mã giảm giá "${coupon.code}" thành công!`,
+      duration: 3000
+    })
     fetchCoupons()
   } catch (error) {
     console.error('Lỗi xóa coupon:', error)
+    ElMessage.error({
+      message: 'Không thể xóa mã giảm giá. Vui lòng thử lại!',
+      duration: 3000
+    })
   }
 }
 
-const copyCouponCode = (code) => {
-  navigator.clipboard.writeText(code)
-  alert(`Đã sao chép mã: ${code}`)
+const copyCouponCode = async (code) => {
+  try {
+    await navigator.clipboard.writeText(code)
+    ElMessage.success({
+      message: `Đã sao chép mã: ${code}`,
+      duration: 2000
+    })
+  } catch (error) {
+    console.error('Lỗi copy:', error)
+    ElMessage.error({
+      message: 'Không thể sao chép mã!',
+      duration: 2000
+    })
+  }
 }
 
 const closeDialog = () => {
