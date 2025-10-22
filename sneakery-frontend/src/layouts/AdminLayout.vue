@@ -36,6 +36,19 @@
           </li>
         </ul>
       </nav>
+
+      <!-- Thông tin Admin ở dưới cùng -->
+      <div class="sidebar-footer" v-if="!sidebarCollapsed">
+        <div class="admin-info">
+          <div class="admin-avatar">
+            <i class="material-icons">account_circle</i>
+          </div>
+          <div class="admin-details">
+            <div class="admin-name">Admin</div>
+            <div class="admin-role">QUẢN TRỊ VIÊN</div>
+          </div>
+        </div>
+      </div>
     </aside>
 
     <!-- Main Content -->
@@ -69,14 +82,19 @@ const isMobile = ref(false)
 
 // Admin routes for sidebar
 const adminRoutes = [
-  { path: '/admin/dashboard', name: 'AdminDashboard', meta: { title: 'Dashboard', icon: 'dashboard' } },
-  { path: '/admin/products', name: 'AdminProducts', meta: { title: 'Sản phẩm', icon: 'inventory' } },
-  { path: '/admin/orders', name: 'AdminOrders', meta: { title: 'Đơn hàng', icon: 'shopping_cart' } },
-  { path: '/admin/users', name: 'AdminUsers', meta: { title: 'Người dùng', icon: 'people' } },
-  { path: '/admin/brands', name: 'AdminBrands', meta: { title: 'Thương hiệu', icon: 'branding_watermark' } },
-  { path: '/admin/categories', name: 'AdminCategories', meta: { title: 'Danh mục', icon: 'category' } },
-  { path: '/admin/analytics', name: 'AdminAnalytics', meta: { title: 'Phân tích', icon: 'analytics' } },
-  { path: '/admin/settings', name: 'AdminSettings', meta: { title: 'Cài đặt', icon: 'settings' } }
+  { path: '/admin/dashboard', name: 'AdminDashboard', meta: { title: 'Trang chủ', icon: 'home' } },
+  { path: '/admin/sales', name: 'AdminSales', meta: { title: 'Bán Hàng', icon: 'shopping_cart' } },
+  { path: '/admin/orders', name: 'AdminOrders', meta: { title: 'Quản lý hóa đơn', icon: 'receipt' } },
+  { path: '/admin/products', name: 'AdminProducts', meta: { title: 'Quản lý sản phẩm', icon: 'inventory' } },
+  { path: '/admin/brands', name: 'AdminBrands', meta: { title: 'Quản lý biến thể', icon: 'style' } },
+  { path: '/admin/categories', name: 'AdminCategories', meta: { title: 'Thuộc tính sản phẩm', icon: 'tune' } },
+  { path: '/admin/users', name: 'AdminUsers', meta: { title: 'Quản lý tài khoản & người dùng', icon: 'people' } },
+  { path: '/admin/discounts', name: 'AdminDiscounts', meta: { title: 'Quản lý giảm giá', icon: 'percent' } },
+  { path: '/admin/returns', name: 'AdminReturns', meta: { title: 'Quản lý tra hàng', icon: 'assignment_return' } },
+  { path: '/admin/warranty', name: 'AdminWarranty', meta: { title: 'Quản lý bảo hành', icon: 'verified_user' } },
+  { path: '/admin/analytics', name: 'AdminAnalytics', meta: { title: 'Thống kê', icon: 'analytics' } },
+  { path: '/admin/notifications', name: 'AdminNotifications', meta: { title: 'Quản lý thông báo', icon: 'notifications' } },
+  { path: '/admin/settings', name: 'AdminSettings', meta: { title: 'Quản lý hệ thống', icon: 'settings' } }
 ]
 
 // Methods
@@ -362,6 +380,61 @@ onUnmounted(() => {
   min-width: 24px;
 }
 
+/* ===== SIDEBAR FOOTER ===== */
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.admin-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.admin-info:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-avatar i {
+  font-size: 28px;
+  color: white;
+}
+
+.admin-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.125rem;
+}
+
+.admin-role {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
 /* ===== MAIN CONTENT ===== */
 .admin-main {
   flex: 1;
@@ -464,6 +537,11 @@ onUnmounted(() => {
 .nav-item:nth-child(6) { animation-delay: 0.3s; }
 .nav-item:nth-child(7) { animation-delay: 0.35s; }
 .nav-item:nth-child(8) { animation-delay: 0.4s; }
+.nav-item:nth-child(9) { animation-delay: 0.45s; }
+.nav-item:nth-child(10) { animation-delay: 0.5s; }
+.nav-item:nth-child(11) { animation-delay: 0.55s; }
+.nav-item:nth-child(12) { animation-delay: 0.6s; }
+.nav-item:nth-child(13) { animation-delay: 0.65s; }
 
 /* ===== GLOW EFFECT ===== */
 @keyframes glow {
