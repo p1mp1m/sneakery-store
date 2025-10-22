@@ -48,33 +48,25 @@
             </div>
             
             <div class="item-details">
-              <h3 class="item-name">{{ item.name }}</h3>
+              <h3 class="item-name">{{ item.productName }}</h3>
               <p class="item-brand">{{ item.brandName }}</p>
               <div class="item-price">
                 <span class="current-price">{{ formatCurrency(item.price) }}</span>
-                <span v-if="item.originalPrice && item.originalPrice > item.price" class="original-price">
-                  {{ formatCurrency(item.originalPrice) }}
+                <span v-if="item.priceSale && item.priceBase > item.priceSale" class="original-price">
+                  {{ formatCurrency(item.priceBase) }}
                 </span>
               </div>
               
-              <div class="item-variants" v-if="item.variants && item.variants.length > 0">
-                <el-select v-model="item.selectedVariant" placeholder="Chọn size" size="small">
-                  <el-option
-                    v-for="variant in item.variants"
-                    :key="variant.id"
-                    :label="`Size ${variant.size} - ${variant.color}`"
-                    :value="variant.id"
-                  />
-                </el-select>
+              <div class="item-status" v-if="!item.isActive">
+                <el-tag type="danger" size="small">
+                  Ngừng bán
+                </el-tag>
               </div>
               
-              <div class="item-stock" v-if="item.stock !== undefined">
-                <el-tag 
-                  :type="item.stock > 0 ? 'success' : 'danger'"
-                  size="small"
-                >
-                  {{ item.stock > 0 ? `Còn ${item.stock} sản phẩm` : 'Hết hàng' }}
-                </el-tag>
+              <div class="item-added-date">
+                <el-text size="small" type="info">
+                  Đã thêm: {{ formatDate(item.addedAt) }}
+                </el-text>
               </div>
             </div>
           </div>
@@ -97,121 +89,105 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Star, Delete, ShoppingCart } from '@element-plus/icons-vue';
+import { useWishlistStore } from '@/stores/wishlist';
 
 const router = useRouter();
+const wishlistStore = useWishlistStore();
 
-// Mock data for wishlist items
-const wishlistItems = ref([
-  {
-    id: 1,
-    name: 'Nike Air Force 1 Low',
-    brandName: 'Nike',
-    imageUrl: 'https://via.placeholder.com/300x300',
-    price: 2500000,
-    originalPrice: 3000000,
-    stock: 5,
-    selectedVariant: 1,
-    variants: [
-      { id: 1, size: 40, color: 'Trắng' },
-      { id: 2, size: 41, color: 'Trắng' },
-      { id: 3, size: 42, color: 'Trắng' }
-    ]
-  },
-  {
-    id: 2,
-    name: 'Adidas Ultraboost 21',
-    brandName: 'Adidas',
-    imageUrl: 'https://via.placeholder.com/300x300',
-    price: 3500000,
-    stock: 3,
-    selectedVariant: 4,
-    variants: [
-      { id: 4, size: 39, color: 'Đen' },
-      { id: 5, size: 40, color: 'Đen' },
-      { id: 6, size: 41, color: 'Đen' }
-    ]
-  },
-  {
-    id: 3,
-    name: 'Jordan 1 Retro High',
-    brandName: 'Jordan',
-    imageUrl: 'https://via.placeholder.com/300x300',
-    price: 4500000,
-    stock: 0,
-    selectedVariant: 7,
-    variants: [
-      { id: 7, size: 40, color: 'Đỏ' },
-      { id: 8, size: 41, color: 'Đỏ' }
-    ]
+// Computed từ store
+const wishlistItems = computed(() => wishlistStore.wishlistItems);
+const loading = computed(() => wishlistStore.loading);
+
+// Load wishlist khi component mount
+onMounted(async () => {
+  try {
+    await wishlistStore.fetchWishlist();
+  } catch (error) {
+    ElMessage.error('Không thể tải danh sách yêu thích');
   }
-]);
+});
 
 const formatCurrency = (value) => {
   if (value === null || value === undefined) return '0 ₫';
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
 
-const removeFromWishlist = (item) => {
-  ElMessageBox.confirm(
-    `Bạn có chắc chắn muốn xóa "${item.name}" khỏi danh sách yêu thích?`,
-    'Xác nhận',
-    {
-      confirmButtonText: 'Xóa',
-      cancelButtonText: 'Hủy',
-      type: 'warning',
-    }
-  ).then(() => {
-    const index = wishlistItems.value.findIndex(i => i.id === item.id);
-    if (index > -1) {
-      wishlistItems.value.splice(index, 1);
-      ElMessage.success(`Đã xóa "${item.name}" khỏi danh sách yêu thích`);
-    }
-  }).catch(() => {
-    ElMessage.info('Đã hủy thao tác');
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric' 
   });
+};
+
+const removeFromWishlist = async (item) => {
+  try {
+    await ElMessageBox.confirm(
+      `Bạn có chắc chắn muốn xóa "${item.productName}" khỏi danh sách yêu thích?`,
+      'Xác nhận',
+      {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        type: 'warning',
+      }
+    );
+    
+    await wishlistStore.removeFromWishlist(item.productId);
+    ElMessage.success(`Đã xóa "${item.productName}" khỏi danh sách yêu thích`);
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('Không thể xóa sản phẩm');
+    }
+  }
 };
 
 const addToCart = (item) => {
-  if (item.stock === 0) {
-    ElMessage.warning('Sản phẩm này đã hết hàng');
+  if (!item.isActive) {
+    ElMessage.warning('Sản phẩm này đã ngừng bán');
     return;
   }
   
-  ElMessage.success(`Đã thêm "${item.name}" vào giỏ hàng`);
-  // Here you would typically dispatch an action to add the item to your cart store/backend
+  // Navigate to product detail page để user chọn size
+  router.push(`/products/${item.productSlug}`);
 };
 
 const addAllToCart = () => {
-  const availableItems = wishlistItems.value.filter(item => item.stock > 0);
+  const activeItems = wishlistItems.value.filter(item => item.isActive);
   
-  if (availableItems.length === 0) {
-    ElMessage.warning('Tất cả sản phẩm trong danh sách yêu thích đều hết hàng');
+  if (activeItems.length === 0) {
+    ElMessage.warning('Không có sản phẩm nào khả dụng trong danh sách yêu thích');
     return;
   }
   
-  ElMessage.success(`Đã thêm ${availableItems.length} sản phẩm vào giỏ hàng`);
-  // Here you would typically dispatch an action to add all available items to your cart store/backend
+  // Navigate về trang sản phẩm để thêm từng cái
+  ElMessage.info('Vui lòng chọn size cho từng sản phẩm');
 };
 
-const clearWishlist = () => {
-  ElMessageBox.confirm(
-    'Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi danh sách yêu thích?',
-    'Xác nhận',
-    {
-      confirmButtonText: 'Xóa tất cả',
-      cancelButtonText: 'Hủy',
-      type: 'warning',
-    }
-  ).then(() => {
-    wishlistItems.value = [];
+const clearWishlist = async () => {
+  try {
+    await ElMessageBox.confirm(
+      'Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi danh sách yêu thích?',
+      'Xác nhận',
+      {
+        confirmButtonText: 'Xóa tất cả',
+        cancelButtonText: 'Hủy',
+        type: 'warning',
+      }
+    );
+    
+    await wishlistStore.clearWishlist();
     ElMessage.success('Đã xóa tất cả sản phẩm khỏi danh sách yêu thích');
-  }).catch(() => {
-    ElMessage.info('Đã hủy thao tác');
-  });
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('Không thể xóa wishlist');
+    }
+  }
 };
 
 const goToHome = () => {
@@ -336,16 +312,13 @@ const goToHome = () => {
   margin-left: 8px;
 }
 
-.item-variants {
-  margin-bottom: 12px;
+.item-status {
+  margin-bottom: 8px;
 }
 
-.item-variants .el-select {
-  width: 100%;
-}
-
-.item-stock {
+.item-added-date {
   margin-top: 8px;
+  font-size: 12px;
 }
 
 .wishlist-actions {

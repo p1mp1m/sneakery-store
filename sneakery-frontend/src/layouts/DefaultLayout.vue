@@ -26,7 +26,29 @@
             </svg>
             <span>Sản Phẩm</span>
           </router-link>
+        </nav>
 
+        <!-- Action Icons -->
+        <div class="nav-actions" v-if="authStore.isAuthenticated">
+          <!-- Wishlist Icon -->
+          <router-link to="/wishlist" class="nav-icon" :class="{ 'active': $route.path === '/wishlist' }">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            <span class="badge" v-if="wishlistStore.wishlistCount > 0">{{ wishlistStore.wishlistCount }}</span>
+          </router-link>
+
+          <!-- Cart Icon -->
+          <router-link to="/cart" class="nav-icon" :class="{ 'active': $route.path === '/cart' }">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 2L7 6H21L19 2H9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 6V20C7 20.5304 7.21071 21.0391 7.58579 21.4142C7.96086 21.7893 8.46957 22 9 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6H7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="badge" v-if="false">0</span>
+          </router-link>
+        </div>
+
+        <nav class="nav-links-user desktop-nav">
           <template v-if="authStore.isAuthenticated">
             <!-- Admin Panel Link -->
             <router-link v-if="isAdmin" to="/admin/dashboard" class="nav-link admin-link" active-class="nav-link-active">
@@ -258,10 +280,12 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useAdminStore } from '@/stores/admin';
+import { useWishlistStore } from '@/stores/wishlist';
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const adminStore = useAdminStore();
+const wishlistStore = useWishlistStore();
 const router = useRouter();
 
 // Reactive state
@@ -329,9 +353,18 @@ const handleClickOutside = (event) => {
 };
 
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('scroll', handleScroll);
   document.addEventListener('click', handleClickOutside);
+  
+  // Load wishlist count nếu user đã đăng nhập
+  if (authStore.isAuthenticated) {
+    try {
+      await wishlistStore.fetchWishlist();
+    } catch (error) {
+      console.error('Error loading wishlist:', error);
+    }
+  }
 });
 
 onUnmounted(() => {
@@ -408,6 +441,57 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+/* Nav Actions (Wishlist, Cart) */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 var(--space-4);
+}
+
+.nav-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  background: transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.nav-icon:hover {
+  background: rgba(167, 139, 250, 0.1);
+  color: var(--color-primary);
+  transform: scale(1.1);
+}
+
+.nav-icon.active {
+  background: rgba(167, 139, 250, 0.15);
+  color: var(--color-primary);
+}
+
+.nav-icon .badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--color-error);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .nav-link {

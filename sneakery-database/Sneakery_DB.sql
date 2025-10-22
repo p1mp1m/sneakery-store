@@ -1,16 +1,11 @@
 -- =====================================================
--- SNEAKERY E-COMMERCE DATABASE - VERSION 2.0 (ENHANCED)
+-- SNEAKERY E-COMMERCE DATABASE - VERSION 3.1 (SYNCHRONIZED)
 -- =====================================================
--- Description: Enhanced database schema for Sneakery Store
--- Features: 
---   - Improved indexing for better performance
---   - Full foreign key constraints
---   - BCrypt hashed passwords
---   - Soft delete support
---   - Audit timestamps (created_at, updated_at)
---   - Additional useful tables (Wishlists, Notifications)
---   - Stored procedures and views
--- Date: 2025
+-- Description: Phiên bản đồng bộ hoàn chỉnh, bao gồm:
+--   - Tất cả các trường và tính năng từ V2
+--   - Các bảng mới từ V3 (Flash_Sales, Loyalty_Points, Return_Requests, Email_Templates)
+--   - Full indexing, views, stored procedures, triggers
+-- Date: 2025-10-22
 -- =====================================================
 
 -- Drop database if exists (BE CAREFUL!)
@@ -29,7 +24,7 @@ USE sneakery_db;
 GO
 
 -- =====================================================
--- 1. USERS TABLE (Enhanced)
+-- 1. USERS TABLE (Enhanced with OAuth & Password Reset)
 -- =====================================================
 CREATE TABLE Users (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -62,7 +57,6 @@ CREATE TABLE Users (
     deleted_at DATETIME2 NULL -- Soft delete
 );
 
--- Indexes for Users
 CREATE INDEX idx_users_email ON Users(email);
 CREATE INDEX idx_users_role ON Users(role);
 CREATE INDEX idx_users_active ON Users(is_active);
@@ -123,7 +117,7 @@ CREATE INDEX idx_categories_active ON Categories(is_active);
 GO
 
 -- =====================================================
--- 4. PRODUCTS TABLE (Enhanced)
+-- 4. PRODUCTS TABLE (Enhanced with SEO)
 -- =====================================================
 CREATE TABLE Products (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -222,7 +216,7 @@ CREATE INDEX idx_variants_active ON Product_Variants(is_active);
 GO
 
 -- =====================================================
--- 7. PRODUCT_IMAGES TABLE (New - Multiple images per product)
+-- 7. PRODUCT_IMAGES TABLE
 -- =====================================================
 CREATE TABLE Product_Images (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -238,10 +232,54 @@ CREATE TABLE Product_Images (
 );
 
 CREATE INDEX idx_images_product ON Product_Images(product_id);
+CREATE INDEX idx_images_primary ON Product_Images(is_primary);
 GO
 
 -- =====================================================
--- 8. ADDRESSES TABLE (Enhanced)
+-- 8. SIZE_CHARTS TABLE
+-- =====================================================
+CREATE TABLE Size_Charts (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    brand_id INT NOT NULL,
+    category NVARCHAR(50) NOT NULL,
+    size VARCHAR(10) NOT NULL,
+    size_us VARCHAR(10),
+    size_uk VARCHAR(10),
+    length_cm DECIMAL(5,2),
+    width_cm DECIMAL(5,2),
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_sizechart_brand FOREIGN KEY (brand_id) REFERENCES Brands(id),
+    CONSTRAINT uq_sizechart UNIQUE (brand_id, category, size)
+);
+
+CREATE INDEX idx_sizechart_brand ON Size_Charts(brand_id);
+CREATE INDEX idx_sizechart_category ON Size_Charts(category);
+GO
+
+-- =====================================================
+-- 9. WISHLISTS TABLE
+-- =====================================================
+CREATE TABLE Wishlists (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    user_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_wishlists_user FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_wishlists_product FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
+    CONSTRAINT uq_wishlist_user_product UNIQUE (user_id, product_id)
+);
+
+CREATE INDEX idx_wishlists_user ON Wishlists(user_id);
+CREATE INDEX idx_wishlists_product ON Wishlists(product_id);
+GO
+
+-- =====================================================
+-- 10. ADDRESSES TABLE (Enhanced)
 -- =====================================================
 CREATE TABLE Addresses (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -277,7 +315,7 @@ CREATE INDEX idx_addresses_default ON Addresses(is_default);
 GO
 
 -- =====================================================
--- 9. COUPONS TABLE (Enhanced)
+-- 11. COUPONS TABLE (Enhanced)
 -- =====================================================
 CREATE TABLE Coupons (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -318,7 +356,56 @@ CREATE INDEX idx_coupons_active ON Coupons(is_active);
 GO
 
 -- =====================================================
--- 10. CARTS TABLE
+-- 12. FLASH_SALES TABLE
+-- =====================================================
+CREATE TABLE Flash_Sales (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    product_id BIGINT NOT NULL,
+    discount_percent DECIMAL(5,2) NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100),
+    
+    start_time DATETIME2 NOT NULL,
+    end_time DATETIME2 NOT NULL,
+    
+    quantity_limit INT,
+    sold_count INT DEFAULT 0,
+    
+    is_active BIT DEFAULT 1,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_flashsale_product FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
+    CONSTRAINT chk_flashsale_dates CHECK (end_time > start_time)
+);
+
+CREATE INDEX idx_flashsale_product ON Flash_Sales(product_id);
+CREATE INDEX idx_flashsale_active ON Flash_Sales(is_active, start_time, end_time);
+GO
+
+-- =====================================================
+-- 13. LOYALTY_POINTS TABLE
+-- =====================================================
+CREATE TABLE Loyalty_Points (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    user_id BIGINT NOT NULL,
+    points INT NOT NULL,
+    transaction_type VARCHAR(20) NOT NULL CHECK (transaction_type IN ('earn', 'redeem', 'expire')),
+    
+    earned_from_order_id BIGINT NULL,
+    redeemed_in_order_id BIGINT NULL,
+    
+    description NVARCHAR(255),
+    expires_at DATETIME2,
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_loyalty_user FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_loyalty_user ON Loyalty_Points(user_id);
+CREATE INDEX idx_loyalty_expires ON Loyalty_Points(expires_at);
+GO
+
+-- =====================================================
+-- 14. CARTS TABLE (Enhanced)
 -- =====================================================
 CREATE TABLE Carts (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -337,7 +424,7 @@ CREATE INDEX idx_carts_session ON Carts(session_id);
 GO
 
 -- =====================================================
--- 11. CART_ITEMS TABLE
+-- 15. CART_ITEMS TABLE
 -- =====================================================
 CREATE TABLE Cart_Items (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -356,12 +443,12 @@ CREATE INDEX idx_cart_items_variant ON Cart_Items(variant_id);
 GO
 
 -- =====================================================
--- 12. ORDERS TABLE (Enhanced)
+-- 16. ORDERS TABLE (Enhanced)
 -- =====================================================
 CREATE TABLE Orders (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
     user_id BIGINT NOT NULL,
-    order_number VARCHAR(50) NOT NULL UNIQUE, -- e.g., ORD-20250121-0001
+    order_number VARCHAR(50) NOT NULL UNIQUE, -- e.g., ORD-20250122-0001
     
     -- Addresses
     address_shipping_id BIGINT NOT NULL,
@@ -375,6 +462,8 @@ CREATE TABLE Orders (
     total_amount DECIMAL(18,2) NOT NULL,
     
     coupon_id INT,
+    points_earned INT DEFAULT 0,
+    points_used INT DEFAULT 0,
     
     -- Status
     status VARCHAR(50) DEFAULT 'pending' CHECK (status IN (
@@ -410,7 +499,7 @@ CREATE INDEX idx_orders_created ON Orders(created_at DESC);
 GO
 
 -- =====================================================
--- 13. ORDER_DETAILS TABLE (Enhanced)
+-- 17. ORDER_DETAILS TABLE
 -- =====================================================
 CREATE TABLE Order_Details (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -438,7 +527,7 @@ CREATE INDEX idx_order_details_variant ON Order_Details(variant_id);
 GO
 
 -- =====================================================
--- 14. ORDER_STATUS_HISTORIES TABLE
+-- 18. ORDER_STATUS_HISTORIES TABLE
 -- =====================================================
 CREATE TABLE Order_Status_Histories (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -457,7 +546,37 @@ CREATE INDEX idx_status_history_order ON Order_Status_Histories(order_id);
 GO
 
 -- =====================================================
--- 15. PAYMENTS TABLE (Enhanced)
+-- 19. RETURN_REQUESTS TABLE
+-- =====================================================
+CREATE TABLE Return_Requests (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    order_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    
+    reason NVARCHAR(MAX) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
+    
+    images_json NVARCHAR(MAX), -- JSON array of image URLs
+    
+    admin_note NVARCHAR(MAX),
+    approved_by BIGINT,
+    approved_at DATETIME2,
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_return_order FOREIGN KEY (order_id) REFERENCES Orders(id),
+    CONSTRAINT fk_return_user FOREIGN KEY (user_id) REFERENCES Users(id),
+    CONSTRAINT fk_return_approver FOREIGN KEY (approved_by) REFERENCES Users(id)
+);
+
+CREATE INDEX idx_return_order ON Return_Requests(order_id);
+CREATE INDEX idx_return_user ON Return_Requests(user_id);
+CREATE INDEX idx_return_status ON Return_Requests(status);
+GO
+
+-- =====================================================
+-- 20. PAYMENTS TABLE (Enhanced)
 -- =====================================================
 CREATE TABLE Payments (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -491,7 +610,7 @@ CREATE INDEX idx_payments_transaction ON Payments(transaction_id);
 GO
 
 -- =====================================================
--- 16. REVIEWS TABLE (Enhanced)
+-- 21. REVIEWS TABLE (Enhanced)
 -- =====================================================
 CREATE TABLE Reviews (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -507,6 +626,7 @@ CREATE TABLE Reviews (
     image_url_1 VARCHAR(500),
     image_url_2 VARCHAR(500),
     image_url_3 VARCHAR(500),
+    images_json NVARCHAR(MAX), -- Alternative: JSON array
     
     -- Moderation
     is_approved BIT DEFAULT 0,
@@ -515,6 +635,11 @@ CREATE TABLE Reviews (
     -- Engagement
     helpful_count INT DEFAULT 0,
     unhelpful_count INT DEFAULT 0,
+    
+    -- Admin reply
+    reply_text NVARCHAR(MAX),
+    replied_at DATETIME2,
+    replied_by BIGINT,
     
     approved_by BIGINT, -- admin user_id
     approved_at DATETIME2,
@@ -526,7 +651,8 @@ CREATE TABLE Reviews (
     CONSTRAINT fk_reviews_product FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
     CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES Users(id),
     CONSTRAINT fk_reviews_order FOREIGN KEY (order_id) REFERENCES Orders(id),
-    CONSTRAINT fk_reviews_approver FOREIGN KEY (approved_by) REFERENCES Users(id)
+    CONSTRAINT fk_reviews_approver FOREIGN KEY (approved_by) REFERENCES Users(id),
+    CONSTRAINT fk_reviews_replier FOREIGN KEY (replied_by) REFERENCES Users(id)
 );
 
 CREATE INDEX idx_reviews_product ON Reviews(product_id);
@@ -536,26 +662,23 @@ CREATE INDEX idx_reviews_rating ON Reviews(rating);
 GO
 
 -- =====================================================
--- 17. WISHLISTS TABLE (New)
+-- 22. EMAIL_TEMPLATES TABLE
 -- =====================================================
-CREATE TABLE Wishlists (
-    id BIGINT PRIMARY KEY IDENTITY(1,1),
-    user_id BIGINT NOT NULL,
-    product_id BIGINT NOT NULL,
+CREATE TABLE Email_Templates (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    template_name VARCHAR(100) NOT NULL UNIQUE,
+    subject NVARCHAR(255) NOT NULL,
+    body NVARCHAR(MAX) NOT NULL,
+    variables NVARCHAR(500), -- Comma-separated: {name},{order_id},{total}
     
+    is_active BIT DEFAULT 1,
     created_at DATETIME2 DEFAULT GETDATE(),
-    
-    CONSTRAINT fk_wishlists_user FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_wishlists_product FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
-    CONSTRAINT uq_wishlist_user_product UNIQUE (user_id, product_id)
+    updated_at DATETIME2 DEFAULT GETDATE()
 );
-
-CREATE INDEX idx_wishlists_user ON Wishlists(user_id);
-CREATE INDEX idx_wishlists_product ON Wishlists(product_id);
 GO
 
 -- =====================================================
--- 18. NOTIFICATIONS TABLE (New)
+-- 23. NOTIFICATIONS TABLE
 -- =====================================================
 CREATE TABLE Notifications (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -583,7 +706,7 @@ CREATE INDEX idx_notifications_created ON Notifications(created_at DESC);
 GO
 
 -- =====================================================
--- 19. INVENTORY_LOGS TABLE (New - Track stock changes)
+-- 24. INVENTORY_LOGS TABLE (Track stock changes)
 -- =====================================================
 CREATE TABLE Inventory_Logs (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -614,7 +737,7 @@ CREATE INDEX idx_inventory_logs_created ON Inventory_Logs(created_at DESC);
 GO
 
 -- =====================================================
--- 20. ACTIVITY_LOGS TABLE (New - Audit trail)
+-- 25. ACTIVITY_LOGS TABLE (Audit trail)
 -- =====================================================
 CREATE TABLE Activity_Logs (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -776,7 +899,6 @@ GO
 -- BCrypt hash for common passwords:
 -- 'admin123' => $2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi
 -- 'user123' => $2a$10$rT5Z3z0QK0xJxX6YvqHJU.w7qVzN6hGJ3KCv8vQqVxJ3Lx3xX6xXe
--- 'password' => $2a$10$K7F2H9V0N8X1W5Y3Z6P4L.Q8R2S6T7U9V3W6X8Y0Z2A4B5C7D9E1F3
 
 -- Insert Admin User
 INSERT INTO Users (email, password_hash, full_name, phone_number, role, is_active, is_email_verified) VALUES
@@ -862,6 +984,20 @@ INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sa
 (6, 'CONV-CT-WHT-38', '38', N'Trắng', 1200000, NULL, 35, 1),
 (6, 'CONV-CT-WHT-39', '39', N'Trắng', 1200000, NULL, 38, 1);
 
+-- Insert Product Images
+INSERT INTO Product_Images (product_id, image_url, alt_text, is_primary, display_order) VALUES
+(1, 'https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/air-max-270-shoe.jpg', N'Nike Air Max 270 - Góc chính', 1, 0),
+(1, 'https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/air-max-270-shoe-side.jpg', N'Nike Air Max 270 - Góc bên', 0, 1),
+(2, 'https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/revolution-6-shoe.jpg', N'Nike Revolution 6', 1, 0);
+
+-- Insert Size Charts (Sample data for Nike Running shoes)
+INSERT INTO Size_Charts (brand_id, category, size, size_us, size_uk, length_cm, width_cm) VALUES
+(1, 'Running', '38', '7', '6', 24.5, 9.5),
+(1, 'Running', '39', '7.5', '6.5', 25.0, 9.7),
+(1, 'Running', '40', '8', '7', 25.5, 10.0),
+(1, 'Running', '41', '8.5', '7.5', 26.0, 10.2),
+(1, 'Running', '42', '9', '8', 26.5, 10.5);
+
 -- Insert Coupons
 INSERT INTO Coupons (code, description, discount_type, discount_value, min_order_amount, max_discount_amount, start_at, end_at, max_uses, applicable_to, is_active) VALUES
 ('WELCOME10', N'Giảm 10% cho đơn hàng đầu tiên', 'percentage', 10, 500000, 200000, '2025-01-01', '2025-12-31', 1000, 'all', 1),
@@ -873,19 +1009,69 @@ INSERT INTO Addresses (user_id, recipient_name, phone, line1, ward, district, ci
 (3, N'Nguyễn Văn An', '0912345678', N'123 Nguyễn Huệ', N'Bến Nghé', N'Quận 1', N'TP. Hồ Chí Minh', 1, 'home'),
 (3, N'Nguyễn Văn An', '0912345678', N'456 Lý Tự Trọng', N'Bến Thành', N'Quận 1', N'TP. Hồ Chí Minh', 0, 'office');
 
+-- Insert Email Templates
+INSERT INTO Email_Templates (template_name, subject, body, variables) VALUES
+('order_confirmation', N'Xác nhận đơn hàng #{order_id}', N'Xin chào {customer_name},<br><br>Cảm ơn bạn đã đặt hàng tại Sneakery Store.<br>Mã đơn hàng: {order_id}<br>Tổng tiền: {total}<br><br>Chúng tôi sẽ xử lý đơn hàng của bạn sớm nhất.', '{customer_name},{order_id},{total}'),
+('order_shipped', N'Đơn hàng #{order_id} đã được giao', N'Xin chào {customer_name},<br><br>Đơn hàng {order_id} của bạn đã được giao cho đơn vị vận chuyển.<br>Mã vận đơn: {tracking_number}', '{customer_name},{order_id},{tracking_number}'),
+('order_delivered', N'Đơn hàng #{order_id} đã giao thành công', N'Xin chào {customer_name},<br><br>Đơn hàng {order_id} của bạn đã được giao thành công.<br>Cảm ơn bạn đã tin tưởng Sneakery Store!', '{customer_name},{order_id}');
+
+GO
+
 -- =====================================================
 -- COMPLETION MESSAGE
 -- =====================================================
-PRINT '✅ Database created successfully!';
-PRINT '📊 Tables: 20';
+PRINT '✅ Database V3.1 (SYNCHRONIZED) created successfully!';
+PRINT '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+PRINT '📊 Total Tables: 25';
+PRINT '';
+PRINT '   CORE TABLES (V2):';
+PRINT '   1. Users (with OAuth & Password Reset)';
+PRINT '   2. Brands';
+PRINT '   3. Categories (Nested Set Model)';
+PRINT '   4. Products';
+PRINT '   5. Product_Categories';
+PRINT '   6. Product_Variants (with cost_price, weight)';
+PRINT '   7. Product_Images';
+PRINT '   8. Addresses (with lat/long)';
+PRINT '   9. Coupons (with applicability)';
+PRINT '   10. Carts (with expires_at)';
+PRINT '   11. Cart_Items';
+PRINT '   12. Orders (with order_number, tax)';
+PRINT '   13. Order_Details';
+PRINT '   14. Order_Status_Histories';
+PRINT '   15. Payments (with refunded_at)';
+PRINT '   16. Reviews (enhanced)';
+PRINT '';
+PRINT '   NEW TABLES (V3):';
+PRINT '   17. Size_Charts';
+PRINT '   18. Wishlists';
+PRINT '   19. Flash_Sales';
+PRINT '   20. Loyalty_Points';
+PRINT '   21. Return_Requests';
+PRINT '   22. Email_Templates';
+PRINT '';
+PRINT '   AUDIT TABLES (V2):';
+PRINT '   23. Notifications';
+PRINT '   24. Inventory_Logs';
+PRINT '   25. Activity_Logs';
+PRINT '';
 PRINT '👁️ Views: 2';
+PRINT '   - vw_ProductSummary';
+PRINT '   - vw_OrderSummary';
+PRINT '';
 PRINT '⚙️ Stored Procedures: 2';
+PRINT '   - sp_UpdateProductRating';
+PRINT '   - sp_GenerateOrderNumber';
+PRINT '';
 PRINT '🔔 Triggers: 2';
+PRINT '   - trg_Products_UpdateTimestamp';
+PRINT '   - trg_ProductVariants_InventoryLog';
 PRINT '';
 PRINT '🔐 Test Accounts:';
 PRINT '   Admin: admin@sneakery.com / admin123';
 PRINT '   User: user1@gmail.com / user123';
 PRINT '';
+PRINT '✨ All features synchronized from V2 + New features from V3!';
 PRINT '🎉 Ready to use!';
 GO
 
