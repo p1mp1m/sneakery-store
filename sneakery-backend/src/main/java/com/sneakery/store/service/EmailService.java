@@ -1,171 +1,145 @@
 package com.sneakery.store.service;
 
+import com.sneakery.store.entity.EmailTemplate;
 import com.sneakery.store.entity.Order;
-import com.sneakery.store.entity.User;
+import com.sneakery.store.repository.EmailTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 /**
- * Service: EmailService (Mock)
- * Gửi email thông báo cho khách hàng
- * TODO: Tích hợp SMTP server thật khi deploy production
+ * Email Service (Mock Implementation)
+ * Trong production, tích hợp với SendGrid, AWS SES, hoặc SMTP server
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
 
+    private final EmailTemplateRepository emailTemplateRepository;
+
     /**
      * Gửi email xác nhận đơn hàng
      */
-    public void sendOrderConfirmationEmail(Order order) {
-        log.info("📧 [MOCK] Sending order confirmation email to: {}", order.getUser().getEmail());
-        log.info("Order ID: {}, Total: {}", order.getId(), order.getTotalAmount());
+    public void sendOrderConfirmation(Order order) {
+        log.info("📧 [MOCK EMAIL] Sending order confirmation email");
+        log.info("   To: {}", order.getUser().getEmail());
+        log.info("   Subject: Xác nhận đơn hàng #{}", order.getOrderNumber());
+        log.info("   Order ID: {}", order.getId());
+        log.info("   Total: {} VND", order.getTotalAmount());
         
-        // TODO: Implement real email sending logic
-        // Example: use JavaMailSender or third-party service (SendGrid, AWS SES)
-        
-        String emailBody = buildOrderConfirmationEmail(order);
-        log.debug("Email body: \n{}", emailBody);
+        // TODO: In production, send actual email using template
+        sendEmail(
+            order.getUser().getEmail(),
+            "order_confirmation",
+            Map.of(
+                "customer_name", order.getUser().getFullName(),
+                "order_id", order.getOrderNumber(),
+                "total", order.getTotalAmount().toString()
+            )
+        );
     }
 
     /**
-     * Gửi email thông báo đơn hàng đã được giao cho ĐVVC
+     * Gửi email thông báo đơn hàng đã được giao cho shipper
      */
-    public void sendOrderShippedEmail(Order order, String trackingNumber) {
-        log.info("📧 [MOCK] Sending order shipped email to: {}", order.getUser().getEmail());
-        log.info("Order ID: {}, Tracking: {}", order.getId(), trackingNumber);
+    public void sendOrderShipped(Order order, String trackingNumber) {
+        log.info("📦 [MOCK EMAIL] Sending shipping notification email");
+        log.info("   To: {}", order.getUser().getEmail());
+        log.info("   Order: {}", order.getOrderNumber());
+        log.info("   Tracking: {}", trackingNumber);
         
-        String emailBody = buildOrderShippedEmail(order, trackingNumber);
-        log.debug("Email body: \n{}", emailBody);
+        sendEmail(
+            order.getUser().getEmail(),
+            "order_shipped",
+            Map.of(
+                "customer_name", order.getUser().getFullName(),
+                "order_id", order.getOrderNumber(),
+                "tracking_number", trackingNumber
+            )
+        );
     }
 
     /**
      * Gửi email thông báo đơn hàng đã giao thành công
      */
-    public void sendOrderDeliveredEmail(Order order) {
-        log.info("📧 [MOCK] Sending order delivered email to: {}", order.getUser().getEmail());
+    public void sendOrderDelivered(Order order) {
+        log.info("✅ [MOCK EMAIL] Sending delivery confirmation email");
+        log.info("   To: {}", order.getUser().getEmail());
+        log.info("   Order: {}", order.getOrderNumber());
         
-        String emailBody = buildOrderDeliveredEmail(order);
-        log.debug("Email body: \n{}", emailBody);
+        sendEmail(
+            order.getUser().getEmail(),
+            "order_delivered",
+            Map.of(
+                "customer_name", order.getUser().getFullName(),
+                "order_id", order.getOrderNumber()
+            )
+        );
     }
 
     /**
      * Gửi email thông báo đơn hàng bị hủy
      */
-    public void sendOrderCancelledEmail(Order order, String reason) {
-        log.info("📧 [MOCK] Sending order cancelled email to: {}", order.getUser().getEmail());
-        
-        String emailBody = buildOrderCancelledEmail(order, reason);
-        log.debug("Email body: \n{}", emailBody);
+    public void sendOrderCancelled(Order order, String reason) {
+        log.info("❌ [MOCK EMAIL] Sending order cancellation email");
+        log.info("   To: {}", order.getUser().getEmail());
+        log.info("   Order: {}", order.getOrderNumber());
+        log.info("   Reason: {}", reason);
     }
 
     /**
-     * Gửi email chào mừng user mới
+     * Gửi email reset password
      */
-    public void sendWelcomeEmail(User user) {
-        log.info("📧 [MOCK] Sending welcome email to: {}", user.getEmail());
-        
-        String emailBody = buildWelcomeEmail(user);
-        log.debug("Email body: \n{}", emailBody);
+    public void sendPasswordReset(String email, String resetToken) {
+        log.info("🔐 [MOCK EMAIL] Sending password reset email");
+        log.info("   To: {}", email);
+        log.info("   Reset Token: {}", resetToken);
     }
 
-    // ===== Email Templates =====
-
-    private String buildOrderConfirmationEmail(Order order) {
-        return String.format("""
-                Xin chào %s,
-                
-                Cảm ơn bạn đã đặt hàng tại Sneakery Store!
-                
-                Mã đơn hàng: #%d
-                Tổng tiền: %,.0f VND
-                Trạng thái: %s
-                
-                Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.
-                
-                Trân trọng,
-                Sneakery Team
-                """,
-                order.getUser().getFullName(),
-                order.getId(),
-                order.getTotalAmount(),
-                order.getStatus()
-        );
+    /**
+     * Gửi email xác thực email
+     */
+    public void sendEmailVerification(String email, String verificationToken) {
+        log.info("📧 [MOCK EMAIL] Sending email verification");
+        log.info("   To: {}", email);
+        log.info("   Verification Token: {}", verificationToken);
     }
 
-    private String buildOrderShippedEmail(Order order, String trackingNumber) {
-        return String.format("""
-                Xin chào %s,
+    /**
+     * Core send email method (sử dụng template)
+     */
+    private void sendEmail(String to, String templateName, Map<String, String> variables) {
+        try {
+            EmailTemplate template = emailTemplateRepository
+                .findByTemplateNameAndIsActiveTrue(templateName)
+                .orElse(null);
+            
+            if (template != null) {
+                String body = template.getBody();
+                String subject = template.getSubject();
                 
-                Đơn hàng #%d của bạn đã được giao cho đơn vị vận chuyển.
+                // Replace variables in template
+                for (Map.Entry<String, String> entry : variables.entrySet()) {
+                    String placeholder = "{" + entry.getKey() + "}";
+                    body = body.replace(placeholder, entry.getValue());
+                    subject = subject.replace(placeholder, entry.getValue());
+                }
                 
-                Mã vận đơn: %s
-                
-                Bạn có thể theo dõi đơn hàng qua mã vận đơn này.
-                
-                Trân trọng,
-                Sneakery Team
-                """,
-                order.getUser().getFullName(),
-                order.getId(),
-                trackingNumber != null ? trackingNumber : "Chưa cập nhật"
-        );
-    }
-
-    private String buildOrderDeliveredEmail(Order order) {
-        return String.format("""
-                Xin chào %s,
-                
-                Đơn hàng #%d của bạn đã được giao thành công!
-                
-                Cảm ơn bạn đã mua sắm tại Sneakery Store.
-                Hãy để lại đánh giá cho sản phẩm để giúp chúng tôi cải thiện dịch vụ nhé.
-                
-                Trân trọng,
-                Sneakery Team
-                """,
-                order.getUser().getFullName(),
-                order.getId()
-        );
-    }
-
-    private String buildOrderCancelledEmail(Order order, String reason) {
-        return String.format("""
-                Xin chào %s,
-                
-                Đơn hàng #%d của bạn đã bị hủy.
-                
-                Lý do: %s
-                
-                Nếu có thắc mắc, vui lòng liên hệ với chúng tôi.
-                
-                Trân trọng,
-                Sneakery Team
-                """,
-                order.getUser().getFullName(),
-                order.getId(),
-                reason != null ? reason : "Không có lý do cụ thể"
-        );
-    }
-
-    private String buildWelcomeEmail(User user) {
-        return String.format("""
-                Xin chào %s,
-                
-                Chào mừng bạn đến với Sneakery Store!
-                
-                Cảm ơn bạn đã đăng ký tài khoản. Hãy khám phá bộ sưu tập giày sneaker 
-                chất lượng cao của chúng tôi.
-                
-                Chúc bạn mua sắm vui vẻ!
-                
-                Trân trọng,
-                Sneakery Team
-                """,
-                user.getFullName()
-        );
+                log.debug("📧 Email prepared:");
+                log.debug("   Subject: {}", subject);
+                log.debug("   Body length: {} chars", body.length());
+            } else {
+                log.warn("⚠️ Email template '{}' not found", templateName);
+            }
+            
+            // TODO: Actual email sending logic here
+            // e.g., JavaMailSender, SendGrid API, AWS SES
+            
+        } catch (Exception e) {
+            log.error("❌ Failed to send email: {}", e.getMessage(), e);
+        }
     }
 }
-

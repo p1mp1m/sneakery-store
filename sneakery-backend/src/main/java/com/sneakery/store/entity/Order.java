@@ -36,14 +36,66 @@ public class Order {
     @JoinColumn(name = "address_billing_id")
     private Address addressBilling;
 
+    // V3.1 - Order Number (QUAN TRỌNG!)
+    @Column(name = "order_number", unique = true, nullable = false)
+    private String orderNumber; // ORD-20250122-0001
+
+    // Pricing
+    @Column(name = "subtotal", nullable = false)
+    private BigDecimal subtotal;
+
+    @Column(name = "shipping_fee")
+    private BigDecimal shippingFee;
+
+    @Column(name = "discount_amount")
+    private BigDecimal discountAmount;
+
+    // V3.1 - Tax amount
+    @Column(name = "tax_amount")
+    private BigDecimal taxAmount;
+
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
 
-    @Column(name = "status")
-    private String status; // Pending, Processing, Paid, Shipped, ...
+    // V3.1 - Loyalty points
+    @Column(name = "points_earned")
+    private Integer pointsEarned;
 
+    @Column(name = "points_used")
+    private Integer pointsUsed;
+
+    @Column(name = "status")
+    private String status; // pending, confirmed, processing, packed, shipped, delivered, cancelled, refunded
+
+    // V3.1 - Shipping details
+    @Column(name = "shipping_method")
+    private String shippingMethod;
+
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
+    @Column(name = "estimated_delivery_at")
+    private LocalDateTime estimatedDeliveryAt;
+
+    @Column(name = "delivered_at")
+    private LocalDateTime deliveredAt;
+
+    // Notes
+    @Column(name = "customer_note", columnDefinition = "NVARCHAR(MAX)")
+    private String customerNote;
+
+    @Column(name = "admin_note", columnDefinition = "NVARCHAR(MAX)")
+    private String adminNote;
+
+    // Timestamps
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
 
     // Quan hệ với OrderDetails (Một Order có nhiều Detail)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)

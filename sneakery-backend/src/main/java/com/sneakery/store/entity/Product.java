@@ -3,9 +3,11 @@ package com.sneakery.store.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set; // SỬA ĐỔI: Thêm import
-import java.util.HashSet; // SỬA ĐỔI: Thêm import
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "Products")
@@ -20,13 +22,62 @@ public class Product {
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "slug", nullable = false, unique = true)
     private String slug;
+
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    // Cột is_active từ CSDL
+    @Column(name = "short_description")
+    private String shortDescription;
+
+    // SEO fields (V3.1)
+    @Column(name = "meta_title")
+    private String metaTitle;
+
+    @Column(name = "meta_description")
+    private String metaDescription;
+
+    @Column(name = "meta_keywords")
+    private String metaKeywords;
+
+    // Status
     @Column(name = "is_active")
     private Boolean isActive;
+
+    @Column(name = "is_featured")
+    private Boolean isFeatured;
+
+    @Column(name = "is_new")
+    private Boolean isNew;
+
+    // Stats (denormalized for performance)
+    @Column(name = "view_count")
+    private Integer viewCount;
+
+    @Column(name = "order_count")
+    private Integer orderCount;
+
+    @Column(name = "avg_rating", precision = 3, scale = 2)
+    private BigDecimal avgRating;
+
+    @Column(name = "review_count")
+    private Integer reviewCount;
+
+    @Column(name = "published_at")
+    private LocalDateTime publishedAt;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<ProductVariant> variants;

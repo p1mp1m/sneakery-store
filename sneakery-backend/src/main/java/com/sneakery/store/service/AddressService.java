@@ -73,7 +73,7 @@ public class AddressService {
         existingAddress.setLine2(addressDto.getLine2());
         existingAddress.setCity(addressDto.getCity());
         existingAddress.setDistrict(addressDto.getDistrict());
-        existingAddress.setProvince(addressDto.getProvince());
+        existingAddress.setWard(addressDto.getWard());
         existingAddress.setPostalCode(addressDto.getPostalCode());
         
         Address updatedAddress = addressRepository.save(existingAddress);
@@ -104,7 +104,7 @@ public class AddressService {
                 .line2(address.getLine2())
                 .city(address.getCity())
                 .district(address.getDistrict())
-                .province(address.getProvince())
+                .ward(address.getWard())
                 .postalCode(address.getPostalCode())
                 .build();
     }
@@ -117,7 +117,7 @@ public class AddressService {
         address.setLine2(dto.getLine2());
         address.setCity(dto.getCity());
         address.setDistrict(dto.getDistrict());
-        address.setProvince(dto.getProvince());
+        address.setWard(dto.getWard());
         address.setPostalCode(dto.getPostalCode());
         return address;
     }

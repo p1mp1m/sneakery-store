@@ -32,6 +32,13 @@ public class Cart {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // V3.1 - expires_at for guest carts cleanup
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
     // Quan hệ với CartItems (Một Cart có nhiều CartItem)
     @OneToMany(
         mappedBy = "cart",

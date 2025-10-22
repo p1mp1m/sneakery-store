@@ -25,7 +25,7 @@ public class AddressDto {
     private String city;
 
     private String district;
-    private String province; // Hoặc Phường/Xã
+    private String ward; // Phường/Xã
     private String postalCode;
     
     // Không cần 'userId' vì chúng ta sẽ lấy từ JWT

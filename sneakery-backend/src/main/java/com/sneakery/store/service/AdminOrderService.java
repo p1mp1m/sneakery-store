@@ -103,7 +103,7 @@ public class AdminOrderService {
         Payment p = order.getPayments().stream().findFirst().orElse(null);
         PaymentDto paymentDto = (p == null) ? null : PaymentDto.builder()
                 .id(p.getId())
-                .method(p.getMethod())
+                .method(p.getPaymentMethod())
                 .status(p.getStatus())
                 .amount(p.getAmount())
                 .paidAt(p.getPaidAt())
@@ -143,7 +143,7 @@ public class AdminOrderService {
                 .line2(address.getLine2())
                 .city(address.getCity())
                 .district(address.getDistrict())
-                .province(address.getProvince())
+                .ward(address.getWard())
                 .postalCode(address.getPostalCode())
                 .build();
     }

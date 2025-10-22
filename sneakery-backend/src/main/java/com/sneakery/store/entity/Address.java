@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "Addresses")
@@ -38,13 +41,34 @@ public class Address {
     @Column(name = "city", nullable = false)
     private String city; // Thành phố / Tỉnh
 
+    @Column(name = "ward")
+    private String ward; // Phường / Xã
+
     @Column(name = "district")
     private String district; // Quận / Huyện
 
-    @Column(name = "province") // CSDL của bạn có cả 'city' và 'province'? 
-    private String province; // Phường / Xã (hoặc Tỉnh/Thành nếu city là Quận/Huyện)
-                             // Tùy bạn quy ước
-
     @Column(name = "postal_code")
     private String postalCode;
+
+    // V3.1 - Location for future features (maps, delivery optimization)
+    @Column(name = "latitude", precision = 10, scale = 8)
+    private BigDecimal latitude;
+
+    @Column(name = "longitude", precision = 11, scale = 8)
+    private BigDecimal longitude;
+
+    @Column(name = "is_default")
+    private Boolean isDefault;
+
+    @Column(name = "address_type")
+    private String addressType; // home, office, other
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

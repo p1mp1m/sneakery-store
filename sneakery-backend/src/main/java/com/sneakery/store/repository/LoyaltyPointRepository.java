@@ -20,6 +20,17 @@ public interface LoyaltyPointRepository extends JpaRepository<LoyaltyPoint, Long
      * Lấy lịch sử điểm của user
      */
     List<LoyaltyPoint> findByUserIdOrderByCreatedAtDesc(Long userId);
+    
+    /**
+     * Lấy các điểm chưa hết hạn của user
+     */
+    @Query("SELECT lp FROM LoyaltyPoint lp " +
+           "WHERE lp.user.id = :userId " +
+           "AND (lp.expiresAt IS NULL OR lp.expiresAt > :expiresAt)")
+    List<LoyaltyPoint> findByUserIdAndExpiresAtAfter(
+            @Param("userId") Long userId, 
+            @Param("expiresAt") LocalDateTime expiresAt
+    );
 
     /**
      * Tính tổng điểm hiện tại của user (chưa hết hạn)

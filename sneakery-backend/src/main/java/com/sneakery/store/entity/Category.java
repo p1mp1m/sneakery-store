@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,37 @@ public class Category {
 
     @Column(name = "slug", nullable = false, unique = true)
     private String slug;
+
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
+    private String description;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    // Nested Set Model (V3.1) - cho hierarchical queries hiệu quả
+    @Column(name = "lft", nullable = false)
+    private Integer lft;
+
+    @Column(name = "rgt", nullable = false)
+    private Integer rgt;
+
+    @Column(name = "level")
+    private Integer level;
+
+    @Column(name = "display_order")
+    private Integer displayOrder;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     // Quan hệ tự tham chiếu (Danh mục cha)
     @ManyToOne(fetch = FetchType.LAZY)

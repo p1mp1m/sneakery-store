@@ -60,5 +60,10 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, Integer> {
            "AND fs.startTime > :now " +
            "ORDER BY fs.startTime ASC")
     List<FlashSale> findUpcomingFlashSales(@Param("now") LocalDateTime now);
+    
+    /**
+     * Tìm flash sales đã hết hạn nhưng vẫn active (để auto deactivate)
+     */
+    List<FlashSale> findByIsActiveTrueAndEndTimeLessThan(LocalDateTime now);
 }
 

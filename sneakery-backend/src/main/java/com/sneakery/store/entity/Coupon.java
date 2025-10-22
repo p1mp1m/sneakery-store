@@ -55,6 +55,19 @@ public class Coupon {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    // V3.1 - Applicability fields
+    @Column(name = "applicable_to")
+    private String applicableTo; // all, brand, category, product
+
+    @Column(name = "applicable_id")
+    private Integer applicableId; // brand_id, category_id, or product_id
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     // Quan hệ ngược lại: Một Coupon có thể được dùng cho nhiều Order
     @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)
     @JsonIgnore // Tránh vòng lặp JSON

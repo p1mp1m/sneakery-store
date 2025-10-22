@@ -94,7 +94,7 @@ public class OrderService {
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(totalAmount);
-        payment.setMethod(requestDto.getPaymentMethod());
+        payment.setPaymentMethod(requestDto.getPaymentMethod());
         payment.setStatus("pending"); // Chờ thanh toán
         order.getPayments().add(payment);
 
@@ -142,7 +142,7 @@ public class OrderService {
 
         String paymentUrl = null;
         Payment payment = order.getPayments().stream().findFirst().orElse(null);
-        if (payment != null && "pending".equals(payment.getStatus()) && "online".equals(payment.getMethod())) {
+        if (payment != null && "pending".equals(payment.getStatus()) && "online".equals(payment.getPaymentMethod())) {
             paymentUrl = "https://sandbox.vnpayment.vn/pay.html?token=example_token_" + order.getId(); // Ví dụ
         }
 
@@ -197,7 +197,7 @@ public class OrderService {
         Payment firstPayment = order.getPayments().get(0);
         PaymentDto paymentDto = PaymentDto.builder()
                 .id(firstPayment.getId())
-                .method(firstPayment.getMethod())
+                .method(firstPayment.getPaymentMethod())
                 .status(firstPayment.getStatus())
                 .amount(firstPayment.getAmount())
                 .paymentUrl(paymentUrl) // Trả về link thanh toán (nếu có)
@@ -224,7 +224,7 @@ public class OrderService {
                 .line2(address.getLine2())
                 .city(address.getCity())
                 .district(address.getDistrict())
-                .province(address.getProvince())
+                .ward(address.getWard())
                 .postalCode(address.getPostalCode())
                 .build();
     }

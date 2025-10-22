@@ -23,15 +23,32 @@ public class Payment {
     @EqualsAndHashCode.Exclude
     private Order order;
 
-    @Column(name = "method", nullable = false)
-    private String method; // 'cod' hoặc 'online'
+    @Column(name = "payment_method", nullable = false)
+    private String paymentMethod; // cod, vnpay, momo, zalopay, bank_transfer, credit_card
 
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
     @Column(name = "status")
-    private String status; // 'pending', 'completed', 'failed'
+    private String status; // pending, processing, completed, failed, refunded
+
+    // Payment gateway details
+    @Column(name = "transaction_id")
+    private String transactionId;
+
+    @Column(name = "gateway_response", columnDefinition = "TEXT")
+    private String gatewayResponse;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
+
+    // V3.1 - refunded_at
+    @Column(name = "refunded_at")
+    private LocalDateTime refundedAt;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

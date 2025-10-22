@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -25,6 +26,25 @@ public class Brand {
 
     @Column(name = "logo_url")
     private String logoUrl;
+
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
+    private String description;
+
+    // V3.1 fields
+    @Column(name = "website_url")
+    private String websiteUrl;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     /**
      * Định nghĩa quan hệ ngược lại với Product.

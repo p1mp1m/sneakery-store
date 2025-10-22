@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -44,6 +45,28 @@ public class User implements UserDetails { // Implement UserDetails để tích 
 
     @Column(name = "role", columnDefinition = "VARCHAR(20) DEFAULT 'USER'")
     private String role;
+
+    // OAuth & Password Reset fields (V3.1)
+    @Column(name = "email_verification_token")
+    private String emailVerificationToken;
+
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_expires")
+    private LocalDateTime passwordResetExpires;
+
+    @Column(name = "google_id")
+    private String googleId;
+
+    @Column(name = "facebook_id")
+    private String facebookId;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore // Tránh vòng lặp vô hạn khi serialize
