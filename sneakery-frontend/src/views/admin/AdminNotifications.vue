@@ -962,16 +962,7 @@ onMounted(() => {
   background: var(--table-header-bg);
 }
 
-.admin-table th {
-  padding: var(--space-4) var(--space-6);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: white;
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
+/* Table headers use global admin-tables.css styles */
 
 .admin-table tbody tr {
   border-bottom: 1px solid var(--border-primary);
@@ -983,12 +974,7 @@ onMounted(() => {
   transform: scale(1.002);
 }
 
-.admin-table td {
-  padding: var(--space-4) var(--space-6);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  vertical-align: top;
-}
+/* Table cells use global admin-tables.css styles */
 
 /* Notification Title Cell */
 .notification-title {
@@ -1147,37 +1133,7 @@ onMounted(() => {
   align-items: center;
 }
 
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.4);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-secondary);
-}
-
-.btn-icon:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-icon.danger:hover {
-  background: var(--error-bg);
-  border-color: var(--error-border);
-  color: var(--error-text);
-}
-
-.btn-icon .material-icons {
-  font-size: 1.125rem;
-}
+/* Action buttons use global admin-tables.css styles */
 
 /* Loading & Empty States */
 .loading-container {

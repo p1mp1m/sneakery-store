@@ -1015,22 +1015,9 @@ onMounted(() => {
   background: var(--table-header-bg);
 }
 
-.admin-table th {
-  padding: var(--space-4);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--color-white);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+/* Table headers use global admin-tables.css styles */
 
-.admin-table td {
-  padding: var(--space-4);
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-primary);
-  vertical-align: middle;
-}
+/* Table cells use global admin-tables.css styles */
 
 .admin-table tbody tr {
   transition: var(--transition-fast);
@@ -1224,42 +1211,7 @@ onMounted(() => {
   gap: var(--space-2);
 }
 
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition-fast);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-}
-
-.btn-icon:hover {
-  background: var(--accent-primary);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.btn-icon.danger {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.btn-icon.danger:hover {
-  background: var(--error-solid);
-  color: var(--color-white);
-  box-shadow: var(--shadow-glow-red);
-}
-
-.btn-icon .material-icons {
-  font-size: var(--text-lg);
-}
+/* Action buttons use global admin-tables.css styles */
 
 /* Pagination */
 .pagination-container {

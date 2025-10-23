@@ -102,22 +102,37 @@
   background: rgba(15, 23, 42, 0.8);
 }
 
-/* Table Styles - Enhanced */
+/* Table Styles - Enhanced & Unified */
 .admin-table,
-.data-table {
+.data-table,
+.table,
+.brands-table,
+.products-table,
+.variants-table,
+.flash-sales-table {
   width: 100%;
   border-collapse: collapse;
   background: transparent;
 }
 
 .admin-table thead,
-.data-table thead {
+.data-table thead,
+.table thead,
+.brands-table thead,
+.products-table thead,
+.variants-table thead,
+.flash-sales-table thead {
   background: var(--table-header-bg);
   border-bottom: 2px solid var(--border-primary);
 }
 
 .admin-table th,
-.data-table th {
+.data-table th,
+.table th,
+.brands-table th,
+.products-table th,
+.variants-table th,
+.flash-sales-table th {
   padding: var(--space-4) var(--space-3);
   text-align: left;
   color: var(--text-primary);
@@ -129,7 +144,12 @@
 }
 
 .admin-table th.sortable,
-.data-table th.sortable {
+.data-table th.sortable,
+.table th.sortable,
+.brands-table th.sortable,
+.products-table th.sortable,
+.variants-table th.sortable,
+.flash-sales-table th.sortable {
   cursor: pointer;
   user-select: none;
   position: relative;
@@ -137,12 +157,22 @@
 }
 
 .admin-table th.sortable:hover,
-.data-table th.sortable:hover {
+.data-table th.sortable:hover,
+.table th.sortable:hover,
+.brands-table th.sortable:hover,
+.products-table th.sortable:hover,
+.variants-table th.sortable:hover,
+.flash-sales-table th.sortable:hover {
   color: var(--accent-primary);
 }
 
 .admin-table th.sortable::after,
-.data-table th.sortable::after {
+.data-table th.sortable::after,
+.table th.sortable::after,
+.brands-table th.sortable::after,
+.products-table th.sortable::after,
+.variants-table th.sortable::after,
+.flash-sales-table th.sortable::after {
   content: '⇅';
   position: absolute;
   right: var(--space-3);
@@ -151,41 +181,72 @@
 }
 
 .admin-table th.sortable.asc::after,
-.data-table th.sortable.asc::after {
+.data-table th.sortable.asc::after,
+.table th.sortable.asc::after,
+.brands-table th.sortable.asc::after,
+.products-table th.sortable.asc::after,
+.variants-table th.sortable.asc::after,
+.flash-sales-table th.sortable.asc::after {
   content: '↑';
   color: var(--accent-primary);
 }
 
 .admin-table th.sortable.desc::after,
-.data-table th.sortable.desc::after {
+.data-table th.sortable.desc::after,
+.table th.sortable.desc::after,
+.brands-table th.sortable.desc::after,
+.products-table th.sortable.desc::after,
+.variants-table th.sortable.desc::after,
+.flash-sales-table th.sortable.desc::after {
   content: '↓';
   color: var(--accent-primary);
 }
 
 .admin-table tbody tr,
-.data-table tbody tr {
+.data-table tbody tr,
+.table tbody tr,
+.brands-table tbody tr,
+.products-table tbody tr,
+.variants-table tbody tr,
+.flash-sales-table tbody tr {
   background: var(--table-row-bg);
   border-bottom: 1px solid var(--border-subtle);
   transition: all var(--transition-fast);
 }
 
 .admin-table tbody tr:hover,
-.data-table tbody tr:hover {
+.data-table tbody tr:hover,
+.table tbody tr:hover,
+.brands-table tbody tr:hover,
+.products-table tbody tr:hover,
+.variants-table tbody tr:hover,
+.flash-sales-table tbody tr:hover {
   background: var(--table-row-hover);
   transform: scale(1.001);
   box-shadow: 0 2px 8px rgba(167, 139, 250, 0.1);
 }
 
 .admin-table td,
-.data-table td {
+.data-table td,
+.table td,
+.brands-table td,
+.products-table td,
+.variants-table td,
+.flash-sales-table td {
   padding: var(--space-4) var(--space-3);
+  text-align: left;
   color: var(--text-secondary);
   font-size: var(--text-sm);
   vertical-align: middle;
 }
 
 .admin-table tbody tr:last-child,
-.data-table tbody tr:last-child {
+.data-table tbody tr:last-child,
+.table tbody tr:last-child,
+.brands-table tbody tr:last-child,
+.products-table tbody tr:last-child,
+.variants-table tbody tr:last-child,
+.flash-sales-table tbody tr:last-child {
   border-bottom: none;
 }
 
@@ -251,33 +312,95 @@
   display: flex;
   gap: var(--space-2);
   align-items: center;
+  justify-content: flex-start;
 }
 
+/* ═══ ACTION BUTTONS - UNIFIED FORMAT ═══ */
+
+/* Standard Icon Button (size 36px) */
+.btn-icon,
 .action-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: rgba(15, 23, 42, 0.6);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-md);
   color: var(--text-tertiary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
+.btn-icon .material-icons,
+.action-btn .material-icons {
+  font-size: 1.25rem;
+}
+
+.btn-icon:hover,
 .action-btn:hover {
-  background: var(--nav-hover-bg);
-  border-color: var(--border-hover);
+  background: rgba(167, 139, 250, 0.15);
+  border-color: var(--accent-primary);
   color: var(--accent-primary);
   transform: scale(1.1);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
 }
 
+.btn-icon:active,
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* Button Variants */
+.btn-icon.btn-view,
+.action-btn.btn-view {
+  color: var(--info-text);
+}
+
+.btn-icon.btn-view:hover,
+.action-btn.btn-view:hover {
+  background: var(--info-bg);
+  border-color: var(--info-border);
+  color: var(--info-text);
+}
+
+.btn-icon.btn-edit,
+.action-btn.btn-edit {
+  color: var(--warning-text);
+}
+
+.btn-icon.btn-edit:hover,
+.action-btn.btn-edit:hover {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.btn-icon.btn-delete,
+.action-btn.btn-delete,
+.btn-icon.danger,
+.action-btn.danger {
+  color: var(--error-text);
+}
+
+.btn-icon.btn-delete:hover,
+.action-btn.btn-delete:hover,
+.btn-icon.danger:hover,
 .action-btn.danger:hover {
   background: var(--error-bg);
   border-color: var(--error-border);
   color: var(--error-text);
+}
+
+.btn-icon:disabled,
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Bulk Actions Bar */

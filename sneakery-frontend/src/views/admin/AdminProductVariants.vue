@@ -656,16 +656,7 @@ const getStockStatusLabel = (quantity) => {
   border-bottom: 2px solid var(--border-primary);
 }
 
-.variants-table th {
-  padding: var(--space-4) var(--space-6);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--color-white);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
+/* Table headers use global admin-tables.css styles */
 
 .variants-table tbody tr {
   background: rgba(30, 41, 59, 0.4);
@@ -678,11 +669,7 @@ const getStockStatusLabel = (quantity) => {
   transform: scale(1.002);
 }
 
-.variants-table td {
-  padding: var(--space-4) var(--space-6);
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-}
+/* Table cells use global admin-tables.css styles */
 
 .variant-image {
   width: 60px;
@@ -806,48 +793,7 @@ const getStockStatusLabel = (quantity) => {
   gap: var(--space-2);
 }
 
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-icon .material-icons {
-  font-size: var(--text-lg);
-}
-
-.btn-edit {
-  color: var(--info-text);
-  border-color: var(--info-border);
-}
-
-.btn-edit:hover {
-  background: var(--info-bg);
-  border-color: var(--info-solid);
-  color: var(--info-text);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-delete {
-  color: var(--error-text);
-  border-color: var(--error-border);
-}
-
-.btn-delete:hover {
-  background: var(--error-bg);
-  border-color: var(--error-solid);
-  color: var(--error-text);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
+/* Action buttons use global admin-tables.css styles */
 
 /* ═══ EMPTY STATE ═══ */
 .empty-state {
@@ -1050,10 +996,6 @@ const getStockStatusLabel = (quantity) => {
     gap: var(--space-1);
   }
   
-  .btn-icon {
-    width: 32px;
-    height: 32px;
-  }
 }
 </style>
 

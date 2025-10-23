@@ -828,21 +828,9 @@ onMounted(() => {
   border-bottom: 2px solid var(--border-primary);
 }
 
-.admin-table th {
-  padding: var(--space-4);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--color-white);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+/* Table headers use global admin-tables.css styles */
 
-.admin-table td {
-  padding: var(--space-4);
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-primary);
-}
+/* Table cells use global admin-tables.css styles */
 
 .admin-table tbody tr {
   transition: var(--transition-fast);

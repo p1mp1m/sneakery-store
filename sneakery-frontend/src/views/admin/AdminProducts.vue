@@ -1606,22 +1606,9 @@ onMounted(async () => {
   background: var(--table-header-bg);
 }
 
-.products-table th {
-  padding: var(--space-4) var(--space-6);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 2px solid var(--border-primary);
-}
+/* Table headers use global admin-tables.css styles */
 
-.products-table td {
-  padding: var(--space-4) var(--space-6);
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-light);
-}
+/* Table cells use global admin-tables.css styles */
 
 .products-table tbody tr {
   transition: var(--transition-fast);
@@ -1734,35 +1721,7 @@ onMounted(async () => {
   justify-content: center;
 }
 
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  border: none;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-fast);
-}
-
-.btn-icon:hover {
-  background: var(--accent-primary);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.btn-icon.danger:hover {
-  background: var(--error-solid);
-  box-shadow: var(--shadow-glow-red);
-}
-
-.btn-icon .material-icons {
-  font-size: 1.125rem;
-}
+/* Action buttons use global admin-tables.css styles */
 
 /* =================================================================
    PAGINATION
@@ -2086,34 +2045,7 @@ onMounted(async () => {
   font-size: var(--text-sm);
 }
 
-.btn-icon-sm {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  border: none;
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-fast);
-}
-
-.btn-icon-sm.danger {
-  color: var(--error-text);
-}
-
-.btn-icon-sm.danger:hover {
-  background: var(--error-solid);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-red);
-}
-
-.btn-icon-sm .material-icons {
-  font-size: 1rem;
-}
+/* Unused button styles removed - using global admin-tables.css */
 
 /* =================================================================
    IMPORT MODAL

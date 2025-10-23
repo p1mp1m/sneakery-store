@@ -765,6 +765,243 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   📋 DROPDOWNS & SELECT - UNIFIED
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Global dropdown/select styling for all admin views */
+.admin-select,
+.filter-select,
+.status-select,
+.bulk-status-select,
+.bulk-action-select,
+.role-select,
+.period-select,
+select.form-control,
+select.form-input {
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.admin-select:hover,
+.filter-select:hover,
+.status-select:hover,
+.bulk-status-select:hover,
+.bulk-action-select:hover,
+.role-select:hover,
+.period-select:hover,
+select.form-control:hover,
+select.form-input:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: var(--border-hover);
+}
+
+.admin-select:focus,
+.filter-select:focus,
+.status-select:focus,
+.bulk-status-select:focus,
+.bulk-action-select:focus,
+.role-select:focus,
+.period-select:focus,
+select.form-control:focus,
+select.form-input:focus {
+  outline: none;
+  background: rgba(15, 23, 42, 0.9);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+}
+
+/* Dropdown options */
+.admin-select option,
+.filter-select option,
+.status-select option,
+.bulk-status-select option,
+.bulk-action-select option,
+.role-select option,
+.period-select option,
+select.form-control option,
+select.form-input option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: var(--space-3);
+  font-weight: var(--font-medium);
+}
+
+.admin-select option:hover,
+.filter-select option:hover,
+.status-select option:hover,
+.bulk-status-select option:hover,
+.bulk-action-select option:hover,
+.role-select option:hover,
+.period-select option:hover,
+select.form-control option:hover,
+select.form-input option:hover {
+  background: rgba(167, 139, 250, 0.15);
+  color: var(--accent-primary);
+}
+
+.admin-select option:checked,
+.filter-select option:checked,
+.status-select option:checked,
+.bulk-status-select option:checked,
+.bulk-action-select option:checked,
+.role-select option:checked,
+.period-select option:checked,
+select.form-control option:checked,
+select.form-input option:checked {
+  background: var(--accent-primary);
+  color: var(--color-white);
+  font-weight: var(--font-semibold);
+}
+
+/* Force dark theme for all status variations */
+.status-select.status-pending,
+.status-select.status-processing,
+.status-select.status-shipped,
+.status-select.status-completed,
+.status-select.status-cancelled,
+.status-select.status-active,
+.status-select.status-inactive,
+.status-active,
+.status-inactive,
+.status-in-stock,
+.status-out-of-stock,
+.status-discontinued {
+  background: rgba(15, 23, 42, 0.6) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-primary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   🏷️ STATUS BADGES - UNIFIED DARK THEME
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Base status badge styling */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid transparent;
+}
+
+.status-badge .material-icons {
+  font-size: 16px;
+}
+
+/* Dark theme status colors */
+.status-badge.status-active,
+.status-active {
+  background: rgba(16, 185, 129, 0.15);
+  color: rgb(52, 211, 153);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.status-inactive,
+.status-inactive {
+  background: rgba(239, 68, 68, 0.15);
+  color: rgb(248, 113, 113);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.status-badge.status-pending,
+.status-pending {
+  background: rgba(251, 191, 36, 0.15);
+  color: rgb(251, 191, 36);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.status-badge.status-approved,
+.status-approved {
+  background: rgba(16, 185, 129, 0.15);
+  color: rgb(52, 211, 153);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.status-processing {
+  background: rgba(99, 102, 241, 0.15);
+  color: rgb(129, 140, 248);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.status-badge.status-shipped {
+  background: rgba(147, 51, 234, 0.15);
+  color: rgb(168, 85, 247);
+  border-color: rgba(147, 51, 234, 0.3);
+}
+
+.status-badge.status-completed {
+  background: rgba(16, 185, 129, 0.15);
+  color: rgb(52, 211, 153);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.status-cancelled,
+.status-badge.status-rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: rgb(248, 113, 113);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Stock status */
+.status-badge.status-in-stock,
+.status-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: rgb(52, 211, 153);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.status-low-stock,
+.status-warning {
+  background: rgba(251, 191, 36, 0.15);
+  color: rgb(251, 191, 36);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.status-badge.status-out-of-stock,
+.status-badge.status-discontinued,
+.status-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: rgb(248, 113, 113);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Notification status */
+.status-badge.status-draft {
+  background: rgba(148, 163, 184, 0.15);
+  color: rgb(148, 163, 184);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.status-badge.status-scheduled {
+  background: rgba(99, 102, 241, 0.15);
+  color: rgb(129, 140, 248);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.status-badge.status-sent {
+  background: rgba(16, 185, 129, 0.15);
+  color: rgb(52, 211, 153);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    📱 RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════ */
 

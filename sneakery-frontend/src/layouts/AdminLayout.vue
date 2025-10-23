@@ -1,5 +1,15 @@
 <template>
   <div class="admin-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+    <!-- Nút Toggle - Bên ngoài sidebar -->
+    <button 
+      class="sidebar-toggle-btn"
+      @click="toggleSidebar"
+      type="button"
+      :title="sidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
+    >
+      <i class="material-icons">{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</i>
+    </button>
+
     <!-- Admin Sidebar -->
     <aside class="admin-sidebar" :class="{ 'collapsed': sidebarCollapsed }">
       <div class="sidebar-header">
@@ -7,16 +17,6 @@
           <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo" />
         </div>
       </div>
-
-      <!-- Nút Toggle - Ngoài header -->
-      <button 
-        class="sidebar-toggle-btn"
-        @click="toggleSidebar"
-        type="button"
-        :title="sidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
-      >
-        <i class="material-icons">{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</i>
-      </button>
 
       <nav class="sidebar-nav">
         <ul class="nav-list">
@@ -28,22 +28,25 @@
                 :class="{ 'active': isSubmenuActive(route.children), 'open': isMenuOpen(route.id) }"
                 @click.prevent="toggleMenu(route.id)"
                 href="#"
+                :title="sidebarCollapsed ? route.meta.title : ''"
               >
                 <i class="material-icons">{{ route.meta.icon }}</i>
                 <span v-if="!sidebarCollapsed" class="nav-text">{{ route.meta.title }}</span>
-                <i v-if="!sidebarCollapsed" class="material-icons expand-icon">
+                <!-- Expand icon - hiện cả khi collapsed -->
+                <i class="material-icons expand-icon" :class="{ 'collapsed-icon': sidebarCollapsed }">
                   {{ isMenuOpen(route.id) ? 'expand_less' : 'expand_more' }}
                 </i>
               </a>
               
-              <!-- Submenu dropdown -->
+              <!-- Submenu dropdown (Normal & Collapsed) -->
               <transition name="submenu">
-                <ul v-if="isMenuOpen(route.id) && !sidebarCollapsed" class="submenu">
+                <ul v-if="isMenuOpen(route.id)" class="submenu" :class="{ 'submenu-collapsed': sidebarCollapsed }">
                   <li v-for="child in route.children" :key="child.name" class="submenu-item">
                     <router-link
                       :to="child.path"
                       class="nav-link nav-child"
                       :class="{ 'active': $route.name === child.name }"
+                      :title="sidebarCollapsed ? child.meta.title : ''"
                     >
                       <i class="material-icons">{{ child.meta.icon }}</i>
                       <span class="nav-text">{{ child.meta.title }}</span>
@@ -70,12 +73,12 @@
       </nav>
 
       <!-- Thông tin Admin ở dưới cùng -->
-      <div class="sidebar-footer" v-if="!sidebarCollapsed">
-        <div class="admin-info">
+      <div class="sidebar-footer">
+        <div class="admin-info" :title="sidebarCollapsed ? 'Admin - Quản trị viên' : ''">
           <div class="admin-avatar">
             <i class="material-icons">account_circle</i>
           </div>
-          <div class="admin-details">
+          <div v-if="!sidebarCollapsed" class="admin-details">
             <div class="admin-name">Admin</div>
             <div class="admin-role">QUẢN TRỊ VIÊN</div>
           </div>
@@ -101,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAdminStore } from '@/stores/admin'
 
@@ -229,6 +232,35 @@ const checkMobile = () => {
   }
 }
 
+// Function để update openMenus dựa trên route hiện tại
+const updateOpenMenus = () => {
+  const newOpenMenus = []
+  
+  // Tìm menu nào chứa route hiện tại
+  adminRoutes.forEach(menuItem => {
+    if (menuItem.children) {
+      if (isSubmenuActive(menuItem.children)) {
+        newOpenMenus.push(menuItem.id)
+      }
+    }
+  })
+  
+  // Chỉ update nếu có thay đổi
+  if (JSON.stringify(openMenus.value) !== JSON.stringify(newOpenMenus)) {
+    openMenus.value = newOpenMenus
+    console.log('📊 Updated openMenus:', JSON.stringify(openMenus.value))
+  }
+}
+
+// Watch route changes để tự động đóng/mở menu
+watch(
+  () => route.name,
+  (newRouteName, oldRouteName) => {
+    console.log('🔄 Route changed:', oldRouteName, '→', newRouteName)
+    updateOpenMenus()
+  }
+)
+
 // Lifecycle
 onMounted(() => {
   checkMobile()
@@ -239,19 +271,7 @@ onMounted(() => {
   console.log('📍 Current route:', route.name)
   
   // Tự động mở menu nếu route hiện tại nằm trong submenu
-  adminRoutes.forEach(menuItem => {
-    if (menuItem.children) {
-      console.log(`🔍 Checking menu: ${menuItem.id}`, menuItem.children)
-      if (isSubmenuActive(menuItem.children)) {
-        if (!openMenus.value.includes(menuItem.id)) {
-          openMenus.value.push(menuItem.id)
-          console.log('✅ Auto-opened menu:', menuItem.id)
-        }
-      }
-    }
-  })
-  
-  console.log('📊 Final openMenus:', JSON.stringify(openMenus.value))
+  updateOpenMenus()
 })
 
 onUnmounted(() => {
@@ -268,58 +288,68 @@ onUnmounted(() => {
   overflow-x: hidden;
 }
 
-/* ===== NÚT TOGGLE SIDEBAR ===== */
+/* ===== NÚT TOGGLE SIDEBAR - SUBTLE & MINIMAL ===== */
 .sidebar-toggle-btn {
-  position: absolute;
-  top: 100px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  background: var(--primary-gradient);
-  border: 2px solid var(--primary-color);
+  position: fixed;
+  top: 50%;
+  left: calc(220px - 18px);
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.4);
   border-radius: 50%;
-  color: white;
+  color: rgba(148, 163, 184, 0.7);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  z-index: 200;
+  z-index: 9999;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  pointer-events: auto;
+  opacity: 0.7;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sidebar-toggle-btn:hover {
+  background: var(--primary-gradient);
+  border-color: var(--primary-color);
+  color: white;
+  opacity: 1;
+  transform: translateY(-50%) scale(1.08);
   box-shadow: 
     0 4px 16px rgba(167, 139, 250, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.sidebar-toggle-btn:hover {
-  background: var(--primary-gradient-hover);
-  transform: scale(1.1);
-  box-shadow: var(--shadow-glow-purple);
-}
-
 .sidebar-toggle-btn:active {
-  transform: scale(0.95);
+  transform: translateY(-50%) scale(0.9);
 }
 
 .sidebar-toggle-btn:focus {
   outline: none;
   box-shadow: 
-    var(--shadow-glow-purple),
-    0 0 0 3px rgba(167, 139, 250, 0.3);
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 0 0 2px rgba(167, 139, 250, 0.3);
 }
 
 .sidebar-toggle-btn i {
-  font-size: 20px;
-  transition: transform 0.3s ease;
+  font-size: 18px;
+  transition: transform 0.2s ease;
   line-height: 1;
 }
 
 .sidebar-toggle-btn:hover i {
-  transform: scale(1.1);
+  transform: rotate(0deg);
 }
 
 /* ===== SIDEBAR ===== */
 .admin-sidebar {
-  width: 260px;
+  width: 220px;
   background: var(--dark-bg-card);
   color: var(--dark-text-primary);
   display: flex;
@@ -338,16 +368,16 @@ onUnmounted(() => {
 }
 
 .admin-sidebar.collapsed {
-  width: 90px;
+  width: 75px;
 }
 
 .sidebar-header {
-  padding: 1rem 0.75rem;
+  padding: 0.75rem 0.5rem;
   border-bottom: 1px solid var(--dark-border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 80px;
+  min-height: 65px;
   position: relative;
   z-index: 5;
 }
@@ -356,15 +386,15 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   transition: all 0.3s ease;
   flex: 1;
 }
 
 .logo {
-  width: 200px;
-  height: 100px;
-  border-radius: 10px;
+  width: 160px;
+  height: 75px;
+  border-radius: 8px;
   transition: all 0.3s ease;
   object-fit: contain;
 }
@@ -383,20 +413,17 @@ onUnmounted(() => {
   min-height: auto;
 }
 
-/* Khi collapsed - nút ở cuối trang, giữa sidebar */
-.admin-sidebar.collapsed .sidebar-toggle-btn {
-  top: auto;
-  bottom: 20px;
-  right: 50%;
-  transform: translateX(50%);
+/* Khi collapsed - nút di chuyển theo */
+.admin-layout.sidebar-collapsed .sidebar-toggle-btn {
+  left: calc(75px - 16px);
 }
 
-.admin-sidebar.collapsed .sidebar-toggle-btn:hover {
-  transform: translateX(50%) scale(1.1);
+.admin-layout.sidebar-collapsed .sidebar-toggle-btn:hover {
+  transform: translateY(-50%) scale(1.08);
 }
 
-.admin-sidebar.collapsed .sidebar-toggle-btn:active {
-  transform: translateX(50%) scale(0.95);
+.admin-layout.sidebar-collapsed .sidebar-toggle-btn:active {
+  transform: translateY(-50%) scale(0.95);
 }
 
 /* ===== NAVIGATION ===== */
@@ -424,6 +451,17 @@ onUnmounted(() => {
   background: rgba(167, 139, 250, 0.3);
 }
 
+/* Ẩn scrollbar khi collapsed */
+.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.admin-sidebar.collapsed .sidebar-nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 .nav-list {
   list-style: none;
   padding: 0;
@@ -431,32 +469,33 @@ onUnmounted(() => {
 }
 
 .nav-item {
-  margin: 0 0.375rem;
+  margin: 0 0.25rem;
   position: relative;
 }
 
 .nav-item-parent {
-  margin: 0 0.375rem;
+  margin: 0 0.25rem;
   position: relative;
   display: flex;
   flex-direction: column;
-  width: calc(100% - 0.75rem);
+  width: calc(100% - 0.5rem);
   overflow: visible;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.625rem 0.75rem;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
   color: var(--dark-text-secondary);
   text-decoration: none;
   transition: all var(--transition-normal);
   position: relative;
   border-radius: var(--radius-md);
   overflow: visible;
-  margin: 0.125rem 0;
+  margin: 0.1rem 0;
   border: 1.5px solid transparent;
+  font-size: 0.9rem;
 }
 
 .nav-link:hover {
@@ -474,10 +513,10 @@ onUnmounted(() => {
 }
 
 .nav-link i {
-  font-size: 1.125rem;
-  min-width: 20px;
-  width: 20px;
-  height: 20px;
+  font-size: 1rem;
+  min-width: 18px;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -516,6 +555,7 @@ onUnmounted(() => {
   justify-content: center;
   padding: 0.625rem 0.5rem;
   gap: 0;
+  position: relative;
 }
 
 .admin-sidebar.collapsed .nav-link i {
@@ -528,7 +568,7 @@ onUnmounted(() => {
 
 /* ===== SIDEBAR FOOTER ===== */
 .sidebar-footer {
-  padding: 1rem;
+  padding: 0.75rem 0.5rem;
   border-top: 1px solid var(--dark-border-color);
   background: rgba(15, 23, 42, 0.4);
 }
@@ -536,8 +576,8 @@ onUnmounted(() => {
 .admin-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
+  gap: 0.5rem;
+  padding: 0.4rem;
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
 }
@@ -581,23 +621,43 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
+/* ===== COLLAPSED FOOTER ===== */
+.admin-sidebar.collapsed .sidebar-footer {
+  padding: 0.75rem 0.25rem;
+}
+
+.admin-sidebar.collapsed .admin-info {
+  justify-content: center;
+  padding: 0.4rem;
+}
+
+.admin-sidebar.collapsed .admin-avatar {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+}
+
+.admin-sidebar.collapsed .admin-avatar i {
+  font-size: 32px;
+}
+
 /* ===== MAIN CONTENT ===== */
 .admin-main {
   flex: 1;
-  margin-left: 260px;
+  margin-left: 220px;
   transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
               width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  width: calc(100vw - 260px);
+  width: calc(100vw - 220px);
   min-width: 0;
-  max-width: calc(100vw - 260px);
+  max-width: calc(100vw - 220px);
 }
 
 .admin-layout.sidebar-collapsed .admin-main {
-  margin-left: 90px;
-  width: calc(100vw - 90px);
-  max-width: calc(100vw - 90px);
+  margin-left: 75px;
+  width: calc(100vw - 75px);
+  max-width: calc(100vw - 75px);
 }
 
 /* ===== CONTENT ===== */
@@ -656,6 +716,11 @@ onUnmounted(() => {
   .logo {
     width: 48px;
     height: 48px;
+  }
+  
+  /* Nút toggle trên mobile */
+  .sidebar-toggle-btn {
+    display: none;
   }
 }
 
@@ -733,6 +798,11 @@ onUnmounted(() => {
   left: calc(100% + 12px);
 }
 
+/* Disable tooltip cho menu có submenu khi collapsed */
+.admin-sidebar.collapsed .nav-parent::after {
+  display: none;
+}
+
 /* ===== DROPDOWN MENU (SUBMENU) - THIẾT KẾ ĐẸP ===== */
 .nav-parent {
   cursor: pointer !important;
@@ -763,8 +833,8 @@ onUnmounted(() => {
 /* Submenu container - Đẹp và hiện đại */
 .submenu {
   list-style: none;
-  padding: 0.625rem 0.375rem;
-  margin: 0.25rem 0;
+  padding: 0.4rem 0.25rem;
+  margin: 0.2rem 0;
   background: var(--dark-bg-glass-dark);
   border-radius: var(--radius-lg);
   border: 1px solid var(--dark-border-light);
@@ -790,9 +860,9 @@ onUnmounted(() => {
 .nav-child {
   display: flex !important;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.625rem 0.5rem 1.875rem !important;
-  font-size: 0.8125rem;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem 0.4rem 1.625rem !important;
+  font-size: 0.8rem;
   color: var(--dark-text-secondary);
   background: transparent;
   border: 1.5px solid transparent;
@@ -801,8 +871,8 @@ onUnmounted(() => {
   transition: all var(--transition-normal);
   font-weight: 500;
   text-decoration: none;
-  margin: 0.1875rem 0.25rem;
-  width: calc(100% - 0.5rem);
+  margin: 0.15rem 0.2rem;
+  width: calc(100% - 0.4rem);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -957,12 +1027,167 @@ onUnmounted(() => {
   color: var(--primary-light);
 }
 
-/* Responsive cho submenu */
-.admin-sidebar.collapsed .submenu {
+/* Expand icon khi collapsed - nhỏ hơn ở góc dưới */
+.expand-icon.collapsed-icon {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 0.75rem !important;
+  width: 14px !important;
+  min-width: 14px !important;
+  height: 14px !important;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  color: white !important;
+  padding: 2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.expand-icon.collapsed-icon:hover {
+  transform: none !important;
+}
+
+/* ===== SUBMENU COLLAPSED (DROPDOWN XUỐNG) ===== */
+.submenu.submenu-collapsed {
+  /* Keep normal flow - dropdown xuống */
+  position: relative;
+  left: auto;
+  top: auto;
+  min-width: auto;
+  max-width: none;
+  width: 100%;
+  
+  /* Visual style - giống như normal nhưng compact hơn */
+  list-style: none;
+  padding: 0.5rem 0.25rem;
+  margin: 0.25rem 0;
+  background: var(--dark-bg-glass-dark);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--dark-border-light);
+  border-left: 3px solid var(--primary-color);
+  box-shadow: var(--shadow-glass-sm);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  /* Normal transitions */
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+  z-index: auto;
+}
+
+/* Items trong collapsed submenu */
+.submenu.submenu-collapsed .submenu-item {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+  list-style: none;
+}
+
+/* Nav child trong collapsed submenu */
+.submenu.submenu-collapsed .nav-child {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0.625rem 0.5rem !important;
+  font-size: 0.875rem;
+  color: var(--dark-text-secondary);
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  position: relative;
+  transition: all var(--transition-normal);
+  font-weight: 500;
+  text-decoration: none;
+  margin: 0.1875rem 0.25rem;
+  width: calc(100% - 0.5rem);
+}
+
+/* Ẩn dot indicator khi collapsed */
+.submenu.submenu-collapsed .nav-child::before {
   display: none;
 }
 
-.admin-sidebar.collapsed .nav-parent .expand-icon {
-  display: none;
+/* Chỉ hiện icon khi collapsed */
+.submenu.submenu-collapsed .nav-child .material-icons {
+  font-size: 1.125rem !important;
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  color: var(--dark-text-tertiary);
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+
+/* Ẩn text khi collapsed */
+.submenu.submenu-collapsed .nav-child .nav-text {
+  display: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+}
+
+/* Hover state cho collapsed submenu */
+.submenu.submenu-collapsed .nav-child:hover {
+  background: var(--gradient-purple-soft);
+  border-color: var(--dark-border-light);
+  color: var(--dark-text-primary);
+  box-shadow: var(--shadow-glass-sm);
+}
+
+.submenu.submenu-collapsed .nav-child:hover .material-icons {
+  color: var(--primary-light);
+  transform: scale(1.15);
+}
+
+/* Active state cho collapsed submenu */
+.submenu.submenu-collapsed .nav-child.active {
+  background: var(--gradient-purple-soft);
+  border-color: var(--dark-border-medium);
+  color: var(--primary-light);
+  font-weight: 600;
+  box-shadow: var(--shadow-glass-md);
+}
+
+.submenu.submenu-collapsed .nav-child.active .material-icons {
+  color: var(--primary-light);
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.7));
+}
+
+/* Tooltip cho submenu items khi collapsed */
+.submenu.submenu-collapsed .nav-child {
+  position: relative;
+}
+
+.submenu.submenu-collapsed .nav-child::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--primary-gradient);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-glass-md);
+  z-index: 1001;
+}
+
+.submenu.submenu-collapsed .nav-child:hover::after {
+  opacity: 1;
+  left: calc(100% + 12px);
 }
 </style>

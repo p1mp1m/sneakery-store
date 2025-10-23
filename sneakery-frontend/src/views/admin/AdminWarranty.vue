@@ -839,16 +839,7 @@ onMounted(() => {
   background: var(--table-header-bg);
 }
 
-.admin-table th {
-  padding: var(--space-4) var(--space-6);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: white;
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
+/* Table headers use global admin-tables.css styles */
 
 .admin-table tbody tr {
   border-bottom: 1px solid var(--border-primary);
@@ -860,11 +851,7 @@ onMounted(() => {
   transform: scale(1.002);
 }
 
-.admin-table td {
-  padding: var(--space-4) var(--space-6);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
+/* Table cells use global admin-tables.css styles */
 
 /* Warranty Code */
 .warranty-code {
@@ -1040,33 +1027,7 @@ onMounted(() => {
   gap: var(--space-2);
 }
 
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.btn-icon:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--accent-primary);
-  color: var(--accent-light);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-icon .material-icons {
-  font-size: 1.125rem;
-}
+/* Action buttons use global admin-tables.css styles */
 
 /* Modal */
 .modal-overlay {

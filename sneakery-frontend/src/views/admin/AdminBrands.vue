@@ -849,15 +849,7 @@ onMounted(() => {
   background: var(--table-header-bg);
 }
 
-.brands-table th {
-  padding: var(--space-4);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--color-white);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+/* Table headers use global admin-tables.css styles */
 
 .brands-table tbody tr {
   border-bottom: 1px solid var(--border-primary);
@@ -869,11 +861,7 @@ onMounted(() => {
   transform: translateX(2px);
 }
 
-.brands-table td {
-  padding: var(--space-4);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
+/* Table cells use global admin-tables.css styles */
 
 /* ═══ TABLE CONTENT ═══ */
 .brand-logo {
@@ -987,47 +975,7 @@ onMounted(() => {
   gap: var(--space-2);
 }
 
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-icon .material-icons {
-  font-size: var(--text-lg);
-}
-
-.btn-edit {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid var(--info-border);
-}
-
-.btn-edit:hover {
-  background: var(--info-solid);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-blue);
-}
-
-.btn-delete {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
-}
-
-.btn-delete:hover {
-  background: var(--error-solid);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-red);
-}
+/* Action buttons use global admin-tables.css styles */
 
 /* ═══ PAGINATION ═══ */
 .pagination-container {

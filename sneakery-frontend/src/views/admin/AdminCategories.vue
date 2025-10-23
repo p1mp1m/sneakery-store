@@ -38,6 +38,7 @@
         <table class="table">
           <thead>
             <tr>
+              <th style="width: 40px;"></th>
               <th>Tên danh mục</th>
               <th>Slug</th>
               <th>Danh mục cha</th>
@@ -48,9 +49,23 @@
             <template v-for="category in rootCategories" :key="category.id">
               <tr class="category-row root">
                 <td>
+                  <button 
+                    v-if="getChildren(category.id).length > 0"
+                    @click="toggleExpand(category.id)"
+                    class="btn-expand"
+                    :class="{ 'expanded': isExpanded(category.id) }"
+                    title="Mở rộng/Thu gọn"
+                  >
+                    <i class="material-icons">{{ isExpanded(category.id) ? 'expand_more' : 'chevron_right' }}</i>
+                  </button>
+                </td>
+                <td>
                   <div class="category-name">
                     <i class="material-icons">folder</i>
                     <strong>{{ category.name }}</strong>
+                    <span v-if="getChildren(category.id).length > 0" class="child-count">
+                      ({{ getChildren(category.id).length }})
+                    </span>
           </div>
                 </td>
                 <td><code>{{ category.slug }}</code></td>
@@ -74,13 +89,14 @@
           </div>
                 </td>
               </tr>
-              <!-- Child categories -->
-              <template v-if="getChildren(category.id).length > 0">
+              <!-- Child categories - Collapsible -->
+              <template v-if="isExpanded(category.id)">
                 <tr 
                   v-for="child in getChildren(category.id)" 
                   :key="child.id"
                   class="category-row child"
                 >
+                  <td></td>
                   <td>
                     <div class="category-name child-indent">
                       <i class="material-icons">subdirectory_arrow_right</i>
@@ -217,6 +233,7 @@ const isEditMode = ref(false)
 const submitting = ref(false)
 const deleting = ref(false)
 const categoryToDelete = ref(null)
+const expandedCategories = ref([]) // Track expanded parent categories
 
 const formData = ref({
   name: '',
@@ -230,6 +247,20 @@ const formErrors = ref({})
 const rootCategories = computed(() => {
   return categories.value.filter(cat => !cat.parentId)
 })
+
+// Expand/Collapse methods
+const toggleExpand = (categoryId) => {
+  const index = expandedCategories.value.indexOf(categoryId)
+  if (index > -1) {
+    expandedCategories.value.splice(index, 1)
+  } else {
+    expandedCategories.value.push(categoryId)
+  }
+}
+
+const isExpanded = (categoryId) => {
+  return expandedCategories.value.includes(categoryId)
+}
 
 // Methods
 const getChildren = (parentId) => {
@@ -592,22 +623,9 @@ onMounted(() => {
   border-bottom: 2px solid var(--border-primary);
 }
 
-.table th {
-  padding: var(--space-4) var(--space-6);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--color-white);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
+/* Table headers use global admin-tables.css styles */
 
-.table td {
-  padding: var(--space-4) var(--space-6);
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-subtle);
-}
+/* Table cells use global admin-tables.css styles */
 
 .table tbody tr {
   background: rgba(30, 41, 59, 0.4);
@@ -661,6 +679,61 @@ onMounted(() => {
   transform: scale(1.15);
 }
 
+/* ═══ EXPAND BUTTON ═══ */
+.btn-expand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1.5px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-expand:hover {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: scale(1.1);
+}
+
+.btn-expand.expanded {
+  background: rgba(167, 139, 250, 0.15);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.btn-expand .material-icons {
+  font-size: 1.25rem;
+  transition: transform var(--transition-fast);
+}
+
+.btn-expand.expanded .material-icons {
+  transform: rotate(0deg);
+}
+
+/* ═══ CHILD COUNT BADGE ═══ */
+.child-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 20px;
+  padding: 0 var(--space-2);
+  background: var(--accent-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: var(--font-bold);
+  margin-left: var(--space-1);
+  box-shadow: 0 2px 6px rgba(167, 139, 250, 0.3);
+}
+
 .text-center {
   text-align: center;
 }
@@ -671,37 +744,7 @@ onMounted(() => {
   justify-content: center;
 }
 
-.btn-icon {
-  padding: var(--space-2);
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-}
-
-.btn-icon:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-icon.danger:hover {
-  background: var(--error-bg);
-  border-color: var(--error-solid);
-  color: var(--error-text);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.btn-icon .material-icons {
-  font-size: 1.125rem;
-}
+/* Action buttons use global admin-tables.css styles */
 
 .badge {
   display: inline-flex;

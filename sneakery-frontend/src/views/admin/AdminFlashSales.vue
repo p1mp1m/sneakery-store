@@ -1219,47 +1219,7 @@ onMounted(() => {
   gap: var(--space-2);
 }
 
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-icon .material-icons {
-  font-size: var(--text-lg);
-}
-
-.btn-edit {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid var(--info-border);
-}
-
-.btn-edit:hover {
-  background: var(--info-solid);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-delete {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
-}
-
-.btn-delete:hover {
-  background: var(--error-solid);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
+/* Action buttons use global admin-tables.css styles */
 
 /* ═══ PAGINATION ═══ */
 .pagination-container {

@@ -552,20 +552,27 @@ onMounted(() => {
 
 .bulk-status-select {
   padding: var(--space-2) var(--space-4);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: 2px solid var(--border-primary);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--color-white);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-primary);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
   cursor: pointer;
-  transition: var(--transition-fast);
+  transition: all var(--transition-fast);
   backdrop-filter: blur(10px);
 }
 
 .bulk-status-select:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: var(--color-white);
+  background: rgba(15, 23, 42, 0.8);
+  border-color: var(--border-hover);
+}
+
+.bulk-status-select:focus {
+  outline: none;
+  background: rgba(15, 23, 42, 0.9);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
 }
 
 .bulk-status-select option {
@@ -738,20 +745,22 @@ onMounted(() => {
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   color: var(--text-primary);
-  background: var(--bg-primary);
+  background: rgba(15, 23, 42, 0.6);
   cursor: pointer;
   transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .filter-select:hover {
-  border-color: var(--border-medium);
-  background: var(--bg-secondary);
+  border-color: var(--border-hover);
+  background: rgba(15, 23, 42, 0.8);
 }
 
 .filter-select:focus {
   outline: none;
   border-color: var(--accent-primary);
-  background: var(--bg-secondary);
+  background: rgba(15, 23, 42, 0.9);
   box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
 }
 
@@ -855,22 +864,9 @@ onMounted(() => {
   border-bottom: 2px solid var(--border-primary);
 }
 
-.admin-table th {
-  padding: var(--space-4);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+/* Table headers use global admin-tables.css styles */
 
-.admin-table td {
-  padding: var(--space-4);
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-light);
-  font-size: var(--text-base);
-}
+/* Table cells use global admin-tables.css styles */
 
 .admin-table tbody tr {
   transition: var(--transition-fast);
@@ -915,7 +911,7 @@ code {
 /* ===== STATUS SELECT ===== */
 .status-select {
   padding: var(--space-2) var(--space-3);
-  border: 2px solid transparent;
+  border: 2px solid var(--border-primary);
   border-radius: var(--radius-lg);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
@@ -923,15 +919,23 @@ code {
   letter-spacing: 0.05em;
   cursor: pointer;
   transition: all var(--transition-fast);
+  background: rgba(15, 23, 42, 0.6) !important;
+  color: var(--text-primary) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .status-select:hover {
   transform: scale(1.02);
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: var(--border-hover);
 }
 
 .status-select:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-color: var(--accent-primary);
 }
 
 .status-select option {
@@ -953,62 +957,38 @@ code {
   font-weight: var(--font-semibold);
 }
 
-.status-select.status-pending {
-  background: rgba(251, 191, 36, 0.1);
-  color: #d97706;
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-.status-select.status-processing {
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
-  border-color: rgba(99, 102, 241, 0.3);
-}
-
-.status-select.status-shipped {
-  background: rgba(147, 51, 234, 0.1);
-  color: #a855f7;
-  border-color: rgba(147, 51, 234, 0.3);
-}
-
-.status-select.status-completed {
-  background: rgba(34, 197, 94, 0.1);
-  color: #16a34a;
-  border-color: rgba(34, 197, 94, 0.3);
-}
-
+/* Đồng nhất tất cả status select về màu tối */
+.status-select.status-pending,
+.status-select.status-processing,
+.status-select.status-shipped,
+.status-select.status-completed,
 .status-select.status-cancelled {
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(15, 23, 42, 0.6) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-primary) !important;
 }
 
-/* ===== ACTION BUTTON ===== */
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 2px solid var(--border-primary);
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  color: var(--text-tertiary);
-  transition: all var(--transition-fast);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.status-select.status-pending:hover,
+.status-select.status-processing:hover,
+.status-select.status-shipped:hover,
+.status-select.status-completed:hover,
+.status-select.status-cancelled:hover {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: var(--border-hover) !important;
+  transform: scale(1.02);
 }
 
-.btn-icon:hover {
-  background: rgba(167, 139, 250, 0.1);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-  transform: scale(1.1);
+.status-select.status-pending:focus,
+.status-select.status-processing:focus,
+.status-select.status-shipped:focus,
+.status-select.status-completed:focus,
+.status-select.status-cancelled:focus {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
 }
 
-.btn-icon .material-icons {
-  font-size: 1.25rem;
-}
+/* Action buttons use global admin-tables.css styles */
 
 /* ===== PAGINATION ===== */
 .pagination-container {
