@@ -5,16 +5,57 @@
       <div class="header-content">
         <div class="title-section">
           <h1 class="page-title">
-            <i class="material-icons">category</i>
+            <span class="material-icons">category</span>
             Quản lý danh mục
           </h1>
           <p class="page-subtitle">Quản lý danh mục sản phẩm với cấu trúc phân cấp</p>
         </div>
         <div class="header-actions">
+          <button @click="handleExport('csv')" class="btn btn-secondary" title="Xuất CSV">
+            <span class="material-icons">download</span>
+            Xuất CSV
+          </button>
+          <button @click="handleExport('json')" class="btn btn-secondary" title="Xuất JSON">
+            <span class="material-icons">file_download</span>
+            Xuất JSON
+          </button>
           <button @click="openCreateModal" class="btn btn-primary">
-            <i class="material-icons">add</i>
+            <span class="material-icons">add</span>
             Thêm danh mục
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid animate-fade-in">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--gradient-primary);">
+          <span class="material-icons">category</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ totalCategories }}</div>
+          <div class="stat-label">TỔNG DANH MỤC</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--gradient-success);">
+          <span class="material-icons">folder_open</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ rootCategoriesCount }}</div>
+          <div class="stat-label">DANH MỤC GỐC</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--gradient-info);">
+          <span class="material-icons">subdirectory_arrow_right</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ childCategoriesCount }}</div>
+          <div class="stat-label">DANH MỤC CON</div>
         </div>
       </div>
     </div>
@@ -34,10 +75,50 @@
 
     <!-- Categories List -->
     <div v-else-if="categories && categories.length > 0" class="categories-list animate-fade-up">
+      <!-- Search & Filters -->
+      <div class="filters-section">
+        <div class="search-box">
+          <span class="material-icons search-icon">search</span>
+          <input 
+            type="text" 
+            class="search-input" 
+            v-model="searchQuery"
+            placeholder="Tìm kiếm danh mục..."
+          />
+        </div>
+        
+        <div class="filter-actions">
+          <button 
+            v-if="selectedCategories.length > 0" 
+            @click="handleBulkDelete"
+            class="btn btn-danger btn-sm"
+          >
+            <span class="material-icons">delete</span>
+            Xóa {{ selectedCategories.length }} mục
+          </button>
+          <button @click="expandAll" class="btn btn-secondary btn-sm">
+            <span class="material-icons">unfold_more</span>
+            Mở rộng tất cả
+          </button>
+          <button @click="collapseAll" class="btn btn-secondary btn-sm">
+            <span class="material-icons">unfold_less</span>
+            Thu gọn tất cả
+          </button>
+        </div>
+      </div>
+
       <div class="table-container">
         <table class="table">
           <thead>
             <tr>
+              <th style="width: 40px;">
+                <input 
+                  type="checkbox" 
+                  @change="toggleSelectAll"
+                  :checked="allSelected"
+                  class="checkbox-input"
+                />
+              </th>
               <th style="width: 40px;"></th>
               <th>Tên danh mục</th>
               <th>Slug</th>
@@ -46,8 +127,16 @@
             </tr>
           </thead>
           <tbody>
-            <template v-for="category in rootCategories" :key="category.id">
-              <tr class="category-row root">
+            <template v-for="category in filteredCategories" :key="category.id">
+              <tr class="category-row root" :class="{ 'selected': isSelected(category.id) }">
+                <td>
+                  <input 
+                    type="checkbox" 
+                    :checked="isSelected(category.id)"
+                    @change="toggleSelect(category.id)"
+                    class="checkbox-input"
+                  />
+                </td>
                 <td>
                   <button 
                     v-if="getChildren(category.id).length > 0"
@@ -56,19 +145,19 @@
                     :class="{ 'expanded': isExpanded(category.id) }"
                     title="Mở rộng/Thu gọn"
                   >
-                    <i class="material-icons">{{ isExpanded(category.id) ? 'expand_more' : 'chevron_right' }}</i>
+                    <span class="material-icons">{{ isExpanded(category.id) ? 'expand_more' : 'chevron_right' }}</span>
                   </button>
                 </td>
                 <td>
                   <div class="category-name">
-                    <i class="material-icons">folder</i>
-                    <strong>{{ category.name }}</strong>
+                    <span class="material-icons">folder</span>
+                    <strong v-html="highlightSearch(category.name)"></strong>
                     <span v-if="getChildren(category.id).length > 0" class="child-count">
                       ({{ getChildren(category.id).length }})
                     </span>
-          </div>
+                  </div>
                 </td>
-                <td><code>{{ category.slug }}</code></td>
+                <td><code v-html="highlightSearch(category.slug)"></code></td>
                 <td><span class="badge badge-secondary">Danh mục gốc</span></td>
                 <td class="text-center">
                   <div class="action-buttons">
@@ -77,16 +166,16 @@
                       class="btn-icon"
                       title="Chỉnh sửa"
                     >
-            <i class="material-icons">edit</i>
+                      <span class="material-icons">edit</span>
                     </button>
                     <button 
                       @click="confirmDelete(category)" 
                       class="btn-icon danger"
                       title="Xóa"
                     >
-                      <i class="material-icons">delete</i>
+                      <span class="material-icons">delete</span>
                     </button>
-          </div>
+                  </div>
                 </td>
               </tr>
               <!-- Child categories - Collapsible -->
@@ -95,15 +184,24 @@
                   v-for="child in getChildren(category.id)" 
                   :key="child.id"
                   class="category-row child"
+                  :class="{ 'selected': isSelected(child.id) }"
                 >
+                  <td>
+                    <input 
+                      type="checkbox" 
+                      :checked="isSelected(child.id)"
+                      @change="toggleSelect(child.id)"
+                      class="checkbox-input"
+                    />
+                  </td>
                   <td></td>
                   <td>
                     <div class="category-name child-indent">
-                      <i class="material-icons">subdirectory_arrow_right</i>
-                      {{ child.name }}
-          </div>
+                      <span class="material-icons">subdirectory_arrow_right</span>
+                      <span v-html="highlightSearch(child.name)"></span>
+                    </div>
                   </td>
-                  <td><code>{{ child.slug }}</code></td>
+                  <td><code v-html="highlightSearch(child.slug)"></code></td>
                   <td>{{ category.name }}</td>
                   <td class="text-center">
                     <div class="action-buttons">
@@ -112,14 +210,14 @@
                         class="btn-icon"
                         title="Chỉnh sửa"
                       >
-                        <i class="material-icons">edit</i>
+                        <span class="material-icons">edit</span>
                       </button>
                       <button 
                         @click="confirmDelete(child)" 
                         class="btn-icon danger"
                         title="Xóa"
                       >
-            <i class="material-icons">delete</i>
+                        <span class="material-icons">delete</span>
                       </button>
                     </div>
                   </td>
@@ -221,6 +319,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
+import { exportToCSV, exportToJSON } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
 
@@ -234,6 +333,8 @@ const submitting = ref(false)
 const deleting = ref(false)
 const categoryToDelete = ref(null)
 const expandedCategories = ref([]) // Track expanded parent categories
+const selectedCategories = ref([]) // Track selected categories for bulk actions
+const searchQuery = ref('') // Search query
 
 const formData = ref({
   name: '',
@@ -243,10 +344,68 @@ const formData = ref({
 
 const formErrors = ref({})
 
+// Computed - Stats
+const totalCategories = computed(() => categories.value.length)
+
+const rootCategoriesCount = computed(() => {
+  return categories.value.filter(cat => !cat.parentId).length
+})
+
+const childCategoriesCount = computed(() => {
+  return categories.value.filter(cat => cat.parentId).length
+})
+
 // Computed
 const rootCategories = computed(() => {
   return categories.value.filter(cat => !cat.parentId)
 })
+
+// Filtered categories based on search
+const filteredCategories = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return rootCategories.value
+  }
+  
+  const query = searchQuery.value.toLowerCase()
+  return rootCategories.value.filter(cat => {
+    const matchesRoot = cat.name.toLowerCase().includes(query) || 
+                        cat.slug.toLowerCase().includes(query)
+    
+    const hasMatchingChild = getChildren(cat.id).some(child =>
+      child.name.toLowerCase().includes(query) || 
+      child.slug.toLowerCase().includes(query)
+    )
+    
+    return matchesRoot || hasMatchingChild
+  })
+})
+
+// Selection helpers
+const allSelected = computed(() => {
+  if (categories.value.length === 0) return false
+  return categories.value.every(cat => selectedCategories.value.includes(cat.id))
+})
+
+const isSelected = (categoryId) => {
+  return selectedCategories.value.includes(categoryId)
+}
+
+const toggleSelect = (categoryId) => {
+  const index = selectedCategories.value.indexOf(categoryId)
+  if (index > -1) {
+    selectedCategories.value.splice(index, 1)
+  } else {
+    selectedCategories.value.push(categoryId)
+  }
+}
+
+const toggleSelectAll = () => {
+  if (allSelected.value) {
+    selectedCategories.value = []
+  } else {
+    selectedCategories.value = categories.value.map(cat => cat.id)
+  }
+}
 
 // Expand/Collapse methods
 const toggleExpand = (categoryId) => {
@@ -454,6 +613,76 @@ const handleDelete = async () => {
   }
 }
 
+// Export functions
+const handleExport = (format) => {
+  const data = categories.value.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    parentId: cat.parentId || '',
+    parentName: cat.parentId ? categories.value.find(c => c.id === cat.parentId)?.name || '' : 'Danh mục gốc',
+    createdAt: cat.createdAt || '',
+  }))
+  
+  if (format === 'csv') {
+    exportToCSV(data, `categories_${Date.now()}`, [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Tên danh mục' },
+      { key: 'slug', label: 'Slug' },
+      { key: 'parentName', label: 'Danh mục cha' },
+      { key: 'createdAt', label: 'Ngày tạo' },
+    ])
+    ElMessage.success('Đã xuất file CSV thành công!')
+  } else if (format === 'json') {
+    exportToJSON(data, `categories_${Date.now()}`)
+    ElMessage.success('Đã xuất file JSON thành công!')
+  }
+}
+
+// Search highlighting
+const highlightSearch = (text) => {
+  if (!searchQuery.value.trim() || !text) return text
+  
+  const query = searchQuery.value.trim()
+  const regex = new RegExp(`(${query})`, 'gi')
+  return text.replace(regex, '<mark class="search-highlight">$1</mark>')
+}
+
+// Expand/Collapse all
+const expandAll = () => {
+  expandedCategories.value = rootCategories.value.map(cat => cat.id)
+}
+
+const collapseAll = () => {
+  expandedCategories.value = []
+}
+
+// Bulk delete
+const handleBulkDelete = async () => {
+  if (selectedCategories.value.length === 0) return
+  
+  const confirmed = confirm(`Bạn có chắc chắn muốn xóa ${selectedCategories.value.length} danh mục đã chọn?`)
+  if (!confirmed) return
+  
+  try {
+    deleting.value = true
+    
+    // Delete all selected categories
+    for (const categoryId of selectedCategories.value) {
+      await adminStore.deleteCategory(categoryId)
+    }
+    
+    ElMessage.success(`Đã xóa ${selectedCategories.value.length} danh mục thành công!`)
+    selectedCategories.value = []
+    await fetchCategories()
+  } catch (error) {
+    console.error('Lỗi khi xóa danh mục:', error)
+    ElMessage.error('Có lỗi xảy ra khi xóa danh mục. Vui lòng thử lại!')
+  } finally {
+    deleting.value = false
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   fetchCategories()
@@ -597,6 +826,91 @@ onMounted(() => {
   margin: 0;
 }
 
+/* ═══ STATS GRID ═══ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-purple-soft);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow-purple);
+  border-color: var(--accent-primary);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-icon .material-icons {
+  font-size: 2rem;
+  color: white;
+}
+
+.stat-content {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-value {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: var(--space-2);
+}
+
+.stat-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
 /* ═══ CATEGORIES LIST ═══ */
 .categories-list {
   background: var(--card-bg);
@@ -606,6 +920,78 @@ onMounted(() => {
   overflow: hidden;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+/* ═══ FILTERS SECTION ═══ */
+.filters-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--gradient-purple-soft);
+  flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  min-width: 280px;
+}
+
+.search-icon {
+  position: absolute;
+  left: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 1.25rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-12);
+  border: 1px solid var(--border-primary);
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.search-input:hover {
+  border-color: var(--border-hover);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+}
+
+.search-input::placeholder {
+  color: var(--text-quaternary);
+}
+
+.filter-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* ═══ SEARCH HIGHLIGHT ═══ */
+.search-highlight {
+  background: rgba(234, 179, 8, 0.3);
+  color: #fbbf24;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: var(--font-semibold);
 }
 
 .table-container {
@@ -637,6 +1023,11 @@ onMounted(() => {
   transform: scale(1.002);
 }
 
+.table tbody tr.selected {
+  background: rgba(167, 139, 250, 0.2) !important;
+  border-left: 3px solid var(--accent-primary) !important;
+}
+
 .category-row.root {
   background: rgba(30, 41, 59, 0.6);
   border-left: 3px solid var(--accent-primary);
@@ -655,6 +1046,15 @@ onMounted(() => {
 .category-row.child:hover {
   background: rgba(167, 139, 250, 0.1);
   border-left-color: var(--accent-primary);
+}
+
+/* ═══ CHECKBOX INPUT ═══ */
+.checkbox-input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+  border-radius: var(--radius-sm);
 }
 
 .category-name {
@@ -994,6 +1394,15 @@ code {
 .btn-danger:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+}
+
+.btn-sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.btn-sm .material-icons {
+  font-size: 1rem;
 }
 
 .btn-loading {

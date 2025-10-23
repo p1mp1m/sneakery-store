@@ -3,69 +3,71 @@
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">
-        <div>
+        <div class="title-section">
           <h1 class="page-title">
-            <i class="material-icons">percent</i>
+            <span class="material-icons">percent</span>
             Quản lý Mã Giảm Giá
           </h1>
           <p class="page-subtitle">
-            <i class="material-icons">info</i>
             Tạo và quản lý các chương trình giảm giá, khuyến mãi
           </p>
         </div>
         <div class="header-actions">
+          <button @click="handleExport('csv')" class="btn btn-secondary" title="Xuất CSV">
+            <span class="material-icons">download</span>
+            Xuất CSV
+          </button>
+          <button @click="handleExport('json')" class="btn btn-secondary" title="Xuất JSON">
+            <span class="material-icons">file_download</span>
+            Xuất JSON
+          </button>
           <button @click="showCreateDialog = true" class="btn btn-primary">
-            <i class="material-icons">add</i>
+            <span class="material-icons">add</span>
             Tạo mã giảm giá
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-      <div class="stats-card success">
-        <div class="stats-header">
-          <div class="stats-icon success">
-            <i class="material-icons">local_activity</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.totalCoupons }}</div>
-            <div class="stats-label">Tổng mã</div>
-          </div>
+    <!-- Stats Grid - Enhanced with Glassmorphism -->
+    <div class="stats-grid animate-fade-in">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--gradient-primary);">
+          <span class="material-icons">local_activity</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.totalCoupons }}</div>
+          <div class="stat-label">TỔNG MÃ GIẢM GIÁ</div>
         </div>
       </div>
-      <div class="stats-card info">
-        <div class="stats-header">
-          <div class="stats-icon info">
-            <i class="material-icons">check_circle</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.activeCoupons }}</div>
-            <div class="stats-label">Đang hoạt động</div>
-          </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--gradient-success);">
+          <span class="material-icons">check_circle</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.activeCoupons }}</div>
+          <div class="stat-label">ĐANG HOẠT ĐỘNG</div>
         </div>
       </div>
-      <div class="stats-card warning">
-        <div class="stats-header">
-          <div class="stats-icon warning">
-            <i class="material-icons">schedule</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.expiringSoon }}</div>
-            <div class="stats-label">Sắp hết hạn</div>
-          </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--gradient-warning);">
+          <span class="material-icons">schedule</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.expiringSoon }}</div>
+          <div class="stat-label">SẮP HẾT HẠN</div>
         </div>
       </div>
-      <div class="stats-card danger">
-        <div class="stats-header">
-          <div class="stats-icon danger">
-            <i class="material-icons">block</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.expiredCoupons }}</div>
-            <div class="stats-label">Đã hết hạn</div>
-          </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon" style="background: var(--gradient-danger);">
+          <span class="material-icons">block</span>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.expiredCoupons }}</div>
+          <div class="stat-label">ĐÃ HẾT HẠN</div>
         </div>
       </div>
     </div>
@@ -414,6 +416,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import adminService from '@/services/adminService'
+import { exportToCSV, exportToJSON } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
 
