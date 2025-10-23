@@ -416,7 +416,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import adminService from '@/services/adminService'
-import { exportToCSV, exportToJSON } from '@/utils/exportHelpers'
+import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
 
@@ -749,6 +749,29 @@ const formatDate = (dateString) => {
     hour: '2-digit',
     minute: '2-digit'
   }).format(date)
+}
+
+// Export functions
+const handleExport = (format) => {
+  const data = coupons.value.map(coupon => ({
+    'Mã giảm giá': coupon.code,
+    'Mô tả': coupon.description || '',
+    'Loại giảm giá': coupon.discountType === 'PERCENTAGE' ? 'Phần trăm' : 'Cố định',
+    'Giá trị': coupon.value,
+    'Số lần sử dụng': coupon.usedCount || 0,
+    'Giới hạn sử dụng': coupon.maxUses || 'Không giới hạn',
+    'Ngày bắt đầu': formatDate(coupon.startAt),
+    'Ngày kết thúc': formatDate(coupon.endAt),
+    'Trạng thái': coupon.isActive ? 'Hoạt động' : 'Ngừng hoạt động'
+  }))
+  
+  if (format === 'csv') {
+    downloadCsv(data, `discounts_${Date.now()}.csv`)
+    ElMessage.success('Đã xuất file CSV thành công!')
+  } else if (format === 'json') {
+    downloadJson(data, `discounts_${Date.now()}.json`)
+    ElMessage.success('Đã xuất file JSON thành công!')
+  }
 }
 
 // Lifecycle

@@ -319,7 +319,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
-import { exportToCSV, exportToJSON } from '@/utils/exportHelpers'
+import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
 
@@ -616,25 +616,18 @@ const handleDelete = async () => {
 // Export functions
 const handleExport = (format) => {
   const data = categories.value.map(cat => ({
-    id: cat.id,
-    name: cat.name,
-    slug: cat.slug,
-    parentId: cat.parentId || '',
-    parentName: cat.parentId ? categories.value.find(c => c.id === cat.parentId)?.name || '' : 'Danh mục gốc',
-    createdAt: cat.createdAt || '',
+    'ID': cat.id,
+    'Tên danh mục': cat.name,
+    'Slug': cat.slug,
+    'Danh mục cha': cat.parentId ? categories.value.find(c => c.id === cat.parentId)?.name || '' : 'Danh mục gốc',
+    'Ngày tạo': cat.createdAt || '',
   }))
   
   if (format === 'csv') {
-    exportToCSV(data, `categories_${Date.now()}`, [
-      { key: 'id', label: 'ID' },
-      { key: 'name', label: 'Tên danh mục' },
-      { key: 'slug', label: 'Slug' },
-      { key: 'parentName', label: 'Danh mục cha' },
-      { key: 'createdAt', label: 'Ngày tạo' },
-    ])
+    downloadCsv(data, `categories_${Date.now()}.csv`)
     ElMessage.success('Đã xuất file CSV thành công!')
   } else if (format === 'json') {
-    exportToJSON(data, `categories_${Date.now()}`)
+    downloadJson(data, `categories_${Date.now()}.json`)
     ElMessage.success('Đã xuất file JSON thành công!')
   }
 }

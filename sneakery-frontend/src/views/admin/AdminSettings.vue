@@ -1,17 +1,78 @@
 <template>
   <div class="admin-page admin-settings">
-    <!-- Page Header -->
+    <!-- Enhanced Page Header with Glassmorphism -->
     <div class="page-header animate-fade-in">
-      <div>
-        <h1 class="page-title">
-          <i class="material-icons">settings</i>
-          Cài đặt hệ thống
-        </h1>
-        <p class="page-subtitle">Quản lý cấu hình cửa hàng và hệ thống</p>
+      <div class="header-content">
+        <div class="title-section">
+          <h1 class="page-title">
+            <span class="material-icons">settings</span>
+            Cài đặt hệ thống
+          </h1>
+          <p class="page-subtitle">Quản lý cấu hình cửa hàng và hệ thống</p>
+        </div>
+        
+        <div class="header-actions">
+          <button @click="showSearch = !showSearch" class="btn btn-secondary">
+            <span class="material-icons">search</span>
+            Tìm kiếm
+          </button>
+          <button @click="exportSettings" class="btn btn-secondary">
+            <span class="material-icons">file_download</span>
+            Xuất cấu hình
+          </button>
+          <button @click="importSettings" class="btn btn-secondary">
+            <span class="material-icons">file_upload</span>
+            Nhập cấu hình
+          </button>
+          <button @click="resetToDefaults" class="btn btn-danger">
+            <span class="material-icons">restore</span>
+            Khôi phục mặc định
+          </button>
+        </div>
       </div>
+
+      <!-- Search Bar -->
+      <transition name="slide-down">
+        <div v-if="showSearch" class="search-bar">
+          <div class="search-box">
+            <span class="material-icons search-icon">search</span>
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              class="search-input"
+              placeholder="Tìm kiếm cài đặt..."
+              @input="handleSearch"
+            />
+            <button v-if="searchQuery" @click="clearSearch" class="search-clear">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+          
+          <!-- Search Results -->
+          <div v-if="searchResults.length > 0 && searchQuery" class="search-results">
+            <div 
+              v-for="result in searchResults" 
+              :key="result.id"
+              @click="goToSetting(result)"
+              class="search-result-item"
+            >
+              <span class="material-icons">{{ result.icon }}</span>
+              <div class="result-info">
+                <strong>{{ result.title }}</strong>
+                <p>{{ result.description }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div v-else-if="searchQuery && searchResults.length === 0" class="no-results">
+            <span class="material-icons">search_off</span>
+            <p>Không tìm thấy cài đặt nào</p>
+          </div>
+        </div>
+      </transition>
     </div>
 
-    <!-- Settings Navigation Tabs -->
+    <!-- Enhanced Settings Navigation Tabs -->
     <div class="settings-tabs">
       <button
         v-for="tab in tabs"
@@ -19,8 +80,9 @@
         @click="activeTab = tab.id"
         :class="['tab-btn', { active: activeTab === tab.id }]"
       >
-        <i class="material-icons">{{ tab.icon }}</i>
-        {{ tab.label }}
+        <span class="material-icons">{{ tab.icon }}</span>
+        <span class="tab-label">{{ tab.label }}</span>
+        <span v-if="tab.badge" class="tab-badge">{{ tab.badge }}</span>
       </button>
     </div>
 
@@ -86,7 +148,7 @@
 
         <div class="form-actions">
           <button @click="saveStoreSettings" class="btn btn-primary">
-            <i class="material-icons">save</i>
+            <span class="material-icons">save</span>
             Lưu thay đổi
           </button>
         </div>
@@ -158,7 +220,7 @@
 
         <div class="form-actions">
           <button @click="saveGeneralSettings" class="btn btn-primary">
-            <i class="material-icons">save</i>
+            <span class="material-icons">save</span>
             Lưu thay đổi
           </button>
         </div>
@@ -233,11 +295,11 @@
 
         <div class="form-actions">
           <button @click="saveEmailSettings" class="btn btn-primary">
-            <i class="material-icons">save</i>
+            <span class="material-icons">save</span>
             Lưu thay đổi
           </button>
           <button @click="testEmail" class="btn btn-secondary">
-            <i class="material-icons">email</i>
+            <span class="material-icons">email</span>
             Gửi email test
           </button>
         </div>
@@ -322,7 +384,7 @@
 
           <div v-if="paymentSettings.online.enabled" class="payment-details">
             <p class="text-muted">
-              <i class="material-icons" style="vertical-align: middle; font-size: 18px;">info</i>
+              <span class="material-icons" style="vertical-align: middle; font-size: 18px;">info</span>
               Tính năng này sẽ được phát triển trong phiên bản tiếp theo
             </p>
           </div>
@@ -330,7 +392,7 @@
 
         <div class="form-actions">
           <button @click="savePaymentSettings" class="btn btn-primary">
-            <i class="material-icons">save</i>
+            <span class="material-icons">save</span>
             Lưu thay đổi
           </button>
         </div>
@@ -340,16 +402,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, onMounted, computed } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { downloadJson } from '@/utils/exportHelpers'
 
 const activeTab = ref('store')
+const showSearch = ref(false)
+const searchQuery = ref('')
+const searchResults = ref([])
 
 const tabs = [
   { id: 'store', label: 'Cửa hàng', icon: 'store' },
   { id: 'general', label: 'Chung', icon: 'settings' },
   { id: 'email', label: 'Email', icon: 'email' },
   { id: 'payment', label: 'Thanh toán', icon: 'payment' }
+]
+
+// Searchable settings index
+const settingsIndex = [
+  { id: 'store-name', title: 'Tên cửa hàng', description: 'Thông tin cửa hàng', tab: 'store', icon: 'store' },
+  { id: 'store-email', title: 'Email liên hệ', description: 'Thông tin cửa hàng', tab: 'store', icon: 'email' },
+  { id: 'store-phone', title: 'Số điện thoại', description: 'Thông tin cửa hàng', tab: 'store', icon: 'phone' },
+  { id: 'general-currency', title: 'Đơn vị tiền tệ', description: 'Cài đặt chung', tab: 'general', icon: 'attach_money' },
+  { id: 'general-language', title: 'Ngôn ngữ', description: 'Cài đặt chung', tab: 'general', icon: 'language' },
+  { id: 'general-maintenance', title: 'Chế độ bảo trì', description: 'Cài đặt chung', tab: 'general', icon: 'build' },
+  { id: 'email-smtp', title: 'SMTP Host', description: 'Cài đặt Email', tab: 'email', icon: 'mail_outline' },
+  { id: 'email-notifications', title: 'Thông báo Email', description: 'Cài đặt Email', tab: 'email', icon: 'notifications' },
+  { id: 'payment-cod', title: 'Thanh toán khi nhận hàng', description: 'Cài đặt Thanh toán', tab: 'payment', icon: 'payments' },
+  { id: 'payment-bank', title: 'Chuyển khoản ngân hàng', description: 'Cài đặt Thanh toán', tab: 'payment', icon: 'account_balance' },
+  { id: 'payment-online', title: 'Thanh toán online', description: 'Cài đặt Thanh toán', tab: 'payment', icon: 'credit_card' }
 ]
 
 // Store Settings
@@ -444,6 +525,161 @@ const testEmail = () => {
   ElMessage.info('Tính năng gửi email test đang được phát triển...')
 }
 
+// Search functionality
+const handleSearch = () => {
+  if (!searchQuery.value) {
+    searchResults.value = []
+    return
+  }
+  
+  const query = searchQuery.value.toLowerCase()
+  searchResults.value = settingsIndex.filter(item => 
+    item.title.toLowerCase().includes(query) ||
+    item.description.toLowerCase().includes(query)
+  )
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  searchResults.value = []
+}
+
+const goToSetting = (result) => {
+  activeTab.value = result.tab
+  searchQuery.value = ''
+  searchResults.value = []
+  showSearch.value = false
+  ElMessage.success(`Đã chuyển đến: ${result.title}`)
+}
+
+// Export/Import Settings
+const exportSettings = () => {
+  const allSettings = {
+    store: storeSettings.value,
+    general: generalSettings.value,
+    email: emailSettings.value,
+    payment: paymentSettings.value,
+    exportedAt: new Date().toISOString(),
+    version: '1.0'
+  }
+  
+  downloadJson(allSettings, `sneakery-settings-${new Date().toISOString().split('T')[0]}.json`)
+  ElMessage.success('Đã xuất cấu hình thành công!')
+}
+
+const importSettings = () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.json'
+  
+  input.onchange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result)
+        
+        // Validate structure
+        if (!data.store || !data.general || !data.email || !data.payment) {
+          throw new Error('Invalid settings file structure')
+        }
+        
+        ElMessageBox.confirm(
+          'Bạn có chắc muốn nhập cấu hình này? Các cài đặt hiện tại sẽ bị ghi đè.',
+          'Xác nhận nhập cấu hình',
+          {
+            confirmButtonText: 'Nhập',
+            cancelButtonText: 'Hủy',
+            type: 'warning'
+          }
+        ).then(() => {
+          storeSettings.value = { ...storeSettings.value, ...data.store }
+          generalSettings.value = { ...generalSettings.value, ...data.general }
+          emailSettings.value = { ...emailSettings.value, ...data.email }
+          paymentSettings.value = { ...paymentSettings.value, ...data.payment }
+          
+          // Save to localStorage
+          const settings = {
+            store: storeSettings.value,
+            general: generalSettings.value,
+            email: emailSettings.value,
+            payment: paymentSettings.value
+          }
+          localStorage.setItem('adminSettings', JSON.stringify(settings))
+          
+          ElMessage.success('Đã nhập cấu hình thành công!')
+        }).catch(() => {
+          ElMessage.info('Đã hủy nhập cấu hình')
+        })
+      } catch (error) {
+        console.error('Error importing settings:', error)
+        ElMessage.error('Lỗi khi nhập cấu hình. Vui lòng kiểm tra file JSON.')
+      }
+    }
+    reader.readAsText(file)
+  }
+  
+  input.click()
+}
+
+// Reset to defaults
+const resetToDefaults = () => {
+  ElMessageBox.confirm(
+    'Bạn có chắc muốn khôi phục tất cả cài đặt về mặc định? Hành động này không thể hoàn tác.',
+    'Xác nhận khôi phục',
+    {
+      confirmButtonText: 'Khôi phục',
+      cancelButtonText: 'Hủy',
+      type: 'warning'
+    }
+  ).then(() => {
+    // Reset all settings to defaults
+    storeSettings.value = {
+      name: 'Sneakery Store',
+      slogan: 'Your Perfect Sneakers Destination',
+      email: 'contact@sneakerystore.com',
+      phone: '(+84) 123-456-789',
+      address: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh'
+    }
+    
+    generalSettings.value = {
+      currency: 'VND',
+      timezone: 'Asia/Ho_Chi_Minh',
+      language: 'vi',
+      productsPerPage: 12,
+      maintenanceMode: false
+    }
+    
+    emailSettings.value = {
+      smtpHost: 'smtp.gmail.com',
+      smtpPort: 587,
+      fromEmail: 'noreply@sneakerystore.com',
+      fromName: 'Sneakery Store',
+      enableNotifications: true
+    }
+    
+    paymentSettings.value = {
+      cod: { enabled: true },
+      bankTransfer: {
+        enabled: true,
+        bankName: 'Vietcombank',
+        accountNumber: '1234567890',
+        accountName: 'SNEAKERY STORE CO., LTD'
+      },
+      online: { enabled: false }
+    }
+    
+    // Clear localStorage
+    localStorage.removeItem('adminSettings')
+    
+    ElMessage.success('Đã khôi phục cài đặt mặc định thành công!')
+  }).catch(() => {
+    ElMessage.info('Đã hủy khôi phục')
+  })
+}
+
 onMounted(() => {
   loadSettings()
 })
@@ -451,18 +687,183 @@ onMounted(() => {
 
 <style scoped>
 /* ═══════════════════════════════════════════════════════════════════════
-   ADMIN SETTINGS - SETTINGS-SPECIFIC STYLES ONLY
-   All layout, headers, forms, buttons use Design System v2.0 global classes
+   ADMIN SETTINGS - Enhanced with Design System v2.0
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* Page header, form elements, buttons use global classes */
+/* Page Header Enhancements */
+.page-header {
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.title-section {
+  flex: 1;
+  min-width: 250px;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* Search Bar */
+.search-bar {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-primary);
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto var(--space-4);
+}
+
+.search-icon {
+  position: absolute;
+  left: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  font-size: 1.25rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-12) var(--space-3) var(--space-12);
+  border: 1px solid var(--border-primary);
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.search-input:hover {
+  border-color: var(--border-hover);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+}
+
+.search-clear {
+  position: absolute;
+  right: var(--space-2);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.search-clear:hover {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* Search Results */
+.search-results {
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: var(--gradient-purple-soft);
+}
+
+.search-result-item .material-icons {
+  font-size: 1.5rem;
+  color: var(--accent-primary);
+}
+
+.result-info {
+  flex: 1;
+}
+
+.result-info strong {
+  display: block;
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-1);
+}
+
+.result-info p {
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.no-results {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--text-tertiary);
+}
+
+.no-results .material-icons {
+  font-size: 3rem;
+  opacity: 0.4;
+  margin-bottom: var(--space-3);
+}
+
+.no-results p {
+  margin: 0;
+  font-size: var(--text-base);
+}
 
 /* Settings Tabs */
 .settings-tabs {
   display: flex;
   gap: var(--space-2);
-  margin-bottom: var(--space-8);
-  background: var(--bg-card);
+  margin-bottom: var(--space-6);
+  background: var(--card-bg);
   border-radius: var(--radius-xl);
   padding: var(--space-2);
   box-shadow: var(--shadow-card);
@@ -486,10 +887,29 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  position: relative;
 }
 
 .tab-btn .material-icons {
   font-size: 1.25rem;
+}
+
+.tab-label {
+  display: inline-block;
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-1-5);
+  background: var(--accent-primary);
+  color: white;
+  font-size: 10px;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-bold);
 }
 
 .tab-btn:hover {
@@ -501,6 +921,10 @@ onMounted(() => {
   background: var(--gradient-primary);
   color: white;
   box-shadow: 0 2px 12px rgba(167, 139, 250, 0.3);
+}
+
+.tab-btn.active .tab-badge {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Payment Methods */
@@ -611,6 +1035,150 @@ onMounted(() => {
   to {
     opacity: 1;
     max-height: 500px;
+  }
+}
+
+/* Slide Down Animation for Search */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Settings Sections */
+.settings-section {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.section-header {
+  margin-bottom: var(--space-6);
+}
+
+.section-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.section-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.settings-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+}
+
+.settings-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-glow-purple);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    padding: var(--space-4);
+  }
+  
+  .header-actions {
+    flex-direction: column;
+  }
+  
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .search-box {
+    max-width: 100%;
+  }
+  
+  .settings-tabs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .tab-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .settings-card {
+    padding: var(--space-4);
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
+  
+  .payment-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .toggle-switch {
+    margin-top: var(--space-3);
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: var(--text-2xl);
+  }
+  
+  .page-subtitle {
+    font-size: var(--text-xs);
+  }
+  
+  .tab-label {
+    display: none;
+  }
+  
+  .tab-btn {
+    padding: var(--space-3);
+    justify-content: center;
+  }
+  
+  .tab-btn .material-icons {
+    font-size: 1.5rem;
   }
 }
 </style>
