@@ -9,6 +9,11 @@ export const useAdminStore = defineStore('admin', () => {
   const dashboardStats = ref(null)
   const loading = ref(false)
   const error = ref(null)
+  
+  // Data states
+  const brands = ref([])
+  const categories = ref([])
+  const coupons = ref([])
 
   // ===== GETTERS =====
   const isAuthenticated = computed(() => !!adminUser.value)
@@ -324,10 +329,12 @@ export const useAdminStore = defineStore('admin', () => {
       loading.value = true
       error.value = null
       
-      const brands = await AdminService.getBrands()
-      return brands
+      const result = await AdminService.getBrands()
+      brands.value = result || []
+      return result
     } catch (err) {
       error.value = err.message || 'Lỗi khi tải danh sách thương hiệu'
+      brands.value = []
       throw err
     } finally {
       loading.value = false
@@ -385,10 +392,12 @@ export const useAdminStore = defineStore('admin', () => {
       loading.value = true
       error.value = null
       
-      const categories = await AdminService.getCategories()
-      return categories
+      const result = await AdminService.getCategories()
+      categories.value = result || []
+      return result
     } catch (err) {
       error.value = err.message || 'Lỗi khi tải danh sách danh mục'
+      categories.value = []
       throw err
     } finally {
       loading.value = false
@@ -483,6 +492,9 @@ export const useAdminStore = defineStore('admin', () => {
     dashboardStats.value = null
     loading.value = false
     error.value = null
+    brands.value = []
+    categories.value = []
+    coupons.value = []
   }
 
   return {
@@ -492,6 +504,9 @@ export const useAdminStore = defineStore('admin', () => {
     dashboardStats,
     loading,
     error,
+    brands,
+    categories,
+    coupons,
     
     // Getters
     isAuthenticated,
