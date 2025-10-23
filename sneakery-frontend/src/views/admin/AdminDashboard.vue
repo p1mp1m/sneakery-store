@@ -43,6 +43,25 @@
               <i class="material-icons">shield</i>
           Quản lý và giám sát hệ thống Sneakery Store
         </p>
+        <!-- Auto-refresh controls -->
+        <div class="refresh-controls">
+          <button @click="manualRefresh" class="btn-refresh" title="Làm mới dữ liệu">
+            <i class="material-icons">refresh</i>
+            <span>Làm mới</span>
+          </button>
+          <button 
+            @click="toggleAutoRefresh" 
+            class="btn-auto-refresh"
+            :class="{ 'active': autoRefreshEnabled }"
+            :title="autoRefreshEnabled ? 'Tắt tự động làm mới' : 'Bật tự động làm mới'"
+          >
+            <i class="material-icons">{{ autoRefreshEnabled ? 'sync' : 'sync_disabled' }}</i>
+            <span>{{ autoRefreshEnabled ? 'Tự động: Bật' : 'Tự động: Tắt' }}</span>
+          </button>
+          <span v-if="lastRefreshTime" class="last-refresh">
+            Cập nhật: {{ formatRelativeTime(lastRefreshTime) }}
+          </span>
+        </div>
       </div>
         </div>
 
@@ -391,7 +410,10 @@ const currentTime = ref('');
 const currentDate = ref('');
 const notifications = ref([]);
 const showProfileMenu = ref(false);
+const autoRefreshEnabled = ref(true);
+const lastRefreshTime = ref(null);
 let notificationIdCounter = 0;
+let autoRefreshInterval = null;
 
 const stats = ref({
   totalRevenue: 0,
@@ -548,8 +570,8 @@ const updateDateTime = () => {
   });
 };
 
-const loadDashboardData = async () => {
-  loading.value = true;
+const loadDashboardData = async (silent = false) => {
+  if (!silent) loading.value = true;
   try {
     await adminStore.fetchDashboardStats();
     stats.value = adminStore.dashboardStats || {
@@ -559,13 +581,55 @@ const loadDashboardData = async () => {
       totalUsers: 0
     };
     
-    showNotification('success', 'Thành công', 'Đã tải dữ liệu dashboard');
+    lastRefreshTime.value = new Date();
+    
+    if (!silent) {
+      showNotification('success', 'Thành công', 'Đã tải dữ liệu dashboard');
+    }
   } catch (error) {
     console.error('Error loading dashboard data:', error);
-    showNotification('error', 'Lỗi', 'Không thể tải dữ liệu dashboard');
+    if (!silent) {
+      showNotification('error', 'Lỗi', 'Không thể tải dữ liệu dashboard');
+    }
   } finally {
-    loading.value = false;
+    if (!silent) loading.value = false;
   }
+};
+
+// Auto-refresh every 30 seconds
+const startAutoRefresh = () => {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+  
+  autoRefreshInterval = setInterval(() => {
+    if (autoRefreshEnabled.value) {
+      loadDashboardData(true); // Silent refresh
+    }
+  }, 30000); // 30 seconds
+};
+
+const stopAutoRefresh = () => {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+};
+
+const toggleAutoRefresh = () => {
+  autoRefreshEnabled.value = !autoRefreshEnabled.value;
+  if (autoRefreshEnabled.value) {
+    startAutoRefresh();
+    showNotification('success', 'Tự động làm mới', 'Đã bật tự động làm mới mỗi 30 giây');
+  } else {
+    stopAutoRefresh();
+    showNotification('info', 'Tự động làm mới', 'Đã tắt tự động làm mới');
+  }
+};
+
+const manualRefresh = () => {
+  loadDashboardData();
+  showNotification('info', 'Làm mới', 'Đang tải lại dữ liệu...');
 };
 
 const changePeriod = (period) => {
@@ -619,6 +683,9 @@ onMounted(() => {
   updateDateTime();
   timeInterval = setInterval(updateDateTime, 1000);
   
+  // Start auto-refresh
+  startAutoRefresh();
+  
   // Show welcome notification
   setTimeout(() => {
     showNotification('info', 'Chào mừng!', 'Chào mừng bạn quay trở lại Admin Dashboard');
@@ -640,6 +707,8 @@ onUnmounted(() => {
   if (handleClickOutside) {
     document.removeEventListener('click', handleClickOutside);
   }
+  // Stop auto-refresh on unmount
+  stopAutoRefresh();
 });
 </script>
 
@@ -1900,6 +1969,77 @@ onUnmounted(() => {
   color: white;
   transform: scale(1.1);
   box-shadow: var(--shadow-glow-purple);
+}
+
+/* ===== REFRESH CONTROLS ===== */
+.refresh-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  background: rgba(167, 139, 250, 0.1);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.btn-refresh,
+.btn-auto-refresh {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-refresh:hover {
+  background: var(--gradient-primary);
+  border-color: var(--accent-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow-purple);
+}
+
+.btn-refresh .material-icons {
+  font-size: 18px;
+  transition: transform var(--transition-fast);
+}
+
+.btn-refresh:hover .material-icons {
+  transform: rotate(180deg);
+}
+
+.btn-auto-refresh.active {
+  background: var(--gradient-primary);
+  border-color: var(--accent-primary);
+  color: white;
+}
+
+.btn-auto-refresh .material-icons {
+  animation: spin 2s linear infinite;
+}
+
+.btn-auto-refresh:not(.active) .material-icons {
+  animation: none;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.last-refresh {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-left: auto;
 }
 
 /* ===== RESPONSIVE ===== */

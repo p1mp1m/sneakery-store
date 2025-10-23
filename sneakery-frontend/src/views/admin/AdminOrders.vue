@@ -182,6 +182,10 @@
           <p class="text-muted">Xem chi tiết đơn hàng (API chi tiết sẽ được tích hợp sau)</p>
           </div>
         <div class="modal-footer">
+          <button @click="handlePrintInvoice(selectedOrder)" class="btn btn-primary">
+            <i class="material-icons">print</i>
+            In hóa đơn
+          </button>
           <button @click="showDetailModal = false" class="btn btn-secondary">Đóng</button>
       </div>
     </div>
@@ -209,6 +213,8 @@ import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import * as XLSX from 'xlsx'
+import { printInvoice } from '@/utils/pdfGenerator'
+import { downloadCsv, prepareOrdersForExport } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
 
@@ -450,6 +456,21 @@ const getStatusLabel = (status) => {
 const viewOrderDetail = (order) => {
   selectedOrder.value = order
   showDetailModal.value = true
+}
+
+const handlePrintInvoice = (order) => {
+  if (!order) {
+    ElMessage.warning('Không có thông tin đơn hàng để in')
+    return
+  }
+  
+  try {
+    printInvoice(order)
+    ElMessage.success('Đang mở cửa sổ in hóa đơn...')
+  } catch (error) {
+    console.error('Error printing invoice:', error)
+    ElMessage.error('Không thể in hóa đơn. Vui lòng thử lại!')
+  }
 }
 
 const changePage = (page) => {

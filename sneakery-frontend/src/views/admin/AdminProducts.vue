@@ -231,11 +231,36 @@
                   class="checkbox-input"
                 />
               </th>
-              <th>Tên sản phẩm</th>
-              <th>Thương hiệu</th>
-              <th>Số variants</th>
-              <th>Tồn kho</th>
-              <th>Trạng thái</th>
+              <th class="sortable" @click="sortColumn('name')">
+                <div class="th-content">
+                  <span>Tên sản phẩm</span>
+                  <i class="material-icons sort-icon">{{ getSortIcon('name') }}</i>
+                </div>
+              </th>
+              <th class="sortable" @click="sortColumn('brandName')">
+                <div class="th-content">
+                  <span>Thương hiệu</span>
+                  <i class="material-icons sort-icon">{{ getSortIcon('brandName') }}</i>
+                </div>
+              </th>
+              <th class="sortable" @click="sortColumn('variantCount')">
+                <div class="th-content">
+                  <span>Số variants</span>
+                  <i class="material-icons sort-icon">{{ getSortIcon('variantCount') }}</i>
+                </div>
+              </th>
+              <th class="sortable" @click="sortColumn('stockQuantity')">
+                <div class="th-content">
+                  <span>Tồn kho</span>
+                  <i class="material-icons sort-icon">{{ getSortIcon('stockQuantity') }}</i>
+                </div>
+              </th>
+              <th class="sortable" @click="sortColumn('isActive')">
+                <div class="th-content">
+                  <span>Trạng thái</span>
+                  <i class="material-icons sort-icon">{{ getSortIcon('isActive') }}</i>
+                </div>
+              </th>
               <th class="text-center">Thao tác</th>
             </tr>
           </thead>
@@ -719,6 +744,8 @@ const categories = ref([])
 const stats = ref(null)
 const loading = ref(false)
 const currentPage = ref(0)
+const sortBy = ref('id') // Default sort column
+const sortOrder = ref('desc') // 'asc' or 'desc'
 const pageSize = ref(10)
 const totalItems = ref(0)
 const showModal = ref(false)
@@ -801,6 +828,42 @@ const getStockText = (product) => {
   return 'Còn hàng'
 }
 
+// ===== SORT FUNCTIONALITY =====
+const sortColumn = (column) => {
+  if (sortBy.value === column) {
+    // Toggle sort order if clicking same column
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    // Set new column and default to ascending
+    sortBy.value = column
+    sortOrder.value = 'asc'
+  }
+  
+  // Sort products locally (for better UX, could also fetch from server with sort params)
+  products.value.sort((a, b) => {
+    let aVal = a[column]
+    let bVal = b[column]
+    
+    // Handle null/undefined
+    if (aVal == null) aVal = ''
+    if (bVal == null) bVal = ''
+    
+    // String comparison
+    if (typeof aVal === 'string') {
+      aVal = aVal.toLowerCase()
+      bVal = bVal.toLowerCase()
+    }
+    
+    const comparison = aVal > bVal ? 1 : aVal < bVal ? -1 : 0
+    return sortOrder.value === 'asc' ? comparison : -comparison
+  })
+}
+
+const getSortIcon = (column) => {
+  if (sortBy.value !== column) return 'unfold_more'
+  return sortOrder.value === 'asc' ? 'arrow_upward' : 'arrow_downward'
+}
+
 // ===== FETCH DATA =====
 const fetchProducts = async () => {
   try {
@@ -809,6 +872,14 @@ const fetchProducts = async () => {
     const result = await adminStore.fetchProducts(currentPage.value, pageSize.value, filters.value)
     products.value = result.content || []
     totalItems.value = result.totalElements || 0
+    
+    // Apply current sort after fetching
+    if (sortBy.value) {
+      sortColumn(sortBy.value)
+      // Reset sort order to maintain current state
+      sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+      sortColumn(sortBy.value)
+    }
   } catch (error) {
     console.error('Lỗi khi tải danh sách sản phẩm:', error)
     ElMessage.error('Không thể tải danh sách sản phẩm!')
@@ -1604,6 +1675,34 @@ onMounted(async () => {
 
 .products-table thead {
   background: var(--table-header-bg);
+}
+
+/* Sortable table headers */
+.products-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-fast);
+}
+
+.products-table th.sortable:hover {
+  background: rgba(167, 139, 250, 0.15);
+}
+
+.products-table th.sortable .th-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.products-table th.sortable .sort-icon {
+  font-size: 18px;
+  color: var(--text-tertiary);
+  transition: var(--transition-fast);
+}
+
+.products-table th.sortable:hover .sort-icon {
+  color: var(--accent-primary);
 }
 
 /* Table headers use global admin-tables.css styles */
