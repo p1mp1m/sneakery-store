@@ -136,7 +136,10 @@ const adminRoutes = [
     children: [
       { path: '/admin/products', name: 'AdminProducts', meta: { title: 'Danh sách sản phẩm', icon: 'list' } },
       { path: '/admin/product-variants', name: 'AdminProductVariants', meta: { title: 'Quản lý biến thể', icon: 'style' } },
-      { path: '/admin/categories', name: 'AdminCategories', meta: { title: 'Thuộc tính sản phẩm', icon: 'tune' } }
+      { path: '/admin/categories', name: 'AdminCategories', meta: { title: 'Quản lí danh mục', icon: 'category' } },
+      { path: '/admin/brands', name: 'AdminBrands', meta: { title: 'Quản lý thương hiệu', icon: 'local_offer' } },
+      { path: '/admin/reviews', name: 'AdminReviews', meta: { title: 'Quản lí đánh giá', icon: 'star_rate' } },
+      { path: '/admin/flash-sales', name: 'AdminFlashSales', meta: { title: 'Flash Sale', icon: 'flash_on' } }
     ]
   },
   { 

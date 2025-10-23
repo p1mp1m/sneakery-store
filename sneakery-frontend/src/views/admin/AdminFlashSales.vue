@@ -1,19 +1,19 @@
 <template>
-  <div class="admin-brands">
+  <div class="admin-flash-sales">
     <!-- ===== PAGE HEADER ===== -->
     <div class="page-header">
       <div class="header-content">
         <div class="title-section">
           <h1 class="page-title">
-            <span class="material-icons">local_offer</span>
-            Quản lý Thương hiệu
+            <span class="material-icons">flash_on</span>
+            Quản lí Flash Sale
           </h1>
-          <p class="page-subtitle">Quản lý danh sách thương hiệu sản phẩm</p>
+          <p class="page-subtitle">Quản lý chương trình Flash Sale giảm giá sốc</p>
         </div>
         <div class="header-actions">
           <button class="btn btn-primary" @click="openCreateModal">
             <span class="material-icons">add</span>
-            Thêm Thương hiệu
+            Tạo Flash Sale
           </button>
         </div>
       </div>
@@ -23,31 +23,41 @@
     <div class="stats-grid">
       <div class="stats-card success">
         <div class="stats-icon">
-          <span class="material-icons">check_circle</span>
+          <span class="material-icons">bolt</span>
         </div>
         <div class="stats-content">
-          <div class="stats-value">{{ activeBrandsCount }}</div>
-          <div class="stats-label">ĐANG HOẠT ĐỘNG</div>
+          <div class="stats-value">{{ activeFlashSalesCount }}</div>
+          <div class="stats-label">ĐANG DIỄN RA</div>
         </div>
       </div>
       
       <div class="stats-card warning">
         <div class="stats-icon">
-          <span class="material-icons">pause_circle</span>
+          <span class="material-icons">schedule</span>
         </div>
         <div class="stats-content">
-          <div class="stats-value">{{ inactiveBrandsCount }}</div>
-          <div class="stats-label">TẠM NGƯNG</div>
+          <div class="stats-value">{{ upcomingFlashSalesCount }}</div>
+          <div class="stats-label">SẮP DIỄN RA</div>
+        </div>
+      </div>
+      
+      <div class="stats-card danger">
+        <div class="stats-icon">
+          <span class="material-icons">event_busy</span>
+        </div>
+        <div class="stats-content">
+          <div class="stats-value">{{ expiredFlashSalesCount }}</div>
+          <div class="stats-label">ĐÃ KẾT THÚC</div>
         </div>
       </div>
       
       <div class="stats-card info">
         <div class="stats-icon">
-          <span class="material-icons">inventory</span>
+          <span class="material-icons">shopping_cart</span>
         </div>
         <div class="stats-content">
-          <div class="stats-value">{{ brands.length }}</div>
-          <div class="stats-label">TỔNG THƯƠNG HIỆU</div>
+          <div class="stats-value">{{ totalProductsInSale }}</div>
+          <div class="stats-label">SẢN PHẨM THAM GIA</div>
         </div>
       </div>
     </div>
@@ -64,7 +74,7 @@
             type="text" 
             class="filter-input" 
             v-model="searchKeyword"
-            placeholder="Tìm theo tên thương hiệu..."
+            placeholder="Tìm theo tên sản phẩm..."
           />
         </div>
         
@@ -75,8 +85,9 @@
           </label>
           <select class="filter-select" v-model="filterStatus">
             <option value="all">Tất cả</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="inactive">Tạm ngưng</option>
+            <option value="active">Đang diễn ra</option>
+            <option value="upcoming">Sắp diễn ra</option>
+            <option value="expired">Đã kết thúc</option>
           </select>
         </div>
 
@@ -96,90 +107,97 @@
     </div>
 
     <!-- ===== EMPTY STATE ===== -->
-    <div v-else-if="filteredBrands.length === 0" class="empty-state">
-      <span class="material-icons empty-icon">local_offer</span>
-      <h3 class="empty-title">Không có thương hiệu nào</h3>
-      <p class="empty-description">Bắt đầu thêm thương hiệu đầu tiên cho cửa hàng của bạn</p>
+    <div v-else-if="filteredFlashSales.length === 0" class="empty-state">
+      <span class="material-icons empty-icon">flash_on</span>
+      <h3 class="empty-title">Chưa có Flash Sale nào</h3>
+      <p class="empty-description">Tạo chương trình Flash Sale đầu tiên để thu hút khách hàng</p>
       <button class="btn btn-primary" @click="openCreateModal">
         <span class="material-icons">add</span>
-        Thêm Thương hiệu
+        Tạo Flash Sale
       </button>
     </div>
 
-    <!-- ===== BRANDS TABLE ===== -->
+    <!-- ===== FLASH SALES TABLE ===== -->
     <div v-else class="table-container">
-      <table class="brands-table">
+      <table class="flash-sales-table">
         <thead>
           <tr>
             <th style="width: 80px;">ID</th>
-            <th style="width: 100px;">Logo</th>
-            <th>Tên thương hiệu</th>
-            <th>Slug</th>
-            <th style="width: 200px;">Website</th>
-            <th style="width: 150px;">Trạng thái</th>
-            <th style="width: 180px;">Ngày tạo</th>
+            <th>Sản phẩm</th>
+            <th style="width: 120px;">Giá gốc</th>
+            <th style="width: 100px;">Giảm giá</th>
+            <th style="width: 120px;">Giá Flash Sale</th>
+            <th style="width: 100px;">Số lượng</th>
+            <th style="width: 180px;">Thời gian</th>
+            <th style="width: 130px;">Trạng thái</th>
             <th style="width: 150px;">Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="brand in paginatedBrands" :key="brand.id">
-            <td>{{ brand.id }}</td>
+          <tr v-for="sale in paginatedFlashSales" :key="sale.id">
+            <td>{{ sale.id }}</td>
             <td>
-              <div class="brand-logo">
+              <div class="product-cell">
                 <img 
-                  v-if="brand.logoUrl" 
-                  :src="brand.logoUrl" 
-                  :alt="brand.name"
+                  :src="sale.productImage" 
+                  :alt="sale.productName"
+                  class="product-thumb"
                   @error="handleImageError"
                 />
-                <div v-else class="logo-placeholder">
-                  <span class="material-icons">local_offer</span>
+                <div class="product-info">
+                  <div class="product-name">{{ sale.productName }}</div>
+                  <div class="product-brand">{{ sale.brandName }}</div>
                 </div>
               </div>
             </td>
             <td>
-              <div class="brand-name">
-                <strong>{{ brand.name }}</strong>
-                <p v-if="brand.description" class="brand-desc">{{ truncateText(brand.description, 50) }}</p>
+              <div class="price original-price">{{ formatCurrency(sale.originalPrice) }}</div>
+            </td>
+            <td>
+              <div class="discount-badge">-{{ sale.discountPercentage }}%</div>
+            </td>
+            <td>
+              <div class="price flash-price">{{ formatCurrency(sale.flashSalePrice) }}</div>
+            </td>
+            <td>
+              <div class="quantity-info">
+                <span class="quantity-value">{{ sale.quantity }}</span>
+                <span class="quantity-label">sản phẩm</span>
               </div>
             </td>
             <td>
-              <code class="slug-code">{{ brand.slug }}</code>
-            </td>
-            <td>
-              <a 
-                v-if="brand.websiteUrl" 
-                :href="brand.websiteUrl" 
-                target="_blank" 
-                class="website-link"
-              >
-                <span class="material-icons">link</span>
-                {{ truncateText(brand.websiteUrl, 25) }}
-              </a>
-              <span v-else class="text-muted">—</span>
+              <div class="time-info">
+                <div class="time-row">
+                  <span class="material-icons time-icon">play_arrow</span>
+                  {{ formatDateTime(sale.startTime) }}
+                </div>
+                <div class="time-row">
+                  <span class="material-icons time-icon">stop</span>
+                  {{ formatDateTime(sale.endTime) }}
+                </div>
+              </div>
             </td>
             <td>
               <span 
                 class="status-badge" 
-                :class="brand.isActive ? 'status-active' : 'status-inactive'"
+                :class="getStatusClass(sale)"
               >
-                <span class="material-icons">{{ brand.isActive ? 'check_circle' : 'cancel' }}</span>
-                {{ brand.isActive ? 'Hoạt động' : 'Tạm ngưng' }}
+                <span class="material-icons">{{ getStatusIcon(sale) }}</span>
+                {{ getStatusText(sale) }}
               </span>
             </td>
-            <td>{{ formatDate(brand.createdAt) }}</td>
             <td>
               <div class="action-buttons">
                 <button 
                   class="btn-icon btn-edit" 
-                  @click="openEditModal(brand)"
+                  @click="openEditModal(sale)"
                   title="Chỉnh sửa"
                 >
                   <span class="material-icons">edit</span>
                 </button>
                 <button 
                   class="btn-icon btn-delete" 
-                  @click="confirmDelete(brand)"
+                  @click="confirmDelete(sale)"
                   title="Xóa"
                 >
                   <span class="material-icons">delete</span>
@@ -222,7 +240,7 @@
         <div class="modal-header">
           <h2 class="modal-title">
             <span class="material-icons">{{ isEditMode ? 'edit' : 'add' }}</span>
-            {{ isEditMode ? 'Chỉnh sửa Thương hiệu' : 'Thêm Thương hiệu mới' }}
+            {{ isEditMode ? 'Chỉnh sửa Flash Sale' : 'Tạo Flash Sale mới' }}
           </h2>
           <button class="modal-close" @click="closeModal">
             <span class="material-icons">close</span>
@@ -230,69 +248,79 @@
         </div>
         
         <div class="modal-body">
-          <form @submit.prevent="saveBrand">
+          <form @submit.prevent="saveFlashSale">
+            <div class="form-group">
+              <label class="form-label required">Sản phẩm</label>
+              <select class="form-input" v-model="formData.productId" required>
+                <option value="">-- Chọn sản phẩm --</option>
+                <option v-for="product in mockProducts" :key="product.id" :value="product.id">
+                  {{ product.name }} ({{ formatCurrency(product.price) }})
+                </option>
+              </select>
+            </div>
+
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label required">Tên thương hiệu</label>
+                <label class="form-label required">Giảm giá (%)</label>
                 <input 
-                  type="text" 
+                  type="number" 
                   class="form-input" 
-                  v-model="formData.name"
-                  placeholder="VD: Nike, Adidas..."
+                  v-model.number="formData.discountPercentage"
+                  placeholder="VD: 50"
+                  min="1"
+                  max="99"
                   required
                 />
               </div>
               
               <div class="form-group">
-                <label class="form-label required">Slug</label>
+                <label class="form-label required">Số lượng</label>
                 <input 
-                  type="text" 
+                  type="number" 
                   class="form-input" 
-                  v-model="formData.slug"
-                  placeholder="VD: nike, adidas..."
+                  v-model.number="formData.quantity"
+                  placeholder="VD: 100"
+                  min="1"
                   required
                 />
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">URL Logo</label>
-              <input 
-                type="url" 
-                class="form-input" 
-                v-model="formData.logoUrl"
-                placeholder="https://example.com/logo.png"
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Website</label>
-              <input 
-                type="url" 
-                class="form-input" 
-                v-model="formData.websiteUrl"
-                placeholder="https://example.com"
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Mô tả</label>
-              <textarea 
-                class="form-textarea" 
-                v-model="formData.description"
-                placeholder="Nhập mô tả về thương hiệu..."
-                rows="4"
-              ></textarea>
-            </div>
-
-            <div class="form-group">
-              <label class="form-checkbox">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label required">Thời gian bắt đầu</label>
                 <input 
-                  type="checkbox" 
-                  v-model="formData.isActive"
+                  type="datetime-local" 
+                  class="form-input" 
+                  v-model="formData.startTime"
+                  required
                 />
-                <span>Kích hoạt thương hiệu</span>
-              </label>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label required">Thời gian kết thúc</label>
+                <input 
+                  type="datetime-local" 
+                  class="form-input" 
+                  v-model="formData.endTime"
+                  required
+                />
+              </div>
+            </div>
+
+            <div v-if="formData.productId && formData.discountPercentage" class="price-preview">
+              <div class="preview-row">
+                <span>Giá gốc:</span>
+                <strong>{{ formatCurrency(selectedProduct?.price || 0) }}</strong>
+              </div>
+              <div class="preview-row discount-row">
+                <span>Giảm {{ formData.discountPercentage }}%:</span>
+                <strong class="discount-amount">-{{ formatCurrency(discountAmount) }}</strong>
+              </div>
+              <div class="preview-row total-row">
+                <span>Giá Flash Sale:</span>
+                <strong class="flash-sale-price">{{ formatCurrency(flashSalePrice) }}</strong>
+              </div>
             </div>
 
             <div class="modal-actions">
@@ -324,7 +352,7 @@
         </div>
         
         <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa thương hiệu <strong>{{ brandToDelete?.name }}</strong>?</p>
+          <p>Bạn có chắc chắn muốn xóa Flash Sale này?</p>
           <p class="text-muted">Hành động này không thể hoàn tác.</p>
           
           <div class="modal-actions">
@@ -332,7 +360,7 @@
               <span class="material-icons">close</span>
               Hủy
             </button>
-            <button class="btn btn-danger" @click="deleteBrand" :disabled="deleting">
+            <button class="btn btn-danger" @click="deleteFlashSale" :disabled="deleting">
               <span class="material-icons">{{ deleting ? 'hourglass_empty' : 'delete' }}</span>
               {{ deleting ? 'Đang xóa...' : 'Xóa' }}
             </button>
@@ -345,106 +373,228 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useAdminStore } from '@/stores/admin'
-
-const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(false)
-const brands = ref([])
 const searchKeyword = ref('')
 const filterStatus = ref('all')
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const isEditMode = ref(false)
-const brandToDelete = ref(null)
+const saleToDelete = ref(null)
 const currentPage = ref(1)
 const itemsPerPage = 10
+
+// Mock products
+const mockProducts = ref([
+  { id: 1, name: 'Nike Air Force 1', price: 2500000, brandName: 'Nike' },
+  { id: 2, name: 'Adidas Ultraboost', price: 4500000, brandName: 'Adidas' },
+  { id: 3, name: 'Converse Chuck Taylor', price: 1500000, brandName: 'Converse' },
+  { id: 4, name: 'Puma Suede Classic', price: 1800000, brandName: 'Puma' }
+])
 
 // Form data
 const formData = ref({
   id: null,
-  name: '',
-  slug: '',
-  logoUrl: '',
-  websiteUrl: '',
-  description: '',
-  isActive: true
+  productId: '',
+  discountPercentage: 0,
+  quantity: 0,
+  startTime: '',
+  endTime: ''
 })
 
+// Mock flash sales data
+const mockFlashSales = ref([
+  {
+    id: 1,
+    productId: 1,
+    productName: 'Nike Air Force 1',
+    productImage: 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png',
+    brandName: 'Nike',
+    originalPrice: 2500000,
+    discountPercentage: 30,
+    flashSalePrice: 1750000,
+    quantity: 50,
+    startTime: '2024-01-25T08:00:00',
+    endTime: '2024-01-25T20:00:00',
+    isActive: true
+  },
+  {
+    id: 2,
+    productId: 2,
+    productName: 'Adidas Ultraboost',
+    productImage: 'https://assets.adidas.com/images/w_600,f_auto,q_auto/1c7e3d5f5b1b4e7ba3b5af8d0126c1b7_9366/Ultraboost_Light_Shoes_White_GY9350_01_standard.jpg',
+    brandName: 'Adidas',
+    originalPrice: 4500000,
+    discountPercentage: 40,
+    flashSalePrice: 2700000,
+    quantity: 30,
+    startTime: '2024-01-26T10:00:00',
+    endTime: '2024-01-26T22:00:00',
+    isActive: true
+  },
+  {
+    id: 3,
+    productId: 3,
+    productName: 'Converse Chuck Taylor',
+    productImage: 'https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw3f7e9c3e/images/a_107/M9160_A_107X1.jpg',
+    brandName: 'Converse',
+    originalPrice: 1500000,
+    discountPercentage: 25,
+    flashSalePrice: 1125000,
+    quantity: 100,
+    startTime: '2024-01-20T00:00:00',
+    endTime: '2024-01-22T23:59:59',
+    isActive: false
+  }
+])
+
 // Computed
-const filteredBrands = computed(() => {
-  let result = brands.value
+const selectedProduct = computed(() => {
+  return mockProducts.value.find(p => p.id === formData.value.productId)
+})
+
+const discountAmount = computed(() => {
+  if (!selectedProduct.value || !formData.value.discountPercentage) return 0
+  return (selectedProduct.value.price * formData.value.discountPercentage) / 100
+})
+
+const flashSalePrice = computed(() => {
+  if (!selectedProduct.value || !formData.value.discountPercentage) return 0
+  return selectedProduct.value.price - discountAmount.value
+})
+
+const filteredFlashSales = computed(() => {
+  let result = mockFlashSales.value
 
   // Filter by search
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
-    result = result.filter(brand => 
-      brand.name.toLowerCase().includes(keyword) ||
-      brand.slug.toLowerCase().includes(keyword)
+    result = result.filter(sale => 
+      sale.productName.toLowerCase().includes(keyword) ||
+      sale.brandName.toLowerCase().includes(keyword)
     )
   }
 
   // Filter by status
   if (filterStatus.value !== 'all') {
-    const isActive = filterStatus.value === 'active'
-    result = result.filter(brand => brand.isActive === isActive)
+    const now = new Date()
+    result = result.filter(sale => {
+      const start = new Date(sale.startTime)
+      const end = new Date(sale.endTime)
+      
+      if (filterStatus.value === 'active') {
+        return now >= start && now <= end && sale.isActive
+      } else if (filterStatus.value === 'upcoming') {
+        return now < start && sale.isActive
+      } else if (filterStatus.value === 'expired') {
+        return (now > end || !sale.isActive)
+      }
+      return true
+    })
   }
 
   return result
 })
 
-const paginatedBrands = computed(() => {
+const paginatedFlashSales = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredBrands.value.slice(start, end)
+  return filteredFlashSales.value.slice(start, end)
 })
 
 const totalPages = computed(() => {
-  return Math.ceil(filteredBrands.value.length / itemsPerPage)
+  return Math.ceil(filteredFlashSales.value.length / itemsPerPage)
 })
 
-const activeBrandsCount = computed(() => {
-  return brands.value.filter(b => b.isActive).length
+const activeFlashSalesCount = computed(() => {
+  const now = new Date()
+  return mockFlashSales.value.filter(sale => {
+    const start = new Date(sale.startTime)
+    const end = new Date(sale.endTime)
+    return now >= start && now <= end && sale.isActive
+  }).length
 })
 
-const inactiveBrandsCount = computed(() => {
-  return brands.value.filter(b => !b.isActive).length
+const upcomingFlashSalesCount = computed(() => {
+  const now = new Date()
+  return mockFlashSales.value.filter(sale => {
+    const start = new Date(sale.startTime)
+    return now < start && sale.isActive
+  }).length
+})
+
+const expiredFlashSalesCount = computed(() => {
+  const now = new Date()
+  return mockFlashSales.value.filter(sale => {
+    const end = new Date(sale.endTime)
+    return now > end || !sale.isActive
+  }).length
+})
+
+const totalProductsInSale = computed(() => {
+  return new Set(mockFlashSales.value.map(s => s.productId)).size
 })
 
 // Methods
-const fetchBrands = async () => {
-  loading.value = true
-  try {
-    await adminStore.fetchBrands()
-    brands.value = adminStore.brands
-  } catch (error) {
-    console.error('Error fetching brands:', error)
-    alert('Lỗi khi tải danh sách thương hiệu')
-  } finally {
-    loading.value = false
-  }
+const getStatusClass = (sale) => {
+  const now = new Date()
+  const start = new Date(sale.startTime)
+  const end = new Date(sale.endTime)
+  
+  if (!sale.isActive || now > end) return 'status-expired'
+  if (now >= start && now <= end) return 'status-active'
+  if (now < start) return 'status-upcoming'
+  return 'status-expired'
+}
+
+const getStatusIcon = (sale) => {
+  const now = new Date()
+  const start = new Date(sale.startTime)
+  const end = new Date(sale.endTime)
+  
+  if (!sale.isActive || now > end) return 'cancel'
+  if (now >= start && now <= end) return 'bolt'
+  if (now < start) return 'schedule'
+  return 'cancel'
+}
+
+const getStatusText = (sale) => {
+  const now = new Date()
+  const start = new Date(sale.startTime)
+  const end = new Date(sale.endTime)
+  
+  if (!sale.isActive || now > end) return 'Đã kết thúc'
+  if (now >= start && now <= end) return 'Đang diễn ra'
+  if (now < start) return 'Sắp diễn ra'
+  return 'Đã kết thúc'
 }
 
 const openCreateModal = () => {
   isEditMode.value = false
   formData.value = {
     id: null,
-    name: '',
-    slug: '',
-    logoUrl: '',
-    websiteUrl: '',
-    description: '',
-    isActive: true
+    productId: '',
+    discountPercentage: 0,
+    quantity: 0,
+    startTime: '',
+    endTime: ''
   }
   showModal.value = true
 }
 
-const openEditModal = (brand) => {
+const openEditModal = (sale) => {
   isEditMode.value = true
-  formData.value = { ...brand }
+  formData.value = {
+    id: sale.id,
+    productId: sale.productId,
+    discountPercentage: sale.discountPercentage,
+    quantity: sale.quantity,
+    startTime: sale.startTime.slice(0, 16),
+    endTime: sale.endTime.slice(0, 16)
+  }
   showModal.value = true
 }
 
@@ -452,50 +602,82 @@ const closeModal = () => {
   showModal.value = false
   formData.value = {
     id: null,
-    name: '',
-    slug: '',
-    logoUrl: '',
-    websiteUrl: '',
-    description: '',
-    isActive: true
+    productId: '',
+    discountPercentage: 0,
+    quantity: 0,
+    startTime: '',
+    endTime: ''
   }
 }
 
-const saveBrand = async () => {
+const saveFlashSale = async () => {
   saving.value = true
   try {
+    // TODO: Call API to save flash sale
     if (isEditMode.value) {
-      await adminStore.updateBrand(formData.value.id, formData.value)
+      const index = mockFlashSales.value.findIndex(s => s.id === formData.value.id)
+      if (index > -1) {
+        const product = selectedProduct.value
+        mockFlashSales.value[index] = {
+          ...mockFlashSales.value[index],
+          productId: formData.value.productId,
+          productName: product.name,
+          brandName: product.brandName,
+          originalPrice: product.price,
+          discountPercentage: formData.value.discountPercentage,
+          flashSalePrice: flashSalePrice.value,
+          quantity: formData.value.quantity,
+          startTime: formData.value.startTime + ':00',
+          endTime: formData.value.endTime + ':00'
+        }
+      }
     } else {
-      await adminStore.createBrand(formData.value)
+      const product = selectedProduct.value
+      const newSale = {
+        id: mockFlashSales.value.length + 1,
+        productId: formData.value.productId,
+        productName: product.name,
+        productImage: 'https://via.placeholder.com/200',
+        brandName: product.brandName,
+        originalPrice: product.price,
+        discountPercentage: formData.value.discountPercentage,
+        flashSalePrice: flashSalePrice.value,
+        quantity: formData.value.quantity,
+        startTime: formData.value.startTime + ':00',
+        endTime: formData.value.endTime + ':00',
+        isActive: true
+      }
+      mockFlashSales.value.push(newSale)
     }
-    await fetchBrands()
     closeModal()
-    alert(`${isEditMode.value ? 'Cập nhật' : 'Thêm'} thương hiệu thành công!`)
+    alert(`${isEditMode.value ? 'Cập nhật' : 'Tạo'} Flash Sale thành công!`)
   } catch (error) {
-    console.error('Error saving brand:', error)
-    alert('Lỗi khi lưu thương hiệu')
+    console.error('Error saving flash sale:', error)
+    alert('Lỗi khi lưu Flash Sale')
   } finally {
     saving.value = false
   }
 }
 
-const confirmDelete = (brand) => {
-  brandToDelete.value = brand
+const confirmDelete = (sale) => {
+  saleToDelete.value = sale
   showDeleteModal.value = true
 }
 
-const deleteBrand = async () => {
+const deleteFlashSale = async () => {
   deleting.value = true
   try {
-    await adminStore.deleteBrand(brandToDelete.value.id)
-    await fetchBrands()
+    // TODO: Call API to delete flash sale
+    const index = mockFlashSales.value.findIndex(s => s.id === saleToDelete.value.id)
+    if (index > -1) {
+      mockFlashSales.value.splice(index, 1)
+    }
     showDeleteModal.value = false
-    brandToDelete.value = null
-    alert('Xóa thương hiệu thành công!')
+    saleToDelete.value = null
+    alert('Xóa Flash Sale thành công!')
   } catch (error) {
-    console.error('Error deleting brand:', error)
-    alert('Lỗi khi xóa thương hiệu')
+    console.error('Error deleting flash sale:', error)
+    alert('Lỗi khi xóa Flash Sale')
   } finally {
     deleting.value = false
   }
@@ -507,32 +689,44 @@ const resetFilters = () => {
   currentPage.value = 1
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return '—'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('vi-VN')
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(value)
 }
 
-const truncateText = (text, maxLength) => {
-  if (!text) return ''
-  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+const formatDateTime = (dateString) => {
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  return date.toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 const handleImageError = (e) => {
-  e.target.style.display = 'none'
+  e.target.src = 'https://via.placeholder.com/200?text=No+Image'
 }
 
 // Lifecycle
 onMounted(() => {
-  fetchBrands()
+  loading.value = true
+  // TODO: Fetch flash sales from API
+  setTimeout(() => {
+    loading.value = false
+  }, 500)
 })
 </script>
 
 <style scoped>
 /* ═══ PAGE LAYOUT ═══ */
-.admin-brands {
+.admin-flash-sales {
   padding: var(--space-8);
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   min-height: calc(100vh - 4rem);
 }
@@ -572,13 +766,19 @@ onMounted(() => {
 
 .page-title .material-icons {
   font-size: 2rem;
-  color: var(--accent-primary);
-  animation: pulse 2s ease-in-out infinite;
+  color: #fbbf24;
+  animation: flashPulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+@keyframes flashPulse {
+  0%, 100% { 
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6));
+  }
+  50% { 
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.9));
+  }
 }
 
 .page-subtitle {
@@ -595,7 +795,7 @@ onMounted(() => {
 /* ═══ STATS GRID ═══ */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: var(--space-6);
   margin-bottom: var(--space-8);
 }
@@ -645,6 +845,10 @@ onMounted(() => {
   background: var(--gradient-warning);
 }
 
+.stats-card.danger::before {
+  background: var(--gradient-danger);
+}
+
 .stats-card.info::before {
   background: var(--gradient-info);
 }
@@ -668,6 +872,11 @@ onMounted(() => {
 .stats-card.warning .stats-icon {
   background: var(--warning-bg);
   color: var(--warning-text);
+}
+
+.stats-card.danger .stats-icon {
+  background: var(--error-bg);
+  color: var(--error-text);
 }
 
 .stats-card.info .stats-icon {
@@ -783,8 +992,8 @@ onMounted(() => {
 .loading-spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid rgba(167, 139, 250, 0.2);
-  border-top-color: var(--accent-primary);
+  border: 4px solid rgba(251, 191, 36, 0.2);
+  border-top-color: #fbbf24;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto var(--space-4);
@@ -811,7 +1020,7 @@ onMounted(() => {
 
 .empty-icon {
   font-size: 80px;
-  color: var(--text-tertiary);
+  color: #fbbf24;
   opacity: 0.5;
   margin-bottom: var(--space-4);
 }
@@ -840,16 +1049,16 @@ onMounted(() => {
   -webkit-backdrop-filter: blur(10px);
 }
 
-.brands-table {
+.flash-sales-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.brands-table thead {
-  background: var(--gradient-primary);
+.flash-sales-table thead {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
-.brands-table th {
+.flash-sales-table th {
   padding: var(--space-4);
   text-align: left;
   font-weight: var(--font-semibold);
@@ -859,97 +1068,108 @@ onMounted(() => {
   letter-spacing: 0.05em;
 }
 
-.brands-table tbody tr {
+.flash-sales-table tbody tr {
   border-bottom: 1px solid var(--border-primary);
   transition: all var(--transition-fast);
 }
 
-.brands-table tbody tr:hover {
-  background: var(--gradient-purple-soft);
+.flash-sales-table tbody tr:hover {
+  background: rgba(251, 191, 36, 0.1);
   transform: translateX(2px);
 }
 
-.brands-table td {
+.flash-sales-table td {
   padding: var(--space-4);
   font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
 /* ═══ TABLE CONTENT ═══ */
-.brand-logo {
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.product-thumb {
   width: 60px;
   height: 60px;
   border-radius: var(--radius-md);
-  overflow: hidden;
+  object-fit: cover;
   border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.brand-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.product-info {
+  flex: 1;
 }
 
-.logo-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--gradient-purple-soft);
-}
-
-.logo-placeholder .material-icons {
-  font-size: 28px;
-  color: var(--accent-primary);
-}
-
-.brand-name strong {
+.product-name {
+  font-weight: var(--font-semibold);
   color: var(--text-primary);
-  font-size: var(--text-base);
+  margin-bottom: var(--space-1);
 }
 
-.brand-desc {
-  margin: var(--space-1) 0 0 0;
+.product-brand {
   font-size: var(--text-xs);
   color: var(--text-tertiary);
 }
 
-.slug-code {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  background: var(--bg-tertiary);
-  color: var(--accent-primary);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-primary);
+.price {
+  font-weight: var(--font-bold);
+  font-size: var(--text-base);
 }
 
-.website-link {
-  display: inline-flex;
+.original-price {
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
+.flash-price {
+  color: #fbbf24;
+  font-size: var(--text-lg);
+}
+
+.discount-badge {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: var(--color-white);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-bold);
+  font-size: var(--text-sm);
+  display: inline-block;
+}
+
+.quantity-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.quantity-value {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.quantity-label {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.time-info {
+  font-size: var(--text-xs);
+}
+
+.time-row {
+  display: flex;
   align-items: center;
   gap: var(--space-1);
-  color: var(--accent-primary);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  transition: all var(--transition-fast);
+  margin-bottom: var(--space-1);
 }
 
-.website-link:hover {
-  color: var(--accent-light);
-  text-decoration: underline;
-}
-
-.website-link .material-icons {
-  font-size: 16px;
-}
-
-.text-muted {
-  color: var(--text-quaternary);
+.time-icon {
+  font-size: 14px;
+  color: var(--text-tertiary);
 }
 
 /* ═══ STATUS BADGES ═══ */
@@ -973,12 +1193,24 @@ onMounted(() => {
   background: var(--success-bg);
   color: var(--success-text);
   border: 1px solid var(--success-border);
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.status-badge.status-inactive {
+.status-badge.status-upcoming {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
+}
+
+.status-badge.status-expired {
   background: var(--error-bg);
   color: var(--error-text);
   border: 1px solid var(--error-border);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 /* ═══ ACTION BUTTONS ═══ */
@@ -1013,7 +1245,7 @@ onMounted(() => {
   background: var(--info-solid);
   color: var(--color-white);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-blue);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .btn-delete {
@@ -1026,7 +1258,7 @@ onMounted(() => {
   background: var(--error-solid);
   color: var(--color-white);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-red);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 /* ═══ PAGINATION ═══ */
@@ -1047,8 +1279,8 @@ onMounted(() => {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-5);
-  background: var(--gradient-purple-soft);
-  border: 1px solid var(--border-primary);
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-weight: var(--font-medium);
@@ -1057,10 +1289,10 @@ onMounted(() => {
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: var(--gradient-primary);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: var(--color-white);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .pagination-btn:disabled {
@@ -1118,7 +1350,7 @@ onMounted(() => {
 
 .btn-danger:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-red);
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
 }
 
 .btn:disabled {
@@ -1256,8 +1488,7 @@ onMounted(() => {
   color: var(--error-text);
 }
 
-.form-input,
-.form-textarea {
+.form-input {
   width: 100%;
   padding: var(--space-3) var(--space-4);
   border: 1.5px solid var(--border-primary);
@@ -1269,48 +1500,61 @@ onMounted(() => {
   font-family: inherit;
 }
 
-.form-input:hover,
-.form-textarea:hover {
+.form-input:hover {
   border-color: var(--border-hover);
   background: rgba(15, 23, 42, 0.6);
 }
 
-.form-input:focus,
-.form-textarea:focus {
+.form-input:focus {
   outline: none;
   border-color: var(--accent-primary);
   background: rgba(15, 23, 42, 0.8);
   box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
 }
 
-.form-textarea {
-  resize: vertical;
-  min-height: 100px;
+.price-preview {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: var(--radius-lg);
 }
 
-.form-checkbox {
+.preview-row {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: var(--space-2);
-  cursor: pointer;
-  user-select: none;
-}
-
-.form-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--accent-primary);
-}
-
-.form-checkbox span {
+  padding: var(--space-2) 0;
   color: var(--text-secondary);
+}
+
+.discount-row {
+  color: #f59e0b;
+}
+
+.total-row {
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(251, 191, 36, 0.3);
+  margin-top: var(--space-2);
+}
+
+.flash-sale-price {
+  color: #fbbf24;
+  font-size: var(--text-2xl);
+}
+
+.discount-amount {
+  color: #f59e0b;
+}
+
+.text-muted {
+  color: var(--text-quaternary);
   font-size: var(--text-sm);
 }
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 768px) {
-  .admin-brands {
+  .admin-flash-sales {
     padding: var(--space-4);
   }
 
@@ -1324,19 +1568,19 @@ onMounted(() => {
   }
 
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .filter-row {
     grid-template-columns: 1fr;
   }
 
-  .brands-table {
+  .flash-sales-table {
     font-size: var(--text-xs);
   }
 
-  .brands-table th,
-  .brands-table td {
+  .flash-sales-table th,
+  .flash-sales-table td {
     padding: var(--space-2);
   }
 
@@ -1344,17 +1588,5 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
-
-/* ═══ GLOW EFFECTS ═══ */
-.shadow-glow-blue {
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
-}
-
-.shadow-glow-red {
-  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
-}
-
-.shadow-glow-purple {
-  box-shadow: 0 4px 20px rgba(167, 139, 250, 0.4);
-}
 </style>
+

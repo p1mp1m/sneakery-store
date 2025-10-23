@@ -19,6 +19,8 @@ const AdminWarranty = () => import('@/views/admin/AdminWarranty.vue')
 const AdminAnalytics = () => import('@/views/admin/AdminAnalytics.vue')
 const AdminNotifications = () => import('@/views/admin/AdminNotifications.vue')
 const AdminSettings = () => import('@/views/admin/AdminSettings.vue')
+const AdminReviews = () => import('@/views/admin/AdminReviews.vue')
+const AdminFlashSales = () => import('@/views/admin/AdminFlashSales.vue')
 
 const adminRoutes = [
   {
@@ -105,6 +107,26 @@ const adminRoutes = [
           requiresAdmin: true,
           title: 'Quản lý danh mục',
           icon: 'category'
+        }
+      },
+      {
+        path: 'reviews',
+        name: 'AdminReviews',
+        component: AdminReviews,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Quản lí đánh giá',
+          icon: 'star_rate'
+        }
+      },
+      {
+        path: 'flash-sales',
+        name: 'AdminFlashSales',
+        component: AdminFlashSales,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Flash Sale',
+          icon: 'flash_on'
         }
       },
       {
