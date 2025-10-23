@@ -1,4 +1,4 @@
-# 👟 Sneakery Store - Hệ thống E-commerce bán giày
+# 👟 Sneakery Store - Website Bán Giày Online
 
 <div align="center">
 
@@ -6,507 +6,333 @@
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.0-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
 ![Vue.js](https://img.shields.io/badge/Vue.js-3.5-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
 ![SQL Server](https://img.shields.io/badge/SQL_Server-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
 
-**Một hệ thống quản lý và bán hàng giày sneaker hiện đại, với giao diện thân thiện và tính năng đầy đủ.**
-
-[Tính năng](#-tính-năng) • [Công nghệ](#️-công-nghệ-sử-dụng) • [Cài đặt](#-cài-đặt) • [API Documentation](#-api-documentation)
+**Website bán giày sneaker hiện đại - Dễ sử dụng, Dễ quản lý**
 
 </div>
 
 ---
 
-## 📋 Mục lục
+## 📖 Giới thiệu
 
-- [Giới thiệu](#-giới-thiệu)
-- [Tính năng](#-tính-năng)
-- [Công nghệ sử dụng](#️-công-nghệ-sử-dụng)
-- [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
-- [Cài đặt](#-cài-đặt)
-  - [1. Clone Repository](#1-clone-repository)
-  - [2. Cấu hình Database](#2-cấu-hình-database)
-  - [3. Cấu hình Backend](#3-cấu-hình-backend)
-  - [4. Cấu hình Frontend](#4-cấu-hình-frontend)
-- [Chạy ứng dụng](#-chạy-ứng-dụng)
-- [API Documentation](#-api-documentation)
-- [Cấu trúc dự án](#-cấu-trúc-dự-án)
-- [Các lưu ý quan trọng](#-các-lưu-ý-quan-trọng)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
-- [License](#-license)
+**Sneakery Store** là website bán giày trực tuyến, gồm 2 phần:
+- 👥 **Khách hàng:** Xem giày, thêm vào giỏ hàng, đặt mua
+- 🛡️ **Quản trị:** Quản lý sản phẩm, đơn hàng, thống kê doanh thu
 
 ---
 
-## 🎯 Giới thiệu
+## ✨ Tính năng chính
 
-**Sneakery Store** là một hệ thống e-commerce toàn diện được xây dựng để quản lý và bán giày sneaker trực tuyến. Dự án được phát triển với kiến trúc phân tách rõ ràng giữa Backend (Spring Boot) và Frontend (Vue.js), đảm bảo tính mở rộng và bảo trì dễ dàng.
+### Dành cho Khách hàng
+- 🔍 Tìm kiếm và xem sản phẩm
+- 🛒 Giỏ hàng và đặt hàng
+- ⭐ Đánh giá sản phẩm
+- 👤 Quản lý tài khoản
 
-### 🌟 Điểm nổi bật
-
-- ✨ Giao diện người dùng hiện đại, responsive
-- 🔐 Hệ thống xác thực và phân quyền bảo mật với JWT
-- 📊 Dashboard quản trị với biểu đồ thống kê
-- 🛒 Giỏ hàng và quy trình thanh toán hoàn chỉnh
-- 📦 Quản lý đơn hàng và trạng thái vận chuyển
-- ⭐ Hệ thống đánh giá sản phẩm
-- 🎨 Quản lý thương hiệu, danh mục và biến thể sản phẩm
-
----
-
-## 🚀 Tính năng
-
-### 👥 Người dùng (Customer)
-
-- 🔍 Tìm kiếm và lọc sản phẩm theo nhiều tiêu chí
-- 📱 Xem chi tiết sản phẩm với hình ảnh và mô tả
-- 🛍️ Thêm sản phẩm vào giỏ hàng và quản lý đơn hàng
-- ⭐ Đánh giá và nhận xét sản phẩm
-- 💳 Thanh toán trực tuyến
-- 📍 Quản lý địa chỉ giao hàng
-- 👤 Quản lý thông tin cá nhân
-- 📜 Lịch sử đơn hàng và theo dõi trạng thái
-
-### 🛡️ Quản trị viên (Admin)
-
-- 📊 Dashboard với biểu đồ thống kê doanh thu, đơn hàng
-- 🏷️ Quản lý sản phẩm, thương hiệu, danh mục
-- 👥 Quản lý người dùng và phân quyền
-- 📦 Quản lý đơn hàng và cập nhật trạng thái
-- 💰 Quản lý thanh toán và mã giảm giá
-- 📈 Báo cáo và phân tích dữ liệu
-- ⚙️ Cấu hình hệ thống
+### Dành cho Admin
+- 📊 Xem thống kê, biểu đồ
+- 🏷️ Quản lý sản phẩm
+- 📦 Quản lý đơn hàng
+- 👥 Quản lý người dùng
 
 ---
 
-## 🛠️ Công nghệ sử dụng
+## 🛠️ Cần cài gì trước?
 
-### Backend
+Trước khi bắt đầu, cài đặt những phần mềm sau:
 
-| Công nghệ | Phiên bản | Mô tả |
-|-----------|-----------|-------|
-| **Java** | 17 | Ngôn ngữ lập trình chính |
-| **Spring Boot** | 3.2.0 | Framework backend |
-| **Spring Security** | - | Bảo mật và xác thực |
-| **Spring Data JPA** | - | ORM và database access |
-| **JWT** | 0.11.5 | Token-based authentication |
-| **SQL Server** | - | Database |
-| **Maven** | - | Dependency management |
-| **Lombok** | - | Giảm boilerplate code |
-| **ModelMapper** | 3.1.1 | DTO mapping |
-| **Swagger/OpenAPI** | 2.2.0 | API documentation |
+| Phần mềm | Link tải |
+|----------|----------|
+| ☕ **Java JDK 17** | [Tải Java](https://www.oracle.com/java/technologies/downloads/#java17) |
+| 🟢 **Node.js 18+** | [Tải Node.js](https://nodejs.org/) |
+| 🗄️ **SQL Server** | [Tải SQL Server](https://www.microsoft.com/sql-server/sql-server-downloads) |
+| 🔧 **SQL Server Management Studio** | [Tải SSMS](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms) |
+| 💻 **Visual Studio Code** | [Tải VS Code](https://code.visualstudio.com/) |
 
-### Frontend
-
-| Công nghệ | Phiên bản | Mô tả |
-|-----------|-----------|-------|
-| **Vue.js** | 3.5.22 | Progressive JavaScript framework |
-| **Vue Router** | 4.6.3 | Client-side routing |
-| **Pinia** | 3.0.3 | State management |
-| **Vite** | 7.1.7 | Build tool và dev server |
-| **Element Plus** | 2.11.4 | UI Component library |
-| **Axios** | 1.12.2 | HTTP client |
-| **Chart.js** | 4.5.1 | Data visualization |
-| **vue-chartjs** | 5.3.2 | Vue wrapper cho Chart.js |
-| **XLSX** | 0.18.5 | Export Excel |
+> **💡 Mẹo:** Sau khi cài xong, khởi động lại máy tính!
 
 ---
 
-## 💻 Yêu cầu hệ thống
+## 🚀 Hướng dẫn cài đặt (4 bước đơn giản)
 
-Trước khi bắt đầu cài đặt, đảm bảo máy tính của bạn đã cài đặt:
+### 📥 **Bước 1: Tải code về máy**
 
-- ☕ **Java Development Kit (JDK)** 17 hoặc cao hơn
-- 📦 **Apache Maven** 3.6+ hoặc sử dụng Maven wrapper có sẵn
-- 🟢 **Node.js** 18.x hoặc cao hơn
-- 📦 **npm** hoặc **yarn** (đi kèm với Node.js)
-- 🗄️ **Microsoft SQL Server** 2019 hoặc cao hơn
-- 🔧 **SQL Server Management Studio (SSMS)** (khuyến nghị)
-- 💻 IDE: **IntelliJ IDEA** / **Eclipse** (cho Java) và **VS Code** (cho Vue.js)
-
----
-
-## 📥 Cài đặt
-
-### 1. Clone Repository
-
+**Cách 1: Dùng Git**
 ```bash
 git clone https://github.com/yourusername/sneakery-store.git
 cd sneakery-store
 ```
 
-### 2. Cấu hình Database
+**Cách 2: Tải ZIP**
+- Vào GitHub → Click nút **Code** → Chọn **Download ZIP**
+- Giải nén file ZIP ra một thư mục
 
-#### Bước 2.1: Tạo Database
+---
+
+### 🗄️ **Bước 2: Tạo Database (Cơ sở dữ liệu)**
+
+#### 2.1. Mở SQL Server Management Studio
 
 1. Mở **SQL Server Management Studio (SSMS)**
-2. Kết nối đến SQL Server instance của bạn
-3. Mở file SQL script:
-   ```
-   sneakery-database/Sneakery_DB_V2_Enhanced.sql
-   ```
-4. Chạy script để tạo database và tables
-5. Database `sneakery_db` sẽ được tạo với dữ liệu mẫu
+2. Kết nối với:
+   - **Server name:** `localhost` hoặc `(local)`
+   - **Authentication:** Windows Authentication
+   - Click **Connect**
 
-#### Bước 2.2: Cấu hình Connection String
+#### 2.2. Chạy Script tạo Database
 
-Kiểm tra thông tin kết nối SQL Server của bạn:
-- **Server:** localhost (hoặc địa chỉ server của bạn)
-- **Port:** 1433 (mặc định)
-- **Database:** sneakery_db
-- **Username:** sa (hoặc tài khoản của bạn)
-- **Password:** Cập nhật trong bước tiếp theo
+1. Click **File** → **Open** → **File...**
+2. Chọn 2 file theo thứ tự:
+   - `sneakery-database/1_CREATE_SCHEMA.sql` 
+   - `sneakery-database/2_INSERT_DATA.sql`
+3. Click **Execute** (hoặc nhấn F5)
 
-### 3. Cấu hình Backend
+✅ **Hoàn thành:** Database `sneakery_db` đã được tạo!
 
-#### Bước 3.1: Cấu hình application.properties
+---
 
-Mở file `sneakery-backend/src/main/resources/application.properties` và cập nhật thông tin database:
+### ⚙️ **Bước 3: Cấu hình Backend (Phần server)**
 
-```properties
-# Database Configuration
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=sneakery_db;encrypt=true;trustServerCertificate=true
-spring.datasource.username=sa
-spring.datasource.password=YOUR_PASSWORD_HERE  # Thay đổi password của bạn
-```
+#### 3.1. Mở file cấu hình
 
-#### Bước 3.2: Cấu hình JWT Secret (Tùy chọn)
+Mở file: `sneakery-backend/src/main/resources/application.properties`
 
-Nếu muốn thay đổi JWT secret key, cập nhật:
+#### 3.2. Sửa password Database
+
+Tìm dòng có chữ `spring.datasource.password` và sửa:
 
 ```properties
-app.jwt.secret=YOUR_BASE64_ENCODED_SECRET_KEY
-app.jwt.expiration-ms=86400000  # 24 giờ
+spring.datasource.password=123456
 ```
 
-#### Bước 3.3: Cấu hình CORS
+> **⚠️ Chú ý:** Đổi `123456` thành password SQL Server của bạn!
 
-Nếu frontend chạy trên port khác, thêm vào:
+#### 3.3. Cài đặt Backend
 
-```properties
-cors.allowed-origins=http://localhost:5173,http://localhost:3000
-```
-
-#### Bước 3.4: Build Backend
+Mở **Command Prompt** hoặc **Terminal** tại thư mục dự án:
 
 ```bash
 cd sneakery-backend
-
-# Sử dụng Maven
 mvn clean install
-
-# Hoặc sử dụng Maven Wrapper (Windows)
-.\mvnw.cmd clean install
-
-# Maven Wrapper (Linux/Mac)
-./mvnw clean install
 ```
 
-### 4. Cấu hình Frontend
+⏳ **Chờ 2-3 phút** để tải các thư viện cần thiết...
 
-#### Bước 4.1: Cài đặt Dependencies
+---
+
+### 🎨 **Bước 4: Cài đặt Frontend (Phần giao diện)**
+
+Mở **Command Prompt** hoặc **Terminal** mới:
 
 ```bash
 cd sneakery-frontend
 npm install
 ```
 
-#### Bước 4.2: Cấu hình API Endpoint (Nếu cần)
-
-Nếu backend chạy trên port hoặc địa chỉ khác, cập nhật trong `src/services/`:
-
-```javascript
-// src/services/authService.js, adminService.js, productService.js
-const API_URL = 'http://localhost:8080/api';  // Đổi nếu cần
-```
+⏳ **Chờ 2-3 phút** để tải các thư viện...
 
 ---
 
 ## 🎮 Chạy ứng dụng
 
-### Khởi động Backend
+### 🟢 **Bước 1: Chạy Backend (Phần server)**
+
+Mở **Terminal** thứ nhất:
 
 ```bash
 cd sneakery-backend
-
-# Cách 1: Sử dụng Maven
 mvn spring-boot:run
-
-# Cách 2: Sử dụng Maven Wrapper (Windows)
-.\mvnw.cmd spring-boot:run
-
-# Cách 3: Chạy file JAR
-java -jar target/sneakery-backend-1.0.0.jar
 ```
 
-Backend sẽ chạy tại: **http://localhost:8080**
+✅ Thấy dòng `Started SneakeryApplication` là **thành công**!
 
-### Khởi động Frontend
+> **🌐 Server chạy tại:** http://localhost:8080
 
-Mở terminal mới:
+---
+
+### 🎨 **Bước 2: Chạy Frontend (Phần giao diện)**
+
+Mở **Terminal** thứ hai:
 
 ```bash
 cd sneakery-frontend
-
-# Development mode
 npm run dev
-
-# Build production
-npm run build
-
-# Preview production build
-npm run preview
 ```
 
-Frontend sẽ chạy tại: **http://localhost:5173**
+✅ Thấy dòng `Local: http://localhost:5173` là **thành công**!
 
-### 🎉 Truy cập ứng dụng
+> **🌐 Website chạy tại:** http://localhost:5173
 
-- **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:8080/api
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
+---
 
-### 🔑 Tài khoản mặc định
+## 🎉 Truy cập Website
 
-Sau khi chạy script database, bạn có thể đăng nhập với:
+Mở trình duyệt và vào:
 
-**Admin:**
+### 🏠 Trang chính
+👉 http://localhost:5173
+
+### 🔑 Đăng nhập sẵn
+
+**Tài khoản Admin:**
 ```
 Email: admin@sneakery.com
-Password: admin123
+Mật khẩu: admin123
 ```
 
-**Customer:**
+**Tài khoản Khách hàng:**
 ```
 Email: user@sneakery.com
-Password: user123
+Mật khẩu: user123
 ```
 
 ---
 
-## 📚 API Documentation
-
-### Swagger/OpenAPI
-
-Truy cập API documentation tại: **http://localhost:8080/swagger-ui.html**
-
-### Các API Endpoints chính
-
-#### Authentication
-```
-POST   /api/auth/register          - Đăng ký tài khoản
-POST   /api/auth/login             - Đăng nhập
-POST   /api/auth/refresh-token     - Làm mới token
-GET    /api/auth/me                - Lấy thông tin user hiện tại
-```
-
-#### Products
-```
-GET    /api/products               - Lấy danh sách sản phẩm
-GET    /api/products/{id}          - Lấy chi tiết sản phẩm
-GET    /api/products/search        - Tìm kiếm sản phẩm
-GET    /api/products/filter        - Lọc sản phẩm
-```
-
-#### Cart
-```
-GET    /api/cart                   - Xem giỏ hàng
-POST   /api/cart/add               - Thêm sản phẩm vào giỏ
-PUT    /api/cart/update/{id}       - Cập nhật số lượng
-DELETE /api/cart/remove/{id}       - Xóa sản phẩm khỏi giỏ
-```
-
-#### Orders
-```
-POST   /api/orders                 - Tạo đơn hàng
-GET    /api/orders                 - Lấy danh sách đơn hàng
-GET    /api/orders/{id}            - Chi tiết đơn hàng
-PUT    /api/orders/{id}/cancel     - Hủy đơn hàng
-```
-
-#### Admin APIs
-```
-GET    /api/admin/users            - Quản lý người dùng
-POST   /api/admin/products         - Tạo sản phẩm mới
-PUT    /api/admin/products/{id}    - Cập nhật sản phẩm
-DELETE /api/admin/products/{id}    - Xóa sản phẩm
-PUT    /api/admin/orders/{id}      - Cập nhật trạng thái đơn hàng
-GET    /api/admin/analytics        - Thống kê, báo cáo
-```
-
----
-
-## 📁 Cấu trúc dự án
+## 🗂️ Cấu trúc thư mục
 
 ```
 sneakery-store/
 │
-├── sneakery-backend/              # Spring Boot Backend
-│   ├── src/main/java/com/sneakery/store/
-│   │   ├── config/                # Cấu hình (Security, CORS, etc.)
-│   │   ├── controller/            # REST Controllers
-│   │   ├── dto/                   # Data Transfer Objects
-│   │   ├── entity/                # JPA Entities
-│   │   ├── repository/            # JPA Repositories
-│   │   ├── service/               # Business Logic
-│   │   ├── security/              # JWT, Authentication
-│   │   ├── exception/             # Exception Handlers
-│   │   └── util/                  # Utility Classes
-│   ├── src/main/resources/
-│   │   └── application.properties # Cấu hình ứng dụng
-│   └── pom.xml                    # Maven dependencies
+├── 📁 sneakery-backend/          ← Code Backend (Java)
+│   ├── src/main/java/            ← Các file Java
+│   └── src/main/resources/       ← File cấu hình
 │
-├── sneakery-frontend/             # Vue.js Frontend
-│   ├── src/
-│   │   ├── assets/                # Images, Styles
-│   │   ├── components/            # Vue Components
-│   │   │   ├── charts/            # Chart components
-│   │   │   ├── common/            # Shared components
-│   │   │   └── products/          # Product components
-│   │   ├── views/                 # Page Views
-│   │   │   ├── admin/             # Admin pages
-│   │   │   ├── user/              # User pages
-│   │   │   └── common/            # Shared pages
-│   │   ├── routers/               # Vue Router config
-│   │   ├── services/              # API Services
-│   │   ├── stores/                # Pinia Stores
-│   │   ├── layouts/               # Layout components
-│   │   ├── App.vue                # Root component
-│   │   └── main.js                # Entry point
-│   ├── package.json               # NPM dependencies
-│   └── vite.config.js             # Vite configuration
+├── 📁 sneakery-frontend/         ← Code Frontend (Vue.js)
+│   ├── src/                      ← Các file Vue
+│   │   ├── views/                ← Các trang web
+│   │   ├── components/           ← Các thành phần nhỏ
+│   │   └── services/             ← Gọi API
+│   └── package.json              ← Danh sách thư viện
 │
-└── sneakery-database/             # Database Scripts
-    ├── Sneakery_DB_V2_Enhanced.sql # Database schema + data
-    └── Sneakery_DB_Template.sql    # Template schema
+└── 📁 sneakery-database/         ← File SQL tạo Database
+    ├── 1_CREATE_SCHEMA.sql       ← Tạo bảng
+    └── 2_INSERT_DATA.sql         ← Thêm dữ liệu mẫu
 ```
 
 ---
 
-## ⚠️ Các lưu ý quan trọng
+## ❓ Gặp lỗi? Sửa như sau!
 
-### Security
-
-1. **Đổi JWT Secret:** Trong môi trường production, nhớ thay đổi `app.jwt.secret` thành một giá trị mạnh và bảo mật
-2. **Database Password:** Không commit password thật vào Git, sử dụng environment variables
-3. **CORS Configuration:** Chỉ cho phép origins đáng tin cậy trong production
-
-### Performance
-
-1. **Database Indexes:** Database đã được tối ưu với các indexes cần thiết
-2. **Caching:** Cân nhắc thêm Redis cho caching trong production
-3. **Connection Pool:** Điều chỉnh connection pool size phù hợp với traffic
-
-### Development
-
-1. **Hot Reload:** Frontend hỗ trợ hot reload khi phát triển
-2. **DevTools:** Backend có Spring Boot DevTools cho auto-restart
-3. **Logging:** Kiểm tra logs trong console để debug
-
----
-
-## 🔧 Troubleshooting
-
-### Backend không khởi động được
+### ❌ Lỗi 1: Backend không chạy được
 
 **Lỗi:** `Cannot connect to database`
+
+**Cách sửa:**
 ```
-✅ Kiểm tra SQL Server đã được khởi động
-✅ Kiểm tra username/password trong application.properties
-✅ Kiểm tra database đã được tạo chưa
-✅ Kiểm tra firewall có block port 1433 không
+✅ Kiểm tra SQL Server đã mở chưa
+✅ Kiểm tra password trong file application.properties
+✅ Kiểm tra đã chạy file SQL tạo database chưa
 ```
 
-**Lỗi:** `Port 8080 already in use`
+---
+
+### ❌ Lỗi 2: Port 8080 đã được sử dụng
+
+**Lỗi:** `Port 8080 is already in use`
+
+**Cách sửa:**
+- Mở `application.properties`
+- Thêm dòng: `server.port=8081`
+
+---
+
+### ❌ Lỗi 3: Frontend không kết nối được Backend
+
+**Lỗi:** `Network Error` hoặc `CORS Error`
+
+**Cách sửa:**
 ```
-✅ Đổi port trong application.properties: server.port=8081
-✅ Hoặc kill process đang dùng port 8080
+✅ Kiểm tra Backend đã chạy chưa (phải chạy trước)
+✅ Vào http://localhost:8080/api - Phải thấy trang JSON
+✅ Xóa cache browser và F5 lại trang
 ```
 
-### Frontend không kết nối được Backend
+---
 
-**Lỗi:** `Network Error / CORS Error`
-```
-✅ Kiểm tra backend đã chạy chưa
-✅ Kiểm tra CORS configuration trong application.properties
-✅ Kiểm tra API_URL trong frontend services
-```
+### ❌ Lỗi 4: Lỗi khi npm install
 
-### Lỗi khi build
+**Cách sửa:**
 
-**Maven build failed:**
 ```bash
-# Clear Maven cache
-mvn clean
-mvn dependency:purge-local-repository
-mvn install
-```
-
-**NPM install failed:**
-```bash
-# Clear cache và reinstall
+# Xóa thư mục cũ
 rm -rf node_modules package-lock.json
+
+# Cài lại
 npm cache clean --force
 npm install
 ```
 
-### Lỗi JWT Token
+---
 
-**Token expired hoặc invalid:**
+### ❌ Lỗi 5: Lỗi khi mvn install
+
+**Cách sửa:**
+
+```bash
+# Xóa cache Maven
+mvn clean
+
+# Cài lại
+mvn install
 ```
-✅ Xóa localStorage trong browser và đăng nhập lại
-✅ Kiểm tra system time đồng bộ
-✅ Kiểm tra JWT secret giống nhau giữa các lần khởi động
-```
 
 ---
 
-## 🤝 Contributing
+## 📌 Các lưu ý quan trọng
 
-Chúng tôi luôn hoan nghênh mọi đóng góp! Để contribute:
+### ⚡ Thứ tự chạy
 
-1. Fork repository
-2. Tạo branch mới: `git checkout -b feature/AmazingFeature`
-3. Commit changes: `git commit -m 'Add some AmazingFeature'`
-4. Push to branch: `git push origin feature/AmazingFeature`
-5. Tạo Pull Request
+1. ✅ Chạy **Backend** trước
+2. ✅ Chờ Backend chạy xong (thấy chữ "Started")
+3. ✅ Mới chạy **Frontend**
 
-### Coding Standards
+### 🔒 Bảo mật
 
-- **Backend:** Tuân thủ Java Code Conventions và Spring Boot best practices
-- **Frontend:** Sử dụng Vue.js Style Guide
-- **Commits:** Sử dụng Conventional Commits format
-- **Testing:** Viết tests cho các tính năng mới
+- ⚠️ **KHÔNG** để password SQL trong code khi đưa lên mạng
+- ⚠️ Đổi JWT secret trước khi deploy thật
+- ⚠️ Chỉ cho phép CORS từ domain tin cậy
 
----
+### 📊 Kiểm tra hệ thống
 
-## 📝 License
-
-Dự án này được phân phối dưới giấy phép MIT License. Xem file `LICENSE` để biết thêm chi tiết.
+- Backend API: http://localhost:8080/api
+- Swagger (API Doc): http://localhost:8080/swagger-ui.html
+- Frontend: http://localhost:5173
 
 ---
 
-## 📞 Liên hệ & Hỗ trợ
+## 🎯 Checklist hoàn thành
 
-- **Email:** support@sneakery.com
-- **Website:** https://sneakery.com
-- **Issues:** https://github.com/yourusername/sneakery-store/issues
+Đánh dấu ✅ khi hoàn thành:
+
+- [ ] Đã cài đặt Java JDK 17
+- [ ] Đã cài đặt Node.js 18+
+- [ ] Đã cài đặt SQL Server + SSMS
+- [ ] Đã tải code về máy
+- [ ] Đã chạy file SQL tạo database
+- [ ] Đã sửa password trong application.properties
+- [ ] Đã chạy `mvn clean install` thành công
+- [ ] Đã chạy `npm install` thành công
+- [ ] Backend chạy được (http://localhost:8080)
+- [ ] Frontend chạy được (http://localhost:5173)
+- [ ] Đăng nhập thành công với tài khoản admin
 
 ---
 
-## 🙏 Acknowledgments
+## 💬 Cần hỗ trợ?
 
-- Spring Boot Team
-- Vue.js Team
-- Element Plus Team
-- Tất cả contributors và open-source community
+Nếu gặp khó khăn, hãy:
+
+1. 📖 Đọc lại hướng dẫn từ đầu
+2. 🔍 Kiểm tra phần "Gặp lỗi? Sửa như sau!"
+3. 💻 Kiểm tra log lỗi trong Terminal
+4. 📧 Liên hệ: support@sneakery.com
 
 ---
 
 <div align="center">
 
-**⭐ Nếu project hữu ích, đừng quên cho chúng tôi một star nhé! ⭐**
+**✨ Chúc bạn cài đặt thành công! ✨**
 
 Made with ❤️ by Sneakery Team
 
 </div>
-
