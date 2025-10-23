@@ -269,9 +269,9 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import LineChart from '@/components/charts/LineChart.vue'
-import BarChart from '@/components/charts/BarChart.vue'
-import DoughnutChart from '@/components/charts/DoughnutChart.vue'
+import LineChart from '@/assets/components/charts/LineChart.vue'
+import BarChart from '@/assets/components/charts/BarChart.vue'
+import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue'
 
 // Refs
 const selectedPeriod = ref('30d')

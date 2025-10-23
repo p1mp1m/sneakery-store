@@ -2,7 +2,7 @@
 import { useAuthStore } from '@/stores/auth'
 
 // Lazy load layout
-const DefaultLayout = () => import('@/layouts/DefaultLayout.vue')
+const DefaultLayout = () => import('@/assets/layouts/DefaultLayout.vue')
 
 // User Pages
 const UserDashboard = () => import('@/views/user/UserDashboard.vue')

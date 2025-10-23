@@ -4,7 +4,7 @@ import { adminGuard } from './adminRoutes';
 import { userGuard } from './userRoutes';
 
 // Import layouts
-import DefaultLayout from '../layouts/DefaultLayout.vue';
+import DefaultLayout from '../assets/layouts/DefaultLayout.vue';
 
 // Import các trang của bạn
 import HomePage from '../views/common/HomePage.vue';

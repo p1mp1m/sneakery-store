@@ -285,7 +285,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useAdminStore } from '@/stores/admin';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useRouter } from 'vue-router';
-import NotificationDropdown from '@/components/common/NotificationDropdown.vue';
+import NotificationDropdown from '@/assets/components/common/NotificationDropdown.vue';
 
 const authStore = useAuthStore();
 const adminStore = useAdminStore();

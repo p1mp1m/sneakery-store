@@ -373,9 +373,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAdminStore } from '@/stores/admin';
 import { useAuthStore } from '@/stores/auth';
-import LineChart from '@/components/charts/LineChart.vue';
-import BarChart from '@/components/charts/BarChart.vue';
-import DoughnutChart from '@/components/charts/DoughnutChart.vue';
+import LineChart from '@/assets/components/charts/LineChart.vue';
+import BarChart from '@/assets/components/charts/BarChart.vue';
+import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue';
 
 const router = useRouter();
 const adminStore = useAdminStore();

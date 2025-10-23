@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 // Admin Layout
-const AdminLayout = () => import('@/layouts/AdminLayout.vue')
+const AdminLayout = () => import('@/assets/layouts/AdminLayout.vue')
 
 // Admin Pages
 const AdminDashboard = () => import('@/views/admin/AdminDashboard.vue')

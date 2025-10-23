@@ -273,7 +273,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import ProductService from '@/services/productService';
-import ProductCard from '@/components/products/ProductCard.vue';
+import ProductCard from '@/assets/components/products/ProductCard.vue';
 
 // Categories data
 const categories = ref([

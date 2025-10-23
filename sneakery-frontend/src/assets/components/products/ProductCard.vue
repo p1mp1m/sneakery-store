@@ -47,7 +47,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useFlashSaleStore } from '@/stores/flashSale';
 import { storeToRefs } from 'pinia';
-import FlashSaleBadge from '@/components/common/FlashSaleBadge.vue';
+import FlashSaleBadge from '@/assets/components/common/FlashSaleBadge.vue';
 
 // Props
 const props = defineProps({

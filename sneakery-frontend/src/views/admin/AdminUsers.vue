@@ -205,7 +205,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
-import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import * as XLSX from 'xlsx'
 
 const adminStore = useAdminStore()

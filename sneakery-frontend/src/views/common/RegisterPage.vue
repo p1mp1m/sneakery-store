@@ -163,7 +163,7 @@ import { ref, h } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { ElMessage } from 'element-plus';
-import GoogleButton from '@/components/common/GoogleButton.vue';
+import GoogleButton from '@/assets/components/common/GoogleButton.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
