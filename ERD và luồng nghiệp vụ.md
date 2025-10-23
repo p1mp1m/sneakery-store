@@ -1,16 +1,8 @@
-# 👟 Sneakery Store - Hệ thống E-commerce bán giày
+# 📊 ERD và Luồng Nghiệp Vụ - Sneakery Store
 
 <div align="center">
 
-![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.0-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
-![Vue.js](https://img.shields.io/badge/Vue.js-3.5-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
-![SQL Server](https://img.shields.io/badge/SQL_Server-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
-
-**Một hệ thống quản lý và bán hàng giày sneaker hiện đại, với giao diện thân thiện và tính năng đầy đủ.**
-
-[Tính năng](#-tính-năng) • [Công nghệ](#️-công-nghệ-sử-dụng) • [Cài đặt](#-cài-đặt) • [API Documentation](#-api-documentation)
+**Tài liệu mô tả cơ sở dữ liệu và các luồng nghiệp vụ chính**
 
 </div>
 
@@ -18,495 +10,783 @@
 
 ## 📋 Mục lục
 
-- [Giới thiệu](#-giới-thiệu)
-- [Tính năng](#-tính-năng)
-- [Công nghệ sử dụng](#️-công-nghệ-sử-dụng)
-- [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
-- [Cài đặt](#-cài-đặt)
-  - [1. Clone Repository](#1-clone-repository)
-  - [2. Cấu hình Database](#2-cấu-hình-database)
-  - [3. Cấu hình Backend](#3-cấu-hình-backend)
-  - [4. Cấu hình Frontend](#4-cấu-hình-frontend)
-- [Chạy ứng dụng](#-chạy-ứng-dụng)
-- [API Documentation](#-api-documentation)
-- [Cấu trúc dự án](#-cấu-trúc-dự-án)
-- [Các lưu ý quan trọng](#-các-lưu-ý-quan-trọng)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [1. Tổng quan Cơ sở dữ liệu](#1-tổng-quan-cơ-sở-dữ-liệu)
+- [2. Entity Relationship Diagram](#2-entity-relationship-diagram-erd)
+- [3. Mô tả chi tiết các bảng](#3-mô-tả-chi-tiết-các-bảng)
+- [4. Các mối quan hệ chính](#4-các-mối-quan-hệ-chính)
+- [5. Luồng nghiệp vụ chính](#5-luồng-nghiệp-vụ-chính)
 
 ---
 
-## 🎯 Giới thiệu
+## 🎯 1. Tổng quan Cơ sở dữ liệu
 
-**Sneakery Store** là một hệ thống e-commerce toàn diện được xây dựng để quản lý và bán giày sneaker trực tuyến. Dự án được phát triển với kiến trúc phân tách rõ ràng giữa Backend (Spring Boot) và Frontend (Vue.js), đảm bảo tính mở rộng và bảo trì dễ dàng.
+Database **sneakery_db** được thiết kế để hỗ trợ toàn bộ hoạt động của một hệ thống e-commerce bán giày.
 
-### 🌟 Điểm nổi bật
+### 📦 **Các nhóm bảng chính**
 
-- ✨ Giao diện người dùng hiện đại, responsive
-- 🔐 Hệ thống xác thực và phân quyền bảo mật với JWT
-- 📊 Dashboard quản trị với biểu đồ thống kê
-- 🛒 Giỏ hàng và quy trình thanh toán hoàn chỉnh
-- 📦 Quản lý đơn hàng và trạng thái vận chuyển
-- ⭐ Hệ thống đánh giá sản phẩm
-- 🎨 Quản lý thương hiệu, danh mục và biến thể sản phẩm
+| Nhóm | Số bảng | Mục đích |
+|------|---------|----------|
+| 👥 **Người dùng** | 3 | Quản lý user, role, địa chỉ |
+| 👟 **Sản phẩm** | 5 | Sản phẩm, biến thể, hình ảnh, brand, category |
+| 🛒 **Giỏ hàng** | 2 | Giỏ hàng và chi tiết |
+| 📦 **Đơn hàng** | 3 | Đơn hàng, chi tiết, trạng thái |
+| 💳 **Thanh toán** | 2 | Giao dịch thanh toán, phương thức |
+| 🎟️ **Khuyến mãi** | 3 | Discount, flash sale, loyalty points |
+| ⭐ **Đánh giá** | 1 | Review sản phẩm |
+| 🔔 **Thông báo** | 2 | Notification, wishlist |
+| 🔄 **Trả hàng** | 1 | Quản lý return/refund |
+| 🛡️ **Bảo hành** | 1 | Warranty claims |
 
----
-
-## 🚀 Tính năng
-
-### 👥 Người dùng (Customer)
-
-- 🔍 Tìm kiếm và lọc sản phẩm theo nhiều tiêu chí
-- 📱 Xem chi tiết sản phẩm với hình ảnh và mô tả
-- 🛍️ Thêm sản phẩm vào giỏ hàng và quản lý đơn hàng
-- ⭐ Đánh giá và nhận xét sản phẩm
-- 💳 Thanh toán trực tuyến
-- 📍 Quản lý địa chỉ giao hàng
-- 👤 Quản lý thông tin cá nhân
-- 📜 Lịch sử đơn hàng và theo dõi trạng thái
-
-### 🛡️ Quản trị viên (Admin)
-
-- 📊 Dashboard với biểu đồ thống kê doanh thu, đơn hàng
-- 🏷️ Quản lý sản phẩm, thương hiệu, danh mục
-- 👥 Quản lý người dùng và phân quyền
-- 📦 Quản lý đơn hàng và cập nhật trạng thái
-- 💰 Quản lý thanh toán và mã giảm giá
-- 📈 Báo cáo và phân tích dữ liệu
-- ⚙️ Cấu hình hệ thống
+**Tổng cộng: 24 bảng**
 
 ---
 
-## 🛠️ Công nghệ sử dụng
+## 🗺️ 2. Entity Relationship Diagram (ERD)
 
-### Backend
+### 📊 **Sơ đồ ERD Tổng quan**
 
-| Công nghệ | Phiên bản | Mô tả |
-|-----------|-----------|-------|
-| **Java** | 17 | Ngôn ngữ lập trình chính |
-| **Spring Boot** | 3.2.0 | Framework backend |
-| **Spring Security** | - | Bảo mật và xác thực |
-| **Spring Data JPA** | - | ORM và database access |
-| **JWT** | 0.11.5 | Token-based authentication |
-| **SQL Server** | - | Database |
-| **Maven** | - | Dependency management |
-| **Lombok** | - | Giảm boilerplate code |
-| **ModelMapper** | 3.1.1 | DTO mapping |
-| **Swagger/OpenAPI** | 2.2.0 | API documentation |
-
-### Frontend
-
-| Công nghệ | Phiên bản | Mô tả |
-|-----------|-----------|-------|
-| **Vue.js** | 3.5.22 | Progressive JavaScript framework |
-| **Vue Router** | 4.6.3 | Client-side routing |
-| **Pinia** | 3.0.3 | State management |
-| **Vite** | 7.1.7 | Build tool và dev server |
-| **Element Plus** | 2.11.4 | UI Component library |
-| **Axios** | 1.12.2 | HTTP client |
-| **Chart.js** | 4.5.1 | Data visualization |
-| **vue-chartjs** | 5.3.2 | Vue wrapper cho Chart.js |
-| **XLSX** | 0.18.5 | Export Excel |
-
----
-
-## 💻 Yêu cầu hệ thống
-
-Trước khi bắt đầu cài đặt, đảm bảo máy tính của bạn đã cài đặt:
-
-- ☕ **Java Development Kit (JDK)** 17 hoặc cao hơn
-- 📦 **Apache Maven** 3.6+ hoặc sử dụng Maven wrapper có sẵn
-- 🟢 **Node.js** 18.x hoặc cao hơn
-- 📦 **npm** hoặc **yarn** (đi kèm với Node.js)
-- 🗄️ **Microsoft SQL Server** 2019 hoặc cao hơn
-- 🔧 **SQL Server Management Studio (SSMS)** (khuyến nghị)
-- 💻 IDE: **IntelliJ IDEA** / **Eclipse** (cho Java) và **VS Code** (cho Vue.js)
-
----
-
-## 📥 Cài đặt
-
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/yourusername/sneakery-store.git
-cd sneakery-store
 ```
-
-### 2. Cấu hình Database
-
-#### Bước 2.1: Tạo Database
-
-1. Mở **SQL Server Management Studio (SSMS)**
-2. Kết nối đến SQL Server instance của bạn
-3. Mở file SQL script:
-   ```
-   sneakery-database/Sneakery_DB_V2_Enhanced.sql
-   ```
-4. Chạy script để tạo database và tables
-5. Database `sneakery_db` sẽ được tạo với dữ liệu mẫu
-
-#### Bước 2.2: Cấu hình Connection String
-
-Kiểm tra thông tin kết nối SQL Server của bạn:
-- **Server:** localhost (hoặc địa chỉ server của bạn)
-- **Port:** 1433 (mặc định)
-- **Database:** sneakery_db
-- **Username:** sa (hoặc tài khoản của bạn)
-- **Password:** Cập nhật trong bước tiếp theo
-
-### 3. Cấu hình Backend
-
-#### Bước 3.1: Cấu hình application.properties
-
-Mở file `sneakery-backend/src/main/resources/application.properties` và cập nhật thông tin database:
-
-```properties
-# Database Configuration
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=sneakery_db;encrypt=true;trustServerCertificate=true
-spring.datasource.username=sa
-spring.datasource.password=YOUR_PASSWORD_HERE  # Thay đổi password của bạn
-```
-
-#### Bước 3.2: Cấu hình JWT Secret (Tùy chọn)
-
-Nếu muốn thay đổi JWT secret key, cập nhật:
-
-```properties
-app.jwt.secret=YOUR_BASE64_ENCODED_SECRET_KEY
-app.jwt.expiration-ms=86400000  # 24 giờ
-```
-
-#### Bước 3.3: Cấu hình CORS
-
-Nếu frontend chạy trên port khác, thêm vào:
-
-```properties
-cors.allowed-origins=http://localhost:5173,http://localhost:3000
-```
-
-#### Bước 3.4: Build Backend
-
-```bash
-cd sneakery-backend
-
-# Sử dụng Maven
-mvn clean install
-
-# Hoặc sử dụng Maven Wrapper (Windows)
-.\mvnw.cmd clean install
-
-# Maven Wrapper (Linux/Mac)
-./mvnw clean install
-```
-
-### 4. Cấu hình Frontend
-
-#### Bước 4.1: Cài đặt Dependencies
-
-```bash
-cd sneakery-frontend
-npm install
-```
-
-#### Bước 4.2: Cấu hình API Endpoint (Nếu cần)
-
-Nếu backend chạy trên port hoặc địa chỉ khác, cập nhật trong `src/services/`:
-
-```javascript
-// src/services/authService.js, adminService.js, productService.js
-const API_URL = 'http://localhost:8080/api';  // Đổi nếu cần
+┌─────────────────┐
+│     USERS       │──┐
+│  (Người dùng)   │  │
+└─────────────────┘  │
+                     │
+         ┌───────────┴────────────────────────────┐
+         │                                        │
+         ↓                                        ↓
+┌─────────────────┐                    ┌─────────────────┐
+│     ORDERS      │                    │      CART       │
+│   (Đơn hàng)    │                    │   (Giỏ hàng)    │
+└─────────────────┘                    └─────────────────┘
+         │                                        │
+         ↓                                        ↓
+┌─────────────────┐                    ┌─────────────────┐
+│  ORDER_ITEMS    │                    │   CART_ITEMS    │
+│  (Chi tiết ĐH)  │                    │   (Chi tiết GH) │
+└─────────────────┘                    └─────────────────┘
+         │                                        │
+         └────────────────┬───────────────────────┘
+                          ↓
+                ┌─────────────────┐
+                │  PRODUCT_       │
+                │   VARIANTS      │──────→ ┌─────────────────┐
+                │ (Biến thể SP)   │        │    PRODUCTS     │
+                └─────────────────┘        │   (Sản phẩm)    │
+                                           └─────────────────┘
+                                                    │
+                                    ┌───────────────┼───────────────┐
+                                    ↓               ↓               ↓
+                            ┌───────────┐   ┌───────────┐   ┌───────────┐
+                            │  BRANDS   │   │CATEGORIES │   │  REVIEWS  │
+                            └───────────┘   └───────────┘   └───────────┘
 ```
 
 ---
 
-## 🎮 Chạy ứng dụng
+## 📚 3. Mô tả chi tiết các bảng
 
-### Khởi động Backend
+### 👥 **Nhóm Người dùng**
 
-```bash
-cd sneakery-backend
+#### 📋 **users** (Người dùng)
+Lưu thông tin tài khoản người dùng
 
-# Cách 1: Sử dụng Maven
-mvn spring-boot:run
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `user_id` | BIGINT (PK) | ID tự động tăng |
+| `username` | NVARCHAR(50) | Tên đăng nhập (unique) |
+| `email` | NVARCHAR(100) | Email (unique) |
+| `password_hash` | NVARCHAR(255) | Mật khẩu đã mã hóa |
+| `full_name` | NVARCHAR(100) | Họ tên đầy đủ |
+| `phone_number` | VARCHAR(15) | Số điện thoại |
+| `date_of_birth` | DATE | Ngày sinh |
+| `gender` | VARCHAR(10) | Giới tính (Male/Female/Other) |
+| `avatar_url` | NVARCHAR(500) | Link ảnh đại diện |
+| `is_active` | BIT | Trạng thái kích hoạt |
+| `created_at` | DATETIME | Thời gian tạo |
+| `updated_at` | DATETIME | Thời gian cập nhật |
 
-# Cách 2: Sử dụng Maven Wrapper (Windows)
-.\mvnw.cmd spring-boot:run
+#### 📋 **roles** (Vai trò)
+Định nghĩa các vai trò trong hệ thống
 
-# Cách 3: Chạy file JAR
-java -jar target/sneakery-backend-1.0.0.jar
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `role_id` | BIGINT (PK) | ID vai trò |
+| `role_name` | VARCHAR(50) | Tên vai trò (ADMIN, CUSTOMER) |
+| `description` | NVARCHAR(255) | Mô tả vai trò |
+
+#### 📋 **user_addresses** (Địa chỉ người dùng)
+Lưu địa chỉ giao hàng của khách hàng
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `address_id` | BIGINT (PK) | ID địa chỉ |
+| `user_id` | BIGINT (FK) | ID người dùng |
+| `address_type` | VARCHAR(20) | Loại (Home/Office) |
+| `recipient_name` | NVARCHAR(100) | Tên người nhận |
+| `phone_number` | VARCHAR(15) | SĐT người nhận |
+| `address_line` | NVARCHAR(255) | Địa chỉ chi tiết |
+| `ward` | NVARCHAR(100) | Phường/xã |
+| `district` | NVARCHAR(100) | Quận/huyện |
+| `city` | NVARCHAR(100) | Tỉnh/thành phố |
+| `is_default` | BIT | Địa chỉ mặc định |
+
+---
+
+### 👟 **Nhóm Sản phẩm**
+
+#### 📋 **products** (Sản phẩm)
+Thông tin sản phẩm chính
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `product_id` | BIGINT (PK) | ID sản phẩm |
+| `product_name` | NVARCHAR(200) | Tên sản phẩm |
+| `brand_id` | BIGINT (FK) | ID thương hiệu |
+| `category_id` | BIGINT (FK) | ID danh mục |
+| `description` | NVARCHAR(MAX) | Mô tả chi tiết |
+| `base_price` | DECIMAL(10,2) | Giá gốc |
+| `gender` | VARCHAR(20) | Giới tính (Male/Female/Unisex) |
+| `material` | NVARCHAR(100) | Chất liệu |
+| `is_featured` | BIT | Sản phẩm nổi bật |
+| `is_active` | BIT | Đang bán |
+| `created_at` | DATETIME | Ngày tạo |
+
+#### 📋 **product_variants** (Biến thể sản phẩm)
+⚠️ **QUAN TRỌNG:** Mỗi kết hợp Size + Màu = 1 biến thể
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `variant_id` | BIGINT (PK) | ID biến thể |
+| `product_id` | BIGINT (FK) | ID sản phẩm |
+| `sku` | VARCHAR(100) | Mã SKU duy nhất |
+| `size` | VARCHAR(10) | Size (38, 39, 40...) |
+| `color` | NVARCHAR(50) | Màu sắc |
+| `stock_quantity` | INT | **Số lượng tồn kho** |
+| `price` | DECIMAL(10,2) | Giá bán |
+| `is_available` | BIT | Còn hàng |
+
+**Ví dụ:**
+```
+Product: Nike Air Max 2024
+  - Variant 1: SKU=NIKE-AIR-BLK-42, Size=42, Color=Đen, Stock=10
+  - Variant 2: SKU=NIKE-AIR-BLK-43, Size=43, Color=Đen, Stock=5
+  - Variant 3: SKU=NIKE-AIR-WHT-42, Size=42, Color=Trắng, Stock=8
 ```
 
-Backend sẽ chạy tại: **http://localhost:8080**
+#### 📋 **product_images** (Hình ảnh sản phẩm)
 
-### Khởi động Frontend
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `image_id` | BIGINT (PK) | ID hình ảnh |
+| `product_id` | BIGINT (FK) | ID sản phẩm |
+| `image_url` | NVARCHAR(500) | Link hình ảnh |
+| `is_primary` | BIT | Ảnh chính |
+| `display_order` | INT | Thứ tự hiển thị |
 
-Mở terminal mới:
+#### 📋 **brands** (Thương hiệu)
 
-```bash
-cd sneakery-frontend
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `brand_id` | BIGINT (PK) | ID thương hiệu |
+| `brand_name` | NVARCHAR(100) | Tên thương hiệu |
+| `logo_url` | NVARCHAR(500) | Logo |
+| `description` | NVARCHAR(MAX) | Mô tả |
 
-# Development mode
-npm run dev
+#### 📋 **categories** (Danh mục)
 
-# Build production
-npm run build
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `category_id` | BIGINT (PK) | ID danh mục |
+| `category_name` | NVARCHAR(100) | Tên danh mục |
+| `parent_category_id` | BIGINT (FK) | Danh mục cha (null = gốc) |
+| `description` | NVARCHAR(500) | Mô tả |
 
-# Preview production build
-npm run preview
-```
+---
 
-Frontend sẽ chạy tại: **http://localhost:5173**
+### 🛒 **Nhóm Giỏ hàng**
 
-### 🎉 Truy cập ứng dụng
+#### 📋 **carts** (Giỏ hàng)
 
-- **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:8080/api
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `cart_id` | BIGINT (PK) | ID giỏ hàng |
+| `user_id` | BIGINT (FK) | ID người dùng |
+| `created_at` | DATETIME | Ngày tạo |
+| `updated_at` | DATETIME | Cập nhật gần nhất |
 
-### 🔑 Tài khoản mặc định
+#### 📋 **cart_items** (Chi tiết giỏ hàng)
 
-Sau khi chạy script database, bạn có thể đăng nhập với:
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `cart_item_id` | BIGINT (PK) | ID chi tiết |
+| `cart_id` | BIGINT (FK) | ID giỏ hàng |
+| `variant_id` | BIGINT (FK) | ID biến thể SP |
+| `quantity` | INT | Số lượng |
+| `price_at_add` | DECIMAL(10,2) | Giá khi thêm vào |
+| `added_at` | DATETIME | Thời gian thêm |
 
-**Admin:**
-```
-Email: admin@sneakery.com
-Password: admin123
-```
+---
 
-**Customer:**
-```
-Email: user@sneakery.com
-Password: user123
+### 📦 **Nhóm Đơn hàng**
+
+#### 📋 **orders** (Đơn hàng)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `order_id` | BIGINT (PK) | ID đơn hàng |
+| `user_id` | BIGINT (FK) | ID khách hàng |
+| `order_number` | VARCHAR(50) | Mã đơn hàng (unique) |
+| `order_status` | VARCHAR(50) | Trạng thái đơn |
+| `total_amount` | DECIMAL(10,2) | Tổng tiền |
+| `shipping_fee` | DECIMAL(10,2) | Phí ship |
+| `discount_amount` | DECIMAL(10,2) | Giảm giá |
+| `final_amount` | DECIMAL(10,2) | Tiền thanh toán |
+| `shipping_address` | NVARCHAR(500) | Địa chỉ giao hàng |
+| `phone_number` | VARCHAR(15) | SĐT nhận hàng |
+| `payment_method` | VARCHAR(50) | Phương thức TT |
+| `created_at` | DATETIME | Ngày đặt |
+
+**Các trạng thái đơn hàng:**
+- `PENDING` - Chờ xác nhận
+- `CONFIRMED` - Đã xác nhận
+- `PROCESSING` - Đang xử lý
+- `SHIPPING` - Đang giao hàng
+- `DELIVERED` - Đã giao
+- `CANCELLED` - Đã hủy
+- `RETURNED` - Đã trả hàng
+
+#### 📋 **order_items** (Chi tiết đơn hàng)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `order_item_id` | BIGINT (PK) | ID chi tiết |
+| `order_id` | BIGINT (FK) | ID đơn hàng |
+| `variant_id` | BIGINT (FK) | ID biến thể SP |
+| `quantity` | INT | Số lượng |
+| `unit_price` | DECIMAL(10,2) | Đơn giá |
+| `total_price` | DECIMAL(10,2) | Thành tiền |
+
+#### 📋 **order_status_history** (Lịch sử trạng thái)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `history_id` | BIGINT (PK) | ID lịch sử |
+| `order_id` | BIGINT (FK) | ID đơn hàng |
+| `old_status` | VARCHAR(50) | Trạng thái cũ |
+| `new_status` | VARCHAR(50) | Trạng thái mới |
+| `changed_by` | BIGINT (FK) | Người thay đổi |
+| `changed_at` | DATETIME | Thời gian |
+| `notes` | NVARCHAR(500) | Ghi chú |
+
+---
+
+### 💳 **Nhóm Thanh toán**
+
+#### 📋 **payments** (Giao dịch thanh toán)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `payment_id` | BIGINT (PK) | ID thanh toán |
+| `order_id` | BIGINT (FK) | ID đơn hàng |
+| `payment_method` | VARCHAR(50) | Phương thức |
+| `amount` | DECIMAL(10,2) | Số tiền |
+| `status` | VARCHAR(50) | Trạng thái |
+| `transaction_id` | VARCHAR(100) | Mã giao dịch |
+| `payment_date` | DATETIME | Ngày thanh toán |
+
+**Phương thức thanh toán:**
+- `COD` - Tiền mặt khi nhận hàng
+- `BANK_TRANSFER` - Chuyển khoản
+- `MOMO` - Ví MoMo
+- `ZALOPAY` - ZaloPay
+- `VNPAY` - VNPay
+- `CREDIT_CARD` - Thẻ tín dụng
+
+---
+
+### 🎟️ **Nhóm Khuyến mãi**
+
+#### 📋 **discounts** (Mã giảm giá)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `discount_id` | BIGINT (PK) | ID mã giảm giá |
+| `code` | VARCHAR(50) | Mã code (unique) |
+| `discount_type` | VARCHAR(20) | PERCENTAGE / FIXED |
+| `discount_value` | DECIMAL(10,2) | Giá trị giảm |
+| `min_order_value` | DECIMAL(10,2) | Đơn tối thiểu |
+| `max_discount` | DECIMAL(10,2) | Giảm tối đa |
+| `start_date` | DATETIME | Bắt đầu |
+| `end_date` | DATETIME | Kết thúc |
+| `usage_limit` | INT | Giới hạn sử dụng |
+| `used_count` | INT | Đã dùng |
+
+#### 📋 **flash_sales** (Flash Sale)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `sale_id` | BIGINT (PK) | ID sale |
+| `variant_id` | BIGINT (FK) | ID biến thể |
+| `original_price` | DECIMAL(10,2) | Giá gốc |
+| `sale_price` | DECIMAL(10,2) | Giá sale |
+| `quantity_limit` | INT | Số lượng sale |
+| `sold_quantity` | INT | Đã bán |
+| `start_time` | DATETIME | Bắt đầu |
+| `end_time` | DATETIME | Kết thúc |
+
+#### 📋 **loyalty_points** (Điểm tích lũy)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `point_id` | BIGINT (PK) | ID |
+| `user_id` | BIGINT (FK) | ID khách hàng |
+| `points` | INT | Số điểm |
+| `transaction_type` | VARCHAR(20) | EARN / REDEEM |
+| `order_id` | BIGINT (FK) | ID đơn hàng |
+| `created_at` | DATETIME | Ngày tạo |
+
+---
+
+### ⭐ **Nhóm Đánh giá**
+
+#### 📋 **reviews** (Đánh giá sản phẩm)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `review_id` | BIGINT (PK) | ID đánh giá |
+| `product_id` | BIGINT (FK) | ID sản phẩm |
+| `user_id` | BIGINT (FK) | ID người dùng |
+| `order_item_id` | BIGINT (FK) | ID chi tiết đơn hàng |
+| `rating` | INT | Số sao (1-5) |
+| `title` | NVARCHAR(200) | Tiêu đề |
+| `content` | NVARCHAR(MAX) | Nội dung |
+| `images` | NVARCHAR(MAX) | Link ảnh (JSON) |
+| `is_verified_purchase` | BIT | Đã mua hàng |
+| `created_at` | DATETIME | Ngày đánh giá |
+
+---
+
+### 🔔 **Nhóm Thông báo**
+
+#### 📋 **notifications** (Thông báo)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `notification_id` | BIGINT (PK) | ID thông báo |
+| `user_id` | BIGINT (FK) | ID người nhận |
+| `title` | NVARCHAR(200) | Tiêu đề |
+| `content` | NVARCHAR(MAX) | Nội dung |
+| `type` | VARCHAR(50) | Loại thông báo |
+| `is_read` | BIT | Đã đọc |
+| `created_at` | DATETIME | Ngày tạo |
+
+#### 📋 **wishlist** (Danh sách yêu thích)
+
+| Cột | Kiểu dữ liệu | Mô tả |
+|-----|--------------|-------|
+| `wishlist_id` | BIGINT (PK) | ID |
+| `user_id` | BIGINT (FK) | ID người dùng |
+| `product_id` | BIGINT (FK) | ID sản phẩm |
+| `added_at` | DATETIME | Ngày thêm |
+
+---
+
+## 🔗 4. Các mối quan hệ chính
+
+### 📊 **Ma trận quan hệ**
+
+| Bảng A | Quan hệ | Bảng B | Mô tả |
+|--------|---------|--------|-------|
+| `users` | **1 - N** | `user_addresses` | 1 user có nhiều địa chỉ |
+| `users` | **1 - 1** | `carts` | 1 user có 1 giỏ hàng |
+| `users` | **1 - N** | `orders` | 1 user có nhiều đơn hàng |
+| `products` | **1 - N** | `product_variants` | 1 sản phẩm có nhiều biến thể |
+| `products` | **N - 1** | `brands` | Nhiều sản phẩm thuộc 1 brand |
+| `products` | **N - 1** | `categories` | Nhiều sản phẩm thuộc 1 danh mục |
+| `carts` | **1 - N** | `cart_items` | 1 giỏ hàng có nhiều item |
+| `orders` | **1 - N** | `order_items` | 1 đơn hàng có nhiều item |
+| `product_variants` | **1 - N** | `cart_items` | 1 biến thể xuất hiện ở nhiều giỏ |
+| `product_variants` | **1 - N** | `order_items` | 1 biến thể xuất hiện ở nhiều đơn |
+
+### 🔑 **Foreign Key quan trọng**
+
+```sql
+-- Quan hệ User với Order
+ALTER TABLE orders
+ADD CONSTRAINT FK_orders_users
+FOREIGN KEY (user_id) REFERENCES users(user_id);
+
+-- Quan hệ Order với Order Items
+ALTER TABLE order_items
+ADD CONSTRAINT FK_order_items_orders
+FOREIGN KEY (order_id) REFERENCES orders(order_id);
+
+-- Quan hệ Order Items với Product Variants
+ALTER TABLE order_items
+ADD CONSTRAINT FK_order_items_variants
+FOREIGN KEY (variant_id) REFERENCES product_variants(variant_id);
+
+-- Quan hệ Product Variants với Products
+ALTER TABLE product_variants
+ADD CONSTRAINT FK_variants_products
+FOREIGN KEY (product_id) REFERENCES products(product_id);
 ```
 
 ---
 
-## 📚 API Documentation
+## 🔄 5. Luồng Nghiệp Vụ Chính
 
-### Swagger/OpenAPI
+### 🛒 **Luồng 1: Đặt hàng (Order Flow)**
 
-Truy cập API documentation tại: **http://localhost:8080/swagger-ui.html**
-
-### Các API Endpoints chính
-
-#### Authentication
+#### **Bước 1: Khách hàng xem sản phẩm**
 ```
-POST   /api/auth/register          - Đăng ký tài khoản
-POST   /api/auth/login             - Đăng nhập
-POST   /api/auth/refresh-token     - Làm mới token
-GET    /api/auth/me                - Lấy thông tin user hiện tại
+1. User vào trang web
+2. Xem danh sách products
+3. Click vào product để xem chi tiết
+4. Chọn size, màu → Xác định variant_id
 ```
 
-#### Products
-```
-GET    /api/products               - Lấy danh sách sản phẩm
-GET    /api/products/{id}          - Lấy chi tiết sản phẩm
-GET    /api/products/search        - Tìm kiếm sản phẩm
-GET    /api/products/filter        - Lọc sản phẩm
+#### **Bước 2: Thêm vào giỏ hàng**
+```sql
+-- Kiểm tra tồn kho
+SELECT stock_quantity
+FROM product_variants
+WHERE variant_id = @variant_id;
+
+-- Nếu còn hàng → Thêm vào cart_items
+INSERT INTO cart_items (cart_id, variant_id, quantity, price_at_add)
+VALUES (@cart_id, @variant_id, @quantity, @current_price);
 ```
 
-#### Cart
+#### **Bước 3: Thanh toán (Checkout)**
 ```
-GET    /api/cart                   - Xem giỏ hàng
-POST   /api/cart/add               - Thêm sản phẩm vào giỏ
-PUT    /api/cart/update/{id}       - Cập nhật số lượng
-DELETE /api/cart/remove/{id}       - Xóa sản phẩm khỏi giỏ
-```
-
-#### Orders
-```
-POST   /api/orders                 - Tạo đơn hàng
-GET    /api/orders                 - Lấy danh sách đơn hàng
-GET    /api/orders/{id}            - Chi tiết đơn hàng
-PUT    /api/orders/{id}/cancel     - Hủy đơn hàng
+1. User review giỏ hàng
+2. Nhập địa chỉ giao hàng
+3. Chọn phương thức thanh toán
+4. Nhập mã giảm giá (nếu có)
+5. Xác nhận đặt hàng
 ```
 
-#### Admin APIs
+#### **Bước 4: Tạo đơn hàng**
+```sql
+-- 1. Tạo order
+INSERT INTO orders (user_id, order_number, order_status, total_amount, ...)
+VALUES (@user_id, @order_number, 'PENDING', @total, ...);
+
+-- 2. Copy cart_items sang order_items
+INSERT INTO order_items (order_id, variant_id, quantity, unit_price)
+SELECT @new_order_id, variant_id, quantity, price_at_add
+FROM cart_items
+WHERE cart_id = @cart_id;
+
+-- 3. TRỪ TỒN KHO (QUAN TRỌNG!)
+UPDATE product_variants
+SET stock_quantity = stock_quantity - @quantity
+WHERE variant_id = @variant_id;
+
+-- 4. Xóa giỏ hàng
+DELETE FROM cart_items WHERE cart_id = @cart_id;
 ```
-GET    /api/admin/users            - Quản lý người dùng
-POST   /api/admin/products         - Tạo sản phẩm mới
-PUT    /api/admin/products/{id}    - Cập nhật sản phẩm
-DELETE /api/admin/products/{id}    - Xóa sản phẩm
-PUT    /api/admin/orders/{id}      - Cập nhật trạng thái đơn hàng
-GET    /api/admin/analytics        - Thống kê, báo cáo
+
+#### **Bước 5: Xử lý thanh toán**
+```sql
+-- Tạo payment record
+INSERT INTO payments (order_id, payment_method, amount, status)
+VALUES (@order_id, @method, @amount, 'PENDING');
+
+-- Nếu COD → Status = PENDING
+-- Nếu Online → Gọi payment gateway → Update status
+```
+
+#### **Bước 6: Cập nhật trạng thái đơn hàng**
+```
+PENDING → CONFIRMED → PROCESSING → SHIPPING → DELIVERED
+```
+
+Mỗi lần thay đổi trạng thái → Ghi vào `order_status_history`
+
+---
+
+### 🔄 **Luồng 2: Đổi trả hàng (Return Flow)**
+
+#### **Điều kiện đổi trả:**
+- Trong vòng 7-14 ngày
+- Sản phẩm chưa qua sử dụng
+- Còn nguyên tem, hộp
+
+#### **Quy trình:**
+```
+1. Khách hàng tạo yêu cầu đổi trả
+   → INSERT INTO returns (order_id, reason, ...)
+
+2. Admin xem xét
+   → UPDATE returns SET status = 'APPROVED'/'REJECTED'
+
+3. Nếu APPROVED:
+   - Khách gửi hàng về
+   - Admin kiểm tra hàng
+   - Cộng lại tồn kho
+     UPDATE product_variants
+     SET stock_quantity = stock_quantity + @returned_qty
+
+4. Hoàn tiền hoặc đổi size mới
+   - Nếu hoàn tiền → Tạo refund payment
+   - Nếu đổi size → Tạo đơn hàng mới
 ```
 
 ---
 
-## 📁 Cấu trúc dự án
+### ⚡ **Luồng 3: Flash Sale**
 
+#### **Thiết lập Flash Sale:**
+```sql
+-- 1. Admin tạo Flash Sale
+INSERT INTO flash_sales (
+    variant_id,
+    original_price,
+    sale_price,
+    quantity_limit,
+    start_time,
+    end_time
+)
+VALUES (
+    @variant_id,
+    2500000, -- Giá gốc
+    1500000, -- Giá sale
+    50,      -- Giới hạn 50 sản phẩm
+    '2025-01-01 00:00:00',
+    '2025-01-01 23:59:59'
+);
 ```
-sneakery-store/
-│
-├── sneakery-backend/              # Spring Boot Backend
-│   ├── src/main/java/com/sneakery/store/
-│   │   ├── config/                # Cấu hình (Security, CORS, etc.)
-│   │   ├── controller/            # REST Controllers
-│   │   ├── dto/                   # Data Transfer Objects
-│   │   ├── entity/                # JPA Entities
-│   │   ├── repository/            # JPA Repositories
-│   │   ├── service/               # Business Logic
-│   │   ├── security/              # JWT, Authentication
-│   │   ├── exception/             # Exception Handlers
-│   │   └── util/                  # Utility Classes
-│   ├── src/main/resources/
-│   │   └── application.properties # Cấu hình ứng dụng
-│   └── pom.xml                    # Maven dependencies
-│
-├── sneakery-frontend/             # Vue.js Frontend
-│   ├── src/
-│   │   ├── assets/                # Images, Styles
-│   │   ├── components/            # Vue Components
-│   │   │   ├── charts/            # Chart components
-│   │   │   ├── common/            # Shared components
-│   │   │   └── products/          # Product components
-│   │   ├── views/                 # Page Views
-│   │   │   ├── admin/             # Admin pages
-│   │   │   ├── user/              # User pages
-│   │   │   └── common/            # Shared pages
-│   │   ├── routers/               # Vue Router config
-│   │   ├── services/              # API Services
-│   │   ├── stores/                # Pinia Stores
-│   │   ├── layouts/               # Layout components
-│   │   ├── App.vue                # Root component
-│   │   └── main.js                # Entry point
-│   ├── package.json               # NPM dependencies
-│   └── vite.config.js             # Vite configuration
-│
-└── sneakery-database/             # Database Scripts
-    ├── Sneakery_DB_V2_Enhanced.sql # Database schema + data
-    └── Sneakery_DB_Template.sql    # Template schema
+
+#### **Khi khách mua:**
+```sql
+-- 1. Kiểm tra còn slot Flash Sale không
+SELECT sold_quantity, quantity_limit
+FROM flash_sales
+WHERE sale_id = @sale_id
+  AND GETDATE() BETWEEN start_time AND end_time;
+
+-- 2. Nếu còn slot → Cho phép mua
+--    Giá lấy từ flash_sales.sale_price
+
+-- 3. Cập nhật số lượng đã bán
+UPDATE flash_sales
+SET sold_quantity = sold_quantity + @quantity
+WHERE sale_id = @sale_id;
 ```
 
 ---
 
-## ⚠️ Các lưu ý quan trọng
+### 🎟️ **Luồng 4: Sử dụng mã giảm giá**
 
-### Security
+#### **Khi checkout:**
+```sql
+-- 1. User nhập mã: "GIAM20"
+SELECT *
+FROM discounts
+WHERE code = 'GIAM20'
+  AND GETDATE() BETWEEN start_date AND end_date
+  AND used_count < usage_limit
+  AND @order_total >= min_order_value;
 
-1. **Đổi JWT Secret:** Trong môi trường production, nhớ thay đổi `app.jwt.secret` thành một giá trị mạnh và bảo mật
-2. **Database Password:** Không commit password thật vào Git, sử dụng environment variables
-3. **CORS Configuration:** Chỉ cho phép origins đáng tin cậy trong production
+-- 2. Tính giảm giá
+IF discount_type = 'PERCENTAGE':
+    discount_amount = @order_total * (discount_value / 100)
+    IF discount_amount > max_discount:
+        discount_amount = max_discount
 
-### Performance
+IF discount_type = 'FIXED':
+    discount_amount = discount_value
 
-1. **Database Indexes:** Database đã được tối ưu với các indexes cần thiết
-2. **Caching:** Cân nhắc thêm Redis cho caching trong production
-3. **Connection Pool:** Điều chỉnh connection pool size phù hợp với traffic
-
-### Development
-
-1. **Hot Reload:** Frontend hỗ trợ hot reload khi phát triển
-2. **DevTools:** Backend có Spring Boot DevTools cho auto-restart
-3. **Logging:** Kiểm tra logs trong console để debug
-
----
-
-## 🔧 Troubleshooting
-
-### Backend không khởi động được
-
-**Lỗi:** `Cannot connect to database`
-```
-✅ Kiểm tra SQL Server đã được khởi động
-✅ Kiểm tra username/password trong application.properties
-✅ Kiểm tra database đã được tạo chưa
-✅ Kiểm tra firewall có block port 1433 không
-```
-
-**Lỗi:** `Port 8080 already in use`
-```
-✅ Đổi port trong application.properties: server.port=8081
-✅ Hoặc kill process đang dùng port 8080
-```
-
-### Frontend không kết nối được Backend
-
-**Lỗi:** `Network Error / CORS Error`
-```
-✅ Kiểm tra backend đã chạy chưa
-✅ Kiểm tra CORS configuration trong application.properties
-✅ Kiểm tra API_URL trong frontend services
-```
-
-### Lỗi khi build
-
-**Maven build failed:**
-```bash
-# Clear Maven cache
-mvn clean
-mvn dependency:purge-local-repository
-mvn install
-```
-
-**NPM install failed:**
-```bash
-# Clear cache và reinstall
-rm -rf node_modules package-lock.json
-npm cache clean --force
-npm install
-```
-
-### Lỗi JWT Token
-
-**Token expired hoặc invalid:**
-```
-✅ Xóa localStorage trong browser và đăng nhập lại
-✅ Kiểm tra system time đồng bộ
-✅ Kiểm tra JWT secret giống nhau giữa các lần khởi động
+-- 3. Cập nhật số lần sử dụng
+UPDATE discounts
+SET used_count = used_count + 1
+WHERE discount_id = @discount_id;
 ```
 
 ---
 
-## 🤝 Contributing
+### 👑 **Luồng 5: Tích điểm thành viên**
 
-Chúng tôi luôn hoan nghênh mọi đóng góp! Để contribute:
+#### **Khi đơn hàng hoàn thành:**
+```sql
+-- Quy tắc: 1.000 VND = 1 điểm
 
-1. Fork repository
-2. Tạo branch mới: `git checkout -b feature/AmazingFeature`
-3. Commit changes: `git commit -m 'Add some AmazingFeature'`
-4. Push to branch: `git push origin feature/AmazingFeature`
-5. Tạo Pull Request
+-- 1. Tính điểm
+SET @points = @final_amount / 1000;
 
-### Coding Standards
+-- 2. Cộng điểm cho user
+INSERT INTO loyalty_points (
+    user_id,
+    points,
+    transaction_type,
+    order_id
+)
+VALUES (
+    @user_id,
+    @points,
+    'EARN',
+    @order_id
+);
+```
 
-- **Backend:** Tuân thủ Java Code Conventions và Spring Boot best practices
-- **Frontend:** Sử dụng Vue.js Style Guide
-- **Commits:** Sử dụng Conventional Commits format
-- **Testing:** Viết tests cho các tính năng mới
+#### **Khi đổi điểm:**
+```sql
+-- 1. Kiểm tra số điểm hiện có
+SELECT SUM(points)
+FROM loyalty_points
+WHERE user_id = @user_id;
+
+-- 2. Trừ điểm
+INSERT INTO loyalty_points (
+    user_id,
+    points,
+    transaction_type
+)
+VALUES (
+    @user_id,
+    -@redeem_points, -- Số âm
+    'REDEEM'
+);
+```
 
 ---
 
-## 📝 License
+### ⭐ **Luồng 6: Đánh giá sản phẩm**
 
-Dự án này được phân phối dưới giấy phép MIT License. Xem file `LICENSE` để biết thêm chi tiết.
+#### **Điều kiện:**
+- Chỉ đánh giá được khi đã mua hàng
+- Mỗi order_item chỉ đánh giá 1 lần
+
+```sql
+-- 1. Kiểm tra đã mua chưa
+SELECT *
+FROM order_items oi
+JOIN orders o ON oi.order_id = o.order_id
+WHERE o.user_id = @user_id
+  AND oi.variant_id IN (
+      SELECT variant_id FROM product_variants
+      WHERE product_id = @product_id
+  )
+  AND o.order_status = 'DELIVERED';
+
+-- 2. Tạo review
+INSERT INTO reviews (
+    product_id,
+    user_id,
+    order_item_id,
+    rating,
+    title,
+    content,
+    is_verified_purchase
+)
+VALUES (
+    @product_id,
+    @user_id,
+    @order_item_id,
+    @rating, -- 1-5 sao
+    @title,
+    @content,
+    1 -- Đã mua hàng = verified
+);
+```
 
 ---
 
-## 📞 Liên hệ & Hỗ trợ
+## 📈 **Các Trigger và Stored Procedure quan trọng**
 
-- **Email:** support@sneakery.com
-- **Website:** https://sneakery.com
-- **Issues:** https://github.com/yourusername/sneakery-store/issues
+### 🔔 **Trigger 1: Cảnh báo tồn kho thấp**
+```sql
+CREATE TRIGGER trg_low_stock_alert
+ON product_variants
+AFTER UPDATE
+AS
+BEGIN
+    -- Nếu stock_quantity < 10 → Tạo notification cho Admin
+    INSERT INTO notifications (user_id, title, content, type)
+    SELECT
+        (SELECT user_id FROM users WHERE role_id = 1), -- Admin
+        N'Cảnh báo tồn kho',
+        N'SKU ' + i.sku + N' chỉ còn ' + CAST(i.stock_quantity AS NVARCHAR) + N' sản phẩm',
+        'LOW_STOCK'
+    FROM inserted i
+    WHERE i.stock_quantity < 10
+      AND i.stock_quantity != (SELECT stock_quantity FROM deleted WHERE variant_id = i.variant_id);
+END;
+```
+
+### 🔄 **Trigger 2: Tự động cập nhật stock khi hủy đơn**
+```sql
+CREATE TRIGGER trg_restore_stock_on_cancel
+ON orders
+AFTER UPDATE
+AS
+BEGIN
+    IF UPDATE(order_status)
+    BEGIN
+        -- Nếu đơn hàng chuyển sang CANCELLED
+        IF EXISTS (SELECT 1 FROM inserted WHERE order_status = 'CANCELLED')
+        BEGIN
+            -- Cộng lại số lượng vào stock
+            UPDATE pv
+            SET stock_quantity = stock_quantity + oi.quantity
+            FROM product_variants pv
+            JOIN order_items oi ON pv.variant_id = oi.variant_id
+            JOIN inserted i ON oi.order_id = i.order_id
+            WHERE i.order_status = 'CANCELLED';
+        END
+    END
+END;
+```
+
+### 📊 **Stored Procedure: Thống kê doanh thu**
+```sql
+CREATE PROCEDURE sp_get_revenue_report
+    @start_date DATE,
+    @end_date DATE
+AS
+BEGIN
+    SELECT
+        CAST(created_at AS DATE) AS order_date,
+        COUNT(*) AS total_orders,
+        SUM(final_amount) AS total_revenue,
+        AVG(final_amount) AS avg_order_value
+    FROM orders
+    WHERE order_status NOT IN ('CANCELLED', 'RETURNED')
+      AND created_at BETWEEN @start_date AND @end_date
+    GROUP BY CAST(created_at AS DATE)
+    ORDER BY order_date DESC;
+END;
+```
 
 ---
 
-## 🙏 Acknowledgments
+## ✅ Checklist Tối ưu Database
 
-- Spring Boot Team
-- Vue.js Team
-- Element Plus Team
-- Tất cả contributors và open-source community
+### 🚀 **Performance**
+- [ ] Tạo INDEX cho các cột được query nhiều
+  - `products.product_name`
+  - `product_variants.sku`
+  - `orders.order_number`
+  - `users.email`
+
+### 🔒 **Security**
+- [ ] Không lưu password dạng plaintext (dùng BCrypt)
+- [ ] Phân quyền database: Read-only cho reports
+- [ ] Backup database định kỳ
+
+### 📊 **Data Integrity**
+- [ ] Tất cả FK có constraint ON DELETE/UPDATE
+- [ ] Kiểm tra stock_quantity >= 0
+- [ ] Validate email format, phone format
 
 ---
 
 <div align="center">
 
-**⭐ Nếu project hữu ích, đừng quên cho chúng tôi một star nhé! ⭐**
+**📞 Liên hệ:** support@sneakery.com
 
 Made with ❤️ by Sneakery Team
 
 </div>
-
