@@ -28,7 +28,7 @@ public class Coupon {
     @Column(name = "discount_type")
     private String discountType; // 'percent' hoặc 'fixed'
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "discount_value", nullable = false)
     private BigDecimal value;
 
     @Column(name = "max_discount_amount")

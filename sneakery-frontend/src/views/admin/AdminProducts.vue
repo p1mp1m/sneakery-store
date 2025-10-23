@@ -1603,7 +1603,7 @@ onMounted(async () => {
 }
 
 .products-table thead {
-  background: var(--bg-secondary);
+  background: var(--table-header-bg);
 }
 
 .products-table th {
@@ -2169,7 +2169,7 @@ onMounted(async () => {
 }
 
 .preview-table thead {
-  background: var(--bg-secondary);
+  background: var(--table-header-bg);
   position: sticky;
   top: 0;
   z-index: 1;

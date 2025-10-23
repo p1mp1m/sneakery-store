@@ -1012,7 +1012,7 @@ onMounted(() => {
 }
 
 .admin-table thead {
-  background: var(--gradient-primary);
+  background: var(--table-header-bg);
 }
 
 .admin-table th {

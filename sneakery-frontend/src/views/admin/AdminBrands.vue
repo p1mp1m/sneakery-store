@@ -846,7 +846,7 @@ onMounted(() => {
 }
 
 .brands-table thead {
-  background: var(--gradient-primary);
+  background: var(--table-header-bg);
 }
 
 .brands-table th {

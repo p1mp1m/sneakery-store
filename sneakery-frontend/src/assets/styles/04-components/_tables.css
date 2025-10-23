@@ -64,9 +64,9 @@
 }
 
 .table-enhanced thead th {
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  border-bottom: none;
+  background: var(--table-header-bg);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-primary);
 }
 
 .table-enhanced tbody tr {

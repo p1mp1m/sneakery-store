@@ -588,7 +588,7 @@ onMounted(() => {
 }
 
 .table thead {
-  background: var(--gradient-primary);
+  background: var(--table-header-bg);
   border-bottom: 2px solid var(--border-primary);
 }
 
