@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO cho Product Card hiển thị trong grid/list
+ * Chứa đầy đủ thông tin cần thiết để render product card ở frontend
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,5 +21,19 @@ public class ProductCardDto {
     private String slug;
     private String brandName;
     private String imageUrl; // Ảnh đại diện của sản phẩm
-    private BigDecimal price;    // Giá (ưu tiên giá sale nếu có)
+    
+    // Pricing
+    private BigDecimal priceBase;    // Giá gốc
+    private BigDecimal priceSale;    // Giá sale (nếu có)
+    private BigDecimal price;        // Giá hiển thị (ưu tiên sale, fallback base)
+    
+    // Stats & Badges
+    private Double avgRating;        // Rating trung bình (0-5)
+    private Integer reviewCount;     // Số lượng reviews
+    private Boolean isNew;           // Badge "NEW"
+    private Boolean isFeatured;      // Badge "FEATURED"
+    
+    // Stock status
+    private Integer totalStock;      // Tổng số lượng tồn kho (tất cả variants)
+    private Boolean inStock;         // Còn hàng hay không
 }

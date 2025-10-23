@@ -67,12 +67,6 @@ router.beforeEach(async (to, from, next) => {
   const requiresAdmin = to.meta.requiresAdmin;
   const isUserRoute = to.meta.isUserRoute;
 
-  // ====== 0. KIỂM TRA TRANG CHỦ - REDIRECT ĐẾN LOGIN NẾU CHƯA ĐĂNG NHẬP ======
-  if (to.path === '/' && !authStore.isAuthenticated) {
-    next({ path: '/login' });
-    return;
-  }
-
   // ====== 1. KIỂM TRA ADMIN ROUTES (/admin/*) ======
   if (requiresAdmin) {
     // Chỉ ADMIN/MODERATOR mới được vào
@@ -107,7 +101,7 @@ router.beforeEach(async (to, from, next) => {
       query: { redirect: to.fullPath }
     });
   } 
-  // ====== 5. CÁC TRƯỜNG HỢP KHÁC → CHO PHÉP ======
+  // ====== 5. CÁC TRƯỜNG HỢP KHÁC (PUBLIC PAGES) → CHO PHÉP ======
   else {
     next();
   }

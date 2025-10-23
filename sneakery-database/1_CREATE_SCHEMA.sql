@@ -1,11 +1,8 @@
 -- =====================================================
--- SNEAKERY E-COMMERCE DATABASE - VERSION 3.1 (SYNCHRONIZED)
+-- SNEAKERY E-COMMERCE - SCHEMA ONLY
 -- =====================================================
--- Description: Phiên bản đồng bộ hoàn chỉnh, bao gồm:
---   - Tất cả các trường và tính năng từ V2
---   - Các bảng mới từ V3 (Flash_Sales, Loyalty_Points, Return_Requests, Email_Templates)
---   - Full indexing, views, stored procedures, triggers
--- Date: 2025-10-22
+-- File này CHỈ tạo database structure (tables, indexes, views, procedures)
+-- KHÔNG insert bất kỳ dữ liệu nào
 -- =====================================================
 
 -- Drop database if exists (BE CAREFUL!)
@@ -23,8 +20,13 @@ GO
 USE sneakery_db;
 GO
 
+PRINT '=====================================================';
+PRINT 'DANG TAO SCHEMA...';
+PRINT '=====================================================';
+PRINT '';
+
 -- =====================================================
--- 1. USERS TABLE (Enhanced with OAuth & Password Reset)
+-- 1. USERS TABLE
 -- =====================================================
 CREATE TABLE Users (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -36,25 +38,21 @@ CREATE TABLE Users (
     date_of_birth DATE,
     gender NVARCHAR(10) CHECK (gender IN (N'Nam', N'Nữ', N'Khác')),
     
-    -- Role & Status
     role VARCHAR(20) DEFAULT 'USER' CHECK (role IN ('USER', 'ADMIN', 'MODERATOR')),
     is_active BIT DEFAULT 1,
     is_email_verified BIT DEFAULT 0,
     email_verification_token VARCHAR(255),
     
-    -- Password Reset
     password_reset_token VARCHAR(255),
     password_reset_expires DATETIME2,
     
-    -- OAuth Support
     google_id VARCHAR(255),
     facebook_id VARCHAR(255),
     
-    -- Audit
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
     last_login_at DATETIME2,
-    deleted_at DATETIME2 NULL -- Soft delete
+    deleted_at DATETIME2 NULL
 );
 
 CREATE INDEX idx_users_email ON Users(email);
@@ -64,7 +62,7 @@ CREATE INDEX idx_users_deleted ON Users(deleted_at);
 GO
 
 -- =====================================================
--- 2. BRANDS TABLE (Enhanced)
+-- 2. BRANDS TABLE
 -- =====================================================
 CREATE TABLE Brands (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -85,7 +83,7 @@ CREATE INDEX idx_brands_active ON Brands(is_active);
 GO
 
 -- =====================================================
--- 3. CATEGORIES TABLE (Enhanced - Nested Set Model)
+-- 3. CATEGORIES TABLE
 -- =====================================================
 CREATE TABLE Categories (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -94,7 +92,6 @@ CREATE TABLE Categories (
     description NVARCHAR(MAX),
     image_url VARCHAR(500),
     
-    -- Nested Set Model for better hierarchy queries
     parent_id INT NULL,
     lft INT NOT NULL,
     rgt INT NOT NULL,
@@ -117,7 +114,7 @@ CREATE INDEX idx_categories_active ON Categories(is_active);
 GO
 
 -- =====================================================
--- 4. PRODUCTS TABLE (Enhanced with SEO)
+-- 4. PRODUCTS TABLE
 -- =====================================================
 CREATE TABLE Products (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -127,17 +124,14 @@ CREATE TABLE Products (
     description NVARCHAR(MAX),
     short_description NVARCHAR(500),
     
-    -- SEO
     meta_title NVARCHAR(255),
     meta_description NVARCHAR(500),
     meta_keywords NVARCHAR(500),
     
-    -- Status
     is_active BIT DEFAULT 1,
     is_featured BIT DEFAULT 0,
     is_new BIT DEFAULT 0,
     
-    -- Stats (denormalized for performance)
     view_count INT DEFAULT 0,
     order_count INT DEFAULT 0,
     avg_rating DECIMAL(3,2) DEFAULT 0.00,
@@ -177,28 +171,24 @@ CREATE INDEX idx_pc_category ON Product_Categories(category_id);
 GO
 
 -- =====================================================
--- 6. PRODUCT_VARIANTS TABLE (Enhanced)
+-- 6. PRODUCT_VARIANTS TABLE
 -- =====================================================
 CREATE TABLE Product_Variants (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
     product_id BIGINT NOT NULL,
     sku VARCHAR(100) NOT NULL UNIQUE,
     
-    -- Variant attributes
     size VARCHAR(20) NOT NULL,
     color NVARCHAR(50) NOT NULL,
     
-    -- Pricing
     price_base DECIMAL(18,2) NOT NULL CHECK (price_base >= 0),
     price_sale DECIMAL(18,2) CHECK (price_sale >= 0),
-    cost_price DECIMAL(18,2) CHECK (cost_price >= 0), -- For profit calculation
+    cost_price DECIMAL(18,2) CHECK (cost_price >= 0),
     
-    -- Inventory
     stock_quantity INT NOT NULL DEFAULT 0 CHECK (stock_quantity >= 0),
     low_stock_threshold INT DEFAULT 10,
-    weight_grams INT, -- For shipping calculation
+    weight_grams INT,
     
-    -- Media
     image_url VARCHAR(500),
     
     is_active BIT DEFAULT 1,
@@ -279,7 +269,7 @@ CREATE INDEX idx_wishlists_product ON Wishlists(product_id);
 GO
 
 -- =====================================================
--- 10. ADDRESSES TABLE (Enhanced)
+-- 10. ADDRESSES TABLE
 -- =====================================================
 CREATE TABLE Addresses (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -288,15 +278,13 @@ CREATE TABLE Addresses (
     recipient_name NVARCHAR(255) NOT NULL,
     phone VARCHAR(20) NOT NULL,
     
-    -- Address details
     line1 NVARCHAR(255) NOT NULL,
     line2 NVARCHAR(255),
-    ward NVARCHAR(100), -- Phường/Xã
-    district NVARCHAR(100), -- Quận/Huyện
-    city NVARCHAR(100) NOT NULL, -- Tỉnh/TP
+    ward NVARCHAR(100),
+    district NVARCHAR(100),
+    city NVARCHAR(100) NOT NULL,
     postal_code VARCHAR(20),
     
-    -- Location (for future features)
     latitude DECIMAL(10,8),
     longitude DECIMAL(11,8),
     
@@ -315,33 +303,28 @@ CREATE INDEX idx_addresses_default ON Addresses(is_default);
 GO
 
 -- =====================================================
--- 11. COUPONS TABLE (Enhanced)
+-- 11. COUPONS TABLE
 -- =====================================================
 CREATE TABLE Coupons (
     id INT PRIMARY KEY IDENTITY(1,1),
     code VARCHAR(50) NOT NULL UNIQUE,
     description NVARCHAR(MAX),
     
-    -- Discount
     discount_type VARCHAR(20) NOT NULL CHECK (discount_type IN ('fixed', 'percentage')),
     discount_value DECIMAL(18,2) NOT NULL CHECK (discount_value > 0),
     
-    -- Constraints
     min_order_amount DECIMAL(18,2),
     max_discount_amount DECIMAL(18,2),
     
-    -- Validity
     start_at DATETIME2 NOT NULL,
     end_at DATETIME2 NOT NULL,
     
-    -- Usage limits
     max_uses INT,
     uses_count INT DEFAULT 0,
     max_uses_per_user INT DEFAULT 1,
     
-    -- Applicability
     applicable_to VARCHAR(20) CHECK (applicable_to IN ('all', 'brand', 'category', 'product')),
-    applicable_id INT, -- brand_id, category_id, or product_id
+    applicable_id INT,
     
     is_active BIT DEFAULT 1,
     created_at DATETIME2 DEFAULT GETDATE(),
@@ -405,7 +388,7 @@ CREATE INDEX idx_loyalty_expires ON Loyalty_Points(expires_at);
 GO
 
 -- =====================================================
--- 14. CARTS TABLE (Enhanced)
+-- 14. CARTS TABLE
 -- =====================================================
 CREATE TABLE Carts (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -443,18 +426,16 @@ CREATE INDEX idx_cart_items_variant ON Cart_Items(variant_id);
 GO
 
 -- =====================================================
--- 16. ORDERS TABLE (Enhanced)
+-- 16. ORDERS TABLE
 -- =====================================================
 CREATE TABLE Orders (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
     user_id BIGINT NOT NULL,
-    order_number VARCHAR(50) NOT NULL UNIQUE, -- e.g., ORD-20250122-0001
+    order_number VARCHAR(50) NOT NULL UNIQUE,
     
-    -- Addresses
     address_shipping_id BIGINT NOT NULL,
     address_billing_id BIGINT,
     
-    -- Pricing
     subtotal DECIMAL(18,2) NOT NULL,
     shipping_fee DECIMAL(18,2) DEFAULT 0,
     discount_amount DECIMAL(18,2) DEFAULT 0,
@@ -465,23 +446,19 @@ CREATE TABLE Orders (
     points_earned INT DEFAULT 0,
     points_used INT DEFAULT 0,
     
-    -- Status
     status VARCHAR(50) DEFAULT 'pending' CHECK (status IN (
         'pending', 'confirmed', 'processing', 'packed', 
         'shipped', 'delivered', 'cancelled', 'refunded'
     )),
     
-    -- Shipping
     shipping_method VARCHAR(50),
     tracking_number VARCHAR(100),
     estimated_delivery_at DATETIME2,
     delivered_at DATETIME2,
     
-    -- Notes
     customer_note NVARCHAR(MAX),
     admin_note NVARCHAR(MAX),
     
-    -- Timestamps
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
     cancelled_at DATETIME2,
@@ -506,7 +483,6 @@ CREATE TABLE Order_Details (
     order_id BIGINT NOT NULL,
     variant_id BIGINT NOT NULL,
     
-    -- Snapshot at time of order
     product_name NVARCHAR(255) NOT NULL,
     variant_sku VARCHAR(100) NOT NULL,
     size VARCHAR(20) NOT NULL,
@@ -534,7 +510,7 @@ CREATE TABLE Order_Status_Histories (
     order_id BIGINT NOT NULL,
     status VARCHAR(50) NOT NULL,
     note NVARCHAR(MAX),
-    changed_by BIGINT, -- user_id of admin who made the change
+    changed_by BIGINT,
     
     created_at DATETIME2 DEFAULT GETDATE(),
     
@@ -556,7 +532,7 @@ CREATE TABLE Return_Requests (
     reason NVARCHAR(MAX) NOT NULL,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
     
-    images_json NVARCHAR(MAX), -- JSON array of image URLs
+    images_json NVARCHAR(MAX),
     
     admin_note NVARCHAR(MAX),
     approved_by BIGINT,
@@ -576,7 +552,7 @@ CREATE INDEX idx_return_status ON Return_Requests(status);
 GO
 
 -- =====================================================
--- 20. PAYMENTS TABLE (Enhanced)
+-- 20. PAYMENTS TABLE
 -- =====================================================
 CREATE TABLE Payments (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -591,7 +567,6 @@ CREATE TABLE Payments (
         'pending', 'processing', 'completed', 'failed', 'refunded'
     )),
     
-    -- Payment gateway details
     transaction_id VARCHAR(255),
     gateway_response TEXT,
     
@@ -610,38 +585,34 @@ CREATE INDEX idx_payments_transaction ON Payments(transaction_id);
 GO
 
 -- =====================================================
--- 21. REVIEWS TABLE (Enhanced)
+-- 21. REVIEWS TABLE
 -- =====================================================
 CREATE TABLE Reviews (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
     product_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    order_id BIGINT, -- For verified purchase
+    order_id BIGINT,
     
     rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     title NVARCHAR(255),
     body NVARCHAR(MAX),
     
-    -- Images
     image_url_1 VARCHAR(500),
     image_url_2 VARCHAR(500),
     image_url_3 VARCHAR(500),
-    images_json NVARCHAR(MAX), -- Alternative: JSON array
+    images_json NVARCHAR(MAX),
     
-    -- Moderation
     is_approved BIT DEFAULT 0,
     is_verified_purchase BIT DEFAULT 0,
     
-    -- Engagement
     helpful_count INT DEFAULT 0,
     unhelpful_count INT DEFAULT 0,
     
-    -- Admin reply
     reply_text NVARCHAR(MAX),
     replied_at DATETIME2,
     replied_by BIGINT,
     
-    approved_by BIGINT, -- admin user_id
+    approved_by BIGINT,
     approved_at DATETIME2,
     
     created_at DATETIME2 DEFAULT GETDATE(),
@@ -669,7 +640,7 @@ CREATE TABLE Email_Templates (
     template_name VARCHAR(100) NOT NULL UNIQUE,
     subject NVARCHAR(255) NOT NULL,
     body NVARCHAR(MAX) NOT NULL,
-    variables NVARCHAR(500), -- Comma-separated: {name},{order_id},{total}
+    variables NVARCHAR(500),
     
     is_active BIT DEFAULT 1,
     created_at DATETIME2 DEFAULT GETDATE(),
@@ -706,7 +677,7 @@ CREATE INDEX idx_notifications_created ON Notifications(created_at DESC);
 GO
 
 -- =====================================================
--- 24. INVENTORY_LOGS TABLE (Track stock changes)
+-- 24. INVENTORY_LOGS TABLE
 -- =====================================================
 CREATE TABLE Inventory_Logs (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -720,8 +691,8 @@ CREATE TABLE Inventory_Logs (
     quantity_change INT NOT NULL,
     quantity_after INT NOT NULL,
     
-    reference_type VARCHAR(50), -- 'order', 'manual', etc.
-    reference_id BIGINT, -- order_id if applicable
+    reference_type VARCHAR(50),
+    reference_id BIGINT,
     
     note NVARCHAR(MAX),
     changed_by BIGINT,
@@ -737,7 +708,7 @@ CREATE INDEX idx_inventory_logs_created ON Inventory_Logs(created_at DESC);
 GO
 
 -- =====================================================
--- 25. ACTIVITY_LOGS TABLE (Audit trail)
+-- 25. ACTIVITY_LOGS TABLE
 -- =====================================================
 CREATE TABLE Activity_Logs (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -763,11 +734,15 @@ CREATE INDEX idx_activity_logs_entity ON Activity_Logs(entity_type, entity_id);
 CREATE INDEX idx_activity_logs_created ON Activity_Logs(created_at DESC);
 GO
 
+PRINT '=====================================================';
+PRINT 'DANG TAO VIEWS...';
+PRINT '=====================================================';
+GO
+
 -- =====================================================
--- VIEWS FOR COMMON QUERIES
+-- VIEWS
 -- =====================================================
 
--- View: Product summary with pricing
 CREATE VIEW vw_ProductSummary AS
 SELECT 
     p.id,
@@ -791,7 +766,6 @@ GROUP BY p.id, p.name, p.slug, b.name, p.is_active, p.is_featured,
          p.avg_rating, p.review_count, p.view_count, p.order_count;
 GO
 
--- View: Order summary for customers
 CREATE VIEW vw_OrderSummary AS
 SELECT 
     o.id,
@@ -811,11 +785,15 @@ GROUP BY o.id, o.order_number, o.user_id, u.full_name, u.email,
          o.total_amount, o.status, o.created_at, o.delivered_at;
 GO
 
+PRINT '=====================================================';
+PRINT 'DANG TAO STORED PROCEDURES...';
+PRINT '=====================================================';
+GO
+
 -- =====================================================
 -- STORED PROCEDURES
 -- =====================================================
 
--- Procedure: Update product rating
 CREATE PROCEDURE sp_UpdateProductRating
     @ProductId BIGINT
 AS
@@ -836,7 +814,6 @@ BEGIN
 END;
 GO
 
--- Procedure: Generate order number
 CREATE PROCEDURE sp_GenerateOrderNumber
     @OrderNumber VARCHAR(50) OUTPUT
 AS
@@ -852,11 +829,15 @@ BEGIN
 END;
 GO
 
+PRINT '=====================================================';
+PRINT 'DANG TAO TRIGGERS...';
+PRINT '=====================================================';
+GO
+
 -- =====================================================
 -- TRIGGERS
 -- =====================================================
 
--- Trigger: Update product updated_at
 CREATE TRIGGER trg_Products_UpdateTimestamp
 ON Products
 AFTER UPDATE
@@ -869,7 +850,6 @@ BEGIN
 END;
 GO
 
--- Trigger: Log inventory changes
 CREATE TRIGGER trg_ProductVariants_InventoryLog
 ON Product_Variants
 AFTER UPDATE
@@ -892,186 +872,18 @@ BEGIN
 END;
 GO
 
--- =====================================================
--- SAMPLE DATA WITH BCRYPT PASSWORDS
--- =====================================================
-
--- BCrypt hash for common passwords:
--- 'admin123' => $2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi
--- 'user123' => $2a$10$rT5Z3z0QK0xJxX6YvqHJU.w7qVzN6hGJ3KCv8vQqVxJ3Lx3xX6xXe
-
--- Insert Admin User
-INSERT INTO Users (email, password_hash, full_name, phone_number, role, is_active, is_email_verified) VALUES
-('admin@sneakery.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', N'Admin Sneakery', '0901234567', 'ADMIN', 1, 1),
-('moderator@sneakery.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', N'Moderator Sneakery', '0901234568', 'MODERATOR', 1, 1);
-
--- Insert Test Users
-INSERT INTO Users (email, password_hash, full_name, phone_number, role, is_active, is_email_verified) VALUES
-('user1@gmail.com', '$2a$10$rT5Z3z0QK0xJxX6YvqHJU.w7qVzN6hGJ3KCv8vQqVxJ3Lx3xX6xXe', N'Nguyễn Văn An', '0912345678', 'USER', 1, 1),
-('user2@gmail.com', '$2a$10$rT5Z3z0QK0xJxX6YvqHJU.w7qVzN6hGJ3KCv8vQqVxJ3Lx3xX6xXe', N'Trần Thị Bình', '0912345679', 'USER', 1, 1),
-('user3@gmail.com', '$2a$10$rT5Z3z0QK0xJxX6YvqHJU.w7qVzN6hGJ3KCv8vQqVxJ3Lx3xX6xXe', N'Lê Văn Cường', '0912345680', 'USER', 1, 0);
-
--- Insert Brands
-INSERT INTO Brands (name, slug, description, is_active) VALUES
-(N'Nike', 'nike', N'Just Do It', 1),
-(N'Adidas', 'adidas', N'Impossible is Nothing', 1),
-(N'Puma', 'puma', N'Forever Faster', 1),
-(N'New Balance', 'new-balance', N'Worn by Supermodels', 1),
-(N'Converse', 'converse', N'All Star', 1),
-(N'Vans', 'vans', N'Off The Wall', 1);
-
--- Insert Categories (with nested set values)
-INSERT INTO Categories (name, slug, lft, rgt, level, parent_id, is_active) VALUES
-(N'Giày Thể Thao', 'giay-the-thao', 1, 12, 0, NULL, 1),
-  (N'Giày Chạy Bộ', 'giay-chay-bo', 2, 3, 1, 1, 1),
-  (N'Giày Bóng Đá', 'giay-bong-da', 4, 5, 1, 1, 1),
-  (N'Giày Bóng Rổ', 'giay-bong-ro', 6, 7, 1, 1, 1),
-  (N'Giày Tennis', 'giay-tennis', 8, 9, 1, 1, 1),
-  (N'Giày Gym', 'giay-gym', 10, 11, 1, 1, 1),
-(N'Giày Lifestyle', 'giay-lifestyle', 13, 20, 0, NULL, 1),
-  (N'Giày Sneaker', 'giay-sneaker', 14, 15, 1, 7, 1),
-  (N'Giày Slip-On', 'giay-slip-on', 16, 17, 1, 7, 1),
-  (N'Giày Cao Cổ', 'giay-cao-co', 18, 19, 1, 7, 1);
-
--- Insert Products
-INSERT INTO Products (brand_id, name, slug, description, short_description, is_active, is_featured, is_new) VALUES
-(1, N'Nike Air Max 270', 'nike-air-max-270', N'Giày Nike Air Max 270 với đệm khí lớn nhất từ trước đến nay', N'Đệm khí Max Air siêu êm', 1, 1, 1),
-(1, N'Nike Revolution 6', 'nike-revolution-6', N'Giày chạy bộ Nike Revolution 6 thoải mái cho người mới', N'Giày chạy bộ nhập môn', 1, 0, 0),
-(2, N'Adidas Ultraboost 22', 'adidas-ultraboost-22', N'Giày chạy bộ Adidas Ultraboost 22 với công nghệ Boost', N'Công nghệ Boost hoàn hảo', 1, 1, 1),
-(2, N'Adidas Stan Smith', 'adidas-stan-smith', N'Giày tennis classic Adidas Stan Smith', N'Icon vượt thời gian', 1, 1, 0),
-(3, N'Puma RS-X', 'puma-rs-x', N'Giày Puma RS-X phong cách retro', N'Retro style đậm chất', 1, 0, 0),
-(5, N'Converse Chuck Taylor All Star', 'converse-chuck-taylor', N'Giày Converse Chuck Taylor All Star classic', N'Classic không bao giờ lỗi mốt', 1, 1, 0);
-
--- Insert Product Categories
-INSERT INTO Product_Categories (product_id, category_id) VALUES
-(1, 2), (1, 8), -- Nike Air Max: Running + Sneaker
-(2, 2), -- Nike Revolution: Running
-(3, 2), (3, 8), -- Ultraboost: Running + Sneaker
-(4, 5), (4, 8), -- Stan Smith: Tennis + Sneaker
-(5, 8), -- Puma RS-X: Sneaker
-(6, 8), (6, 10); -- Converse: Sneaker + High Top
-
--- Insert Product Variants
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, stock_quantity, is_active) VALUES
--- Nike Air Max 270
-(1, 'NIKE-AM270-BLK-39', '39', N'Đen', 3500000, 2990000, 10, 1),
-(1, 'NIKE-AM270-BLK-40', '40', N'Đen', 3500000, 2990000, 15, 1),
-(1, 'NIKE-AM270-WHT-39', '39', N'Trắng', 3500000, 2990000, 8, 1),
-(1, 'NIKE-AM270-WHT-40', '40', N'Trắng', 3500000, 2990000, 12, 1),
-
--- Nike Revolution 6
-(2, 'NIKE-REV6-BLK-39', '39', N'Đen', 1500000, NULL, 20, 1),
-(2, 'NIKE-REV6-BLK-40', '40', N'Đen', 1500000, NULL, 25, 1),
-(2, 'NIKE-REV6-BLU-39', '39', N'Xanh', 1500000, 1290000, 15, 1),
-
--- Adidas Ultraboost 22
-(3, 'ADIDAS-UB22-WHT-40', '40', N'Trắng', 4500000, 3990000, 10, 1),
-(3, 'ADIDAS-UB22-WHT-41', '41', N'Trắng', 4500000, 3990000, 8, 1),
-(3, 'ADIDAS-UB22-BLK-40', '40', N'Đen', 4500000, 3990000, 12, 1),
-
--- Adidas Stan Smith
-(4, 'ADIDAS-SS-WHT-39', '39', N'Trắng/Xanh', 2500000, NULL, 30, 1),
-(4, 'ADIDAS-SS-WHT-40', '40', N'Trắng/Xanh', 2500000, NULL, 35, 1),
-(4, 'ADIDAS-SS-WHT-41', '41', N'Trắng/Xanh', 2500000, NULL, 25, 1),
-
--- Puma RS-X
-(5, 'PUMA-RSX-MLT-39', '39', N'Đa sắc', 2800000, 2390000, 15, 1),
-(5, 'PUMA-RSX-MLT-40', '40', N'Đa sắc', 2800000, 2390000, 18, 1),
-
--- Converse Chuck Taylor
-(6, 'CONV-CT-BLK-38', '38', N'Đen', 1200000, NULL, 40, 1),
-(6, 'CONV-CT-BLK-39', '39', N'Đen', 1200000, NULL, 45, 1),
-(6, 'CONV-CT-WHT-38', '38', N'Trắng', 1200000, NULL, 35, 1),
-(6, 'CONV-CT-WHT-39', '39', N'Trắng', 1200000, NULL, 38, 1);
-
--- Insert Product Images
-INSERT INTO Product_Images (product_id, image_url, alt_text, is_primary, display_order) VALUES
-(1, 'https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/air-max-270-shoe.jpg', N'Nike Air Max 270 - Góc chính', 1, 0),
-(1, 'https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/air-max-270-shoe-side.jpg', N'Nike Air Max 270 - Góc bên', 0, 1),
-(2, 'https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/revolution-6-shoe.jpg', N'Nike Revolution 6', 1, 0);
-
--- Insert Size Charts (Sample data for Nike Running shoes)
-INSERT INTO Size_Charts (brand_id, category, size, size_us, size_uk, length_cm, width_cm) VALUES
-(1, 'Running', '38', '7', '6', 24.5, 9.5),
-(1, 'Running', '39', '7.5', '6.5', 25.0, 9.7),
-(1, 'Running', '40', '8', '7', 25.5, 10.0),
-(1, 'Running', '41', '8.5', '7.5', 26.0, 10.2),
-(1, 'Running', '42', '9', '8', 26.5, 10.5);
-
--- Insert Coupons
-INSERT INTO Coupons (code, description, discount_type, discount_value, min_order_amount, max_discount_amount, start_at, end_at, max_uses, applicable_to, is_active) VALUES
-('WELCOME10', N'Giảm 10% cho đơn hàng đầu tiên', 'percentage', 10, 500000, 200000, '2025-01-01', '2025-12-31', 1000, 'all', 1),
-('FREESHIP', N'Miễn phí vận chuyển', 'fixed', 30000, 300000, 30000, '2025-01-01', '2025-12-31', NULL, 'all', 1),
-('NIKE50K', N'Giảm 50K cho sản phẩm Nike', 'fixed', 50000, 1000000, 50000, '2025-01-01', '2025-06-30', 500, 'brand', 1);
-
--- Insert sample address for user
-INSERT INTO Addresses (user_id, recipient_name, phone, line1, ward, district, city, is_default, address_type) VALUES
-(3, N'Nguyễn Văn An', '0912345678', N'123 Nguyễn Huệ', N'Bến Nghé', N'Quận 1', N'TP. Hồ Chí Minh', 1, 'home'),
-(3, N'Nguyễn Văn An', '0912345678', N'456 Lý Tự Trọng', N'Bến Thành', N'Quận 1', N'TP. Hồ Chí Minh', 0, 'office');
-
--- Insert Email Templates
-INSERT INTO Email_Templates (template_name, subject, body, variables) VALUES
-('order_confirmation', N'Xác nhận đơn hàng #{order_id}', N'Xin chào {customer_name},<br><br>Cảm ơn bạn đã đặt hàng tại Sneakery Store.<br>Mã đơn hàng: {order_id}<br>Tổng tiền: {total}<br><br>Chúng tôi sẽ xử lý đơn hàng của bạn sớm nhất.', '{customer_name},{order_id},{total}'),
-('order_shipped', N'Đơn hàng #{order_id} đã được giao', N'Xin chào {customer_name},<br><br>Đơn hàng {order_id} của bạn đã được giao cho đơn vị vận chuyển.<br>Mã vận đơn: {tracking_number}', '{customer_name},{order_id},{tracking_number}'),
-('order_delivered', N'Đơn hàng #{order_id} đã giao thành công', N'Xin chào {customer_name},<br><br>Đơn hàng {order_id} của bạn đã được giao thành công.<br>Cảm ơn bạn đã tin tưởng Sneakery Store!', '{customer_name},{order_id}');
-
-GO
-
--- =====================================================
--- COMPLETION MESSAGE
--- =====================================================
-PRINT '✅ Database V3.1 (SYNCHRONIZED) created successfully!';
-PRINT '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
-PRINT '📊 Total Tables: 25';
 PRINT '';
-PRINT '   CORE TABLES (V2):';
-PRINT '   1. Users (with OAuth & Password Reset)';
-PRINT '   2. Brands';
-PRINT '   3. Categories (Nested Set Model)';
-PRINT '   4. Products';
-PRINT '   5. Product_Categories';
-PRINT '   6. Product_Variants (with cost_price, weight)';
-PRINT '   7. Product_Images';
-PRINT '   8. Addresses (with lat/long)';
-PRINT '   9. Coupons (with applicability)';
-PRINT '   10. Carts (with expires_at)';
-PRINT '   11. Cart_Items';
-PRINT '   12. Orders (with order_number, tax)';
-PRINT '   13. Order_Details';
-PRINT '   14. Order_Status_Histories';
-PRINT '   15. Payments (with refunded_at)';
-PRINT '   16. Reviews (enhanced)';
+PRINT '=====================================================';
+PRINT 'HOAN THANH TAO SCHEMA!';
+PRINT '=====================================================';
 PRINT '';
-PRINT '   NEW TABLES (V3):';
-PRINT '   17. Size_Charts';
-PRINT '   18. Wishlists';
-PRINT '   19. Flash_Sales';
-PRINT '   20. Loyalty_Points';
-PRINT '   21. Return_Requests';
-PRINT '   22. Email_Templates';
+PRINT 'Da tao:';
+PRINT '  - 25 tables voi indexes';
+PRINT '  - 2 views';
+PRINT '  - 2 stored procedures';
+PRINT '  - 2 triggers';
 PRINT '';
-PRINT '   AUDIT TABLES (V2):';
-PRINT '   23. Notifications';
-PRINT '   24. Inventory_Logs';
-PRINT '   25. Activity_Logs';
+PRINT 'CHUA CO DU LIEU! Chay file 2_INSERT_DATA.sql de them du lieu.';
+PRINT '=====================================================';
 PRINT '';
-PRINT '👁️ Views: 2';
-PRINT '   - vw_ProductSummary';
-PRINT '   - vw_OrderSummary';
-PRINT '';
-PRINT '⚙️ Stored Procedures: 2';
-PRINT '   - sp_UpdateProductRating';
-PRINT '   - sp_GenerateOrderNumber';
-PRINT '';
-PRINT '🔔 Triggers: 2';
-PRINT '   - trg_Products_UpdateTimestamp';
-PRINT '   - trg_ProductVariants_InventoryLog';
-PRINT '';
-PRINT '🔐 Test Accounts:';
-PRINT '   Admin: admin@sneakery.com / admin123';
-PRINT '   User: user1@gmail.com / user123';
-PRINT '';
-PRINT '✨ All features synchronized from V2 + New features from V3!';
-PRINT '🎉 Ready to use!';
-GO
 

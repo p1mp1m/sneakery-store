@@ -23,6 +23,12 @@
         >
           Đổi mật khẩu
         </button>
+        <button
+          :class="['tab-btn', { active: activeTab === 'loyalty' }]"
+          @click="activeTab = 'loyalty'"
+        >
+          Điểm thưởng
+        </button>
           </div>
 
       <!-- Tab Content -->
@@ -116,11 +122,89 @@
             <div class="form-actions">
               <button type="submit" class="btn btn-primary" :disabled="changingPassword">
                 <span v-if="changingPassword">Đang đổi mật khẩu...</span>
-                <span v-else>Đổi mật khẩu</span>
+                <span v-else">Đổi mật khẩu</span>
               </button>
             </div>
           </form>
                 </div>
+
+        <!-- Loyalty Points Tab -->
+        <div v-if="activeTab === 'loyalty'" class="loyalty-section">
+          <!-- Loyalty Balance Card -->
+          <div class="loyalty-balance-card">
+            <div class="balance-header">
+              <span class="material-icons loyalty-icon">stars</span>
+              <h2>Điểm thưởng của bạn</h2>
+            </div>
+            
+            <div v-if="loyaltyLoading" class="loading">
+              <div class="loading-spinner"></div>
+              <p>Đang tải...</p>
+            </div>
+
+            <div v-else class="balance-content">
+              <div class="points-display">
+                <div class="points-value">
+                  {{ loyaltyStore.currentBalance.toLocaleString() }}
+                </div>
+                <div class="points-label">Điểm</div>
+              </div>
+
+              <div class="points-equivalent">
+                <span class="material-icons">monetization_on</span>
+                <span>≈ {{ formatCurrency(loyaltyStore.calculateVndFromPoints(loyaltyStore.currentBalance)) }}</span>
+              </div>
+
+              <div class="loyalty-info">
+                <div class="info-item">
+                  <span class="material-icons">info</span>
+                  <span>1 điểm = 1.000 VNĐ</span>
+                </div>
+                <div class="info-item">
+                  <span class="material-icons">shopping_cart</span>
+                  <span>Dùng điểm khi thanh toán</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Points History -->
+          <div class="loyalty-history">
+            <h3>Lịch sử điểm thưởng</h3>
+            
+            <div v-if="loyaltyHistory.length === 0" class="empty-state">
+              <span class="material-icons">history</span>
+              <p>Chưa có lịch sử điểm thưởng</p>
+            </div>
+
+            <div v-else class="history-list">
+              <div 
+                v-for="item in loyaltyHistory" 
+                :key="item.id"
+                class="history-item"
+              >
+                <div class="history-icon" :class="`type-${item.transactionType}`">
+                  <span class="material-icons">
+                    {{ item.transactionType === 'earn' ? 'add_circle' : item.transactionType === 'redeem' ? 'remove_circle' : 'access_time' }}
+                  </span>
+                </div>
+
+                <div class="history-content">
+                  <div class="history-description">
+                    {{ item.description }}
+                  </div>
+                  <div class="history-date">
+                    {{ formatDate(item.createdAt) }}
+                  </div>
+                </div>
+
+                <div class="history-points" :class="`points-${item.transactionType}`">
+                  {{ item.transactionType === 'earn' ? '+' : '-' }}{{ Math.abs(item.points) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
               </div>
             </div>
 
@@ -169,12 +253,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useLoyaltyStore } from '@/stores/loyalty';
+import { storeToRefs } from 'pinia';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import axios from 'axios';
 
 const authStore = useAuthStore();
+const loyaltyStore = useLoyaltyStore();
+const { loading: loyaltyLoading } = storeToRefs(loyaltyStore);
 
 // State
 const activeTab = ref('info');
@@ -206,6 +294,9 @@ const addressForm = reactive({
   district: '',
   city: '',
 });
+
+// Loyalty Points computed
+const loyaltyHistory = computed(() => loyaltyStore.history || []);
 
 // Methods
 const loadProfile = () => {
@@ -376,6 +467,41 @@ const closeAddressForm = () => {
   addressForm.district = '';
   addressForm.city = '';
 };
+
+// Loyalty methods
+const loadLoyaltyData = async () => {
+  await Promise.all([
+    loyaltyStore.fetchBalance(),
+    loyaltyStore.fetchHistory()
+  ]);
+};
+
+// Helper methods
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(value);
+};
+
+const formatDate = (timestamp) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  return date.toLocaleDateString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// Watch tab changes
+watch(activeTab, (newTab) => {
+  if (newTab === 'loyalty') {
+    loadLoyaltyData();
+  }
+});
 
 // Lifecycle
 onMounted(() => {
@@ -601,6 +727,195 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
+/* Loyalty Section */
+.loyalty-balance-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-6);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.loyalty-icon {
+  font-size: 32px;
+  color: #ffd700;
+}
+
+.balance-header h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+}
+
+.balance-content {
+  text-align: center;
+}
+
+.points-display {
+  margin-bottom: var(--space-6);
+}
+
+.points-value {
+  font-size: 64px;
+  font-weight: var(--font-bold);
+  line-height: 1;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.points-label {
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  opacity: 0.9;
+  margin-top: var(--space-2);
+}
+
+.points-equivalent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-6);
+  padding: var(--space-3) var(--space-6);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+}
+
+.loyalty-info {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  opacity: 0.95;
+}
+
+.info-item .material-icons {
+  font-size: 20px;
+}
+
+/* Loyalty History */
+.loyalty-history h3 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-4);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--bg-primary);
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  transition: var(--transition-fast);
+}
+
+.history-item:hover {
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-md);
+}
+
+.history-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.history-icon.type-earn {
+  background: rgba(72, 187, 120, 0.1);
+  color: var(--color-success);
+}
+
+.history-icon.type-redeem {
+  background: rgba(237, 137, 54, 0.1);
+  color: var(--color-warning);
+}
+
+.history-icon.type-expire {
+  background: rgba(245, 101, 101, 0.1);
+  color: var(--color-error);
+}
+
+.history-icon .material-icons {
+  font-size: 24px;
+}
+
+.history-content {
+  flex: 1;
+}
+
+.history-description {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.history-date {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.history-points {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+}
+
+.history-points.points-earn {
+  color: var(--color-success);
+}
+
+.history-points.points-redeem {
+  color: var(--color-warning);
+}
+
+.history-points.points-expire {
+  color: var(--color-error);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: var(--radius-full);
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto var(--space-3);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .profile-tabs {
@@ -622,6 +937,19 @@ onMounted(() => {
 
   .address-actions button {
     flex: 1;
+  }
+
+  .loyalty-balance-card {
+    padding: var(--space-6);
+  }
+
+  .points-value {
+    font-size: 48px;
+  }
+
+  .loyalty-info {
+    flex-direction: column;
+    gap: var(--space-3);
   }
 }
 </style>

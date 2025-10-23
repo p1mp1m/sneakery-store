@@ -38,6 +38,9 @@
             <span class="badge" v-if="wishlistStore.wishlistCount > 0">{{ wishlistStore.wishlistCount }}</span>
           </router-link>
 
+          <!-- Notification Dropdown -->
+          <NotificationDropdown />
+
           <!-- Cart Icon -->
           <router-link to="/cart" class="nav-icon" :class="{ 'active': $route.path === '/cart' }">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -282,6 +285,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useAdminStore } from '@/stores/admin';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useRouter } from 'vue-router';
+import NotificationDropdown from '@/components/common/NotificationDropdown.vue';
 
 const authStore = useAuthStore();
 const adminStore = useAdminStore();

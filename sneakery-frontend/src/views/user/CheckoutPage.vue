@@ -348,6 +348,56 @@
                   {{ shippingFee === 0 ? 'Miễn phí' : formatPrice(shippingFee) }}
                 </span>
               </div>
+
+              <!-- Loyalty Points Section -->
+              <div class="loyalty-points-section">
+                <div class="loyalty-header">
+                  <div class="loyalty-toggle">
+                    <input
+                      type="checkbox"
+                      id="use-points"
+                      v-model="usePoints"
+                      :disabled="currentBalance === 0"
+                      class="loyalty-checkbox"
+                    />
+                    <label for="use-points" class="loyalty-label">
+                      <span class="material-icons">stars</span>
+                      Sử dụng điểm thưởng
+                    </label>
+                  </div>
+                  <span class="loyalty-balance">
+                    {{ currentBalance.toLocaleString() }} điểm
+                  </span>
+                </div>
+
+                <div v-if="usePoints" class="loyalty-control">
+                  <div class="points-input-wrapper">
+                    <input
+                      type="number"
+                      v-model.number="pointsToUse"
+                      :max="maxPointsUsable"
+                      :min="0"
+                      class="points-input"
+                      placeholder="Nhập số điểm"
+                    />
+                    <button
+                      @click="pointsToUse = maxPointsUsable"
+                      class="btn-use-max"
+                    >
+                      Dùng tối đa
+                    </button>
+                  </div>
+                  <p class="points-info">
+                    Tối đa {{ maxPointsUsable.toLocaleString() }} điểm (≈ {{ formatPrice(maxPointsUsable * 1000) }})
+                  </p>
+                </div>
+              </div>
+
+              <div v-if="loyaltyDiscount > 0" class="price-row discount-row">
+                <span>Giảm giá từ điểm thưởng</span>
+                <span class="discount-amount">-{{ formatPrice(loyaltyDiscount) }}</span>
+              </div>
+
               <div class="price-divider"></div>
               <div class="price-row total">
                 <span>Tổng cộng</span>
@@ -464,14 +514,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useLoyaltyStore } from '@/stores/loyalty';
+import { storeToRefs } from 'pinia';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const loyaltyStore = useLoyaltyStore();
+const { currentBalance } = storeToRefs(loyaltyStore);
 
 // Multi-step data
 const steps = [
@@ -500,10 +554,25 @@ const newAddress = ref({
   city: '',
 });
 
+// Loyalty Points
+const usePoints = ref(false);
+const pointsToUse = ref(0);
+const maxPointsUsable = computed(() => {
+  const maxFromBalance = currentBalance.value;
+  const maxFromOrderValue = Math.floor((cart.value?.subTotal + shippingFee.value) / 1000); // 1 point = 1000 VND
+  return Math.min(maxFromBalance, maxFromOrderValue);
+});
+
 // Computed
+const loyaltyDiscount = computed(() => {
+  if (!usePoints.value || pointsToUse.value === 0) return 0;
+  return pointsToUse.value * 1000; // 1 point = 1000 VND
+});
+
 const totalAmount = computed(() => {
   if (!cart.value) return 0;
-  return cart.value.subTotal + shippingFee.value;
+  const subtotal = cart.value.subTotal + shippingFee.value - loyaltyDiscount.value;
+  return Math.max(subtotal, 0);
 });
 
 const selectedAddressData = computed(() => {
@@ -638,9 +707,21 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
+// Watch points input
+watch(pointsToUse, (newVal) => {
+  if (newVal > maxPointsUsable.value) {
+    pointsToUse.value = maxPointsUsable.value;
+  }
+  if (newVal < 0) {
+    pointsToUse.value = 0;
+  }
+});
+
 // Lifecycle
-onMounted(() => {
-  fetchData();
+onMounted(async () => {
+  await fetchData();
+  // Load loyalty balance
+  await loyaltyStore.fetchBalance();
 });
 </script>
 
@@ -1340,6 +1421,137 @@ onMounted(() => {
 
 .checkout-note a:hover {
   color: #c4b5fd;
+}
+
+/* Loyalty Points Section */
+.loyalty-points-section {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  background: rgba(167, 139, 250, 0.05);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.loyalty-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.loyalty-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.loyalty-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #a78bfa;
+}
+
+.loyalty-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.loyalty-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: #f1f5f9;
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+.loyalty-label .material-icons {
+  font-size: 18px;
+  color: #ffd700;
+}
+
+.loyalty-balance {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+}
+
+.loyalty-control {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.points-input-wrapper {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.points-input {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid rgba(167, 139, 250, 0.3);
+  border-radius: var(--radius-md);
+  color: #f1f5f9;
+  font-size: var(--text-base);
+  transition: all var(--transition-fast);
+}
+
+.points-input:focus {
+  outline: none;
+  border-color: #a78bfa;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.btn-use-max {
+  padding: var(--space-2) var(--space-4);
+  background: rgba(167, 139, 250, 0.2);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  border-radius: var(--radius-md);
+  color: #c4b5fd;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-use-max:hover {
+  background: rgba(167, 139, 250, 0.3);
+  border-color: #a78bfa;
+}
+
+.points-info {
+  font-size: var(--text-xs);
+  color: #94a3b8;
+  margin: 0;
+}
+
+.discount-row {
+  color: #6ee7b7;
+}
+
+.discount-amount {
+  font-weight: var(--font-bold);
 }
 
 /* Modal */

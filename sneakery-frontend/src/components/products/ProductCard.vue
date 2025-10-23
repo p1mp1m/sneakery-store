@@ -2,6 +2,13 @@
   <router-link :to="`/products/${product.id}`" class="product-card-link">
     <div class="product-card">
       <div class="product-image-container">
+        <!-- Flash Sale Badge -->
+        <FlashSaleBadge
+          v-if="productFlashSale"
+          :flashSale="productFlashSale"
+          class="compact"
+        />
+        
         <img :src="product.imageUrl || 'https://placehold.co/400'" class="product-image" :alt="product.name" />
       <div class="product-overlay">
         <button class="btn-icon btn-favorite" @click="toggleFavorite">
@@ -21,7 +28,10 @@
       <span class="brand-name">{{ product.brandName }}</span>
       <h3 class="product-name">{{ product.name }}</h3>
       <div class="product-footer">
-        <span class="price">{{ formatCurrency(product.price) }}</span>
+        <div class="price-wrapper">
+          <span v-if="productFlashSale" class="price-original">{{ formatCurrency(product.price) }}</span>
+          <span class="price">{{ formatCurrency(finalPrice) }}</span>
+        </div>
         <button class="btn-add-cart" @click="addToCart">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.7 15.3C4.3 15.7 4.6 16.5 5.1 16.5H17M17 13V17C17 18.1 16.1 19 15 19H9C7.9 19 7 18.1 7 17V13M17 13H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -34,18 +44,40 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useFlashSaleStore } from '@/stores/flashSale';
+import { storeToRefs } from 'pinia';
+import FlashSaleBadge from '@/components/common/FlashSaleBadge.vue';
 
 // Props
-defineProps({
+const props = defineProps({
   product: {
     type: Object,
     required: true,
   },
 });
 
+// Stores
+const flashSaleStore = useFlashSaleStore();
+const { activeFlashSales } = storeToRefs(flashSaleStore);
+
 // Reactive state
 const isFavorite = ref(false);
+
+// Computed
+const productFlashSale = computed(() => {
+  return flashSaleStore.getFlashSaleForProduct(props.product.id);
+});
+
+const finalPrice = computed(() => {
+  if (productFlashSale.value) {
+    return flashSaleStore.calculateDiscountedPrice(
+      props.product.price,
+      productFlashSale.value.discountPercent
+    );
+  }
+  return props.product.price;
+});
 
 // Methods
 const formatCurrency = (value) => {
@@ -273,6 +305,20 @@ const addToCart = (event) => {
 }
 
 /* Price Display - Dark */
+.price-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.price-original {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: #64748b;
+  text-decoration: line-through;
+}
+
 .price {
   /* Typography */
   font-size: var(--text-lg);
@@ -280,7 +326,6 @@ const addToCart = (event) => {
   
   /* Visual - Dark */
   color: #c4b5fd;
-  flex: 1;
 }
 
 /* Add to Cart Button */
