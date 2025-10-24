@@ -1,8 +1,7 @@
 -- =====================================================
--- SNEAKERY E-COMMERCE - SCHEMA ONLY
+-- SNEAKERY E-COMMERCE - SCHEMA V2 (API COMPATIBLE)
 -- =====================================================
--- File này CHỈ tạo database structure (tables, indexes, views, procedures)
--- KHÔNG insert bất kỳ dữ liệu nào
+-- Schema được tối ưu để tương thích với Frontend Admin API
 -- =====================================================
 
 -- Drop database if exists (BE CAREFUL!)
@@ -21,12 +20,12 @@ USE sneakery_db;
 GO
 
 PRINT '=====================================================';
-PRINT 'DANG TAO SCHEMA...';
+PRINT 'DANG TAO SCHEMA V2 - API COMPATIBLE...';
 PRINT '=====================================================';
 PRINT '';
 
 -- =====================================================
--- 1. USERS TABLE
+-- 1. USERS TABLE (Enhanced for Admin API)
 -- =====================================================
 CREATE TABLE Users (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -62,7 +61,7 @@ CREATE INDEX idx_users_deleted ON Users(deleted_at);
 GO
 
 -- =====================================================
--- 2. BRANDS TABLE
+-- 2. BRANDS TABLE (Admin API Compatible)
 -- =====================================================
 CREATE TABLE Brands (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -83,7 +82,7 @@ CREATE INDEX idx_brands_active ON Brands(is_active);
 GO
 
 -- =====================================================
--- 3. CATEGORIES TABLE
+-- 3. CATEGORIES TABLE (Hierarchical Structure)
 -- =====================================================
 CREATE TABLE Categories (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -114,7 +113,7 @@ CREATE INDEX idx_categories_active ON Categories(is_active);
 GO
 
 -- =====================================================
--- 4. PRODUCTS TABLE
+-- 4. PRODUCTS TABLE (Enhanced for Admin Management)
 -- =====================================================
 CREATE TABLE Products (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -171,7 +170,7 @@ CREATE INDEX idx_pc_category ON Product_Categories(category_id);
 GO
 
 -- =====================================================
--- 6. PRODUCT_VARIANTS TABLE
+-- 6. PRODUCT_VARIANTS TABLE (Enhanced for Admin)
 -- =====================================================
 CREATE TABLE Product_Variants (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -226,46 +225,64 @@ CREATE INDEX idx_images_primary ON Product_Images(is_primary);
 GO
 
 -- =====================================================
--- 8. SIZE_CHARTS TABLE
+-- 8. COUPONS TABLE (Admin Management)
 -- =====================================================
-CREATE TABLE Size_Charts (
+CREATE TABLE Coupons (
     id INT PRIMARY KEY IDENTITY(1,1),
-    brand_id INT NOT NULL,
-    category NVARCHAR(50) NOT NULL,
-    size VARCHAR(10) NOT NULL,
-    size_us VARCHAR(10),
-    size_uk VARCHAR(10),
-    length_cm DECIMAL(5,2),
-    width_cm DECIMAL(5,2),
+    code VARCHAR(50) NOT NULL UNIQUE,
+    description NVARCHAR(MAX),
     
+    discount_type VARCHAR(20) NOT NULL CHECK (discount_type IN ('fixed', 'percentage')),
+    discount_value DECIMAL(18,2) NOT NULL CHECK (discount_value > 0),
+    
+    min_order_amount DECIMAL(18,2),
+    max_discount_amount DECIMAL(18,2),
+    
+    start_at DATETIME2 NOT NULL,
+    end_at DATETIME2 NOT NULL,
+    
+    max_uses INT,
+    uses_count INT DEFAULT 0,
+    max_uses_per_user INT DEFAULT 1,
+    
+    applicable_to VARCHAR(20) CHECK (applicable_to IN ('all', 'brand', 'category', 'product')),
+    applicable_id INT,
+    
+    is_active BIT DEFAULT 1,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
     
-    CONSTRAINT fk_sizechart_brand FOREIGN KEY (brand_id) REFERENCES Brands(id),
-    CONSTRAINT uq_sizechart UNIQUE (brand_id, category, size)
+    CONSTRAINT chk_coupon_dates CHECK (end_at > start_at)
 );
 
-CREATE INDEX idx_sizechart_brand ON Size_Charts(brand_id);
-CREATE INDEX idx_sizechart_category ON Size_Charts(category);
+CREATE INDEX idx_coupons_code ON Coupons(code);
+CREATE INDEX idx_coupons_dates ON Coupons(start_at, end_at);
+CREATE INDEX idx_coupons_active ON Coupons(is_active);
 GO
 
 -- =====================================================
--- 9. WISHLISTS TABLE
+-- 9. FLASH_SALES TABLE (Admin Management)
 -- =====================================================
-CREATE TABLE Wishlists (
-    id BIGINT PRIMARY KEY IDENTITY(1,1),
-    user_id BIGINT NOT NULL,
+CREATE TABLE Flash_Sales (
+    id INT PRIMARY KEY IDENTITY(1,1),
     product_id BIGINT NOT NULL,
+    discount_percent DECIMAL(5,2) NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100),
     
+    start_time DATETIME2 NOT NULL,
+    end_time DATETIME2 NOT NULL,
+    
+    quantity_limit INT,
+    sold_count INT DEFAULT 0,
+    
+    is_active BIT DEFAULT 1,
     created_at DATETIME2 DEFAULT GETDATE(),
     
-    CONSTRAINT fk_wishlists_user FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_wishlists_product FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
-    CONSTRAINT uq_wishlist_user_product UNIQUE (user_id, product_id)
+    CONSTRAINT fk_flashsale_product FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
+    CONSTRAINT chk_flashsale_dates CHECK (end_time > start_time)
 );
 
-CREATE INDEX idx_wishlists_user ON Wishlists(user_id);
-CREATE INDEX idx_wishlists_product ON Wishlists(product_id);
+CREATE INDEX idx_flashsale_product ON Flash_Sales(product_id);
+CREATE INDEX idx_flashsale_active ON Flash_Sales(is_active, start_time, end_time);
 GO
 
 -- =====================================================
@@ -303,92 +320,7 @@ CREATE INDEX idx_addresses_default ON Addresses(is_default);
 GO
 
 -- =====================================================
--- 11. COUPONS TABLE
--- =====================================================
-CREATE TABLE Coupons (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    code VARCHAR(50) NOT NULL UNIQUE,
-    description NVARCHAR(MAX),
-    
-    discount_type VARCHAR(20) NOT NULL CHECK (discount_type IN ('fixed', 'percentage')),
-    discount_value DECIMAL(18,2) NOT NULL CHECK (discount_value > 0),
-    
-    min_order_amount DECIMAL(18,2),
-    max_discount_amount DECIMAL(18,2),
-    
-    start_at DATETIME2 NOT NULL,
-    end_at DATETIME2 NOT NULL,
-    
-    max_uses INT,
-    uses_count INT DEFAULT 0,
-    max_uses_per_user INT DEFAULT 1,
-    
-    applicable_to VARCHAR(20) CHECK (applicable_to IN ('all', 'brand', 'category', 'product')),
-    applicable_id INT,
-    
-    is_active BIT DEFAULT 1,
-    created_at DATETIME2 DEFAULT GETDATE(),
-    updated_at DATETIME2 DEFAULT GETDATE(),
-    
-    CONSTRAINT chk_coupon_dates CHECK (end_at > start_at)
-);
-
-CREATE INDEX idx_coupons_code ON Coupons(code);
-CREATE INDEX idx_coupons_dates ON Coupons(start_at, end_at);
-CREATE INDEX idx_coupons_active ON Coupons(is_active);
-GO
-
--- =====================================================
--- 12. FLASH_SALES TABLE
--- =====================================================
-CREATE TABLE Flash_Sales (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    product_id BIGINT NOT NULL,
-    discount_percent DECIMAL(5,2) NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100),
-    
-    start_time DATETIME2 NOT NULL,
-    end_time DATETIME2 NOT NULL,
-    
-    quantity_limit INT,
-    sold_count INT DEFAULT 0,
-    
-    is_active BIT DEFAULT 1,
-    created_at DATETIME2 DEFAULT GETDATE(),
-    
-    CONSTRAINT fk_flashsale_product FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
-    CONSTRAINT chk_flashsale_dates CHECK (end_time > start_time)
-);
-
-CREATE INDEX idx_flashsale_product ON Flash_Sales(product_id);
-CREATE INDEX idx_flashsale_active ON Flash_Sales(is_active, start_time, end_time);
-GO
-
--- =====================================================
--- 13. LOYALTY_POINTS TABLE
--- =====================================================
-CREATE TABLE Loyalty_Points (
-    id BIGINT PRIMARY KEY IDENTITY(1,1),
-    user_id BIGINT NOT NULL,
-    points INT NOT NULL,
-    transaction_type VARCHAR(20) NOT NULL CHECK (transaction_type IN ('earn', 'redeem', 'expire')),
-    
-    earned_from_order_id BIGINT NULL,
-    redeemed_in_order_id BIGINT NULL,
-    
-    description NVARCHAR(255),
-    expires_at DATETIME2,
-    
-    created_at DATETIME2 DEFAULT GETDATE(),
-    
-    CONSTRAINT fk_loyalty_user FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_loyalty_user ON Loyalty_Points(user_id);
-CREATE INDEX idx_loyalty_expires ON Loyalty_Points(expires_at);
-GO
-
--- =====================================================
--- 14. CARTS TABLE
+-- 11. CARTS TABLE
 -- =====================================================
 CREATE TABLE Carts (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -407,7 +339,7 @@ CREATE INDEX idx_carts_session ON Carts(session_id);
 GO
 
 -- =====================================================
--- 15. CART_ITEMS TABLE
+-- 12. CART_ITEMS TABLE
 -- =====================================================
 CREATE TABLE Cart_Items (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -426,7 +358,7 @@ CREATE INDEX idx_cart_items_variant ON Cart_Items(variant_id);
 GO
 
 -- =====================================================
--- 16. ORDERS TABLE
+-- 13. ORDERS TABLE (Enhanced for Admin)
 -- =====================================================
 CREATE TABLE Orders (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -476,7 +408,7 @@ CREATE INDEX idx_orders_created ON Orders(created_at DESC);
 GO
 
 -- =====================================================
--- 17. ORDER_DETAILS TABLE
+-- 14. ORDER_DETAILS TABLE
 -- =====================================================
 CREATE TABLE Order_Details (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -503,56 +435,7 @@ CREATE INDEX idx_order_details_variant ON Order_Details(variant_id);
 GO
 
 -- =====================================================
--- 18. ORDER_STATUS_HISTORIES TABLE
--- =====================================================
-CREATE TABLE Order_Status_Histories (
-    id BIGINT PRIMARY KEY IDENTITY(1,1),
-    order_id BIGINT NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    note NVARCHAR(MAX),
-    changed_by BIGINT,
-    
-    created_at DATETIME2 DEFAULT GETDATE(),
-    
-    CONSTRAINT fk_status_history_order FOREIGN KEY (order_id) REFERENCES Orders(id) ON DELETE CASCADE,
-    CONSTRAINT fk_status_history_user FOREIGN KEY (changed_by) REFERENCES Users(id)
-);
-
-CREATE INDEX idx_status_history_order ON Order_Status_Histories(order_id);
-GO
-
--- =====================================================
--- 19. RETURN_REQUESTS TABLE
--- =====================================================
-CREATE TABLE Return_Requests (
-    id BIGINT PRIMARY KEY IDENTITY(1,1),
-    order_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
-    
-    reason NVARCHAR(MAX) NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
-    
-    images_json NVARCHAR(MAX),
-    
-    admin_note NVARCHAR(MAX),
-    approved_by BIGINT,
-    approved_at DATETIME2,
-    
-    created_at DATETIME2 DEFAULT GETDATE(),
-    updated_at DATETIME2 DEFAULT GETDATE(),
-    
-    CONSTRAINT fk_return_order FOREIGN KEY (order_id) REFERENCES Orders(id),
-    CONSTRAINT fk_return_user FOREIGN KEY (user_id) REFERENCES Users(id),
-    CONSTRAINT fk_return_approver FOREIGN KEY (approved_by) REFERENCES Users(id)
-);
-
-CREATE INDEX idx_return_order ON Return_Requests(order_id);
-CREATE INDEX idx_return_user ON Return_Requests(user_id);
-CREATE INDEX idx_return_status ON Return_Requests(status);
-GO
-
--- =====================================================
--- 20. PAYMENTS TABLE
+-- 15. PAYMENTS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Payments (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -585,7 +468,7 @@ CREATE INDEX idx_payments_transaction ON Payments(transaction_id);
 GO
 
 -- =====================================================
--- 21. REVIEWS TABLE
+-- 16. REVIEWS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Reviews (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -633,23 +516,7 @@ CREATE INDEX idx_reviews_rating ON Reviews(rating);
 GO
 
 -- =====================================================
--- 22. EMAIL_TEMPLATES TABLE
--- =====================================================
-CREATE TABLE Email_Templates (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    template_name VARCHAR(100) NOT NULL UNIQUE,
-    subject NVARCHAR(255) NOT NULL,
-    body NVARCHAR(MAX) NOT NULL,
-    variables NVARCHAR(500),
-    
-    is_active BIT DEFAULT 1,
-    created_at DATETIME2 DEFAULT GETDATE(),
-    updated_at DATETIME2 DEFAULT GETDATE()
-);
-GO
-
--- =====================================================
--- 23. NOTIFICATIONS TABLE
+-- 17. NOTIFICATIONS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Notifications (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -677,7 +544,7 @@ CREATE INDEX idx_notifications_created ON Notifications(created_at DESC);
 GO
 
 -- =====================================================
--- 24. INVENTORY_LOGS TABLE
+-- 18. INVENTORY_LOGS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Inventory_Logs (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -708,7 +575,7 @@ CREATE INDEX idx_inventory_logs_created ON Inventory_Logs(created_at DESC);
 GO
 
 -- =====================================================
--- 25. ACTIVITY_LOGS TABLE
+-- 19. ACTIVITY_LOGS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Activity_Logs (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -734,13 +601,145 @@ CREATE INDEX idx_activity_logs_entity ON Activity_Logs(entity_type, entity_id);
 CREATE INDEX idx_activity_logs_created ON Activity_Logs(created_at DESC);
 GO
 
+-- =====================================================
+-- 20. WISHLISTS TABLE
+-- =====================================================
+CREATE TABLE Wishlists (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    user_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_wishlists_user FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_wishlists_product FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
+    CONSTRAINT uq_wishlist_user_product UNIQUE (user_id, product_id)
+);
+
+CREATE INDEX idx_wishlists_user ON Wishlists(user_id);
+CREATE INDEX idx_wishlists_product ON Wishlists(product_id);
+GO
+
+-- =====================================================
+-- 21. LOYALTY_POINTS TABLE
+-- =====================================================
+CREATE TABLE Loyalty_Points (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    user_id BIGINT NOT NULL,
+    points INT NOT NULL,
+    transaction_type VARCHAR(20) NOT NULL CHECK (transaction_type IN ('earn', 'redeem', 'expire')),
+    
+    earned_from_order_id BIGINT NULL,
+    redeemed_in_order_id BIGINT NULL,
+    
+    description NVARCHAR(255),
+    expires_at DATETIME2,
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_loyalty_user FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_loyalty_user ON Loyalty_Points(user_id);
+CREATE INDEX idx_loyalty_expires ON Loyalty_Points(expires_at);
+GO
+
+-- =====================================================
+-- 22. RETURN_REQUESTS TABLE
+-- =====================================================
+CREATE TABLE Return_Requests (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    order_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    
+    reason NVARCHAR(MAX) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
+    
+    images_json NVARCHAR(MAX),
+    
+    admin_note NVARCHAR(MAX),
+    approved_by BIGINT,
+    approved_at DATETIME2,
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_return_order FOREIGN KEY (order_id) REFERENCES Orders(id),
+    CONSTRAINT fk_return_user FOREIGN KEY (user_id) REFERENCES Users(id),
+    CONSTRAINT fk_return_approver FOREIGN KEY (approved_by) REFERENCES Users(id)
+);
+
+CREATE INDEX idx_return_order ON Return_Requests(order_id);
+CREATE INDEX idx_return_user ON Return_Requests(user_id);
+CREATE INDEX idx_return_status ON Return_Requests(status);
+GO
+
+-- =====================================================
+-- 23. EMAIL_TEMPLATES TABLE
+-- =====================================================
+CREATE TABLE Email_Templates (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    template_name VARCHAR(100) NOT NULL UNIQUE,
+    subject NVARCHAR(255) NOT NULL,
+    body NVARCHAR(MAX) NOT NULL,
+    variables NVARCHAR(500),
+    
+    is_active BIT DEFAULT 1,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+-- =====================================================
+-- 24. ORDER_STATUS_HISTORIES TABLE
+-- =====================================================
+CREATE TABLE Order_Status_Histories (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    order_id BIGINT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    note NVARCHAR(MAX),
+    changed_by BIGINT,
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_status_history_order FOREIGN KEY (order_id) REFERENCES Orders(id) ON DELETE CASCADE,
+    CONSTRAINT fk_status_history_user FOREIGN KEY (changed_by) REFERENCES Users(id)
+);
+
+CREATE INDEX idx_status_history_order ON Order_Status_Histories(order_id);
+GO
+
+-- =====================================================
+-- 25. SIZE_CHARTS TABLE
+-- =====================================================
+CREATE TABLE Size_Charts (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    brand_id INT NOT NULL,
+    category NVARCHAR(50) NOT NULL,
+    size VARCHAR(10) NOT NULL,
+    size_us VARCHAR(10),
+    size_uk VARCHAR(10),
+    length_cm DECIMAL(5,2),
+    width_cm DECIMAL(5,2),
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_sizechart_brand FOREIGN KEY (brand_id) REFERENCES Brands(id),
+    CONSTRAINT uq_sizechart UNIQUE (brand_id, category, size)
+);
+
+CREATE INDEX idx_sizechart_brand ON Size_Charts(brand_id);
+CREATE INDEX idx_sizechart_category ON Size_Charts(category);
+GO
+
 PRINT '=====================================================';
 PRINT 'DANG TAO VIEWS...';
 PRINT '=====================================================';
 GO
 
 -- =====================================================
--- VIEWS
+-- VIEWS FOR ADMIN API
 -- =====================================================
 
 CREATE VIEW vw_ProductSummary AS
@@ -785,13 +784,23 @@ GROUP BY o.id, o.order_number, o.user_id, u.full_name, u.email,
          o.total_amount, o.status, o.created_at, o.delivered_at;
 GO
 
+CREATE VIEW vw_AdminDashboardStats AS
+SELECT 
+    (SELECT COUNT(*) FROM Users WHERE deleted_at IS NULL) AS total_users,
+    (SELECT COUNT(*) FROM Products WHERE deleted_at IS NULL) AS total_products,
+    (SELECT COUNT(*) FROM Orders) AS total_orders,
+    (SELECT ISNULL(SUM(total_amount), 0) FROM Orders WHERE status = 'delivered') AS total_revenue,
+    (SELECT COUNT(*) FROM Orders WHERE created_at >= DATEADD(day, -30, GETDATE())) AS orders_last_30d,
+    (SELECT ISNULL(SUM(total_amount), 0) FROM Orders WHERE status = 'delivered' AND created_at >= DATEADD(day, -30, GETDATE())) AS revenue_last_30d
+GO
+
 PRINT '=====================================================';
 PRINT 'DANG TAO STORED PROCEDURES...';
 PRINT '=====================================================';
 GO
 
 -- =====================================================
--- STORED PROCEDURES
+-- STORED PROCEDURES FOR ADMIN API
 -- =====================================================
 
 CREATE PROCEDURE sp_UpdateProductRating
@@ -874,16 +883,15 @@ GO
 
 PRINT '';
 PRINT '=====================================================';
-PRINT 'HOAN THANH TAO SCHEMA!';
+PRINT 'HOAN THANH TAO SCHEMA V2!';
 PRINT '=====================================================';
 PRINT '';
 PRINT 'Da tao:';
 PRINT '  - 25 tables voi indexes';
-PRINT '  - 2 views';
+PRINT '  - 3 views cho admin API';
 PRINT '  - 2 stored procedures';
 PRINT '  - 2 triggers';
 PRINT '';
-PRINT 'CHUA CO DU LIEU! Chay file 2_INSERT_DATA.sql de them du lieu.';
+PRINT 'CHUA CO DU LIEU! Chay file 2_INSERT_DATA_V2.sql de them du lieu.';
 PRINT '=====================================================';
 PRINT '';
-

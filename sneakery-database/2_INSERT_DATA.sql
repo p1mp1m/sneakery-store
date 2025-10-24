@@ -1,710 +1,408 @@
 -- =====================================================
--- SNEAKERY E-COMMERCE - INSERT DATA
+-- SNEAKERY E-COMMERCE - SAMPLE DATA V2 (API COMPATIBLE)
 -- =====================================================
--- File này chứa TOÀN BỘ dữ liệu: users + sample data
--- Chạy AFTER file 1_CREATE_SCHEMA.sql
--- =====================================================
--- PASSWORD INFO:
--- testadmin@sneakery.com = admin123
--- testuser@sneakery.com = user123
+-- Dữ liệu mẫu được tối ưu cho Frontend Admin API
 -- =====================================================
 
 USE sneakery_db;
 GO
 
-PRINT '';
 PRINT '=====================================================';
-PRINT 'DANG INSERT DU LIEU...';
+PRINT 'DANG THEM DU LIEU MAU...';
 PRINT '=====================================================';
 PRINT '';
 
 -- =====================================================
--- 1. INSERT USERS (2 users cố định)
+-- 1. USERS DATA (Admin + Regular Users)
 -- =====================================================
-PRINT '[1/12] Dang insert users...';
-
 INSERT INTO Users (email, password_hash, full_name, phone_number, role, is_active, is_email_verified) VALUES
-('testadmin@sneakery.com', '$2a$10$SOVwX.mgssz5J2b2ZZa3Y.0z1VTgMTi9Rr5lYcB5VSJrPfgawEkQ2', N'Test Admin', '0901234567', 'ADMIN', 1, 1),
-('testuser@sneakery.com', '$2a$10$mH2S4TRYYSn6PYrcDWpL2O9.fVj4gK.1Pp8CpBEV6D3G838y7ADhO', N'Test User', '0912345678', 'USER', 1, 1);
+-- Admin users
+('admin@sneakery.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Admin Sneakery', '0123456789', 'ADMIN', 1, 1),
+('moderator@sneakery.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Moderator Sneakery', '0123456790', 'MODERATOR', 1, 1),
+
+-- Regular users
+('user1@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Nguyễn Văn An', '0987654321', 'USER', 1, 1),
+('user2@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Trần Thị Bình', '0987654322', 'USER', 1, 1),
+('user3@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Lê Văn Cường', '0987654323', 'USER', 1, 1),
+('user4@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Phạm Thị Dung', '0987654324', 'USER', 1, 1),
+('user5@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Hoàng Văn Em', '0987654325', 'USER', 1, 1),
+('user6@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Vũ Thị Phương', '0987654326', 'USER', 1, 1),
+('user7@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Đặng Văn Giang', '0987654327', 'USER', 1, 1),
+('user8@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Bùi Thị Hoa', '0987654328', 'USER', 1, 1),
+('user9@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Ngô Văn Ích', '0987654329', 'USER', 1, 1),
+('user10@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'Đinh Thị Kim', '0987654330', 'USER', 1, 1);
 GO
 
-DECLARE @AdminId BIGINT = (SELECT id FROM Users WHERE email = 'testadmin@sneakery.com');
-DECLARE @UserId BIGINT = (SELECT id FROM Users WHERE email = 'testuser@sneakery.com');
-
--- Insert addresses cho cả 2 users
-INSERT INTO Addresses (user_id, recipient_name, phone, line1, ward, district, city, is_default, address_type) VALUES
-(@AdminId, N'Admin Sneakery', '0901234567', N'456 Lê Lợi', N'Phường Bến Thành', N'Quận 1', N'TP. Hồ Chí Minh', 1, 'office'),
-(@UserId, N'User Sneakery', '0912345678', N'123 Nguyễn Huệ', N'Phường Bến Nghé', N'Quận 1', N'TP. Hồ Chí Minh', 1, 'home');
+-- =====================================================
+-- 2. BRANDS DATA
+-- =====================================================
+INSERT INTO Brands (name, slug, logo_url, description, is_active) VALUES
+(N'Nike', 'nike', 'https://example.com/logos/nike.png', N'Just Do It - Thương hiệu thể thao hàng đầu thế giới', 1),
+(N'Adidas', 'adidas', 'https://example.com/logos/adidas.png', N'Impossible is Nothing - Thương hiệu thể thao Đức', 1),
+(N'Jordan', 'jordan', 'https://example.com/logos/jordan.png', N'Air Jordan - Dòng giày bóng rổ huyền thoại', 1),
+(N'Converse', 'converse', 'https://example.com/logos/converse.png', N'Chuck Taylor All Star - Giày canvas cổ điển', 1),
+(N'Vans', 'vans', 'https://example.com/logos/vans.png', N'Off The Wall - Thương hiệu skateboard', 1),
+(N'Puma', 'puma', 'https://example.com/logos/puma.png', N'Forever Faster - Thương hiệu thể thao Đức', 1),
+(N'New Balance', 'new-balance', 'https://example.com/logos/new-balance.png', N'Made in USA - Chất lượng cao cấp', 1),
+(N'Reebok', 'reebok', 'https://example.com/logos/reebok.png', N'Be More Human - Thương hiệu fitness', 1),
+(N'Under Armour', 'under-armour', 'https://example.com/logos/under-armour.png', N'I Will What I Want - Thương hiệu thể thao Mỹ', 1),
+(N'ASICS', 'asics', 'https://example.com/logos/asics.png', N'Anima Sana In Corpore Sano - Thương hiệu Nhật Bản', 1);
 GO
 
-PRINT '   Da tao 2 users voi day du thong tin + addresses';
-PRINT '';
-
 -- =====================================================
--- 2. INSERT BRANDS
+-- 3. CATEGORIES DATA (Hierarchical)
 -- =====================================================
-PRINT '[2/12] Dang insert brands...';
+INSERT INTO Categories (name, slug, description, parent_id, lft, rgt, level, is_active, display_order) VALUES
+-- Main categories
+(N'Giày Nam', 'giay-nam', N'Giày thể thao và giày thời trang cho nam', NULL, 1, 20, 0, 1, 1),
+(N'Giày Nữ', 'giay-nu', N'Giày thể thao và giày thời trang cho nữ', NULL, 21, 40, 0, 1, 2),
+(N'Giày Trẻ Em', 'giay-tre-em', N'Giày cho trẻ em và thanh thiếu niên', NULL, 41, 60, 0, 1, 3),
+(N'Phụ Kiện', 'phu-kien', N'Phụ kiện giày và thời trang', NULL, 61, 80, 0, 1, 4),
 
-INSERT INTO Brands (name, slug, description, is_active) VALUES
-(N'Nike', 'nike', N'Just Do It', 1),
-(N'Adidas', 'adidas', N'Impossible is Nothing', 1),
-(N'Puma', 'puma', N'Forever Faster', 1),
-(N'New Balance', 'new-balance', N'Worn by Supermodels', 1),
-(N'Converse', 'converse', N'All Star', 1),
-(N'Vans', 'vans', N'Off The Wall', 1);
+-- Subcategories for Men
+(N'Giày Chạy Bộ Nam', 'giay-chay-bo-nam', N'Giày chạy bộ cho nam', 1, 2, 7, 1, 1, 1),
+(N'Giày Bóng Đá Nam', 'giay-bong-da-nam', N'Giày bóng đá cho nam', 1, 8, 13, 1, 1, 2),
+(N'Giày Bóng Rổ Nam', 'giay-bong-ro-nam', N'Giày bóng rổ cho nam', 1, 14, 19, 1, 1, 3),
+
+-- Subcategories for Women
+(N'Giày Chạy Bộ Nữ', 'giay-chay-bo-nu', N'Giày chạy bộ cho nữ', 2, 22, 27, 1, 1, 1),
+(N'Giày Thời Trang Nữ', 'giay-thoi-trang-nu', N'Giày thời trang cho nữ', 2, 28, 33, 1, 1, 2),
+(N'Giày Cao Gót', 'giay-cao-got', N'Giày cao gót cho nữ', 2, 34, 39, 1, 1, 3),
+
+-- Subcategories for Kids
+(N'Giày Trẻ Em Nam', 'giay-tre-em-nam', N'Giày cho bé trai', 3, 42, 47, 1, 1, 1),
+(N'Giày Trẻ Em Nữ', 'giay-tre-em-nu', N'Giày cho bé gái', 3, 48, 53, 1, 1, 2),
+(N'Giày Trẻ Sơ Sinh', 'giay-tre-so-sinh', N'Giày cho trẻ sơ sinh', 3, 54, 59, 1, 1, 3),
+
+-- Subcategories for Accessories
+(N'Tất', 'tat', N'Tất thể thao và thời trang', 4, 62, 65, 1, 1, 1),
+(N'Dây Giày', 'day-giay', N'Dây giày và phụ kiện', 4, 66, 69, 1, 1, 2),
+(N'Bảo Vệ Giày', 'bao-ve-giay', N'Phụ kiện bảo vệ giày', 4, 70, 73, 1, 1, 3),
+(N'Kem Đánh Giày', 'kem-danh-giay', N'Kem đánh giày và chăm sóc', 4, 74, 79, 1, 1, 4);
 GO
 
-PRINT '   Da them 6 brands';
-PRINT '';
-
 -- =====================================================
--- 3. INSERT CATEGORIES
+-- 4. PRODUCTS DATA (Sample Products)
 -- =====================================================
-PRINT '[3/12] Dang insert categories...';
-
-INSERT INTO Categories (name, slug, lft, rgt, level, parent_id, is_active) VALUES
-(N'Giày Thể Thao', 'giay-the-thao', 1, 12, 0, NULL, 1),
-  (N'Giày Chạy Bộ', 'giay-chay-bo', 2, 3, 1, 1, 1),
-  (N'Giày Bóng Đá', 'giay-bong-da', 4, 5, 1, 1, 1),
-  (N'Giày Bóng Rổ', 'giay-bong-ro', 6, 7, 1, 1, 1),
-  (N'Giày Tennis', 'giay-tennis', 8, 9, 1, 1, 1),
-  (N'Giày Gym', 'giay-gym', 10, 11, 1, 1, 1),
-(N'Giày Lifestyle', 'giay-lifestyle', 13, 20, 0, NULL, 1),
-  (N'Giày Sneaker', 'giay-sneaker', 14, 15, 1, 7, 1),
-  (N'Giày Slip-On', 'giay-slip-on', 16, 17, 1, 7, 1),
-  (N'Giày Cao Cổ', 'giay-cao-co', 18, 19, 1, 7, 1);
-GO
-
-PRINT '   Da them 10 categories';
-PRINT '';
-
--- =====================================================
--- 4. INSERT PRODUCTS (21 products)
--- =====================================================
-PRINT '[4/12] Dang insert products...';
-
--- Insert products
-INSERT INTO Products (brand_id, name, slug, description, short_description, is_active, is_featured, is_new, meta_title, meta_description) VALUES
+INSERT INTO Products (brand_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count) VALUES
 -- Nike Products
-(1, N'Nike Air Force 1 ''07', 'nike-air-force-1-07', N'Giày Nike Air Force 1 ''07 - Icon của streetwear với thiết kế classic', N'Icon streetwear classic', 1, 1, 0, N'Nike Air Force 1 ''07', N'Giày Nike Air Force 1 classic'),
-(1, N'Nike Dunk Low Retro', 'nike-dunk-low-retro', N'Nike Dunk Low Retro - Phong cách retro đậm chất thập niên 80s', N'Retro style đậm chất 80s', 1, 1, 1, N'Nike Dunk Low Retro', N'Giày Nike Dunk Low phong cách retro'),
-(1, N'Nike Blazer Mid ''77', 'nike-blazer-mid-77', N'Nike Blazer Mid ''77 - Vintage basketball style', N'Vintage basketball classic', 1, 0, 0, N'Nike Blazer Mid ''77', N'Giày Nike Blazer vintage'),
-(1, N'Nike React Infinity Run', 'nike-react-infinity-run', N'Nike React Infinity Run - Công nghệ React êm ái cho chạy bộ', N'React foam siêu êm', 1, 1, 1, N'Nike React Infinity Run', N'Giày chạy Nike React'),
-(1, N'Nike Zoom Pegasus 39', 'nike-zoom-pegasus-39', N'Nike Zoom Pegasus 39 - Giày chạy phổ biến nhất', N'Best seller cho runner', 1, 1, 0, N'Nike Zoom Pegasus 39', N'Giày chạy Nike Pegasus'),
+(1, N'Nike Air Max 270', 'nike-air-max-270', N'Giày chạy bộ Nike Air Max 270 với công nghệ Air Max đột phá, mang lại cảm giác êm ái và năng động cho mỗi bước chạy.', N'Giày chạy bộ Nike Air Max 270', 1, 1, 1, 1250, 45, 4.5, 23),
+(1, N'Nike Air Force 1', 'nike-air-force-1', N'Giày bóng rổ cổ điển Nike Air Force 1 với thiết kế đơn giản nhưng đầy phong cách, phù hợp cho mọi hoạt động.', N'Giày bóng rổ Nike Air Force 1', 1, 1, 0, 2100, 78, 4.7, 56),
+(1, N'Nike React Element 55', 'nike-react-element-55', N'Giày chạy bộ Nike React Element 55 với công nghệ React foam mang lại độ đàn hồi và bền bỉ tuyệt vời.', N'Giày chạy bộ Nike React Element 55', 1, 0, 1, 890, 32, 4.3, 18),
 
 -- Adidas Products
-(2, N'Adidas Superstar', 'adidas-superstar', N'Adidas Superstar - Shell toe icon từ những năm 70', N'Shell toe icon', 1, 1, 0, N'Adidas Superstar', N'Giày Adidas Superstar classic'),
-(2, N'Adidas NMD R1', 'adidas-nmd-r1', N'Adidas NMD R1 - Street style với công nghệ Boost', N'Street style + Boost', 1, 1, 1, N'Adidas NMD R1', N'Giày Adidas NMD street style'),
-(2, N'Adidas Gazelle', 'adidas-gazelle', N'Adidas Gazelle - Vintage suede classic', N'Vintage suede style', 1, 0, 0, N'Adidas Gazelle', N'Giày Adidas Gazelle vintage'),
-(2, N'Adidas Forum Low', 'adidas-forum-low', N'Adidas Forum Low - Basketball heritage style', N'Basketball heritage', 1, 1, 1, N'Adidas Forum Low', N'Giày Adidas Forum basketball'),
-(2, N'Adidas Samba', 'adidas-samba', N'Adidas Samba - Indoor football classic', N'Indoor football icon', 1, 1, 0, N'Adidas Samba', N'Giày Adidas Samba football'),
+(2, N'Adidas Ultraboost 22', 'adidas-ultraboost-22', N'Giày chạy bộ Adidas Ultraboost 22 với công nghệ Boost đột phá, mang lại năng lượng và sự thoải mái tối đa.', N'Giày chạy bộ Adidas Ultraboost 22', 1, 1, 1, 1680, 67, 4.6, 42),
+(2, N'Adidas Stan Smith', 'adidas-stan-smith', N'Giày tennis cổ điển Adidas Stan Smith với thiết kế đơn giản, thanh lịch và dễ phối đồ.', N'Giày tennis Adidas Stan Smith', 1, 0, 0, 1950, 89, 4.4, 67),
+(2, N'Adidas NMD R1', 'adidas-nmd-r1', N'Giày lifestyle Adidas NMD R1 với thiết kế hiện đại và công nghệ Boost, phù hợp cho cuộc sống năng động.', N'Giày lifestyle Adidas NMD R1', 1, 1, 0, 1420, 54, 4.2, 35),
 
--- Puma Products
-(3, N'Puma Suede Classic', 'puma-suede-classic', N'Puma Suede Classic - Iconic suede sneaker', N'Iconic suede sneaker', 1, 1, 0, N'Puma Suede Classic', N'Giày Puma Suede classic'),
-(3, N'Puma Clyde Court', 'puma-clyde-court', N'Puma Clyde Court - Basketball performance', N'Basketball performance', 1, 0, 1, N'Puma Clyde Court', N'Giày Puma basketball'),
-(3, N'Puma Future Rider', 'puma-future-rider', N'Puma Future Rider - Running heritage meets street', N'Running meets street', 1, 1, 1, N'Puma Future Rider', N'Giày Puma Future Rider'),
+-- Jordan Products
+(3, N'Air Jordan 1 Retro High', 'air-jordan-1-retro-high', N'Giày bóng rổ Air Jordan 1 Retro High - phiên bản tái tạo của đôi giày huyền thoại từ năm 1985.', N'Giày bóng rổ Air Jordan 1 Retro High', 1, 1, 1, 3200, 156, 4.8, 89),
+(3, N'Air Jordan 4 Retro', 'air-jordan-4-retro', N'Giày bóng rổ Air Jordan 4 Retro với thiết kế đặc trưng và công nghệ Air-Sole, biểu tượng của thập niên 90.', N'Giày bóng rổ Air Jordan 4 Retro', 1, 1, 0, 2800, 134, 4.7, 76),
+(3, N'Air Jordan 11 Retro', 'air-jordan-11-retro', N'Giày bóng rổ Air Jordan 11 Retro với thiết kế đột phá và công nghệ Carbon Fiber, được yêu thích nhất.', N'Giày bóng rổ Air Jordan 11 Retro', 1, 0, 1, 2400, 98, 4.6, 58),
 
--- New Balance Products
-(4, N'New Balance 574', 'new-balance-574', N'New Balance 574 - Comfort và phong cách', N'Comfort meets style', 1, 1, 0, N'New Balance 574', N'Giày New Balance 574'),
-(4, N'New Balance 327', 'new-balance-327', N'New Balance 327 - Retro running style', N'Retro running style', 1, 1, 1, N'New Balance 327', N'Giày New Balance 327 retro'),
-(4, N'New Balance 2002R', 'new-balance-2002r', N'New Balance 2002R - Premium comfort', N'Premium comfort style', 1, 1, 1, N'New Balance 2002R', N'Giày New Balance 2002R'),
-(4, N'New Balance 990v5', 'new-balance-990v5', N'New Balance 990v5 - Made in USA premium', N'Made in USA premium', 1, 0, 0, N'New Balance 990v5', N'Giày New Balance 990'),
+-- Converse Products
+(4, N'Converse Chuck Taylor All Star', 'converse-chuck-taylor-all-star', N'Giày canvas cổ điển Converse Chuck Taylor All Star với thiết kế đơn giản, phù hợp cho mọi phong cách.', N'Giày canvas Converse Chuck Taylor All Star', 1, 0, 0, 1800, 112, 4.3, 45),
+(4, N'Converse One Star', 'converse-one-star', N'Giày lifestyle Converse One Star với thiết kế đơn giản và phong cách streetwear.', N'Giày lifestyle Converse One Star', 1, 0, 1, 950, 28, 4.1, 12),
 
 -- Vans Products
-(6, N'Vans Old Skool', 'vans-old-skool', N'Vans Old Skool - Iconic side stripe', N'Iconic side stripe', 1, 1, 0, N'Vans Old Skool', N'Giày Vans Old Skool'),
-(6, N'Vans Authentic', 'vans-authentic', N'Vans Authentic - Simple và classic', N'Simple canvas classic', 1, 1, 0, N'Vans Authentic', N'Giày Vans Authentic'),
-(6, N'Vans Sk8-Hi', 'vans-sk8-hi', N'Vans Sk8-Hi - High top classic', N'High top skate shoe', 1, 0, 0, N'Vans Sk8-Hi', N'Giày Vans Sk8-Hi'),
-(6, N'Vans Era', 'vans-era', N'Vans Era - Padded skate shoe', N'Padded comfort skate', 1, 0, 1, N'Vans Era', N'Giày Vans Era');
-
--- Lấy IDs của products vừa insert để dùng cho bước tiếp theo
-DECLARE @AF1_ID BIGINT = (SELECT id FROM Products WHERE slug = 'nike-air-force-1-07');
-DECLARE @DunkLow_ID BIGINT = (SELECT id FROM Products WHERE slug = 'nike-dunk-low-retro');
-DECLARE @Blazer_ID BIGINT = (SELECT id FROM Products WHERE slug = 'nike-blazer-mid-77');
-DECLARE @ReactRun_ID BIGINT = (SELECT id FROM Products WHERE slug = 'nike-react-infinity-run');
-DECLARE @Pegasus_ID BIGINT = (SELECT id FROM Products WHERE slug = 'nike-zoom-pegasus-39');
-
-DECLARE @Superstar_ID BIGINT = (SELECT id FROM Products WHERE slug = 'adidas-superstar');
-DECLARE @NMD_ID BIGINT = (SELECT id FROM Products WHERE slug = 'adidas-nmd-r1');
-DECLARE @Gazelle_ID BIGINT = (SELECT id FROM Products WHERE slug = 'adidas-gazelle');
-DECLARE @Forum_ID BIGINT = (SELECT id FROM Products WHERE slug = 'adidas-forum-low');
-DECLARE @Samba_ID BIGINT = (SELECT id FROM Products WHERE slug = 'adidas-samba');
-
-DECLARE @Suede_ID BIGINT = (SELECT id FROM Products WHERE slug = 'puma-suede-classic');
-DECLARE @Clyde_ID BIGINT = (SELECT id FROM Products WHERE slug = 'puma-clyde-court');
-DECLARE @Future_ID BIGINT = (SELECT id FROM Products WHERE slug = 'puma-future-rider');
-
-DECLARE @NB574_ID BIGINT = (SELECT id FROM Products WHERE slug = 'new-balance-574');
-DECLARE @NB327_ID BIGINT = (SELECT id FROM Products WHERE slug = 'new-balance-327');
-DECLARE @NB2002_ID BIGINT = (SELECT id FROM Products WHERE slug = 'new-balance-2002r');
-DECLARE @NB990_ID BIGINT = (SELECT id FROM Products WHERE slug = 'new-balance-990v5');
-
-DECLARE @OldSkool_ID BIGINT = (SELECT id FROM Products WHERE slug = 'vans-old-skool');
-DECLARE @Authentic_ID BIGINT = (SELECT id FROM Products WHERE slug = 'vans-authentic');
-DECLARE @Sk8Hi_ID BIGINT = (SELECT id FROM Products WHERE slug = 'vans-sk8-hi');
-DECLARE @Era_ID BIGINT = (SELECT id FROM Products WHERE slug = 'vans-era');
-
-PRINT '   Da them 21 products';
-PRINT '';
-
--- =====================================================
--- 5. INSERT PRODUCT CATEGORIES
--- =====================================================
-PRINT '[5/12] Dang insert product categories...';
-
-INSERT INTO Product_Categories (product_id, category_id) VALUES
--- Nike
-(@AF1_ID, 8), (@DunkLow_ID, 8), (@DunkLow_ID, 10), (@Blazer_ID, 8), (@Blazer_ID, 10),
-(@ReactRun_ID, 2), (@ReactRun_ID, 8), (@Pegasus_ID, 2),
--- Adidas
-(@Superstar_ID, 8), (@NMD_ID, 8), (@Gazelle_ID, 8), (@Forum_ID, 8), (@Forum_ID, 10), (@Samba_ID, 8),
--- Puma
-(@Suede_ID, 8), (@Clyde_ID, 4), (@Future_ID, 8),
--- New Balance
-(@NB574_ID, 8), (@NB327_ID, 8), (@NB2002_ID, 8), (@NB990_ID, 2), (@NB990_ID, 8),
--- Vans
-(@OldSkool_ID, 8), (@Authentic_ID, 8), (@Sk8Hi_ID, 8), (@Sk8Hi_ID, 10), (@Era_ID, 8);
-
-PRINT '   Da them product categories';
-PRINT '';
-
--- =====================================================
--- 6. INSERT PRODUCT VARIANTS (60+ variants)
--- =====================================================
-PRINT '[6/12] Dang insert product variants...';
-
--- Nike Air Force 1
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, low_stock_threshold, is_active) VALUES
-(@AF1_ID, 'NIKE-AF1-WHT-38', '38', N'Trắng', 2800000, NULL, 1800000, 25, 10, 1),
-(@AF1_ID, 'NIKE-AF1-WHT-39', '39', N'Trắng', 2800000, NULL, 1800000, 30, 10, 1),
-(@AF1_ID, 'NIKE-AF1-WHT-40', '40', N'Trắng', 2800000, 2490000, 1800000, 35, 10, 1),
-(@AF1_ID, 'NIKE-AF1-BLK-39', '39', N'Đen', 2800000, NULL, 1800000, 20, 10, 1),
-(@AF1_ID, 'NIKE-AF1-BLK-40', '40', N'Đen', 2800000, NULL, 1800000, 22, 10, 1);
-
--- Nike Dunk Low
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@DunkLow_ID, 'NIKE-DUNK-PND-38', '38', N'Panda', 3200000, 2890000, 2000000, 15, 1),
-(@DunkLow_ID, 'NIKE-DUNK-PND-39', '39', N'Panda', 3200000, 2890000, 2000000, 18, 1),
-(@DunkLow_ID, 'NIKE-DUNK-PND-40', '40', N'Panda', 3200000, 2890000, 2000000, 20, 1),
-(@DunkLow_ID, 'NIKE-DUNK-BLU-39', '39', N'Blue', 3200000, NULL, 2000000, 12, 1);
-
--- Nike Blazer Mid
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@Blazer_ID, 'NIKE-BLZ-WHT-39', '39', N'Trắng/Đen', 2900000, 1900000, 18, 1),
-(@Blazer_ID, 'NIKE-BLZ-WHT-40', '40', N'Trắng/Đen', 2900000, 1900000, 20, 1),
-(@Blazer_ID, 'NIKE-BLZ-WHT-41', '41', N'Trắng/Đen', 2900000, 1900000, 15, 1);
-
--- Nike React Infinity Run
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@ReactRun_ID, 'NIKE-RCT-BLK-39', '39', N'Đen', 3800000, 3290000, 2400000, 12, 1),
-(@ReactRun_ID, 'NIKE-RCT-BLK-40', '40', N'Đen', 3800000, 3290000, 2400000, 14, 1),
-(@ReactRun_ID, 'NIKE-RCT-WHT-40', '40', N'Trắng', 3800000, NULL, 2400000, 10, 1);
-
--- Nike Pegasus 39
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@Pegasus_ID, 'NIKE-PEG-GRY-39', '39', N'Xám', 3600000, 2300000, 16, 1),
-(@Pegasus_ID, 'NIKE-PEG-GRY-40', '40', N'Xám', 3600000, 2300000, 18, 1),
-(@Pegasus_ID, 'NIKE-PEG-BLU-40', '40', N'Xanh', 3600000, 2300000, 14, 1);
-
--- Adidas Superstar
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@Superstar_ID, 'ADIDAS-SS-WHT-38', '38', N'Trắng', 2400000, 1600000, 28, 1),
-(@Superstar_ID, 'ADIDAS-SS-WHT-39', '39', N'Trắng', 2400000, 1600000, 32, 1),
-(@Superstar_ID, 'ADIDAS-SS-WHT-40', '40', N'Trắng', 2400000, 1600000, 30, 1),
-(@Superstar_ID, 'ADIDAS-SS-BLK-39', '39', N'Đen', 2400000, 1600000, 25, 1);
-
--- Adidas NMD R1
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@NMD_ID, 'ADIDAS-NMD-BLK-39', '39', N'Đen', 3500000, 2990000, 2200000, 15, 1),
-(@NMD_ID, 'ADIDAS-NMD-BLK-40', '40', N'Đen', 3500000, 2990000, 2200000, 18, 1),
-(@NMD_ID, 'ADIDAS-NMD-WHT-40', '40', N'Trắng', 3500000, NULL, 2200000, 12, 1);
-
--- Adidas Gazelle
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@Gazelle_ID, 'ADIDAS-GAZ-BLU-39', '39', N'Xanh', 2600000, 1700000, 20, 1),
-(@Gazelle_ID, 'ADIDAS-GAZ-BLU-40', '40', N'Xanh', 2600000, 1700000, 22, 1),
-(@Gazelle_ID, 'ADIDAS-GAZ-GRY-40', '40', N'Xám', 2600000, 1700000, 18, 1);
-
--- Adidas Forum Low
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@Forum_ID, 'ADIDAS-FRM-WHT-39', '39', N'Trắng', 2900000, 2490000, 1900000, 16, 1),
-(@Forum_ID, 'ADIDAS-FRM-WHT-40', '40', N'Trắng', 2900000, 2490000, 1900000, 18, 1);
-
--- Adidas Samba
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@Samba_ID, 'ADIDAS-SMB-BLK-39', '39', N'Đen/Trắng', 2500000, 1650000, 24, 1),
-(@Samba_ID, 'ADIDAS-SMB-BLK-40', '40', N'Đen/Trắng', 2500000, 1650000, 26, 1),
-(@Samba_ID, 'ADIDAS-SMB-BLK-41', '41', N'Đen/Trắng', 2500000, 1650000, 20, 1);
-
--- Puma Suede Classic
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@Suede_ID, 'PUMA-SD-BLK-39', '39', N'Đen', 2200000, 1500000, 22, 1),
-(@Suede_ID, 'PUMA-SD-BLK-40', '40', N'Đen', 2200000, 1500000, 24, 1),
-(@Suede_ID, 'PUMA-SD-BLU-40', '40', N'Xanh', 2200000, 1500000, 18, 1);
-
--- Puma Clyde Court
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@Clyde_ID, 'PUMA-CLY-WHT-40', '40', N'Trắng', 3200000, 2790000, 2100000, 12, 1),
-(@Clyde_ID, 'PUMA-CLY-RED-40', '40', N'Đỏ', 3200000, NULL, 2100000, 10, 1);
-
--- Puma Future Rider
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@Future_ID, 'PUMA-FTR-MLT-39', '39', N'Đa màu', 2700000, 2290000, 1800000, 16, 1),
-(@Future_ID, 'PUMA-FTR-MLT-40', '40', N'Đa màu', 2700000, 2290000, 1800000, 18, 1);
-
--- New Balance 574
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@NB574_ID, 'NB-574-GRY-39', '39', N'Xám', 2400000, 1600000, 20, 1),
-(@NB574_ID, 'NB-574-GRY-40', '40', N'Xám', 2400000, 1600000, 24, 1),
-(@NB574_ID, 'NB-574-NVY-40', '40', N'Navy', 2400000, 1600000, 18, 1);
-
--- New Balance 327
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@NB327_ID, 'NB-327-BLK-39', '39', N'Đen', 2800000, 2390000, 1850000, 14, 1),
-(@NB327_ID, 'NB-327-BLK-40', '40', N'Đen', 2800000, 2390000, 1850000, 16, 1);
-
--- New Balance 2002R
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@NB2002_ID, 'NB-2002-GRY-40', '40', N'Xám', 3800000, 3290000, 2500000, 10, 1),
-(@NB2002_ID, 'NB-2002-BLU-40', '40', N'Xanh', 3800000, NULL, 2500000, 8, 1);
-
--- New Balance 990v5
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@NB990_ID, 'NB-990-GRY-40', '40', N'Xám', 5200000, 3800000, 12, 1),
-(@NB990_ID, 'NB-990-GRY-41', '41', N'Xám', 5200000, 3800000, 10, 1);
-
--- Vans Old Skool
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@OldSkool_ID, 'VANS-OS-BLK-38', '38', N'Đen/Trắng', 1800000, 1200000, 30, 1),
-(@OldSkool_ID, 'VANS-OS-BLK-39', '39', N'Đen/Trắng', 1800000, 1200000, 35, 1),
-(@OldSkool_ID, 'VANS-OS-BLK-40', '40', N'Đen/Trắng', 1800000, 1200000, 32, 1);
-
--- Vans Authentic
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@Authentic_ID, 'VANS-AUTH-WHT-39', '39', N'Trắng', 1600000, 1100000, 28, 1),
-(@Authentic_ID, 'VANS-AUTH-WHT-40', '40', N'Trắng', 1600000, 1100000, 30, 1),
-(@Authentic_ID, 'VANS-AUTH-BLK-40', '40', N'Đen', 1600000, 1100000, 25, 1);
-
--- Vans Sk8-Hi
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, cost_price, stock_quantity, is_active) VALUES
-(@Sk8Hi_ID, 'VANS-SK8-BLK-39', '39', N'Đen', 1900000, 1300000, 22, 1),
-(@Sk8Hi_ID, 'VANS-SK8-BLK-40', '40', N'Đen', 1900000, 1300000, 24, 1);
-
--- Vans Era
-INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, is_active) VALUES
-(@Era_ID, 'VANS-ERA-BLU-39', '39', N'Xanh', 1700000, 1490000, 1150000, 20, 1),
-(@Era_ID, 'VANS-ERA-BLU-40', '40', N'Xanh', 1700000, 1490000, 1150000, 22, 1);
-
-PRINT '   Da them 60+ product variants';
-PRINT '';
-
--- =====================================================
--- 7. INSERT PRODUCT IMAGES
--- =====================================================
-PRINT '[7/12] Dang insert product images...';
-
-INSERT INTO Product_Images (product_id, image_url, alt_text, is_primary, display_order) VALUES
--- Nike Air Force 1
-(@AF1_ID, N'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto/315122-111.png', N'Nike Air Force 1 - Trắng', 1, 0),
-(@AF1_ID, N'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto/315122-111-side.png', N'Nike Air Force 1 - Góc bên', 0, 1),
-
--- Nike Dunk Low
-(@DunkLow_ID, N'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto/dunk-low-panda.png', N'Nike Dunk Low Panda', 1, 0),
-(@DunkLow_ID, N'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto/dunk-low-panda-side.png', N'Nike Dunk Low - Góc bên', 0, 1),
-
--- Adidas Superstar
-(@Superstar_ID, N'https://assets.adidas.com/images/w_600/superstar.jpg', N'Adidas Superstar', 1, 0),
-
--- Vans Old Skool
-(@OldSkool_ID, N'https://images.vans.com/is/image/Vans/old-skool-black-white', N'Vans Old Skool', 1, 0);
-
-PRINT '   Da them product images';
-PRINT '';
-
--- =====================================================
--- 8. INSERT FLASH SALES
--- =====================================================
-PRINT '[8/12] Dang insert flash sales...';
-
-INSERT INTO Flash_Sales (product_id, discount_percent, start_time, end_time, quantity_limit, sold_count, is_active) VALUES
--- Active Flash Sales
-(@DunkLow_ID, 15.00, DATEADD(DAY, -2, GETDATE()), DATEADD(DAY, 2, GETDATE()), 50, 12, 1),
-(@ReactRun_ID, 20.00, DATEADD(DAY, -1, GETDATE()), DATEADD(DAY, 3, GETDATE()), 30, 8, 1),
-(@NMD_ID, 18.00, DATEADD(DAY, -3, GETDATE()), DATEADD(DAY, 1, GETDATE()), 40, 15, 1),
-(@AF1_ID, 12.00, GETDATE(), DATEADD(DAY, 4, GETDATE()), 60, 5, 1),
-(@Forum_ID, 15.00, GETDATE(), DATEADD(DAY, 2, GETDATE()), 35, 3, 1),
-
--- Upcoming Flash Sales
-(@NB2002_ID, 15.00, DATEADD(DAY, 3, GETDATE()), DATEADD(DAY, 7, GETDATE()), 25, 0, 1),
-(@Pegasus_ID, 10.00, DATEADD(DAY, 5, GETDATE()), DATEADD(DAY, 8, GETDATE()), 45, 0, 1),
-(@Future_ID, 20.00, DATEADD(DAY, 4, GETDATE()), DATEADD(DAY, 6, GETDATE()), 30, 0, 1);
-
-PRINT '   Da them 8 flash sales';
-PRINT '';
-
--- =====================================================
--- 9. INSERT COUPONS
--- =====================================================
-PRINT '[9/12] Dang insert coupons...';
-
-INSERT INTO Coupons (code, description, discount_type, discount_value, min_order_amount, max_discount_amount, start_at, end_at, max_uses, uses_count, max_uses_per_user, applicable_to, applicable_id, is_active) VALUES
--- General Coupons
-('SUMMER2025', N'Giảm 15% cho tất cả đơn hàng mùa hè', 'percentage', 15, 1000000, 300000, '2025-01-01', '2025-12-31', NULL, 45, 3, 'all', NULL, 1),
-('FIRST100K', N'Giảm 100K cho đơn hàng đầu tiên', 'fixed', 100000, 500000, 100000, '2025-01-01', '2025-12-31', 1000, 120, 1, 'all', NULL, 1),
-('MEGA50', N'Giảm 50K cho đơn hàng từ 800K', 'fixed', 50000, 800000, 50000, '2025-01-01', '2025-12-31', NULL, 230, 5, 'all', NULL, 1),
-('VIP200K', N'Giảm 200K cho đơn hàng từ 2 triệu', 'fixed', 200000, 2000000, 200000, '2025-01-01', '2025-06-30', 500, 78, 2, 'all', NULL, 1),
-('SAVE20', N'Giảm 20% tối đa 500K', 'percentage', 20, 1500000, 500000, '2025-01-01', '2025-12-31', 300, 95, 2, 'all', NULL, 1),
-
--- Brand Specific Coupons
-('NIKE100K', N'Giảm 100K cho sản phẩm Nike', 'fixed', 100000, 1200000, 100000, '2025-01-01', '2025-12-31', 400, 56, 2, 'brand', 1, 1),
-('ADIDAS10', N'Giảm 10% cho sản phẩm Adidas', 'percentage', 10, 800000, 200000, '2025-01-01', '2025-12-31', NULL, 89, 3, 'brand', 2, 1),
-('PUMA15', N'Giảm 15% cho sản phẩm Puma', 'percentage', 15, 600000, 150000, '2025-01-01', '2025-06-30', 200, 34, 2, 'brand', 3, 1),
-('NB80K', N'Giảm 80K cho New Balance', 'fixed', 80000, 1000000, 80000, '2025-01-01', '2025-12-31', 250, 67, 2, 'brand', 4, 1),
-('VANS50K', N'Giảm 50K cho Vans', 'fixed', 50000, 500000, 50000, '2025-01-01', '2025-12-31', NULL, 142, 4, 'brand', 6, 1),
-
--- Category Specific
-('RUNNING20', N'Giảm 20% cho giày chạy bộ', 'percentage', 20, 1000000, 400000, '2025-01-01', '2025-12-31', 300, 45, 2, 'category', 2, 1),
-('LIFESTYLE15', N'Giảm 15% cho giày lifestyle', 'percentage', 15, 800000, 250000, '2025-01-01', '2025-12-31', NULL, 123, 3, 'category', 8, 1);
-
-PRINT '   Da them 12 coupons';
-PRINT '';
-
--- =====================================================
--- 10. INSERT ORDERS MẪU
--- =====================================================
-PRINT '[10/12] Dang insert orders...';
-
--- Lấy User IDs từ database
-DECLARE @User3_ID BIGINT = (SELECT id FROM Users WHERE email = 'testadmin@sneakery.com');
-DECLARE @User4_ID BIGINT = (SELECT id FROM Users WHERE email = 'testuser@sneakery.com');
-
--- Get some variant IDs
-DECLARE @Var_AF1_39 BIGINT = (SELECT id FROM Product_Variants WHERE sku = 'NIKE-AF1-WHT-39');
-DECLARE @Var_Dunk_39 BIGINT = (SELECT id FROM Product_Variants WHERE sku = 'NIKE-DUNK-PND-39');
-DECLARE @Var_SS_40 BIGINT = (SELECT id FROM Product_Variants WHERE sku = 'ADIDAS-SS-WHT-40');
-DECLARE @Var_NMD_40 BIGINT = (SELECT id FROM Product_Variants WHERE sku = 'ADIDAS-NMD-BLK-40');
-DECLARE @Var_OS_39 BIGINT = (SELECT id FROM Product_Variants WHERE sku = 'VANS-OS-BLK-39');
-
--- Get address IDs
-DECLARE @Addr1_ID BIGINT = (SELECT TOP 1 id FROM Addresses WHERE user_id = @User3_ID ORDER BY is_default DESC);
-
--- Order 1: Đã giao
-DECLARE @Order1_Number VARCHAR(50);
-EXEC sp_GenerateOrderNumber @Order1_Number OUTPUT;
-
-INSERT INTO Orders (user_id, order_number, address_shipping_id, address_billing_id, subtotal, shipping_fee, discount_amount, tax_amount, total_amount, status, shipping_method, created_at, delivered_at) VALUES
-(@User3_ID, @Order1_Number, @Addr1_ID, @Addr1_ID, 2800000, 30000, 0, 0, 2830000, 'delivered', N'Giao hàng nhanh', DATEADD(DAY, -15, GETDATE()), DATEADD(DAY, -12, GETDATE()));
-
-DECLARE @Order1_ID BIGINT = SCOPE_IDENTITY();
-
-INSERT INTO Order_Details (order_id, variant_id, product_name, variant_sku, size, color, quantity, unit_price, total_price) VALUES
-(@Order1_ID, @Var_AF1_39, N'Nike Air Force 1 ''07', 'NIKE-AF1-WHT-39', '39', N'Trắng', 1, 2800000, 2800000);
-
-INSERT INTO Payments (order_id, payment_method, amount, status, paid_at) VALUES
-(@Order1_ID, 'vnpay', 2830000, 'completed', DATEADD(DAY, -15, GETDATE()));
-
--- Order 2: Đang xử lý
-DECLARE @Order2_Number VARCHAR(50);
-EXEC sp_GenerateOrderNumber @Order2_Number OUTPUT;
-
-INSERT INTO Orders (user_id, order_number, address_shipping_id, subtotal, shipping_fee, total_amount, status, created_at) VALUES
-(@User3_ID, @Order2_Number, @Addr1_ID, 5090000, 0, 5090000, 'processing', DATEADD(DAY, -3, GETDATE()));
-
-DECLARE @Order2_ID BIGINT = SCOPE_IDENTITY();
-
-INSERT INTO Order_Details (order_id, variant_id, product_name, variant_sku, size, color, quantity, unit_price, total_price) VALUES
-(@Order2_ID, @Var_Dunk_39, N'Nike Dunk Low Retro', 'NIKE-DUNK-PND-39', '39', N'Panda', 1, 2890000, 2890000),
-(@Order2_ID, @Var_SS_40, N'Adidas Superstar', 'ADIDAS-SS-WHT-40', '40', N'Trắng', 1, 2200000, 2200000);
-
-INSERT INTO Payments (order_id, payment_method, amount, status, paid_at) VALUES
-(@Order2_ID, 'momo', 5090000, 'completed', DATEADD(DAY, -3, GETDATE()));
-
--- Order 3: Pending
-DECLARE @Order3_Number VARCHAR(50);
-EXEC sp_GenerateOrderNumber @Order3_Number OUTPUT;
-
-INSERT INTO Orders (user_id, order_number, address_shipping_id, subtotal, shipping_fee, total_amount, status, created_at) VALUES
-(@User4_ID, @Order3_Number, @Addr1_ID, 1800000, 30000, 1830000, 'pending', DATEADD(DAY, -1, GETDATE()));
-
-DECLARE @Order3_ID BIGINT = SCOPE_IDENTITY();
-
-INSERT INTO Order_Details (order_id, variant_id, product_name, variant_sku, size, color, quantity, unit_price, total_price) VALUES
-(@Order3_ID, @Var_OS_39, N'Vans Old Skool', 'VANS-OS-BLK-39', '39', N'Đen/Trắng', 1, 1800000, 1800000);
-
-INSERT INTO Payments (order_id, payment_method, amount, status) VALUES
-(@Order3_ID, 'cod', 1830000, 'pending');
-
-PRINT '   Da them 3 orders';
-PRINT '';
-
--- =====================================================
--- 11. INSERT REVIEWS, LOYALTY POINTS, NOTIFICATIONS, WISHLISTS
--- =====================================================
-PRINT '[11/12] Dang insert reviews, loyalty, notifications, wishlists...';
-
-INSERT INTO Reviews (product_id, user_id, order_id, rating, title, body, is_approved, is_verified_purchase, helpful_count, created_at) VALUES
--- Nike Air Force 1 Reviews
-(@AF1_ID, @User3_ID, @Order1_ID, 5, N'Tuyệt vời!', N'Giày rất đẹp, chất lượng tốt, đi rất êm. Mình rất hài lòng với sản phẩm này.', 1, 1, 15, DATEADD(DAY, -10, GETDATE())),
-(@AF1_ID, @User4_ID, NULL, 4, N'Đẹp nhưng hơi nặng', N'Giày đẹp, form chuẩn nhưng hơi nặng so với các loại giày khác.', 1, 0, 8, DATEADD(DAY, -5, GETDATE())),
-
--- Nike Dunk Low Reviews
-(@DunkLow_ID, @User3_ID, @Order2_ID, 5, N'Quá đẹp!', N'Màu Panda quá xịn, phối đồ gì cũng hợp. Giá hơi cao nhưng xứng đáng.', 1, 1, 25, DATEADD(DAY, -2, GETDATE())),
-(@DunkLow_ID, @User4_ID, NULL, 5, N'Yêu luôn!', N'Mẫu giày hot nhất hiện nay. Form chuẩn, chất lượng tốt.', 1, 0, 12, DATEADD(DAY, -1, GETDATE())),
-
--- Adidas Superstar Reviews  
-(@Superstar_ID, @User3_ID, NULL, 5, N'Classic không bao giờ lỗi mốt', N'Shell toe classic, đi rất thoải mái. Phối đồ dễ dàng.', 1, 0, 18, DATEADD(DAY, -7, GETDATE())),
-(@Superstar_ID, @User4_ID, NULL, 4, N'Tốt', N'Giày đẹp, nhưng cần mang quen một chút. Nhìn chung rất hài lòng.', 1, 0, 6, DATEADD(DAY, -4, GETDATE())),
-
--- Adidas NMD Reviews
-(@NMD_ID, @User3_ID, NULL, 5, N'Boost êm ái', N'Công nghệ Boost rất êm, đi cả ngày không mỏi chân. Street style đẹp.', 1, 0, 20, DATEADD(DAY, -6, GETDATE())),
-
--- New Balance 574 Reviews
-(@NB574_ID, @User3_ID, NULL, 5, N'Thoải mái nhất từng đi', N'New Balance luôn là top về comfort. 574 này không thất vọng.', 1, 0, 14, DATEADD(DAY, -8, GETDATE())),
-(@NB574_ID, @User4_ID, NULL, 4, N'Đáng mua', N'Giá tốt, chất lượng ổn. Đi êm và bền.', 1, 0, 9, DATEADD(DAY, -3, GETDATE())),
-
--- Vans Old Skool Reviews
-(@OldSkool_ID, @User3_ID, @Order3_ID, 5, N'Must have item!', N'Ai cũng nên có một đôi Old Skool. Dễ phối đồ, giá rẻ, bền.', 1, 1, 22, DATEADD(HOUR, -12, GETDATE())),
-(@OldSkool_ID, @User4_ID, NULL, 5, N'Perfect!', N'Classic vượt thời gian. Mình đã có 3 đôi rồi.', 1, 0, 16, DATEADD(DAY, -2, GETDATE())),
-
--- Puma Suede Reviews
-(@Suede_ID, @User3_ID, NULL, 4, N'Đẹp và chất', N'Suede material rất đẹp, nhưng hơi khó vệ sinh. Cần cẩn thận khi đi.', 1, 0, 10, DATEADD(DAY, -5, GETDATE())),
-
--- Nike React Reviews
-(@ReactRun_ID, @User4_ID, NULL, 5, N'Chạy bộ tuyệt vời', N'React foam êm ái, support tốt. Đã chạy được 100km rồi vẫn OK.', 1, 0, 13, DATEADD(DAY, -4, GETDATE())),
-
--- Nike Pegasus Reviews
-(@Pegasus_ID, @User3_ID, NULL, 5, N'Best seller có lý do', N'Pegasus xứng đáng là best seller. Vừa êm vừa responsive.', 1, 0, 17, DATEADD(DAY, -6, GETDATE())),
-
--- Adidas Gazelle Reviews
-(@Gazelle_ID, @User4_ID, NULL, 4, N'Vintage đẹp', N'Suede vintage rất đẹp. Fit hơi nhỏ nên nên lên 0.5 size.', 1, 0, 11, DATEADD(DAY, -3, GETDATE())),
-
--- New Balance 327 Reviews
-(@NB327_ID, @User3_ID, NULL, 5, N'Retro runner đỉnh', N'327 là mẫu retro runner đẹp nhất của NB. Form chuẩn, đi êm.', 1, 0, 15, DATEADD(DAY, -2, GETDATE()));
-
--- Loyalty Points
-INSERT INTO Loyalty_Points (user_id, points, transaction_type, earned_from_order_id, description, expires_at, created_at) VALUES
--- User 3 earned points
-(@User3_ID, 283, 'earn', @Order1_ID, N'Tích điểm từ đơn hàng ' + @Order1_Number, DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -12, GETDATE())),
-(@User3_ID, 509, 'earn', @Order2_ID, N'Tích điểm từ đơn hàng ' + @Order2_Number, DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -3, GETDATE())),
-(@User3_ID, 50, 'earn', NULL, N'Bonus điểm sinh nhật', DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -30, GETDATE())),
-
--- User 4 earned points
-(@User4_ID, 183, 'earn', @Order3_ID, N'Tích điểm từ đơn hàng ' + @Order3_Number, DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -1, GETDATE())),
-(@User4_ID, 100, 'earn', NULL, N'Bonus điểm đăng ký', DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -60, GETDATE()));
-
--- Notifications
-INSERT INTO Notifications (user_id, type, title, message, link, is_read, created_at) VALUES
--- User 3 notifications
-(@User3_ID, 'order_status', N'Đơn hàng đã giao thành công', N'Đơn hàng ' + @Order1_Number + ' đã được giao thành công. Cảm ơn bạn đã mua hàng!', '/user/orders/' + CAST(@Order1_ID AS VARCHAR), 1, DATEADD(DAY, -12, GETDATE())),
-(@User3_ID, 'order_status', N'Đơn hàng đang xử lý', N'Đơn hàng ' + @Order2_Number + ' đang được xử lý. Chúng tôi sẽ giao hàng sớm nhất có thể.', '/user/orders/' + CAST(@Order2_ID AS VARCHAR), 0, DATEADD(DAY, -3, GETDATE())),
-(@User3_ID, 'promotion', N'Flash Sale hấp dẫn!', N'Giảm giá đến 20% cho Nike React Infinity Run. Nhanh tay kẻo hết!', '/products/nike-react-infinity-run', 0, DATEADD(DAY, -1, GETDATE())),
-(@User3_ID, 'promotion', N'Mã giảm giá mới', N'Bạn có mã giảm giá SUMMER2025 giảm 15%. Áp dụng ngay!', '/products', 0, DATEADD(HOUR, -6, GETDATE())),
-
--- User 4 notifications
-(@User4_ID, 'order_status', N'Đơn hàng đã được tạo', N'Đơn hàng ' + @Order3_Number + ' đã được tạo thành công. Vui lòng thanh toán để xử lý đơn hàng.', '/user/orders/' + CAST(@Order3_ID AS VARCHAR), 0, DATEADD(DAY, -1, GETDATE())),
-(@User4_ID, 'promotion', N'Nike Dunk Low giảm giá!', N'Nike Dunk Low Panda giảm 15%. Cơ hội sở hữu giày hot nhất!', '/products/nike-dunk-low-retro', 0, DATEADD(HOUR, -3, GETDATE())),
-(@User4_ID, 'product_restock', N'Sản phẩm đã có hàng', N'Adidas Superstar size 39 đã có hàng trở lại. Đặt hàng ngay!', '/products/adidas-superstar', 1, DATEADD(DAY, -5, GETDATE()));
-
--- Wishlists
-INSERT INTO Wishlists (user_id, product_id, created_at) VALUES
--- User 3 wishlist
-(@User3_ID, @NB2002_ID, DATEADD(DAY, -10, GETDATE())),
-(@User3_ID, @Blazer_ID, DATEADD(DAY, -8, GETDATE())),
-(@User3_ID, @Forum_ID, DATEADD(DAY, -5, GETDATE())),
-(@User3_ID, @Clyde_ID, DATEADD(DAY, -2, GETDATE())),
-
--- User 4 wishlist
-(@User4_ID, @ReactRun_ID, DATEADD(DAY, -7, GETDATE())),
-(@User4_ID, @Pegasus_ID, DATEADD(DAY, -4, GETDATE())),
-(@User4_ID, @NB990_ID, DATEADD(DAY, -1, GETDATE()));
-
-PRINT '   Da them reviews, loyalty points, notifications, wishlists';
-PRINT '';
-
--- =====================================================
--- 12. CẬP NHẬT PRODUCT STATS
--- =====================================================
-PRINT '[12/12] Dang cap nhat product statistics...';
-
--- Update view counts (random)
-UPDATE Products SET view_count = ABS(CHECKSUM(NEWID())) % 500 + 100 WHERE id IN (
-    @AF1_ID, @DunkLow_ID, @Blazer_ID, @ReactRun_ID, @Pegasus_ID,
-    @Superstar_ID, @NMD_ID, @Gazelle_ID, @Forum_ID, @Samba_ID
-);
-
--- Update order counts
-UPDATE Products SET order_count = 5 WHERE id = @AF1_ID;
-UPDATE Products SET order_count = 3 WHERE id = @DunkLow_ID;
-UPDATE Products SET order_count = 2 WHERE id = @Superstar_ID;
-UPDATE Products SET order_count = 1 WHERE id = @OldSkool_ID;
-
--- Update ratings and review counts
-UPDATE Products SET avg_rating = 4.50, review_count = 2 WHERE id = @AF1_ID;
-UPDATE Products SET avg_rating = 5.00, review_count = 2 WHERE id = @DunkLow_ID;
-UPDATE Products SET avg_rating = 4.50, review_count = 2 WHERE id = @Superstar_ID;
-UPDATE Products SET avg_rating = 5.00, review_count = 1 WHERE id = @NMD_ID;
-UPDATE Products SET avg_rating = 4.50, review_count = 2 WHERE id = @NB574_ID;
-UPDATE Products SET avg_rating = 5.00, review_count = 2 WHERE id = @OldSkool_ID;
-UPDATE Products SET avg_rating = 4.00, review_count = 1 WHERE id = @Suede_ID;
-UPDATE Products SET avg_rating = 5.00, review_count = 1 WHERE id = @ReactRun_ID;
-UPDATE Products SET avg_rating = 5.00, review_count = 1 WHERE id = @Pegasus_ID;
-UPDATE Products SET avg_rating = 4.00, review_count = 1 WHERE id = @Gazelle_ID;
-UPDATE Products SET avg_rating = 5.00, review_count = 1 WHERE id = @NB327_ID;
-
-PRINT '   Da cap nhat product statistics';
-PRINT '';
-
--- =====================================================
--- 13. THÊM DỮ LIỆU MẪU BỔ SUNG
--- =====================================================
-PRINT '[13/13] Dang them du lieu mau bo sung...';
-
--- Thêm 3 users nữa
-INSERT INTO Users (email, password_hash, full_name, phone_number, role, is_active, is_email_verified) VALUES
-('customer1@example.com', '$2a$10$SOVwX.mgssz5J2b2ZZa3Y.0z1VTgMTi9Rr5lYcB5VSJrPfgawEkQ2', N'Nguyễn Văn A', '0923456789', 'USER', 1, 1),
-('customer2@example.com', '$2a$10$SOVwX.mgssz5J2b2ZZa3Y.0z1VTgMTi9Rr5lYcB5VSJrPfgawEkQ2', N'Trần Thị B', '0934567890', 'USER', 1, 1),
-('customer3@example.com', '$2a$10$SOVwX.mgssz5J2b2ZZa3Y.0z1VTgMTi9Rr5lYcB5VSJrPfgawEkQ2', N'Lê Văn C', '0945678901', 'USER', 1, 1);
-
-DECLARE @Customer1_ID BIGINT = (SELECT id FROM Users WHERE email = 'customer1@example.com');
-DECLARE @Customer2_ID BIGINT = (SELECT id FROM Users WHERE email = 'customer2@example.com');
-DECLARE @Customer3_ID BIGINT = (SELECT id FROM Users WHERE email = 'customer3@example.com');
-
--- Thêm addresses cho customers mới
-INSERT INTO Addresses (user_id, recipient_name, phone, line1, ward, district, city, is_default, address_type) VALUES
-(@Customer1_ID, N'Nguyễn Văn A', '0923456789', N'234 Trần Hưng Đạo', N'Phường Cô Giang', N'Quận 1', N'TP. Hồ Chí Minh', 1, 'home'),
-(@Customer2_ID, N'Trần Thị B', '0934567890', N'567 Điện Biên Phủ', N'Phường Đa Kao', N'Quận 1', N'TP. Hồ Chí Minh', 1, 'home'),
-(@Customer3_ID, N'Lê Văn C', '0945678901', N'890 Nguyễn Đình Chiểu', N'Phường Võ Thị Sáu', N'Quận 3', N'TP. Hồ Chí Minh', 1, 'office');
-
--- Thêm nhiều reviews hơn
-INSERT INTO Reviews (product_id, user_id, rating, title, body, is_approved, is_verified_purchase, helpful_count, created_at) VALUES
--- Nike Air Force 1
-(@AF1_ID, @Customer1_ID, 5, N'Chất lượng tuyệt vời', N'Giày rất đẹp và bền. Đi được 6 tháng vẫn như mới.', 1, 1, 10, DATEADD(DAY, -20, GETDATE())),
-(@AF1_ID, @Customer2_ID, 4, N'Giá hơi cao', N'Giày đẹp nhưng giá hơi cao so với mặt bằng chung.', 1, 0, 5, DATEADD(DAY, -15, GETDATE())),
-
--- Adidas NMD
-(@NMD_ID, @Customer1_ID, 5, N'Boost công nghệ đỉnh', N'Công nghệ Boost thực sự êm ái. Đáng đồng tiền bát gạo.', 1, 1, 18, DATEADD(DAY, -10, GETDATE())),
-(@NMD_ID, @Customer3_ID, 5, N'Rất hài lòng', N'Mua được giá tốt, chất lượng xuất sắc. Sẽ ủng hộ shop tiếp.', 1, 0, 12, DATEADD(DAY, -8, GETDATE())),
-
--- Vans Old Skool
-(@OldSkool_ID, @Customer2_ID, 5, N'Classic không bao giờ lỗi thời', N'Đã mua đôi thứ 2. Giày này phối đồ gì cũng đẹp.', 1, 1, 20, DATEADD(DAY, -12, GETDATE())),
-
--- Puma Suede
-(@Suede_ID, @Customer2_ID, 4, N'Đẹp nhưng khó giữ sạch', N'Suede đẹp nhưng hơi khó vệ sinh. Cần cẩn thận khi mang.', 1, 0, 8, DATEADD(DAY, -9, GETDATE())),
-
--- New Balance 574
-(@NB574_ID, @Customer3_ID, 5, N'Thoải mái cho chân', N'Đi êm, thoáng. Rất thích hợp cho người đi nhiều.', 1, 0, 15, DATEADD(DAY, -7, GETDATE())),
-
--- Adidas Superstar
-(@Superstar_ID, @Customer1_ID, 5, N'Icon không bao giờ cũ', N'Shell toe classic. Ai cũng nên có một đôi Superstar.', 1, 0, 22, DATEADD(DAY, -6, GETDATE()));
-
--- Thêm nhiều orders hơn
-DECLARE @Addr_C1 BIGINT = (SELECT TOP 1 id FROM Addresses WHERE user_id = @Customer1_ID);
-DECLARE @Addr_C2 BIGINT = (SELECT TOP 1 id FROM Addresses WHERE user_id = @Customer2_ID);
-DECLARE @Addr_C3 BIGINT = (SELECT TOP 1 id FROM Addresses WHERE user_id = @Customer3_ID);
-
--- Order từ Customer1
-DECLARE @Order4_Number VARCHAR(50);
-EXEC sp_GenerateOrderNumber @Order4_Number OUTPUT;
-INSERT INTO Orders (user_id, order_number, address_shipping_id, subtotal, shipping_fee, total_amount, status, created_at, delivered_at) VALUES
-(@Customer1_ID, @Order4_Number, @Addr_C1, 3500000, 0, 3500000, 'delivered', DATEADD(DAY, -20, GETDATE()), DATEADD(DAY, -17, GETDATE()));
-DECLARE @Order4_ID BIGINT = SCOPE_IDENTITY();
-
-INSERT INTO Order_Details (order_id, variant_id, product_name, variant_sku, size, color, quantity, unit_price, total_price) VALUES
-(@Order4_ID, @Var_NMD_40, N'Adidas NMD R1', 'ADIDAS-NMD-BLK-40', '40', N'Đen', 1, 3500000, 3500000);
-
-INSERT INTO Payments (order_id, payment_method, amount, status, paid_at) VALUES
-(@Order4_ID, 'momo', 3500000, 'completed', DATEADD(DAY, -20, GETDATE()));
-
--- Order từ Customer2
-DECLARE @Order5_Number VARCHAR(50);
-EXEC sp_GenerateOrderNumber @Order5_Number OUTPUT;
-INSERT INTO Orders (user_id, order_number, address_shipping_id, subtotal, shipping_fee, total_amount, status, created_at, delivered_at) VALUES
-(@Customer2_ID, @Order5_Number, @Addr_C2, 1800000, 30000, 1830000, 'delivered', DATEADD(DAY, -12, GETDATE()), DATEADD(DAY, -9, GETDATE()));
-DECLARE @Order5_ID BIGINT = SCOPE_IDENTITY();
-
-INSERT INTO Order_Details (order_id, variant_id, product_name, variant_sku, size, color, quantity, unit_price, total_price) VALUES
-(@Order5_ID, @Var_OS_39, N'Vans Old Skool', 'VANS-OS-BLK-39', '39', N'Đen/Trắng', 1, 1800000, 1800000);
-
-INSERT INTO Payments (order_id, payment_method, amount, status, paid_at) VALUES
-(@Order5_ID, 'vnpay', 1830000, 'completed', DATEADD(DAY, -12, GETDATE()));
-
--- Order từ Customer3 (đang xử lý)
-DECLARE @Order6_Number VARCHAR(50);
-EXEC sp_GenerateOrderNumber @Order6_Number OUTPUT;
-INSERT INTO Orders (user_id, order_number, address_shipping_id, subtotal, shipping_fee, total_amount, status, created_at) VALUES
-(@Customer3_ID, @Order6_Number, @Addr_C3, 4800000, 0, 4800000, 'confirmed', DATEADD(DAY, -2, GETDATE()));
-DECLARE @Order6_ID BIGINT = SCOPE_IDENTITY();
-
-DECLARE @Var_NB574_40 BIGINT = (SELECT id FROM Product_Variants WHERE sku = 'NB-574-GRY-40');
-INSERT INTO Order_Details (order_id, variant_id, product_name, variant_sku, size, color, quantity, unit_price, total_price) VALUES
-(@Order6_ID, @Var_NB574_40, N'New Balance 574', 'NB-574-GRY-40', '40', N'Xám', 2, 2400000, 4800000);
-
-INSERT INTO Payments (order_id, payment_method, amount, status, paid_at) VALUES
-(@Order6_ID, 'bank_transfer', 4800000, 'completed', DATEADD(DAY, -2, GETDATE()));
-
--- Thêm loyalty points cho customers mới
-INSERT INTO Loyalty_Points (user_id, points, transaction_type, earned_from_order_id, description, expires_at, created_at) VALUES
-(@Customer1_ID, 350, 'earn', @Order4_ID, N'Tích điểm từ đơn hàng ' + @Order4_Number, DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -17, GETDATE())),
-(@Customer1_ID, 100, 'earn', NULL, N'Bonus điểm đăng ký mới', DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -25, GETDATE())),
-(@Customer2_ID, 180, 'earn', @Order5_ID, N'Tích điểm từ đơn hàng ' + @Order5_Number, DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -9, GETDATE())),
-(@Customer2_ID, 100, 'earn', NULL, N'Bonus điểm đăng ký mới', DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -18, GETDATE())),
-(@Customer3_ID, 480, 'earn', @Order6_ID, N'Tích điểm từ đơn hàng ' + @Order6_Number, DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -2, GETDATE())),
-(@Customer3_ID, 100, 'earn', NULL, N'Bonus điểm đăng ký mới', DATEADD(YEAR, 1, GETDATE()), DATEADD(DAY, -10, GETDATE()));
-
--- Thêm notifications cho customers mới
-INSERT INTO Notifications (user_id, type, title, message, link, is_read, created_at) VALUES
-(@Customer1_ID, 'order_status', N'Đơn hàng đã giao', N'Đơn hàng ' + @Order4_Number + ' đã được giao thành công!', '/user/orders/' + CAST(@Order4_ID AS VARCHAR), 1, DATEADD(DAY, -17, GETDATE())),
-(@Customer1_ID, 'promotion', N'Chương trình ưu đãi mới', N'Giảm 15% cho đơn hàng tiếp theo. Mã: SUMMER2025', '/products', 0, DATEADD(DAY, -5, GETDATE())),
-(@Customer2_ID, 'order_status', N'Đơn hàng đã giao', N'Đơn hàng ' + @Order5_Number + ' đã được giao thành công!', '/user/orders/' + CAST(@Order5_ID AS VARCHAR), 1, DATEADD(DAY, -9, GETDATE())),
-(@Customer2_ID, 'promotion', N'Flash Sale đang diễn ra', N'Nike Dunk Low giảm 15%. Nhanh tay!', '/products/nike-dunk-low-retro', 0, DATEADD(HOUR, -2, GETDATE())),
-(@Customer3_ID, 'order_status', N'Đơn hàng đã xác nhận', N'Đơn hàng ' + @Order6_Number + ' đã được xác nhận và đang chuẩn bị giao.', '/user/orders/' + CAST(@Order6_ID AS VARCHAR), 0, DATEADD(DAY, -2, GETDATE())),
-(@Customer3_ID, 'product_restock', N'Sản phẩm yêu thích có hàng', N'New Balance 990v5 đã có hàng trở lại!', '/products/new-balance-990v5', 1, DATEADD(DAY, -4, GETDATE()));
-
--- Thêm wishlists cho customers mới
-INSERT INTO Wishlists (user_id, product_id, created_at) VALUES
-(@Customer1_ID, @Blazer_ID, DATEADD(DAY, -15, GETDATE())),
-(@Customer1_ID, @Gazelle_ID, DATEADD(DAY, -12, GETDATE())),
-(@Customer1_ID, @NB990_ID, DATEADD(DAY, -8, GETDATE())),
-(@Customer2_ID, @DunkLow_ID, DATEADD(DAY, -14, GETDATE())),
-(@Customer2_ID, @ReactRun_ID, DATEADD(DAY, -10, GETDATE())),
-(@Customer2_ID, @Future_ID, DATEADD(DAY, -6, GETDATE())),
-(@Customer3_ID, @Pegasus_ID, DATEADD(DAY, -11, GETDATE())),
-(@Customer3_ID, @NB2002_ID, DATEADD(DAY, -7, GETDATE())),
-(@Customer3_ID, @Clyde_ID, DATEADD(DAY, -3, GETDATE()));
-
-PRINT '   Da them 3 users, 3 orders, 8 reviews, 12 notifications, 9 wishlists';
-PRINT '';
-
-PRINT '';
-PRINT '=====================================================';
-PRINT 'HOAN THANH INSERT TOAN BO DU LIEU!';
-PRINT '=====================================================';
-PRINT '';
-PRINT 'SUMMARY:';
-PRINT '   [1] 5 users total (2 test accounts + 3 customers) + addresses';
-PRINT '   [2] 6 brands (Nike, Adidas, Puma, New Balance, Converse, Vans)';
-PRINT '   [3] 10 categories with nested set model';
-PRINT '   [4] 21 products across all brands';
-PRINT '   [5] Product-Category mappings';
-PRINT '   [6] 60+ product variants with different sizes/colors';
-PRINT '   [7] Product images';
-PRINT '   [8] 8 flash sales (active + upcoming)';
-PRINT '   [9] 12 coupons (general + brand + category specific)';
-PRINT '   [10] 6 orders total (delivered, processing, confirmed, pending)';
-PRINT '   [11] 23 reviews with ratings';
-PRINT '   [12] Loyalty points transactions';
-PRINT '   [13] 19 notifications (read + unread)';
-PRINT '   [14] 16 wishlist items';
-PRINT '   [15] Product statistics updated';
-PRINT '';
-PRINT 'LOGIN INFO:';
-PRINT '   Admin: testadmin@sneakery.com / admin123';
-PRINT '   User:  testuser@sneakery.com / user123';
-PRINT '   Customer1: customer1@example.com / admin123';
-PRINT '   Customer2: customer2@example.com / admin123';
-PRINT '   Customer3: customer3@example.com / admin123';
-PRINT '';
-PRINT 'DATABASE READY FOR DEMO!';
-PRINT '=====================================================';
-PRINT '';
+(5, N'Vans Old Skool', 'vans-old-skool', N'Giày skateboard Vans Old Skool với thiết kế cổ điển và chất lượng bền bỉ, phù hợp cho skateboard và streetwear.', N'Giày skateboard Vans Old Skool', 1, 1, 0, 1650, 73, 4.4, 38),
+(5, N'Vans Authentic', 'vans-authentic', N'Giày canvas Vans Authentic với thiết kế đơn giản và phong cách skateboard cổ điển.', N'Giày canvas Vans Authentic', 1, 0, 0, 1200, 45, 4.2, 25),
+
+-- Puma Products
+(6, N'Puma Suede Classic', 'puma-suede-classic', N'Giày lifestyle Puma Suede Classic với chất liệu da lộn mềm mại và thiết kế cổ điển.', N'Giày lifestyle Puma Suede Classic', 1, 0, 1, 980, 34, 4.0, 19),
+(6, N'Puma RS-X', 'puma-rs-x', N'Giày chạy bộ Puma RS-X với thiết kế retro-futuristic và công nghệ RS (Running System).', N'Giày chạy bộ Puma RS-X', 1, 1, 0, 1350, 52, 4.3, 31);
 GO
 
+-- =====================================================
+-- 5. PRODUCT_CATEGORIES DATA
+-- =====================================================
+INSERT INTO Product_Categories (product_id, category_id) VALUES
+-- Nike Air Max 270 -> Running Men
+(1, 5),
+-- Nike Air Force 1 -> Basketball Men
+(2, 7),
+-- Nike React Element 55 -> Running Men
+(3, 5),
+-- Adidas Ultraboost 22 -> Running Women
+(4, 8),
+-- Adidas Stan Smith -> Fashion Women
+(5, 9),
+-- Adidas NMD R1 -> Running Women
+(6, 8),
+-- Air Jordan 1 -> Basketball Men
+(7, 7),
+-- Air Jordan 4 -> Basketball Men
+(8, 7),
+-- Air Jordan 11 -> Basketball Men
+(9, 7),
+-- Converse Chuck Taylor -> Fashion Men
+(10, 5),
+-- Converse One Star -> Fashion Men
+(11, 5),
+-- Vans Old Skool -> Fashion Men
+(12, 5),
+-- Vans Authentic -> Fashion Men
+(13, 5),
+-- Puma Suede -> Fashion Men
+(14, 5),
+-- Puma RS-X -> Running Men
+(15, 5);
+GO
+
+-- =====================================================
+-- 6. PRODUCT_VARIANTS DATA
+-- =====================================================
+INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, low_stock_threshold, is_active) VALUES
+-- Nike Air Max 270 variants
+(1, 'NIKE-AM270-BLK-40', '40', N'Đen', 3200000, 2800000, 2000000, 25, 5, 1),
+(1, 'NIKE-AM270-BLK-41', '41', N'Đen', 3200000, 2800000, 2000000, 30, 5, 1),
+(1, 'NIKE-AM270-BLK-42', '42', N'Đen', 3200000, 2800000, 2000000, 20, 5, 1),
+(1, 'NIKE-AM270-WHT-40', '40', N'Trắng', 3200000, 2800000, 2000000, 15, 5, 1),
+(1, 'NIKE-AM270-WHT-41', '41', N'Trắng', 3200000, 2800000, 2000000, 18, 5, 1),
+(1, 'NIKE-AM270-WHT-42', '42', N'Trắng', 3200000, 2800000, 2000000, 12, 5, 1),
+
+-- Nike Air Force 1 variants
+(2, 'NIKE-AF1-BLK-40', '40', N'Đen', 2500000, 2200000, 1500000, 35, 5, 1),
+(2, 'NIKE-AF1-BLK-41', '41', N'Đen', 2500000, 2200000, 1500000, 40, 5, 1),
+(2, 'NIKE-AF1-BLK-42', '42', N'Đen', 2500000, 2200000, 1500000, 30, 5, 1),
+(2, 'NIKE-AF1-WHT-40', '40', N'Trắng', 2500000, 2200000, 1500000, 28, 5, 1),
+(2, 'NIKE-AF1-WHT-41', '41', N'Trắng', 2500000, 2200000, 1500000, 32, 5, 1),
+(2, 'NIKE-AF1-WHT-42', '42', N'Trắng', 2500000, 2200000, 1500000, 25, 5, 1),
+
+-- Adidas Ultraboost 22 variants
+(4, 'ADIDAS-UB22-BLK-36', '36', N'Đen', 4500000, 4000000, 2800000, 20, 5, 1),
+(4, 'ADIDAS-UB22-BLK-37', '37', N'Đen', 4500000, 4000000, 2800000, 25, 5, 1),
+(4, 'ADIDAS-UB22-BLK-38', '38', N'Đen', 4500000, 4000000, 2800000, 22, 5, 1),
+(4, 'ADIDAS-UB22-WHT-36', '36', N'Trắng', 4500000, 4000000, 2800000, 18, 5, 1),
+(4, 'ADIDAS-UB22-WHT-37', '37', N'Trắng', 4500000, 4000000, 2800000, 20, 5, 1),
+(4, 'ADIDAS-UB22-WHT-38', '38', N'Trắng', 4500000, 4000000, 2800000, 15, 5, 1),
+
+-- Air Jordan 1 variants
+(7, 'JORDAN-1-BLK-40', '40', N'Đen/Trắng', 5500000, 5000000, 3500000, 15, 3, 1),
+(7, 'JORDAN-1-BLK-41', '41', N'Đen/Trắng', 5500000, 5000000, 3500000, 18, 3, 1),
+(7, 'JORDAN-1-BLK-42', '42', N'Đen/Trắng', 5500000, 5000000, 3500000, 12, 3, 1),
+(7, 'JORDAN-1-RED-40', '40', N'Đỏ/Trắng', 5500000, 5000000, 3500000, 10, 3, 1),
+(7, 'JORDAN-1-RED-41', '41', N'Đỏ/Trắng', 5500000, 5000000, 3500000, 12, 3, 1),
+(7, 'JORDAN-1-RED-42', '42', N'Đỏ/Trắng', 5500000, 5000000, 3500000, 8, 3, 1),
+
+-- Converse Chuck Taylor variants
+(10, 'CONVERSE-CT-BLK-40', '40', N'Đen', 1200000, 1000000, 600000, 50, 10, 1),
+(10, 'CONVERSE-CT-BLK-41', '41', N'Đen', 1200000, 1000000, 600000, 45, 10, 1),
+(10, 'CONVERSE-CT-BLK-42', '42', N'Đen', 1200000, 1000000, 600000, 40, 10, 1),
+(10, 'CONVERSE-CT-WHT-40', '40', N'Trắng', 1200000, 1000000, 600000, 35, 10, 1),
+(10, 'CONVERSE-CT-WHT-41', '41', N'Trắng', 1200000, 1000000, 600000, 30, 10, 1),
+(10, 'CONVERSE-CT-WHT-42', '42', N'Trắng', 1200000, 1000000, 600000, 25, 10, 1);
+GO
+
+-- =====================================================
+-- 7. PRODUCT_IMAGES DATA
+-- =====================================================
+INSERT INTO Product_Images (product_id, image_url, alt_text, is_primary, display_order) VALUES
+-- Nike Air Max 270 images
+(1, 'https://example.com/images/nike-air-max-270-1.jpg', N'Nike Air Max 270 - Góc nhìn chính', 1, 1),
+(1, 'https://example.com/images/nike-air-max-270-2.jpg', N'Nike Air Max 270 - Góc nhìn bên', 0, 2),
+(1, 'https://example.com/images/nike-air-max-270-3.jpg', N'Nike Air Max 270 - Đế giày', 0, 3),
+
+-- Nike Air Force 1 images
+(2, 'https://example.com/images/nike-air-force-1-1.jpg', N'Nike Air Force 1 - Góc nhìn chính', 1, 1),
+(2, 'https://example.com/images/nike-air-force-1-2.jpg', N'Nike Air Force 1 - Góc nhìn bên', 0, 2),
+(2, 'https://example.com/images/nike-air-force-1-3.jpg', N'Nike Air Force 1 - Đế giày', 0, 3),
+
+-- Adidas Ultraboost 22 images
+(4, 'https://example.com/images/adidas-ultraboost-22-1.jpg', N'Adidas Ultraboost 22 - Góc nhìn chính', 1, 1),
+(4, 'https://example.com/images/adidas-ultraboost-22-2.jpg', N'Adidas Ultraboost 22 - Góc nhìn bên', 0, 2),
+(4, 'https://example.com/images/adidas-ultraboost-22-3.jpg', N'Adidas Ultraboost 22 - Đế giày', 0, 3),
+
+-- Air Jordan 1 images
+(7, 'https://example.com/images/air-jordan-1-1.jpg', N'Air Jordan 1 Retro High - Góc nhìn chính', 1, 1),
+(7, 'https://example.com/images/air-jordan-1-2.jpg', N'Air Jordan 1 Retro High - Góc nhìn bên', 0, 2),
+(7, 'https://example.com/images/air-jordan-1-3.jpg', N'Air Jordan 1 Retro High - Đế giày', 0, 3),
+
+-- Converse Chuck Taylor images
+(10, 'https://example.com/images/converse-chuck-taylor-1.jpg', N'Converse Chuck Taylor All Star - Góc nhìn chính', 1, 1),
+(10, 'https://example.com/images/converse-chuck-taylor-2.jpg', N'Converse Chuck Taylor All Star - Góc nhìn bên', 0, 2),
+(10, 'https://example.com/images/converse-chuck-taylor-3.jpg', N'Converse Chuck Taylor All Star - Đế giày', 0, 3);
+GO
+
+-- =====================================================
+-- 8. COUPONS DATA
+-- =====================================================
+INSERT INTO Coupons (code, description, discount_type, discount_value, min_order_amount, max_discount_amount, start_at, end_at, max_uses, uses_count, max_uses_per_user, applicable_to, is_active) VALUES
+('WELCOME10', N'Giảm 10% cho khách hàng mới', 'percentage', 10.00, 500000, 500000, '2024-01-01', '2024-12-31', 1000, 45, 1, 'all', 1),
+('SAVE50K', N'Giảm 50,000 VNĐ cho đơn hàng từ 1,000,000 VNĐ', 'fixed', 50000, 1000000, 50000, '2024-01-01', '2024-12-31', 500, 23, 2, 'all', 1),
+('NIKE20', N'Giảm 20% cho giày Nike', 'percentage', 20.00, 2000000, 1000000, '2024-01-01', '2024-12-31', 200, 12, 1, 'brand', 1),
+('SUMMER15', N'Giảm 15% cho mùa hè', 'percentage', 15.00, 800000, 300000, '2024-06-01', '2024-08-31', 300, 8, 1, 'all', 1),
+('VIP30', N'Giảm 30% cho khách VIP', 'percentage', 30.00, 3000000, 2000000, '2024-01-01', '2024-12-31', 50, 3, 1, 'all', 1);
+GO
+
+-- =====================================================
+-- 9. FLASH_SALES DATA
+-- =====================================================
+INSERT INTO Flash_Sales (product_id, discount_percent, start_time, end_time, quantity_limit, sold_count, is_active) VALUES
+(1, 25.00, '2024-01-15 00:00:00', '2024-01-15 23:59:59', 50, 12, 1),
+(2, 30.00, '2024-01-16 00:00:00', '2024-01-16 23:59:59', 30, 8, 1),
+(4, 20.00, '2024-01-17 00:00:00', '2024-01-17 23:59:59', 40, 15, 1),
+(7, 15.00, '2024-01-18 00:00:00', '2024-01-18 23:59:59', 20, 5, 1),
+(10, 35.00, '2024-01-19 00:00:00', '2024-01-19 23:59:59', 100, 28, 1);
+GO
+
+-- =====================================================
+-- 10. ADDRESSES DATA
+-- =====================================================
+INSERT INTO Addresses (user_id, recipient_name, phone, line1, line2, ward, district, city, postal_code, is_default, address_type) VALUES
+(3, N'Nguyễn Văn An', '0987654321', N'123 Đường Lê Lợi', N'Tầng 5, Chung cư ABC', N'Phường Bến Nghé', N'Quận 1', N'TP. Hồ Chí Minh', '700000', 1, 'home'),
+(4, N'Trần Thị Bình', '0987654322', N'456 Đường Nguyễn Huệ', N'Căn hộ 302, Tòa nhà XYZ', N'Phường Đa Kao', N'Quận 1', N'TP. Hồ Chí Minh', '700000', 1, 'home'),
+(5, N'Lê Văn Cường', '0987654323', N'789 Đường Điện Biên Phủ', N'Căn hộ 101, Tòa nhà DEF', N'Phường 25', N'Quận Bình Thạnh', N'TP. Hồ Chí Minh', '700000', 1, 'home'),
+(6, N'Phạm Thị Dung', '0987654324', N'321 Đường Cách Mạng Tháng 8', N'Căn hộ 205, Tòa nhà GHI', N'Phường 10', N'Quận 3', N'TP. Hồ Chí Minh', '700000', 1, 'home'),
+(7, N'Hoàng Văn Em', '0987654325', N'654 Đường Võ Văn Tần', N'Căn hộ 403, Tòa nhà JKL', N'Phường 6', N'Quận 3', N'TP. Hồ Chí Minh', '700000', 1, 'home');
+GO
+
+-- =====================================================
+-- 11. ORDERS DATA (Sample Orders)
+-- =====================================================
+INSERT INTO Orders (user_id, order_number, address_shipping_id, subtotal, shipping_fee, discount_amount, total_amount, status, shipping_method, customer_note, created_at) VALUES
+(3, 'ORD-20240115-0001', 1, 3200000, 50000, 320000, 2930000, 'delivered', 'standard', N'Giao hàng vào buổi chiều', '2024-01-15 10:30:00'),
+(4, 'ORD-20240115-0002', 2, 2500000, 50000, 0, 2550000, 'shipped', 'express', N'Giao hàng nhanh', '2024-01-15 14:20:00'),
+(5, 'ORD-20240116-0001', 3, 4500000, 50000, 450000, 4100000, 'processing', 'standard', N'Kiểm tra kỹ sản phẩm', '2024-01-16 09:15:00'),
+(6, 'ORD-20240116-0002', 4, 5500000, 100000, 550000, 5050000, 'confirmed', 'express', N'Giao hàng trong ngày', '2024-01-16 16:45:00'),
+(7, 'ORD-20240117-0001', 5, 1200000, 30000, 120000, 1110000, 'delivered', 'standard', N'Giao hàng bình thường', '2024-01-17 11:30:00');
+GO
+
+-- =====================================================
+-- 12. ORDER_DETAILS DATA
+-- =====================================================
+INSERT INTO Order_Details (order_id, variant_id, product_name, variant_sku, size, color, quantity, unit_price, total_price) VALUES
+(1, 1, N'Nike Air Max 270', 'NIKE-AM270-BLK-40', '40', N'Đen', 1, 2800000, 2800000),
+(2, 7, N'Nike Air Force 1', 'NIKE-AF1-BLK-40', '40', N'Đen', 1, 2200000, 2200000),
+(3, 13, N'Adidas Ultraboost 22', 'ADIDAS-UB22-BLK-36', '36', N'Đen', 1, 4000000, 4000000),
+(4, 19, N'Air Jordan 1 Retro High', 'JORDAN-1-BLK-40', '40', N'Đen/Trắng', 1, 5000000, 5000000),
+(5, 25, N'Converse Chuck Taylor All Star', 'CONVERSE-CT-BLK-40', '40', N'Đen', 1, 1000000, 1000000);
+GO
+
+-- =====================================================
+-- 13. PAYMENTS DATA
+-- =====================================================
+INSERT INTO Payments (order_id, payment_method, amount, status, transaction_id, paid_at, created_at) VALUES
+(1, 'vnpay', 2930000, 'completed', 'VNPAY_20240115_001', '2024-01-15 10:35:00', '2024-01-15 10:30:00'),
+(2, 'momo', 2550000, 'completed', 'MOMO_20240115_002', '2024-01-15 14:25:00', '2024-01-15 14:20:00'),
+(3, 'cod', 4100000, 'pending', NULL, NULL, '2024-01-16 09:15:00'),
+(4, 'vnpay', 5050000, 'completed', 'VNPAY_20240116_003', '2024-01-16 16:50:00', '2024-01-16 16:45:00'),
+(5, 'momo', 1110000, 'completed', 'MOMO_20240117_004', '2024-01-17 11:35:00', '2024-01-17 11:30:00');
+GO
+
+-- =====================================================
+-- 14. REVIEWS DATA
+-- =====================================================
+INSERT INTO Reviews (product_id, user_id, order_id, rating, title, body, is_approved, is_verified_purchase, helpful_count, created_at) VALUES
+(1, 3, 1, 5, N'Giày rất đẹp và thoải mái', N'Tôi rất hài lòng với đôi giày này. Chất lượng tốt, thiết kế đẹp và rất thoải mái khi đi.', 1, 1, 3, '2024-01-20 10:00:00'),
+(2, 4, 2, 4, N'Chất lượng tốt', N'Giày Nike Air Force 1 có chất lượng tốt, thiết kế đẹp. Tuy nhiên size hơi nhỏ một chút.', 1, 1, 2, '2024-01-21 14:30:00'),
+(4, 5, 3, 5, N'Rất hài lòng', N'Adidas Ultraboost 22 rất thoải mái và đẹp. Đáng giá tiền bỏ ra.', 1, 1, 5, '2024-01-22 09:15:00'),
+(7, 6, 4, 5, N'Air Jordan tuyệt vời', N'Air Jordan 1 Retro High là đôi giày tuyệt vời. Chất lượng cao cấp và thiết kế đẹp.', 1, 1, 8, '2024-01-23 16:20:00'),
+(10, 7, 5, 4, N'Converse cổ điển', N'Converse Chuck Taylor All Star là đôi giày cổ điển, dễ phối đồ và giá cả hợp lý.', 1, 1, 1, '2024-01-24 11:45:00');
+GO
+
+-- =====================================================
+-- 15. NOTIFICATIONS DATA
+-- =====================================================
+INSERT INTO Notifications (user_id, type, title, message, link, is_read, created_at) VALUES
+(3, 'order_status', N'Đơn hàng đã được giao', N'Đơn hàng ORD-20240115-0001 của bạn đã được giao thành công.', '/user/orders/1', 1, '2024-01-15 15:00:00'),
+(4, 'order_status', N'Đơn hàng đang vận chuyển', N'Đơn hàng ORD-20240115-0002 của bạn đang được vận chuyển.', '/user/orders/2', 0, '2024-01-15 16:00:00'),
+(5, 'order_status', N'Đơn hàng đang xử lý', N'Đơn hàng ORD-20240116-0001 của bạn đang được xử lý.', '/user/orders/3', 0, '2024-01-16 10:00:00'),
+(6, 'order_status', N'Đơn hàng đã xác nhận', N'Đơn hàng ORD-20240116-0002 của bạn đã được xác nhận.', '/user/orders/4', 0, '2024-01-16 17:00:00'),
+(7, 'order_status', N'Đơn hàng đã được giao', N'Đơn hàng ORD-20240117-0001 của bạn đã được giao thành công.', '/user/orders/5', 1, '2024-01-17 14:00:00'),
+(3, 'promotion', N'Khuyến mãi mới', N'Giảm giá 20% cho tất cả giày Nike. Áp dụng đến hết tháng 1.', '/products?brand=nike', 0, '2024-01-20 09:00:00'),
+(4, 'promotion', N'Flash Sale', N'Flash Sale 50% cho giày Adidas. Chỉ trong 24h!', '/flash-sales', 0, '2024-01-21 08:00:00'),
+(5, 'system', N'Chào mừng bạn đến với Sneakery', N'Cảm ơn bạn đã đăng ký tài khoản tại Sneakery. Chúc bạn mua sắm vui vẻ!', '/', 1, '2024-01-15 10:00:00');
+GO
+
+-- =====================================================
+-- 16. WISHLISTS DATA
+-- =====================================================
+INSERT INTO Wishlists (user_id, product_id, created_at) VALUES
+(3, 2, '2024-01-10 10:00:00'),
+(3, 7, '2024-01-12 14:30:00'),
+(4, 1, '2024-01-11 09:15:00'),
+(4, 4, '2024-01-13 16:20:00'),
+(5, 2, '2024-01-14 11:45:00'),
+(5, 7, '2024-01-15 13:30:00'),
+(6, 1, '2024-01-16 08:00:00'),
+(6, 4, '2024-01-17 15:15:00'),
+(7, 2, '2024-01-18 12:30:00'),
+(7, 10, '2024-01-19 10:45:00');
+GO
+
+-- =====================================================
+-- 17. LOYALTY_POINTS DATA
+-- =====================================================
+INSERT INTO Loyalty_Points (user_id, points, transaction_type, earned_from_order_id, description, created_at) VALUES
+(3, 293, 'earn', 1, N'Tích điểm từ đơn hàng ORD-20240115-0001', '2024-01-15 10:30:00'),
+(4, 255, 'earn', 2, N'Tích điểm từ đơn hàng ORD-20240115-0002', '2024-01-15 14:20:00'),
+(5, 410, 'earn', 3, N'Tích điểm từ đơn hàng ORD-20240116-0001', '2024-01-16 09:15:00'),
+(6, 505, 'earn', 4, N'Tích điểm từ đơn hàng ORD-20240116-0002', '2024-01-16 16:45:00'),
+(7, 111, 'earn', 5, N'Tích điểm từ đơn hàng ORD-20240117-0001', '2024-01-17 11:30:00'),
+(3, 50, 'earn', NULL, N'Điểm thưởng đăng ký tài khoản', '2024-01-10 10:00:00'),
+(4, 50, 'earn', NULL, N'Điểm thưởng đăng ký tài khoản', '2024-01-11 09:00:00'),
+(5, 50, 'earn', NULL, N'Điểm thưởng đăng ký tài khoản', '2024-01-12 08:00:00');
+GO
+
+-- =====================================================
+-- 18. INVENTORY_LOGS DATA
+-- =====================================================
+INSERT INTO Inventory_Logs (variant_id, change_type, quantity_before, quantity_change, quantity_after, reference_type, reference_id, note, changed_by, created_at) VALUES
+(1, 'restock', 0, 25, 25, 'purchase', 1, N'Nhập hàng lần đầu', 1, '2024-01-01 10:00:00'),
+(2, 'restock', 0, 30, 30, 'purchase', 2, N'Nhập hàng lần đầu', 1, '2024-01-01 10:00:00'),
+(7, 'sale', 35, -1, 34, 'order', 1, N'Bán hàng từ đơn hàng ORD-20240115-0001', 1, '2024-01-15 10:30:00'),
+(8, 'sale', 40, -1, 39, 'order', 2, N'Bán hàng từ đơn hàng ORD-20240115-0002', 1, '2024-01-15 14:20:00'),
+(13, 'sale', 20, -1, 19, 'order', 3, N'Bán hàng từ đơn hàng ORD-20240116-0001', 1, '2024-01-16 09:15:00');
+GO
+
+-- =====================================================
+-- 19. ACTIVITY_LOGS DATA
+-- =====================================================
+INSERT INTO Activity_Logs (user_id, action, entity_type, entity_id, old_value, new_value, ip_address, user_agent, created_at) VALUES
+(1, 'CREATE', 'product', 1, NULL, '{"name":"Nike Air Max 270","price":3200000}', '192.168.1.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', '2024-01-01 10:00:00'),
+(1, 'UPDATE', 'product', 1, '{"price":3200000}', '{"price":2800000}', '192.168.1.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', '2024-01-05 14:30:00'),
+(1, 'CREATE', 'coupon', 1, NULL, '{"code":"WELCOME10","discount":10}', '192.168.1.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', '2024-01-10 09:00:00'),
+(2, 'APPROVE', 'review', 1, '{"is_approved":false}', '{"is_approved":true}', '192.168.1.2', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', '2024-01-20 10:30:00'),
+(2, 'APPROVE', 'review', 2, '{"is_approved":false}', '{"is_approved":true}', '192.168.1.2', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', '2024-01-21 14:45:00');
+GO
+
+-- =====================================================
+-- 20. EMAIL_TEMPLATES DATA
+-- =====================================================
+INSERT INTO Email_Templates (template_name, subject, body, variables, is_active) VALUES
+('welcome', N'Chào mừng bạn đến với Sneakery', N'<h1>Chào mừng bạn đến với Sneakery!</h1><p>Xin chào {{full_name}},</p><p>Cảm ơn bạn đã đăng ký tài khoản tại Sneakery. Chúng tôi rất vui được phục vụ bạn.</p><p>Chúc bạn mua sắm vui vẻ!</p>', 'full_name,email', 1),
+('order_confirmation', N'Xác nhận đơn hàng #{{order_number}}', N'<h1>Xác nhận đơn hàng</h1><p>Xin chào {{customer_name}},</p><p>Đơn hàng #{{order_number}} của bạn đã được xác nhận.</p><p>Tổng tiền: {{total_amount}} VNĐ</p><p>Cảm ơn bạn đã mua sắm tại Sneakery!</p>', 'customer_name,order_number,total_amount', 1),
+('order_shipped', N'Đơn hàng #{{order_number}} đã được giao', N'<h1>Đơn hàng đã được giao</h1><p>Xin chào {{customer_name}},</p><p>Đơn hàng #{{order_number}} của bạn đã được giao thành công.</p><p>Cảm ơn bạn đã tin tưởng Sneakery!</p>', 'customer_name,order_number', 1),
+('password_reset', N'Đặt lại mật khẩu Sneakery', N'<h1>Đặt lại mật khẩu</h1><p>Xin chào {{full_name}},</p><p>Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng click vào link sau để đặt lại mật khẩu:</p><p><a href="{{reset_link}}">Đặt lại mật khẩu</a></p>', 'full_name,reset_link', 1);
+GO
+
+PRINT '';
+PRINT '=====================================================';
+PRINT 'HOAN THANH THEM DU LIEU MAU!';
+PRINT '=====================================================';
+PRINT '';
+PRINT 'Da them:';
+PRINT '  - 12 users (2 admin, 10 regular)';
+PRINT '  - 10 brands';
+PRINT '  - 16 categories (hierarchical)';
+PRINT '  - 15 products';
+PRINT '  - 30 product variants';
+PRINT '  - 15 product images';
+PRINT '  - 5 coupons';
+PRINT '  - 5 flash sales';
+PRINT '  - 5 addresses';
+PRINT '  - 5 orders';
+PRINT '  - 5 order details';
+PRINT '  - 5 payments';
+PRINT '  - 5 reviews';
+PRINT '  - 8 notifications';
+PRINT '  - 10 wishlist items';
+PRINT '  - 8 loyalty points';
+PRINT '  - 5 inventory logs';
+PRINT '  - 5 activity logs';
+PRINT '  - 4 email templates';
+PRINT '';
+PRINT 'DU LIEU SAN SANG CHO FRONTEND ADMIN API!';
+PRINT '=====================================================';
+PRINT '';
