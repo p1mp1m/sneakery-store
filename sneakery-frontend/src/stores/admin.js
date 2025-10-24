@@ -494,6 +494,19 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  const fetchProductVariantStats = async () => {
+    try {
+      loading.value = true
+      const result = await AdminService.getProductVariantStats()
+      return result
+    } catch (error) {
+      console.error('Error fetching product variant stats:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   const createProductVariant = async (variantData) => {
     try {
       loading.value = true
@@ -1210,6 +1223,7 @@ export const useAdminStore = defineStore('admin', () => {
     
     // New Actions
     fetchProductVariants,
+    fetchProductVariantStats,
     createProductVariant,
     updateProductVariant,
     deleteProductVariant,

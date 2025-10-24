@@ -100,6 +100,9 @@
       class="mobile-overlay"
       @click="toggleSidebar"
     ></div>
+
+    <!-- Toast Container -->
+    <ToastContainer />
   </div>
 </template>
 
@@ -107,6 +110,7 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAdminStore } from '@/stores/admin'
+import ToastContainer from '@/components/ToastContainer.vue'
 
 const route = useRoute()
 const adminStore = useAdminStore()
@@ -430,37 +434,39 @@ onUnmounted(() => {
 .sidebar-nav {
   flex: 1;
   padding: 0.5rem 0;
-  overflow-y: auto;
+  overflow-y: visible;
   overflow-x: hidden;
 }
 
-.sidebar-nav::-webkit-scrollbar {
-  width: 3px;
-}
-
-.sidebar-nav::-webkit-scrollbar-track {
-  background: rgba(167, 139, 250, 0.05);
-}
-
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-sm);
-}
-
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(167, 139, 250, 0.3);
-}
-
-/* Ẩn scrollbar khi collapsed */
-.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar {
+/* Ẩn scrollbar khi không collapsed */
+.admin-sidebar:not(.collapsed) .sidebar-nav::-webkit-scrollbar {
   width: 0;
   display: none;
 }
 
-.admin-sidebar.collapsed .sidebar-nav {
+.admin-sidebar:not(.collapsed) .sidebar-nav {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
+/* Hiện scrollbar khi collapsed */
+.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar {
+  width: 3px;
+}
+
+.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar-track {
+  background: rgba(167, 139, 250, 0.05);
+}
+
+.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.3);
+}
+
 
 .nav-list {
   list-style: none;

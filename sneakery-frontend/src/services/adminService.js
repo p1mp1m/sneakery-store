@@ -778,6 +778,15 @@ class AdminService {
     }
   }
 
+  async getProductVariantStats() {
+    try {
+      const response = await adminApi.get('/product-variants/statistics')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   async getProductVariantById(id) {
     try {
       const response = await adminApi.get(`/product-variants/${id}`)

@@ -147,11 +147,12 @@
         <tbody>
           <tr v-for="variant in variants" :key="variant.id" class="variant-row">
             <td>
-              <img :src="variant.imageUrl || '/placeholder.png'" :alt="variant.productName" class="variant-image" />
+              <img :src="variant.imageUrl || '/placeholder-image.png'" :alt="variant.productName" class="variant-image" />
             </td>
             <td>
               <div class="product-info">
                 <span class="product-name">{{ variant.productName }}</span>
+                <div class="product-brand" v-if="variant.brandName">{{ variant.brandName }}</div>
               </div>
             </td>
             <td>
@@ -160,14 +161,14 @@
             <td>
               <div class="color-badge">
                 <span class="color-dot" :style="{ backgroundColor: getColorHex(variant.color) }"></span>
-                <span>{{ variant.colorName }}</span>
+                <span>{{ getColorName(variant.color) }}</span>
               </div>
             </td>
             <td>
               <span class="size-badge">{{ variant.size }}</span>
             </td>
             <td>
-              <span class="price">{{ formatPrice(variant.price) }}</span>
+              <span class="price">{{ formatPrice(getCurrentPrice(variant)) }}</span>
             </td>
             <td>
               <span class="stock-quantity" :class="getStockClass(variant.stockQuantity)">
@@ -200,35 +201,62 @@
       </div>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+
     <!-- Pagination -->
     <div class="pagination" v-if="totalPages > 1">
       <button
         class="pagination-btn"
-        :disabled="currentPage === 0"
+        :disabled="!paginationInfo.hasPrev || isLoading"
         @click="changePage(currentPage - 1)"
       >
         <i class="material-icons">chevron_left</i>
       </button>
-      <span class="page-info">Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
+      <span class="page-info">
+        Trang {{ paginationInfo.currentPage }} / {{ paginationInfo.totalPages }}
+        ({{ totalElements }} biến thể)
+      </span>
       <button
         class="pagination-btn"
-        :disabled="currentPage >= totalPages - 1"
+        :disabled="!paginationInfo.hasNext || isLoading"
         @click="changePage(currentPage + 1)"
       >
         <i class="material-icons">chevron_right</i>
       </button>
     </div>
+
+    <!-- Variant Modal -->
+    <VariantModal
+      :is-open="isModalOpen"
+      :variant="selectedVariant"
+      @close="closeModal"
+      @success="handleModalSuccess"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useAdminStore } from '@/stores/admin'
+import { useLoadingState } from '@/composables/useLoadingState'
+import toastService from '@/utils/toastService'
+import VariantModal from '@/assets/components/admin/VariantModal.vue'
+
+// ===== STORES & COMPOSABLES =====
+const adminStore = useAdminStore()
+const { setLoading, isLoading } = useLoadingState()
+const toast = toastService
 
 // ===== STATE =====
 const variants = ref([])
 const currentPage = ref(0)
+const pageSize = ref(10)
+const totalElements = ref(0)
 const totalPages = ref(1)
-const loading = ref(false)
 
 const stats = reactive({
   totalVariants: 0,
@@ -244,101 +272,115 @@ const filters = reactive({
   stockStatus: ''
 })
 
-// ===== MOCK DATA =====
-const mockVariants = [
-  {
-    id: 1,
-    productName: 'Nike Air Max 270',
-    sku: 'NAM270-BLK-40',
-    color: 'black',
-    colorName: 'Đen',
-    size: '40',
-    price: 3500000,
-    stockQuantity: 15,
-    imageUrl: '/placeholder-image.png'
-  },
-  {
-    id: 2,
-    productName: 'Nike Air Max 270',
-    sku: 'NAM270-WHT-40',
-    color: 'white',
-    colorName: 'Trắng',
-    size: '40',
-    price: 3500000,
-    stockQuantity: 5,
-    imageUrl: '/placeholder-image.png'
-  },
-  {
-    id: 3,
-    productName: 'Adidas Ultraboost 21',
-    sku: 'AUB21-BLU-42',
-    color: 'blue',
-    colorName: 'Xanh dương',
-    size: '42',
-    price: 4200000,
-    stockQuantity: 0,
-    imageUrl: '/placeholder-image.png'
-  },
-  {
-    id: 4,
-    productName: 'Adidas Ultraboost 21',
-    sku: 'AUB21-RED-39',
-    color: 'red',
-    colorName: 'Đỏ',
-    size: '39',
-    price: 4200000,
-    stockQuantity: 25,
-    imageUrl: '/placeholder-image.png'
-  }
-]
+// ===== MODAL STATE =====
+const isModalOpen = ref(false)
+const selectedVariant = ref(null)
+
+// ===== COMPUTED =====
+const paginationInfo = computed(() => ({
+  currentPage: currentPage.value + 1,
+  totalPages: totalPages.value,
+  totalElements: totalElements.value,
+  hasNext: currentPage.value < totalPages.value - 1,
+  hasPrev: currentPage.value > 0
+}))
 
 // ===== LIFECYCLE =====
-onMounted(() => {
-  loadVariants()
+onMounted(async () => {
+  await loadVariants()
+  await loadStats()
 })
 
 // ===== METHODS =====
-const loadVariants = () => {
-  // TODO: Replace with API call
-  variants.value = mockVariants
-  calculateStats()
+const loadVariants = async () => {
+  try {
+    setLoading(true, 'Đang tải danh sách biến thể...')
+    const result = await adminStore.fetchProductVariants(currentPage.value, pageSize.value, filters)
+    
+    variants.value = result.content || []
+    totalElements.value = result.totalElements || 0
+    totalPages.value = result.totalPages || 1
+  } catch (error) {
+    console.error('Error loading variants:', error)
+    toast.error('Lỗi', 'Không thể tải danh sách biến thể')
+  } finally {
+    setLoading(false)
+  }
 }
 
-const calculateStats = () => {
+const loadStats = async () => {
+  try {
+    const result = await adminStore.fetchProductVariantStats()
+    stats.totalVariants = result.totalVariants || 0
+    stats.inStock = result.inStockVariants || 0
+    stats.lowStock = result.lowStockVariants || 0
+    stats.outOfStock = result.outOfStockVariants || 0
+  } catch (error) {
+    console.error('Error loading stats:', error)
+    // Fallback to calculating from variants if API fails
+    calculateStatsFromVariants()
+  }
+}
+
+const calculateStatsFromVariants = () => {
   stats.totalVariants = variants.value.length
   stats.inStock = variants.value.filter(v => v.stockQuantity > 10).length
   stats.lowStock = variants.value.filter(v => v.stockQuantity > 0 && v.stockQuantity <= 10).length
   stats.outOfStock = variants.value.filter(v => v.stockQuantity === 0).length
 }
 
-const handleSearch = () => {
-  console.log('Search:', filters.search)
-  // TODO: Implement search
+const handleSearch = async () => {
+  currentPage.value = 0
+  await loadVariants()
 }
 
-const handleFilter = () => {
-  console.log('Filters:', filters)
-  // TODO: Implement filtering
+const handleFilter = async () => {
+  currentPage.value = 0
+  await loadVariants()
 }
 
 const openAddVariantModal = () => {
-  console.log('Open add variant modal')
-  // TODO: Implement modal
+  selectedVariant.value = null
+  isModalOpen.value = true
 }
 
 const editVariant = (variant) => {
-  console.log('Edit variant:', variant)
-  // TODO: Implement edit
+  selectedVariant.value = variant
+  isModalOpen.value = true
 }
 
-const deleteVariant = (variant) => {
-  console.log('Delete variant:', variant)
-  // TODO: Implement delete
+const closeModal = () => {
+  isModalOpen.value = false
+  selectedVariant.value = null
 }
 
-const changePage = (page) => {
+const handleModalSuccess = async () => {
+  await loadVariants()
+  await loadStats()
+}
+
+const deleteVariant = async (variant) => {
+  if (!confirm(`Bạn có chắc chắn muốn xóa biến thể ${variant.sku}?`)) {
+    return
+  }
+  
+  try {
+    setLoading(true, 'Đang xóa biến thể...')
+    await adminStore.deleteProductVariant(variant.id)
+    toast.success('Thành công', 'Đã xóa biến thể thành công')
+    await loadVariants()
+    await loadStats()
+  } catch (error) {
+    console.error('Error deleting variant:', error)
+    toast.error('Lỗi', 'Không thể xóa biến thể')
+  } finally {
+    setLoading(false)
+  }
+}
+
+const changePage = async (page) => {
   currentPage.value = page
-  loadVariants()
+  await loadVariants()
 }
 
 const formatPrice = (price) => {
@@ -347,13 +389,39 @@ const formatPrice = (price) => {
 
 const getColorHex = (color) => {
   const colorMap = {
-    black: '#000000',
-    white: '#FFFFFF',
-    red: '#EF4444',
-    blue: '#3B82F6',
-    green: '#10B981'
+    'black': '#000000',
+    'white': '#FFFFFF',
+    'red': '#EF4444',
+    'blue': '#3B82F6',
+    'green': '#10B981',
+    'yellow': '#F59E0B',
+    'purple': '#8B5CF6',
+    'pink': '#EC4899',
+    'gray': '#6B7280',
+    'brown': '#A78BFA'
   }
-  return colorMap[color] || '#9CA3AF'
+  return colorMap[color?.toLowerCase()] || '#9CA3AF'
+}
+
+const getColorName = (color) => {
+  const colorMap = {
+    'black': 'Đen',
+    'white': 'Trắng',
+    'red': 'Đỏ',
+    'blue': 'Xanh dương',
+    'green': 'Xanh lá',
+    'yellow': 'Vàng',
+    'purple': 'Tím',
+    'pink': 'Hồng',
+    'gray': 'Xám',
+    'brown': 'Nâu'
+  }
+  return colorMap[color?.toLowerCase()] || color || 'Không xác định'
+}
+
+const getCurrentPrice = (variant) => {
+  // Ưu tiên giá sale nếu có, nếu không thì dùng giá base
+  return variant.priceSale || variant.priceBase || 0
 }
 
 const getStockClass = (quantity) => {
@@ -690,6 +758,14 @@ const getStockStatusLabel = (quantity) => {
 .product-name {
   font-weight: var(--font-semibold);
   color: var(--text-primary);
+  display: block;
+  margin-bottom: var(--space-1);
+}
+
+.product-brand {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  font-weight: var(--font-normal);
 }
 
 .sku-code {
@@ -794,6 +870,38 @@ const getStockStatusLabel = (quantity) => {
 }
 
 /* Action buttons use global admin-tables.css styles */
+
+/* ═══ LOADING STATE ═══ */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-8);
+  text-align: center;
+  color: var(--text-tertiary);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--border-primary);
+  border-top: 4px solid var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  margin: 0;
+}
 
 /* ═══ EMPTY STATE ═══ */
 .empty-state {

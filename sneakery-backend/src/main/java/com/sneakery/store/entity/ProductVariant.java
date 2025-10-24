@@ -12,6 +12,19 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Product_Variants")
 @Data
+@NamedEntityGraph(
+    name = "ProductVariant.withProductAndBrand",
+    attributeNodes = {
+        @NamedAttributeNode("product"),
+        @NamedAttributeNode(value = "product", subgraph = "product.brand")
+    },
+    subgraphs = {
+        @NamedSubgraph(
+            name = "product.brand",
+            attributeNodes = @NamedAttributeNode("brand")
+        )
+    }
+)
 public class ProductVariant {
 
     @Id
@@ -20,7 +33,7 @@ public class ProductVariant {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnore
+    // @JsonIgnore - Tạm thời comment để test
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Product product;
