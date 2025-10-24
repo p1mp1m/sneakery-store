@@ -388,6 +388,9 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
+import { useAdminStore } from '@/stores/admin'
+
+const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -422,32 +425,147 @@ const isAllSelected = computed(() => {
 const fetchWarranties = async () => {
   try {
     loading.value = true
-    // TODO: Call API
-    // Mock data
-    warranties.value = [
+    
+    // Mock data cho warranties
+    const mockWarranties = [
       {
         id: 1,
-        customerName: 'Nguyễn Văn A',
-        customerEmail: 'nguyenvana@gmail.com',
-        customerPhone: '0901234567',
+        orderId: 'ORD001',
+        orderNumber: 'ORD-2024-001',
+        userId: 101,
+        userName: 'Nguyễn Văn A',
+        userEmail: 'nguyenvana@email.com',
+        productId: 1,
         productName: 'Nike Air Max 270',
-        productImage: '/placeholder.png',
-        variant: 'Size 42 - Đen',
-        purchaseDate: '2024-11-15T00:00:00',
-        warrantyMonths: 12,
-        issue: 'Đế giày bị bong tróc sau 2 tháng sử dụng',
-        warrantyType: 'repair',
+        productImage: '/placeholder-image.png',
+        variantId: 1,
+        variantName: 'Size 42 - Đen',
+        purchaseDate: '2024-01-01T00:00:00Z',
+        warrantyType: 'manufacturing_defect',
+        issueDescription: 'Giày bị bong keo sau 2 tuần sử dụng',
         status: 'pending',
-        createdAt: '2025-01-20T10:30:00',
-        images: ['/placeholder.png'],
-        statusLogs: [
-          { status: 'pending', timestamp: '2025-01-20T10:30:00', note: 'Yêu cầu được tạo' }
-        ]
+        submittedAt: '2024-01-15T10:30:00Z',
+        adminNote: '',
+        resolutionNote: '',
+        processedAt: null,
+        completedAt: null
+      },
+      {
+        id: 2,
+        orderId: 'ORD002',
+        orderNumber: 'ORD-2024-002',
+        userId: 102,
+        userName: 'Trần Thị B',
+        userEmail: 'tranthib@email.com',
+        productId: 2,
+        productName: 'Adidas Ultraboost 22',
+        productImage: '/placeholder-image.png',
+        variantId: 2,
+        variantName: 'Size 40 - Trắng',
+        purchaseDate: '2023-12-15T00:00:00Z',
+        warrantyType: 'material_defect',
+        issueDescription: 'Đế giày bị nứt sau 1 tháng sử dụng',
+        status: 'in_progress',
+        submittedAt: '2024-01-10T14:20:00Z',
+        adminNote: 'Đang kiểm tra và liên hệ nhà sản xuất',
+        resolutionNote: '',
+        processedAt: '2024-01-12T09:00:00Z',
+        completedAt: null
+      },
+      {
+        id: 3,
+        orderId: 'ORD003',
+        orderNumber: 'ORD-2024-003',
+        userId: 103,
+        userName: 'Lê Văn C',
+        userEmail: 'levanc@email.com',
+        productId: 3,
+        productName: 'Jordan 1 Retro',
+        productImage: '/placeholder-image.png',
+        variantId: 3,
+        variantName: 'Size 41 - Đỏ',
+        purchaseDate: '2023-11-20T00:00:00Z',
+        warrantyType: 'manufacturing_defect',
+        issueDescription: 'Logo bị phai màu sau 2 tháng',
+        status: 'completed',
+        submittedAt: '2024-01-05T16:45:00Z',
+        adminNote: 'Đã xác nhận lỗi sản xuất',
+        resolutionNote: 'Đã gửi sản phẩm thay thế cho khách hàng',
+        processedAt: '2024-01-07T10:00:00Z',
+        completedAt: '2024-01-14T15:30:00Z'
+      },
+      {
+        id: 4,
+        orderId: 'ORD004',
+        orderNumber: 'ORD-2024-004',
+        userId: 104,
+        userName: 'Phạm Thị D',
+        userEmail: 'phamthid@email.com',
+        productId: 4,
+        productName: 'Converse Chuck Taylor',
+        productImage: '/placeholder-image.png',
+        variantId: 4,
+        variantName: 'Size 39 - Trắng',
+        purchaseDate: '2023-10-10T00:00:00Z',
+        warrantyType: 'material_defect',
+        issueDescription: 'Vải bị rách do sử dụng bình thường',
+        status: 'rejected',
+        submittedAt: '2024-01-08T11:15:00Z',
+        adminNote: 'Lỗi do sử dụng không đúng cách',
+        resolutionNote: 'Không thuộc phạm vi bảo hành',
+        processedAt: '2024-01-10T14:00:00Z',
+        completedAt: '2024-01-10T14:00:00Z'
+      },
+      {
+        id: 5,
+        orderId: 'ORD005',
+        orderNumber: 'ORD-2024-005',
+        userId: 105,
+        userName: 'Hoàng Văn E',
+        userEmail: 'hoangvane@email.com',
+        productId: 5,
+        productName: 'Vans Old Skool',
+        productImage: '/placeholder-image.png',
+        variantId: 5,
+        variantName: 'Size 43 - Đen',
+        purchaseDate: '2023-12-01T00:00:00Z',
+        warrantyType: 'manufacturing_defect',
+        issueDescription: 'Đế giày bị tách rời khỏi thân giày',
+        status: 'pending',
+        submittedAt: '2024-01-14T13:20:00Z',
+        adminNote: '',
+        resolutionNote: '',
+        processedAt: null,
+        completedAt: null
       }
     ]
+    
+    // Apply filters
+    let filteredWarranties = mockWarranties
+    
+    if (filters.search) {
+      filteredWarranties = filteredWarranties.filter(w => 
+        w.orderNumber.toLowerCase().includes(filters.search.toLowerCase()) ||
+        w.userName.toLowerCase().includes(filters.search.toLowerCase()) ||
+        w.productName.toLowerCase().includes(filters.search.toLowerCase())
+      )
+    }
+    
+    if (filters.status) {
+      filteredWarranties = filteredWarranties.filter(w => w.status === filters.status)
+    }
+    
+    if (filters.type) {
+      filteredWarranties = filteredWarranties.filter(w => w.warrantyType === filters.type)
+    }
+    
+    warranties.value = filteredWarranties
     updateStats()
+    
+    console.log('✅ Warranties loaded successfully')
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
+    ElMessage.error('Không thể tải danh sách bảo hành')
   } finally {
     loading.value = false
   }
@@ -507,11 +625,16 @@ const bulkApprove = async () => {
       cancelButtonText: 'Hủy',
       type: 'warning'
     }
-  ).then(() => {
-    // TODO: Call API
-    ElMessage.success(`Đã chấp nhận ${selectedWarranties.value.length} yêu cầu!`)
-    clearSelection()
-    fetchWarranties()
+  ).then(async () => {
+    try {
+      await adminStore.bulkApproveWarranties(selectedWarranties.value)
+      ElMessage.success(`Đã chấp nhận ${selectedWarranties.value.length} yêu cầu!`)
+      clearSelection()
+      fetchWarranties()
+    } catch (error) {
+      console.error('Lỗi khi chấp nhận hàng loạt:', error)
+      ElMessage.error('Lỗi khi chấp nhận yêu cầu bảo hành')
+    }
   }).catch(() => {
     ElMessage.info('Đã hủy')
   })
@@ -526,11 +649,16 @@ const bulkReject = async () => {
       cancelButtonText: 'Hủy',
       type: 'error'
     }
-  ).then(() => {
-    // TODO: Call API
-    ElMessage.success(`Đã từ chối ${selectedWarranties.value.length} yêu cầu!`)
-    clearSelection()
-    fetchWarranties()
+  ).then(async () => {
+    try {
+      await adminStore.bulkRejectWarranties(selectedWarranties.value)
+      ElMessage.success(`Đã từ chối ${selectedWarranties.value.length} yêu cầu!`)
+      clearSelection()
+      fetchWarranties()
+    } catch (error) {
+      console.error('Lỗi khi từ chối hàng loạt:', error)
+      ElMessage.error('Lỗi khi từ chối yêu cầu bảo hành')
+    }
   }).catch(() => {
     ElMessage.info('Đã hủy')
   })
@@ -615,10 +743,15 @@ const approveWarranty = async (item) => {
       cancelButtonText: 'Hủy',
       type: 'success'
     }
-  ).then(() => {
-    // TODO: Call API
-    ElMessage.success('Đã chấp nhận yêu cầu!')
-    fetchWarranties()
+  ).then(async () => {
+    try {
+      await adminStore.approveWarranty(item.id)
+      ElMessage.success('Đã chấp nhận yêu cầu!')
+      fetchWarranties()
+    } catch (error) {
+      console.error('Lỗi khi chấp nhận:', error)
+      ElMessage.error('Lỗi khi chấp nhận yêu cầu bảo hành')
+    }
   }).catch(() => {
     ElMessage.info('Đã hủy')
   })
@@ -638,10 +771,15 @@ const updateStatus = async (item, newStatus) => {
       cancelButtonText: 'Hủy',
       type: 'info'
     }
-  ).then(() => {
-    // TODO: Call API
-    ElMessage.success('Đã cập nhật trạng thái!')
-    fetchWarranties()
+  ).then(async () => {
+    try {
+      await adminStore.updateWarrantyStatus(item.id, newStatus)
+      ElMessage.success('Đã cập nhật trạng thái!')
+      fetchWarranties()
+    } catch (error) {
+      console.error('Lỗi khi cập nhật trạng thái:', error)
+      ElMessage.error('Lỗi khi cập nhật trạng thái bảo hành')
+    }
   }).catch(() => {
     ElMessage.info('Đã hủy')
   })
@@ -704,11 +842,17 @@ const getStatusText = (status) => {
 }
 
 const formatDate = (dateString) => {
-  return new Intl.DateTimeFormat('vi-VN', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit'
-  }).format(new Date(dateString))
+  if (!dateString) return 'N/A'
+  try {
+    return new Intl.DateTimeFormat('vi-VN', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit'
+    }).format(new Date(dateString))
+  } catch (error) {
+    console.warn('Invalid date format:', dateString)
+    return 'N/A'
+  }
 }
 
 // Lifecycle

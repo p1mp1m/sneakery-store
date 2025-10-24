@@ -473,41 +473,22 @@ const visiblePages = computed(() => {
 const fetchCoupons = async () => {
   try {
     loading.value = true
-    const response = await adminService.getCoupons(currentPage.value, pageSize.value, filters)
     
-    if (response && response.content) {
-      coupons.value = response.content
-      totalElements.value = response.totalElements || 0
-      totalPages.value = response.totalPages || 0
-      updateStats()
-    } else {
-      coupons.value = []
-      totalElements.value = 0
-      totalPages.value = 0
+    // Prepare filters for API
+    const apiFilters = {
+      search: filters.search || undefined,
+      type: filters.type || undefined,
+      status: filters.status || undefined
     }
+    
+    const result = await adminStore.fetchCoupons(currentPage.value, pageSize.value, apiFilters)
+    coupons.value = result.content || result || []
+    totalElements.value = result.totalElements || 0
+    totalPages.value = result.totalPages || 0
+    updateStats()
   } catch (error) {
     console.error('Lỗi tải coupons:', error)
-    
-    let errorMessage = 'Không thể tải danh sách mã giảm giá.'
-    
-    if (error.response) {
-      const status = error.response.status
-      if (status === 500) {
-        errorMessage = '⚠️ Lỗi server 500: Backend có thể chưa khởi động hoặc database chưa có table Coupons. Vui lòng kiểm tra backend!'
-      } else if (status === 404) {
-        errorMessage = 'API endpoint không tồn tại. Vui lòng kiểm tra backend!'
-      } else if (status === 403) {
-        errorMessage = 'Không có quyền truy cập. Vui lòng đăng nhập lại!'
-      }
-    } else if (error.request) {
-      errorMessage = '⚠️ Không thể kết nối đến backend server. Vui lòng kiểm tra:\n1. Backend đã chạy chưa?\n2. URL API có đúng không?'
-    }
-    
-    ElMessage.error({
-      message: errorMessage,
-      duration: 5000,
-      dangerouslyUseHTMLString: false
-    })
+    ElMessage.error('Không thể tải danh sách mã giảm giá')
     
     // Set empty array để tránh undefined errors
     coupons.value = []
@@ -582,51 +563,18 @@ const saveCoupon = async () => {
     }
     
     if (editingCoupon.value) {
-      await adminService.updateCoupon(editingCoupon.value.id, couponData)
-      ElMessage.success({
-        message: `Đã cập nhật mã giảm giá "${couponData.code}" thành công!`,
-        duration: 3000
-      })
+      await adminStore.updateCoupon(editingCoupon.value.id, couponData)
+      ElMessage.success(`Đã cập nhật mã giảm giá "${couponData.code}" thành công!`)
     } else {
-      await adminService.createCoupon(couponData)
-      ElMessage.success({
-        message: `Đã tạo mã giảm giá "${couponData.code}" thành công!`,
-        duration: 3000
-      })
+      await adminStore.createCoupon(couponData)
+      ElMessage.success(`Đã tạo mã giảm giá "${couponData.code}" thành công!`)
     }
     
     closeDialog()
     fetchCoupons()
   } catch (error) {
     console.error('Lỗi lưu coupon:', error)
-    
-    let errorMessage = 'Có lỗi xảy ra! Vui lòng thử lại.'
-    if (error.response) {
-      const status = error.response.status
-      const data = error.response.data
-      
-      if (status === 400) {
-        if (data.validationErrors) {
-          const firstError = Object.values(data.validationErrors)[0]
-          if (firstError && firstError.length > 0) {
-            errorMessage = firstError[0]
-          }
-        } else if (data.message) {
-          errorMessage = data.message
-        }
-      } else if (status === 409) {
-        errorMessage = 'Mã giảm giá đã tồn tại. Vui lòng chọn mã khác.'
-      } else if (status === 500) {
-        errorMessage = 'Lỗi server. Vui lòng liên hệ quản trị viên.'
-      }
-    } else if (error.request) {
-      errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
-    }
-    
-    ElMessage.error({
-      message: errorMessage,
-      duration: 5000
-    })
+    ElMessage.error('Có lỗi xảy ra khi lưu mã giảm giá!')
   } finally {
     saving.value = false
   }
@@ -634,18 +582,12 @@ const saveCoupon = async () => {
 
 const toggleCouponStatus = async (coupon) => {
   try {
-    await adminService.toggleCouponStatus(coupon.id)
+    await adminStore.toggleCouponStatus(coupon.id)
     coupon.isActive = !coupon.isActive
-    ElMessage.success({
-      message: `Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá "${coupon.code}" thành công!`,
-      duration: 3000
-    })
+    ElMessage.success(`Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá "${coupon.code}" thành công!`)
   } catch (error) {
     console.error('Lỗi toggle status:', error)
-    ElMessage.error({
-      message: 'Không thể thay đổi trạng thái. Vui lòng thử lại!',
-      duration: 3000
-    })
+    ElMessage.error('Không thể thay đổi trạng thái. Vui lòng thử lại!')
   }
 }
 
@@ -653,18 +595,12 @@ const deleteCoupon = async (coupon) => {
   if (!confirm(`Bạn có chắc muốn xóa mã "${coupon.code}"? Hành động này không thể hoàn tác!`)) return
   
   try {
-    await adminService.deleteCoupon(coupon.id)
-    ElMessage.success({
-      message: `Đã xóa mã giảm giá "${coupon.code}" thành công!`,
-      duration: 3000
-    })
+    await adminStore.deleteCoupon(coupon.id)
+    ElMessage.success(`Đã xóa mã giảm giá "${coupon.code}" thành công!`)
     fetchCoupons()
   } catch (error) {
     console.error('Lỗi xóa coupon:', error)
-    ElMessage.error({
-      message: 'Không thể xóa mã giảm giá. Vui lòng thử lại!',
-      duration: 3000
-    })
+    ElMessage.error('Không thể xóa mã giảm giá. Vui lòng thử lại!')
   }
 }
 

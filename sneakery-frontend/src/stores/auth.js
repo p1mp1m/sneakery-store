@@ -36,13 +36,24 @@ export const useAuthStore = defineStore('auth', () => {
     if (token.value && !user.value) {
         const decoded = decodeJwt(token.value);
         if (decoded) {
-            user.value = {
-                email: decoded.sub, // JWT standard: subject chứa email/username
-                role: decoded.role || decoded.authorities?.[0] || 'USER',
-                fullName: decoded.fullName || decoded.name,
-                accessToken: token.value
-            };
-            localStorage.setItem('user', JSON.stringify(user.value));
+            // Kiểm tra token có hết hạn không
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (decoded.exp && decoded.exp < currentTime) {
+                // Token đã hết hạn, xóa khỏi localStorage
+                console.warn('Token đã hết hạn, xóa khỏi localStorage');
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                token.value = null;
+                user.value = null;
+            } else {
+                user.value = {
+                    email: decoded.sub, // JWT standard: subject chứa email/username
+                    role: decoded.role || decoded.authorities?.[0] || 'USER',
+                    fullName: decoded.fullName || decoded.name,
+                    accessToken: token.value
+                };
+                localStorage.setItem('user', JSON.stringify(user.value));
+            }
         }
     }
     

@@ -480,7 +480,672 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  // ===== PRODUCT VARIANTS =====
+  const fetchProductVariants = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getProductVariants(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching product variants:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const createProductVariant = async (variantData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.createProductVariant(variantData)
+      return result
+    } catch (error) {
+      console.error('Error creating product variant:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateProductVariant = async (id, variantData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateProductVariant(id, variantData)
+      return result
+    } catch (error) {
+      console.error('Error updating product variant:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteProductVariant = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.deleteProductVariant(id)
+      return result
+    } catch (error) {
+      console.error('Error deleting product variant:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateVariantStock = async (id, stockData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateVariantStock(id, stockData)
+      return result
+    } catch (error) {
+      console.error('Error updating variant stock:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== ACTIVITY LOGS =====
+  const fetchActivityLogs = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getActivityLogs(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching activity logs:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const exportActivityLogs = async (format = 'csv', filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.exportActivityLogs(format, filters)
+      return result
+    } catch (error) {
+      console.error('Error exporting activity logs:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== EMAIL TEMPLATES =====
+  const fetchEmailTemplates = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getEmailTemplates(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching email templates:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const createEmailTemplate = async (templateData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.createEmailTemplate(templateData)
+      return result
+    } catch (error) {
+      console.error('Error creating email template:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateEmailTemplate = async (id, templateData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateEmailTemplate(id, templateData)
+      return result
+    } catch (error) {
+      console.error('Error updating email template:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteEmailTemplate = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.deleteEmailTemplate(id)
+      return result
+    } catch (error) {
+      console.error('Error deleting email template:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const sendTestEmail = async (id, testData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.sendTestEmail(id, testData)
+      return result
+    } catch (error) {
+      console.error('Error sending test email:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== INVENTORY =====
+  const fetchInventory = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getInventory(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching inventory:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchInventoryLogs = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getInventoryLogs(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching inventory logs:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const adjustStock = async (adjustmentData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.adjustStock(adjustmentData)
+      return result
+    } catch (error) {
+      console.error('Error adjusting stock:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== LOYALTY =====
+  const fetchLoyaltyUsers = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getLoyaltyUsers(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching loyalty users:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const adjustLoyaltyPoints = async (userId, adjustmentData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.adjustLoyaltyPoints(userId, adjustmentData)
+      return result
+    } catch (error) {
+      console.error('Error adjusting loyalty points:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchLoyaltyStats = async () => {
+    try {
+      loading.value = true
+      const result = await AdminService.getLoyaltyStats()
+      return result
+    } catch (error) {
+      console.error('Error fetching loyalty stats:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== PAYMENTS =====
+  const fetchPayments = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getPayments(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching payments:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const refundPayment = async (id, refundData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.refundPayment(id, refundData)
+      return result
+    } catch (error) {
+      console.error('Error refunding payment:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchPaymentStats = async () => {
+    try {
+      loading.value = true
+      const result = await AdminService.getPaymentStats()
+      return result
+    } catch (error) {
+      console.error('Error fetching payment stats:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== ANALYTICS (Bổ sung) =====
+  const fetchProductAnalytics = async (period = '30d') => {
+    try {
+      loading.value = true
+      const result = await AdminService.getProductAnalytics(period)
+      return result
+    } catch (error) {
+      console.error('Error fetching product analytics:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchCustomerAnalytics = async (period = '30d') => {
+    try {
+      loading.value = true
+      const result = await AdminService.getCustomerAnalytics(period)
+      return result
+    } catch (error) {
+      console.error('Error fetching customer analytics:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== SETTINGS =====
+  const fetchSettings = async () => {
+    try {
+      loading.value = true
+      const result = await AdminService.getSettings()
+      return result
+    } catch (error) {
+      console.error('Error fetching settings:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateSettings = async (settingsData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateSettings(settingsData)
+      return result
+    } catch (error) {
+      console.error('Error updating settings:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== POS / SALES =====
+  const createPOSOrder = async (orderData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.createPOSOrder(orderData)
+      return result
+    } catch (error) {
+      console.error('Error creating POS order:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Clear error
+  // ===== REVIEWS =====
+  const fetchReviews = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getReviews(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateReviewStatus = async (id, isApproved) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateReviewStatus(id, isApproved)
+      return result
+    } catch (error) {
+      console.error('Error updating review status:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteReview = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.deleteReview(id)
+      return result
+    } catch (error) {
+      console.error('Error deleting review:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const replyToReview = async (id, replyText) => {
+    try {
+      loading.value = true
+      const result = await AdminService.replyToReview(id, replyText)
+      return result
+    } catch (error) {
+      console.error('Error replying to review:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== FLASH SALES =====
+  const fetchFlashSales = async () => {
+    try {
+      loading.value = true
+      const result = await AdminService.getFlashSales()
+      return result
+    } catch (error) {
+      console.error('Error fetching flash sales:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const createFlashSale = async (flashSaleData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.createFlashSale(flashSaleData)
+      return result
+    } catch (error) {
+      console.error('Error creating flash sale:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateFlashSale = async (id, flashSaleData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateFlashSale(id, flashSaleData)
+      return result
+    } catch (error) {
+      console.error('Error updating flash sale:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteFlashSale = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.deleteFlashSale(id)
+      return result
+    } catch (error) {
+      console.error('Error deleting flash sale:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== NOTIFICATIONS =====
+  const fetchNotifications = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getNotifications(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const createNotification = async (notificationData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.createNotification(notificationData)
+      return result
+    } catch (error) {
+      console.error('Error creating notification:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateNotification = async (id, notificationData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateNotification(id, notificationData)
+      return result
+    } catch (error) {
+      console.error('Error updating notification:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteNotification = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.deleteNotification(id)
+      return result
+    } catch (error) {
+      console.error('Error deleting notification:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const sendNotification = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.sendNotification(id)
+      return result
+    } catch (error) {
+      console.error('Error sending notification:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== RETURNS =====
+  const fetchReturns = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getReturns(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching returns:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateReturnStatus = async (id, status, adminNote = '') => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateReturnStatus(id, status, adminNote)
+      return result
+    } catch (error) {
+      console.error('Error updating return status:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const processRefund = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.processRefund(id)
+      return result
+    } catch (error) {
+      console.error('Error processing refund:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== WARRANTY =====
+  const fetchWarranties = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getWarranties(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching warranties:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateWarrantyStatus = async (id, status, adminNote = '') => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateWarrantyStatus(id, status, adminNote)
+      return result
+    } catch (error) {
+      console.error('Error updating warranty status:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const processWarranty = async (id, resolutionNote, warrantyType) => {
+    try {
+      loading.value = true
+      const result = await AdminService.processWarranty(id, resolutionNote, warrantyType)
+      return result
+    } catch (error) {
+      console.error('Error processing warranty:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ===== COUPONS =====
+  const fetchCoupons = async (page = 0, size = 10, filters = {}) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getCoupons(page, size, filters)
+      return result
+    } catch (error) {
+      console.error('Error fetching coupons:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const createCoupon = async (couponData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.createCoupon(couponData)
+      return result
+    } catch (error) {
+      console.error('Error creating coupon:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const updateCoupon = async (id, couponData) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updateCoupon(id, couponData)
+      return result
+    } catch (error) {
+      console.error('Error updating coupon:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteCoupon = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.deleteCoupon(id)
+      return result
+    } catch (error) {
+      console.error('Error deleting coupon:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const toggleCouponStatus = async (id) => {
+    try {
+      loading.value = true
+      const result = await AdminService.toggleCouponStatus(id)
+      return result
+    } catch (error) {
+      console.error('Error toggling coupon status:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   const clearError = () => {
     error.value = null
   }
@@ -542,6 +1207,71 @@ export const useAdminStore = defineStore('admin', () => {
     deleteCategory,
     exportData,
     importData,
+    
+    // New Actions
+    fetchProductVariants,
+    createProductVariant,
+    updateProductVariant,
+    deleteProductVariant,
+    updateVariantStock,
+    fetchActivityLogs,
+    exportActivityLogs,
+    fetchEmailTemplates,
+    createEmailTemplate,
+    updateEmailTemplate,
+    deleteEmailTemplate,
+    sendTestEmail,
+    fetchInventory,
+    fetchInventoryLogs,
+    adjustStock,
+    fetchLoyaltyUsers,
+    adjustLoyaltyPoints,
+    fetchLoyaltyStats,
+    fetchPayments,
+    refundPayment,
+    fetchPaymentStats,
+    fetchProductAnalytics,
+    fetchCustomerAnalytics,
+    fetchSettings,
+    updateSettings,
+    createPOSOrder,
+    
+    // New Actions - Reviews
+    fetchReviews,
+    updateReviewStatus,
+    deleteReview,
+    replyToReview,
+    
+    // New Actions - Flash Sales
+    fetchFlashSales,
+    createFlashSale,
+    updateFlashSale,
+    deleteFlashSale,
+    
+    // New Actions - Notifications
+    fetchNotifications,
+    createNotification,
+    updateNotification,
+    deleteNotification,
+    sendNotification,
+    
+    // New Actions - Returns
+    fetchReturns,
+    updateReturnStatus,
+    processRefund,
+    
+    // New Actions - Warranty
+    fetchWarranties,
+    updateWarrantyStatus,
+    processWarranty,
+    
+    // New Actions - Coupons
+    fetchCoupons,
+    createCoupon,
+    updateCoupon,
+    deleteCoupon,
+    toggleCouponStatus,
+    
     clearError,
     reset
   }

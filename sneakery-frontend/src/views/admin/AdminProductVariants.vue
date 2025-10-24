@@ -255,7 +255,7 @@ const mockVariants = [
     size: '40',
     price: 3500000,
     stockQuantity: 15,
-    imageUrl: 'https://via.placeholder.com/80'
+    imageUrl: '/placeholder-image.png'
   },
   {
     id: 2,
@@ -266,7 +266,7 @@ const mockVariants = [
     size: '40',
     price: 3500000,
     stockQuantity: 5,
-    imageUrl: 'https://via.placeholder.com/80'
+    imageUrl: '/placeholder-image.png'
   },
   {
     id: 3,
@@ -277,7 +277,7 @@ const mockVariants = [
     size: '42',
     price: 4200000,
     stockQuantity: 0,
-    imageUrl: 'https://via.placeholder.com/80'
+    imageUrl: '/placeholder-image.png'
   },
   {
     id: 4,
@@ -288,7 +288,7 @@ const mockVariants = [
     size: '39',
     price: 4200000,
     stockQuantity: 25,
-    imageUrl: 'https://via.placeholder.com/80'
+    imageUrl: '/placeholder-image.png'
   }
 ]
 

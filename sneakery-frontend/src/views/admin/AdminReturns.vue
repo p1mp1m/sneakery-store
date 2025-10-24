@@ -260,6 +260,10 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+
+const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -284,31 +288,20 @@ const stats = reactive({
 const fetchReturns = async () => {
   try {
     loading.value = true
-    // TODO: Call API
-    // Mock data
-    returns.value = [
-      {
-        id: 1,
-        orderNumber: 'ORD-20250120-0001',
-        customerName: 'Nguyễn Văn A',
-        customerEmail: 'nguyenvana@gmail.com',
-        customerPhone: '0901234567',
-        productName: 'Nike Air Max 270',
-        productImage: '/placeholder.png',
-        variant: 'Size 42 - Đen',
-        quantity: 1,
-        unitPrice: 2990000,
-        reason: 'defective',
-        note: 'Giày bị lỗi đế',
-        refundAmount: 2990000,
-        status: 'pending',
-        createdAt: '2025-01-20T10:30:00',
-        images: ['/placeholder.png']
-      }
-    ]
+    
+    // Prepare filters for API
+    const apiFilters = {
+      search: filters.search || undefined,
+      status: filters.status || undefined,
+      reason: filters.reason || undefined
+    }
+    
+    const result = await adminStore.fetchReturns(0, 50, apiFilters)
+    returns.value = result.content || []
     updateStats()
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
+    ElMessage.error('Lỗi khi tải danh sách yêu cầu trả hàng')
   } finally {
     loading.value = false
   }
@@ -339,17 +332,29 @@ const viewReturnDetail = (item) => {
 
 const approveReturn = async (item) => {
   if (!confirm('Bạn có chắc muốn duyệt yêu cầu này?')) return
-  // TODO: Call API
-  alert('Đã duyệt yêu cầu!')
-  fetchReturns()
+  
+  try {
+    await adminStore.approveReturn(item.id)
+    ElMessage.success('Đã duyệt yêu cầu trả hàng!')
+    fetchReturns()
+  } catch (error) {
+    console.error('Lỗi khi duyệt yêu cầu:', error)
+    ElMessage.error('Lỗi khi duyệt yêu cầu trả hàng')
+  }
 }
 
 const rejectReturn = async (item) => {
   const reason = prompt('Lý do từ chối:')
   if (!reason) return
-  // TODO: Call API
-  alert('Đã từ chối yêu cầu!')
-  fetchReturns()
+  
+  try {
+    await adminStore.rejectReturn(item.id, reason)
+    ElMessage.success('Đã từ chối yêu cầu trả hàng!')
+    fetchReturns()
+  } catch (error) {
+    console.error('Lỗi khi từ chối yêu cầu:', error)
+    ElMessage.error('Lỗi khi từ chối yêu cầu trả hàng')
+  }
 }
 
 const getReasonText = (reason) => {

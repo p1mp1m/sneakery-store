@@ -67,9 +67,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
                 }
+            } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+                // Token đã hết hạn - không set authentication, Spring Security sẽ trả về 401
+                logger.warn("JWT token has expired: " + ex.getMessage());
+                // Không cần làm gì thêm, Spring Security sẽ tự động trả về 401
+            } catch (io.jsonwebtoken.MalformedJwtException ex) {
+                logger.warn("Invalid JWT token: " + ex.getMessage());
+            } catch (io.jsonwebtoken.UnsupportedJwtException ex) {
+                logger.warn("JWT token is unsupported: " + ex.getMessage());
+            } catch (IllegalArgumentException ex) {
+                logger.warn("JWT claims string is empty: " + ex.getMessage());
             } catch (Exception ex) {
-                // Nếu token có vấn đề (hết hạn, sai chữ ký,...)
-                // Chúng ta không làm gì cả, request sẽ tự động bị từ chối ở bước sau
                 logger.warn("Could not set user authentication in security context", ex);
             }
         }

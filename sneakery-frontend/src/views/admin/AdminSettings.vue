@@ -403,8 +403,11 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useAdminStore } from '@/stores/admin'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { downloadJson } from '@/utils/exportHelpers'
+
+const adminStore = useAdminStore()
 
 const activeTab = ref('store')
 const showSearch = ref(false)
@@ -435,11 +438,11 @@ const settingsIndex = [
 
 // Store Settings
 const storeSettings = ref({
-  name: 'Sneakery Store',
-  slogan: 'Your Perfect Sneakers Destination',
-  email: 'contact@sneakerystore.com',
-  phone: '(+84) 123-456-789',
-  address: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh'
+  name: '',
+  slogan: '',
+  email: '',
+  phone: '',
+  address: ''
 })
 
 // General Settings
@@ -453,10 +456,10 @@ const generalSettings = ref({
 
 // Email Settings
 const emailSettings = ref({
-  smtpHost: 'smtp.gmail.com',
+  smtpHost: '',
   smtpPort: 587,
-  fromEmail: 'noreply@sneakerystore.com',
-  fromName: 'Sneakery Store',
+  fromEmail: '',
+  fromName: '',
   enableNotifications: true
 })
 
@@ -476,49 +479,141 @@ const paymentSettings = ref({
   }
 })
 
-// Load settings from localStorage
-const loadSettings = () => {
-  const saved = localStorage.getItem('adminSettings')
-  if (saved) {
-    try {
-      const data = JSON.parse(saved)
-      if (data.store) storeSettings.value = { ...storeSettings.value, ...data.store }
-      if (data.general) generalSettings.value = { ...generalSettings.value, ...data.general }
-      if (data.email) emailSettings.value = { ...emailSettings.value, ...data.email }
-      if (data.payment) paymentSettings.value = { ...paymentSettings.value, ...data.payment }
-    } catch (error) {
-      console.error('Error loading settings:', error)
+// Load settings from localStorage (mock data)
+const loadSettings = async () => {
+  try {
+    // Mock data cho settings
+    const mockSettings = {
+      store: {
+        storeName: 'Sneakery Store',
+        storeDescription: 'Cửa hàng giày sneaker hàng đầu Việt Nam',
+        storeAddress: '123 Đường ABC, Quận 1, TP.HCM',
+        storePhone: '0123456789',
+        storeEmail: 'info@sneakerystore.com',
+        storeWebsite: 'https://sneakerystore.com',
+        storeLogo: '/logo.png',
+        currency: 'VND',
+        timezone: 'Asia/Ho_Chi_Minh',
+        language: 'vi'
+      },
+      general: {
+        maintenanceMode: false,
+        allowRegistration: true,
+        requireEmailVerification: true,
+        maxLoginAttempts: 5,
+        sessionTimeout: 30,
+        enableNotifications: true,
+        enableAnalytics: true,
+        enableCookies: true,
+        privacyPolicy: 'Chính sách bảo mật của Sneakery Store...',
+        termsOfService: 'Điều khoản sử dụng của Sneakery Store...'
+      },
+      email: {
+        smtpHost: 'smtp.gmail.com',
+        smtpPort: 587,
+        smtpUsername: 'noreply@sneakerystore.com',
+        smtpPassword: '********',
+        smtpEncryption: 'tls',
+        fromName: 'Sneakery Store',
+        fromEmail: 'noreply@sneakerystore.com',
+        enableEmailNotifications: true,
+        enableOrderEmails: true,
+        enableMarketingEmails: false
+      },
+      payment: {
+        enableCashOnDelivery: true,
+        enableBankTransfer: true,
+        enableCreditCard: true,
+        enablePayPal: false,
+        enableVNPay: true,
+        enableMomo: true,
+        enableZaloPay: false,
+        defaultPaymentMethod: 'vnpay',
+        currency: 'VND',
+        taxRate: 10,
+        shippingFee: 30000,
+        freeShippingThreshold: 500000
+      }
     }
+    
+    // Load from localStorage hoặc sử dụng mock data
+    const savedSettings = localStorage.getItem('adminSettings')
+    if (savedSettings) {
+      const parsed = JSON.parse(savedSettings)
+      if (parsed.store) storeSettings.value = { ...storeSettings.value, ...parsed.store }
+      if (parsed.general) generalSettings.value = { ...generalSettings.value, ...parsed.general }
+      if (parsed.email) emailSettings.value = { ...emailSettings.value, ...parsed.email }
+      if (parsed.payment) paymentSettings.value = { ...paymentSettings.value, ...parsed.payment }
+    } else {
+      // Sử dụng mock data lần đầu
+      storeSettings.value = { ...storeSettings.value, ...mockSettings.store }
+      generalSettings.value = { ...generalSettings.value, ...mockSettings.general }
+      emailSettings.value = { ...emailSettings.value, ...mockSettings.email }
+      paymentSettings.value = { ...paymentSettings.value, ...mockSettings.payment }
+    }
+    
+    console.log('✅ Settings loaded successfully')
+  } catch (error) {
+    console.error('Error loading settings:', error)
+    ElMessage.error('Không thể tải cài đặt')
   }
 }
 
 // Save methods
-const saveStoreSettings = () => {
-  const settings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
-  settings.store = storeSettings.value
-  localStorage.setItem('adminSettings', JSON.stringify(settings))
-  ElMessage.success('Đã lưu thông tin cửa hàng thành công!')
+const saveStoreSettings = async () => {
+  try {
+    // Save to localStorage
+    const currentSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
+    currentSettings.store = storeSettings.value
+    localStorage.setItem('adminSettings', JSON.stringify(currentSettings))
+    
+    ElMessage.success('Đã lưu thông tin cửa hàng thành công!')
+  } catch (error) {
+    console.error('Error saving store settings:', error)
+    ElMessage.error('Không thể lưu thông tin cửa hàng')
+  }
 }
 
-const saveGeneralSettings = () => {
-  const settings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
-  settings.general = generalSettings.value
-  localStorage.setItem('adminSettings', JSON.stringify(settings))
-  ElMessage.success('Đã lưu cài đặt chung thành công!')
+const saveGeneralSettings = async () => {
+  try {
+    // Save to localStorage
+    const currentSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
+    currentSettings.general = generalSettings.value
+    localStorage.setItem('adminSettings', JSON.stringify(currentSettings))
+    
+    ElMessage.success('Đã lưu cài đặt chung thành công!')
+  } catch (error) {
+    console.error('Error saving general settings:', error)
+    ElMessage.error('Không thể lưu cài đặt chung')
+  }
 }
 
-const saveEmailSettings = () => {
-  const settings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
-  settings.email = emailSettings.value
-  localStorage.setItem('adminSettings', JSON.stringify(settings))
-  ElMessage.success('Đã lưu cài đặt email thành công!')
+const saveEmailSettings = async () => {
+  try {
+    // Save to localStorage
+    const currentSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
+    currentSettings.email = emailSettings.value
+    localStorage.setItem('adminSettings', JSON.stringify(currentSettings))
+    
+    ElMessage.success('Đã lưu cài đặt email thành công!')
+  } catch (error) {
+    console.error('Error saving email settings:', error)
+    ElMessage.error('Không thể lưu cài đặt email')
+  }
 }
 
-const savePaymentSettings = () => {
-  const settings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
-  settings.payment = paymentSettings.value
-  localStorage.setItem('adminSettings', JSON.stringify(settings))
-  ElMessage.success('Đã lưu cài đặt thanh toán thành công!')
+const savePaymentSettings = async () => {
+  try {
+    // Save to localStorage
+    const currentSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
+    currentSettings.payment = paymentSettings.value
+    localStorage.setItem('adminSettings', JSON.stringify(currentSettings))
+    
+    ElMessage.success('Đã lưu cài đặt thanh toán thành công!')
+  } catch (error) {
+    console.error('Error saving payment settings:', error)
+    ElMessage.error('Không thể lưu cài đặt thanh toán')
+  }
 }
 
 const testEmail = () => {

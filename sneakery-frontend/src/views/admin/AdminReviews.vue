@@ -354,6 +354,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+
+const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -370,13 +374,16 @@ const replyText = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 5
 
+// Reviews data
+const reviews = ref([])
+
 // Mock data - Replace with real API calls
 const mockReviews = ref([
   {
     id: 1,
     productId: 1,
     productName: 'Nike Air Force 1',
-    productImage: 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png',
+    productImage: '/placeholder-image.png',
     userId: 101,
     userName: 'Nguyễn Văn A',
     rating: 5,
@@ -395,7 +402,7 @@ const mockReviews = ref([
     id: 2,
     productId: 2,
     productName: 'Adidas Ultraboost',
-    productImage: 'https://assets.adidas.com/images/w_600,f_auto,q_auto/1c7e3d5f5b1b4e7ba3b5af8d0126c1b7_9366/Ultraboost_Light_Shoes_White_GY9350_01_standard.jpg',
+    productImage: '/placeholder-image.png',
     userId: 102,
     userName: 'Trần Thị B',
     rating: 4,
@@ -414,13 +421,13 @@ const mockReviews = ref([
     id: 3,
     productId: 3,
     productName: 'Converse Chuck Taylor',
-    productImage: 'https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw3f7e9c3e/images/a_107/M9160_A_107X1.jpg',
+    productImage: '/placeholder-image.png',
     userId: 103,
     userName: 'Lê Văn C',
     rating: 3,
     title: 'Bình thường',
     body: 'Sản phẩm ổn, không có gì đặc biệt. Size hơi nhỏ so với thông thường.',
-    images: ['https://via.placeholder.com/200'],
+    images: ['/placeholder-image.png'],
     isApproved: false,
     isVerifiedPurchase: false,
     helpfulCount: 3,
@@ -433,13 +440,13 @@ const mockReviews = ref([
     id: 4,
     productId: 1,
     productName: 'Nike Air Force 1',
-    productImage: 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png',
+    productImage: '/placeholder-image.png',
     userId: 104,
     userName: 'Phạm Thị D',
     rating: 5,
     title: 'Rất đáng mua!',
     body: 'Mình đã mua 3 đôi rồi, chất lượng luôn ổn định. Shop phục vụ tận tình.',
-    images: ['https://via.placeholder.com/200', 'https://via.placeholder.com/200'],
+    images: ['/placeholder-image.png', '/placeholder-image.png'],
     isApproved: false,
     isVerifiedPurchase: true,
     helpfulCount: 0,
@@ -452,7 +459,7 @@ const mockReviews = ref([
     id: 5,
     productId: 4,
     productName: 'Puma Suede Classic',
-    productImage: 'https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_600,h_600/global/374915/01/sv01/fnd/PNA/fmt/png/Suede-Classic-XXI-Sneakers',
+    productImage: '/placeholder-image.png',
     userId: 105,
     userName: 'Hoàng Văn E',
     rating: 2,
@@ -471,7 +478,7 @@ const mockReviews = ref([
 
 // Computed
 const filteredReviews = computed(() => {
-  let result = mockReviews.value
+  let result = reviews.value
 
   // Filter by search
   if (searchKeyword.value) {
@@ -509,28 +516,146 @@ const totalPages = computed(() => {
 })
 
 const approvedReviewsCount = computed(() => {
-  return mockReviews.value.filter(r => r.isApproved).length
+  return reviews.value.filter(r => r.isApproved).length
 })
 
 const pendingReviewsCount = computed(() => {
-  return mockReviews.value.filter(r => !r.isApproved).length
+  return reviews.value.filter(r => !r.isApproved).length
 })
 
 const averageRating = computed(() => {
-  if (mockReviews.value.length === 0) return 0
-  const sum = mockReviews.value.reduce((acc, r) => acc + r.rating, 0)
-  return sum / mockReviews.value.length
+  if (reviews.value.length === 0) return 0
+  const sum = reviews.value.reduce((acc, r) => acc + r.rating, 0)
+  return sum / reviews.value.length
 })
 
 // Methods
+const loadReviews = async () => {
+  try {
+    loading.value = true
+    
+    // Mock data cho reviews
+    const mockReviews = [
+      {
+        id: 1,
+        productId: 1,
+        productName: 'Nike Air Force 1',
+        productImage: '/placeholder-image.png',
+        userId: 101,
+        userName: 'Nguyễn Văn A',
+        userEmail: 'nguyenvana@email.com',
+        rating: 5,
+        title: 'Sản phẩm tuyệt vời',
+        body: 'Giày rất đẹp, chất lượng tốt. Tôi rất hài lòng với sản phẩm này.',
+        isApproved: true,
+        createdAt: '2024-01-15T10:30:00Z',
+        images: ['/placeholder-image.png']
+      },
+      {
+        id: 2,
+        productId: 2,
+        productName: 'Adidas Ultraboost',
+        productImage: '/placeholder-image.png',
+        userId: 102,
+        userName: 'Trần Thị B',
+        userEmail: 'tranthib@email.com',
+        rating: 4,
+        title: 'Tốt nhưng giá hơi cao',
+        body: 'Giày êm chân, thiết kế đẹp. Tuy nhiên giá hơi cao so với mặt bằng chung.',
+        isApproved: false,
+        createdAt: '2024-01-14T14:20:00Z',
+        images: ['/placeholder-image.png']
+      },
+      {
+        id: 3,
+        productId: 3,
+        productName: 'Jordan 1 Retro',
+        productImage: '/placeholder-image.png',
+        userId: 103,
+        userName: 'Lê Văn C',
+        userEmail: 'levanc@email.com',
+        rating: 5,
+        title: 'Classic không bao giờ lỗi mốt',
+        body: 'Jordan 1 là một trong những mẫu giày đẹp nhất mọi thời đại. Chất lượng tuyệt vời.',
+        isApproved: true,
+        createdAt: '2024-01-13T16:45:00Z',
+        images: ['/placeholder-image.png', '/placeholder-image.png']
+      },
+      {
+        id: 4,
+        productId: 4,
+        productName: 'Converse Chuck Taylor',
+        productImage: '/placeholder-image.png',
+        userId: 104,
+        userName: 'Phạm Thị D',
+        userEmail: 'phamthid@email.com',
+        rating: 3,
+        title: 'Bình thường',
+        body: 'Giày ổn, nhưng đế hơi cứng. Cần thời gian để làm quen.',
+        isApproved: false,
+        createdAt: '2024-01-12T11:15:00Z',
+        images: ['/placeholder-image.png']
+      },
+      {
+        id: 5,
+        productId: 5,
+        productName: 'Vans Old Skool',
+        productImage: '/placeholder-image.png',
+        userId: 105,
+        userName: 'Hoàng Văn E',
+        userEmail: 'hoangvane@email.com',
+        rating: 4,
+        title: 'Thiết kế đẹp',
+        body: 'Vans Old Skool có thiết kế rất đẹp và dễ phối đồ. Chất lượng tốt.',
+        isApproved: true,
+        createdAt: '2024-01-11T13:20:00Z',
+        images: ['/placeholder-image.png']
+      }
+    ]
+    
+    // Apply filters
+    let filteredReviews = mockReviews
+    
+    if (searchKeyword.value) {
+      filteredReviews = filteredReviews.filter(review => 
+        review.productName.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
+        review.userName.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
+        review.title.toLowerCase().includes(searchKeyword.value.toLowerCase())
+      )
+    }
+    
+    if (filterStatus.value !== 'all') {
+      if (filterStatus.value === 'approved') {
+        filteredReviews = filteredReviews.filter(review => review.isApproved)
+      } else if (filterStatus.value === 'pending') {
+        filteredReviews = filteredReviews.filter(review => !review.isApproved)
+      }
+    }
+    
+    if (filterRating.value !== 'all') {
+      const rating = parseInt(filterRating.value)
+      filteredReviews = filteredReviews.filter(review => review.rating === rating)
+    }
+    
+    reviews.value = filteredReviews
+    
+    console.log('✅ Reviews loaded successfully')
+  } catch (error) {
+    console.error('Error loading reviews:', error)
+    ElMessage.error('Lỗi khi tải danh sách đánh giá')
+  } finally {
+    loading.value = false
+  }
+}
+
 const approveReview = async (review) => {
   try {
-    // TODO: Call API to approve review
+    await adminStore.approveReview(review.id)
     review.isApproved = true
-    alert('Đã duyệt đánh giá thành công!')
+    ElMessage.success('Đã duyệt đánh giá thành công!')
   } catch (error) {
     console.error('Error approving review:', error)
-    alert('Lỗi khi duyệt đánh giá')
+    ElMessage.error('Lỗi khi duyệt đánh giá')
   }
 }
 
@@ -549,14 +674,14 @@ const closeReplyModal = () => {
 const saveReply = async () => {
   saving.value = true
   try {
-    // TODO: Call API to save reply
+    await adminStore.replyToReview(selectedReview.value.id, replyText.value)
     selectedReview.value.replyText = replyText.value
     selectedReview.value.repliedAt = new Date().toISOString()
     closeReplyModal()
-    alert('Phản hồi đã được gửi thành công!')
+    ElMessage.success('Phản hồi đã được gửi thành công!')
   } catch (error) {
     console.error('Error saving reply:', error)
-    alert('Lỗi khi gửi phản hồi')
+    ElMessage.error('Lỗi khi gửi phản hồi')
   } finally {
     saving.value = false
   }
@@ -570,17 +695,17 @@ const confirmDelete = (review) => {
 const deleteReview = async () => {
   deleting.value = true
   try {
-    // TODO: Call API to delete review
-    const index = mockReviews.value.findIndex(r => r.id === reviewToDelete.value.id)
+    await adminStore.deleteReview(reviewToDelete.value.id)
+    const index = reviews.value.findIndex(r => r.id === reviewToDelete.value.id)
     if (index > -1) {
-      mockReviews.value.splice(index, 1)
+      reviews.value.splice(index, 1)
     }
     showDeleteModal.value = false
     reviewToDelete.value = null
-    alert('Xóa đánh giá thành công!')
+    ElMessage.success('Xóa đánh giá thành công!')
   } catch (error) {
     console.error('Error deleting review:', error)
-    alert('Lỗi khi xóa đánh giá')
+    ElMessage.error('Lỗi khi xóa đánh giá')
   } finally {
     deleting.value = false
   }
@@ -606,16 +731,12 @@ const formatDate = (dateString) => {
 }
 
 const handleImageError = (e) => {
-  e.target.src = 'https://via.placeholder.com/200?text=No+Image'
+  e.target.src = '/placeholder-image.png'
 }
 
 // Lifecycle
 onMounted(() => {
-  loading.value = true
-  // TODO: Fetch reviews from API
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
+  loadReviews()
 })
 </script>
 

@@ -440,8 +440,8 @@ const getDeleteWarning = (categoryId) => {
 const fetchCategories = async () => {
   try {
     loading.value = true
-    await adminStore.fetchCategories()
-    categories.value = adminStore.categories
+    const result = await adminStore.fetchCategories()
+    categories.value = result.content || result || []
   } catch (error) {
     console.error('Lỗi khi tải danh sách danh mục:', error)
     ElMessage.error({

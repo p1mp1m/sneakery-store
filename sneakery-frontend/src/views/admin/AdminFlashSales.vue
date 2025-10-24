@@ -373,6 +373,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
+const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -405,51 +409,8 @@ const formData = ref({
   endTime: ''
 })
 
-// Mock flash sales data
-const mockFlashSales = ref([
-  {
-    id: 1,
-    productId: 1,
-    productName: 'Nike Air Force 1',
-    productImage: 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-shoes-WrLlWX.png',
-    brandName: 'Nike',
-    originalPrice: 2500000,
-    discountPercentage: 30,
-    flashSalePrice: 1750000,
-    quantity: 50,
-    startTime: '2024-01-25T08:00:00',
-    endTime: '2024-01-25T20:00:00',
-    isActive: true
-  },
-  {
-    id: 2,
-    productId: 2,
-    productName: 'Adidas Ultraboost',
-    productImage: 'https://assets.adidas.com/images/w_600,f_auto,q_auto/1c7e3d5f5b1b4e7ba3b5af8d0126c1b7_9366/Ultraboost_Light_Shoes_White_GY9350_01_standard.jpg',
-    brandName: 'Adidas',
-    originalPrice: 4500000,
-    discountPercentage: 40,
-    flashSalePrice: 2700000,
-    quantity: 30,
-    startTime: '2024-01-26T10:00:00',
-    endTime: '2024-01-26T22:00:00',
-    isActive: true
-  },
-  {
-    id: 3,
-    productId: 3,
-    productName: 'Converse Chuck Taylor',
-    productImage: 'https://www.converse.com/dw/image/v2/BCZC_PRD/on/demandware.static/-/Sites-cnv-master-catalog/default/dw3f7e9c3e/images/a_107/M9160_A_107X1.jpg',
-    brandName: 'Converse',
-    originalPrice: 1500000,
-    discountPercentage: 25,
-    flashSalePrice: 1125000,
-    quantity: 100,
-    startTime: '2024-01-20T00:00:00',
-    endTime: '2024-01-22T23:59:59',
-    isActive: false
-  }
-])
+// Flash sales data
+const flashSales = ref([])
 
 // Computed
 const selectedProduct = computed(() => {
@@ -467,7 +428,7 @@ const flashSalePrice = computed(() => {
 })
 
 const filteredFlashSales = computed(() => {
-  let result = mockFlashSales.value
+  let result = flashSales.value
 
   // Filter by search
   if (searchKeyword.value) {
@@ -511,7 +472,7 @@ const totalPages = computed(() => {
 
 const activeFlashSalesCount = computed(() => {
   const now = new Date()
-  return mockFlashSales.value.filter(sale => {
+  return flashSales.value.filter(sale => {
     const start = new Date(sale.startTime)
     const end = new Date(sale.endTime)
     return now >= start && now <= end && sale.isActive
@@ -520,7 +481,7 @@ const activeFlashSalesCount = computed(() => {
 
 const upcomingFlashSalesCount = computed(() => {
   const now = new Date()
-  return mockFlashSales.value.filter(sale => {
+  return flashSales.value.filter(sale => {
     const start = new Date(sale.startTime)
     return now < start && sale.isActive
   }).length
@@ -528,17 +489,122 @@ const upcomingFlashSalesCount = computed(() => {
 
 const expiredFlashSalesCount = computed(() => {
   const now = new Date()
-  return mockFlashSales.value.filter(sale => {
+  return flashSales.value.filter(sale => {
     const end = new Date(sale.endTime)
     return now > end || !sale.isActive
   }).length
 })
 
 const totalProductsInSale = computed(() => {
-  return new Set(mockFlashSales.value.map(s => s.productId)).size
+  return new Set(flashSales.value.map(s => s.productId)).size
 })
 
 // Methods
+const loadFlashSales = async () => {
+  try {
+    loading.value = true
+    
+    // Mock data cho flash sales
+    const mockFlashSales = [
+      {
+        id: 1,
+        productId: 1,
+        productName: 'Nike Air Max 270',
+        productImage: '/placeholder-image.png',
+        originalPrice: 3000000,
+        flashSalePrice: 1500000,
+        discountPercent: 50,
+        startTime: '2024-01-15T08:00:00Z',
+        endTime: '2024-01-15T20:00:00Z',
+        isActive: true,
+        maxQuantity: 100,
+        soldQuantity: 45,
+        createdAt: '2024-01-14T10:00:00Z'
+      },
+      {
+        id: 2,
+        productId: 2,
+        productName: 'Adidas Ultraboost 22',
+        productImage: '/placeholder-image.png',
+        originalPrice: 3500000,
+        flashSalePrice: 2100000,
+        discountPercent: 40,
+        startTime: '2024-01-16T09:00:00Z',
+        endTime: '2024-01-16T21:00:00Z',
+        isActive: true,
+        maxQuantity: 80,
+        soldQuantity: 0,
+        createdAt: '2024-01-15T10:00:00Z'
+      },
+      {
+        id: 3,
+        productId: 3,
+        productName: 'Jordan 1 Retro',
+        productImage: '/placeholder-image.png',
+        originalPrice: 4000000,
+        flashSalePrice: 2400000,
+        discountPercent: 40,
+        startTime: '2024-01-10T08:00:00Z',
+        endTime: '2024-01-10T20:00:00Z',
+        isActive: false,
+        maxQuantity: 50,
+        soldQuantity: 50,
+        createdAt: '2024-01-09T10:00:00Z'
+      },
+      {
+        id: 4,
+        productId: 4,
+        productName: 'Converse Chuck Taylor',
+        productImage: '/placeholder-image.png',
+        originalPrice: 1200000,
+        flashSalePrice: 600000,
+        discountPercent: 50,
+        startTime: '2024-01-17T10:00:00Z',
+        endTime: '2024-01-17T22:00:00Z',
+        isActive: true,
+        maxQuantity: 200,
+        soldQuantity: 0,
+        createdAt: '2024-01-16T10:00:00Z'
+      }
+    ]
+    
+    // Apply filters
+    let filteredFlashSales = mockFlashSales
+    
+    if (searchKeyword.value) {
+      filteredFlashSales = filteredFlashSales.filter(sale => 
+        sale.productName.toLowerCase().includes(searchKeyword.value.toLowerCase())
+      )
+    }
+    
+    if (filterStatus.value !== 'all') {
+      const now = new Date()
+      filteredFlashSales = filteredFlashSales.filter(sale => {
+        const start = new Date(sale.startTime)
+        const end = new Date(sale.endTime)
+        
+        if (filterStatus.value === 'active') {
+          return sale.isActive && now >= start && now <= end
+        } else if (filterStatus.value === 'upcoming') {
+          return sale.isActive && now < start
+        } else if (filterStatus.value === 'expired') {
+          return !sale.isActive || now > end
+        }
+        return true
+      })
+    }
+    
+    flashSales.value = filteredFlashSales
+    
+    console.log('✅ Flash sales loaded successfully')
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách flash sales:', error)
+    ElMessage.error('Không thể tải danh sách flash sales')
+  } finally {
+    loading.value = false
+  }
+}
+
 const getStatusClass = (sale) => {
   const now = new Date()
   const start = new Date(sale.startTime)
@@ -613,47 +679,28 @@ const closeModal = () => {
 const saveFlashSale = async () => {
   saving.value = true
   try {
-    // TODO: Call API to save flash sale
-    if (isEditMode.value) {
-      const index = mockFlashSales.value.findIndex(s => s.id === formData.value.id)
-      if (index > -1) {
-        const product = selectedProduct.value
-        mockFlashSales.value[index] = {
-          ...mockFlashSales.value[index],
-          productId: formData.value.productId,
-          productName: product.name,
-          brandName: product.brandName,
-          originalPrice: product.price,
-          discountPercentage: formData.value.discountPercentage,
-          flashSalePrice: flashSalePrice.value,
-          quantity: formData.value.quantity,
-          startTime: formData.value.startTime + ':00',
-          endTime: formData.value.endTime + ':00'
-        }
-      }
-    } else {
-      const product = selectedProduct.value
-      const newSale = {
-        id: mockFlashSales.value.length + 1,
-        productId: formData.value.productId,
-        productName: product.name,
-        productImage: 'https://via.placeholder.com/200',
-        brandName: product.brandName,
-        originalPrice: product.price,
-        discountPercentage: formData.value.discountPercentage,
-        flashSalePrice: flashSalePrice.value,
-        quantity: formData.value.quantity,
-        startTime: formData.value.startTime + ':00',
-        endTime: formData.value.endTime + ':00',
-        isActive: true
-      }
-      mockFlashSales.value.push(newSale)
+    const product = selectedProduct.value
+    const flashSaleData = {
+      productId: formData.value.productId,
+      discountPercentage: formData.value.discountPercentage,
+      quantity: formData.value.quantity,
+      startTime: formData.value.startTime + ':00',
+      endTime: formData.value.endTime + ':00'
     }
+    
+    if (isEditMode.value) {
+      await adminStore.updateFlashSale(formData.value.id, flashSaleData)
+      ElMessage.success('Cập nhật Flash Sale thành công!')
+    } else {
+      await adminStore.createFlashSale(flashSaleData)
+      ElMessage.success('Tạo Flash Sale thành công!')
+    }
+    
     closeModal()
-    alert(`${isEditMode.value ? 'Cập nhật' : 'Tạo'} Flash Sale thành công!`)
+    loadFlashSales()
   } catch (error) {
     console.error('Error saving flash sale:', error)
-    alert('Lỗi khi lưu Flash Sale')
+    ElMessage.error('Lỗi khi lưu Flash Sale')
   } finally {
     saving.value = false
   }
@@ -667,17 +714,14 @@ const confirmDelete = (sale) => {
 const deleteFlashSale = async () => {
   deleting.value = true
   try {
-    // TODO: Call API to delete flash sale
-    const index = mockFlashSales.value.findIndex(s => s.id === saleToDelete.value.id)
-    if (index > -1) {
-      mockFlashSales.value.splice(index, 1)
-    }
+    await adminStore.deleteFlashSale(saleToDelete.value.id)
     showDeleteModal.value = false
     saleToDelete.value = null
-    alert('Xóa Flash Sale thành công!')
+    ElMessage.success('Xóa Flash Sale thành công!')
+    loadFlashSales()
   } catch (error) {
     console.error('Error deleting flash sale:', error)
-    alert('Lỗi khi xóa Flash Sale')
+    ElMessage.error('Lỗi khi xóa Flash Sale')
   } finally {
     deleting.value = false
   }
@@ -709,16 +753,12 @@ const formatDateTime = (dateString) => {
 }
 
 const handleImageError = (e) => {
-  e.target.src = 'https://via.placeholder.com/200?text=No+Image'
+  e.target.src = '/placeholder-image.png'
 }
 
 // Lifecycle
 onMounted(() => {
-  loading.value = true
-  // TODO: Fetch flash sales from API
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
+  loadFlashSales()
 })
 </script>
 

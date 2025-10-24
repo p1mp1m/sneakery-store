@@ -406,6 +406,10 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
+const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -445,39 +449,101 @@ const formData = reactive({
 const fetchNotifications = async () => {
   try {
     loading.value = true
-    // TODO: Call API
-    // Mock data
-    notifications.value = [
+    
+    // Mock data cho notifications
+    const mockNotifications = [
       {
         id: 1,
-        type: 'promotion',
-        title: 'Flash Sale Cuối Tuần - Giảm đến 50%',
-        message: 'Chương trình Flash Sale lớn nhất trong tháng! Giảm giá lên đến 50% cho tất cả sản phẩm Nike, Adidas. Nhanh tay đặt hàng ngay!',
-        link: '/promotions/flash-sale',
-        recipientType: 'all',
-        recipientCount: 1500,
-        openedCount: 876,
+        type: 'order',
+        title: 'Đơn hàng mới #ORD001',
+        message: 'Bạn có đơn hàng mới từ khách hàng Nguyễn Văn A',
         status: 'sent',
-        sentAt: '2025-01-20T09:00:00',
-        createdAt: '2025-01-19T14:00:00'
+        createdAt: '2024-01-15T10:30:00Z',
+        scheduledAt: null,
+        sentAt: '2024-01-15T10:30:00Z',
+        openedCount: 1,
+        targetUsers: 1,
+        priority: 'high'
       },
       {
         id: 2,
+        type: 'promotion',
+        title: 'Flash Sale 50%',
+        message: 'Chương trình flash sale giảm giá 50% cho tất cả sản phẩm Nike',
+        status: 'scheduled',
+        createdAt: '2024-01-15T09:00:00Z',
+        scheduledAt: '2024-01-16T08:00:00Z',
+        sentAt: null,
+        openedCount: 0,
+        targetUsers: 1000,
+        priority: 'medium'
+      },
+      {
+        id: 3,
         type: 'system',
         title: 'Bảo trì hệ thống',
-        message: 'Hệ thống sẽ bảo trì từ 2h-4h sáng ngày 22/01/2025. Vui lòng hoàn tất giao dịch trước thời gian này.',
-        link: null,
-        recipientType: 'all',
-        recipientCount: null,
-        openedCount: null,
-        status: 'scheduled',
-        scheduledAt: '2025-01-21T18:00:00',
-        createdAt: '2025-01-20T10:00:00'
+        message: 'Hệ thống sẽ bảo trì từ 2:00 - 4:00 ngày mai',
+        status: 'sent',
+        createdAt: '2024-01-15T08:00:00Z',
+        scheduledAt: null,
+        sentAt: '2024-01-15T08:00:00Z',
+        openedCount: 5,
+        targetUsers: 5,
+        priority: 'high'
+      },
+      {
+        id: 4,
+        type: 'marketing',
+        title: 'Khuyến mãi cuối tuần',
+        message: 'Giảm giá 30% cho tất cả sản phẩm Adidas cuối tuần này',
+        status: 'failed',
+        createdAt: '2024-01-14T15:00:00Z',
+        scheduledAt: '2024-01-14T16:00:00Z',
+        sentAt: null,
+        openedCount: 0,
+        targetUsers: 500,
+        priority: 'low'
+      },
+      {
+        id: 5,
+        type: 'order',
+        title: 'Đơn hàng đã hủy #ORD002',
+        message: 'Đơn hàng #ORD002 đã được hủy bởi khách hàng',
+        status: 'sent',
+        createdAt: '2024-01-14T14:30:00Z',
+        scheduledAt: null,
+        sentAt: '2024-01-14T14:30:00Z',
+        openedCount: 1,
+        targetUsers: 1,
+        priority: 'medium'
       }
     ]
+    
+    // Apply filters
+    let filteredNotifications = mockNotifications
+    
+    if (filters.search) {
+      filteredNotifications = filteredNotifications.filter(n => 
+        n.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+        n.message.toLowerCase().includes(filters.search.toLowerCase())
+      )
+    }
+    
+    if (filters.type) {
+      filteredNotifications = filteredNotifications.filter(n => n.type === filters.type)
+    }
+    
+    if (filters.status) {
+      filteredNotifications = filteredNotifications.filter(n => n.status === filters.status)
+    }
+    
+    notifications.value = filteredNotifications
     updateStats()
+    
+    console.log('✅ Notifications loaded successfully')
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
+    ElMessage.error('Không thể tải danh sách thông báo')
   } finally {
     loading.value = false
   }
@@ -525,24 +591,57 @@ const editNotification = (item) => {
 const saveNotification = async () => {
   try {
     saving.value = true
-    // TODO: Call API
-    console.log('Save notification:', formData)
-    alert('Lưu thành công!')
+    
+    const notificationData = {
+      type: formData.type,
+      title: formData.title,
+      message: formData.message,
+      link: formData.link || null,
+      recipientType: formData.recipientType,
+      role: formData.role || null,
+      recipientEmails: formData.recipientEmails || null,
+      scheduledAt: formData.sendTime === 'schedule' ? formData.scheduledAt : null
+    }
+    
+    if (editingNotification.value) {
+      await adminStore.updateNotification(editingNotification.value.id, notificationData)
+      ElMessage.success('Cập nhật thông báo thành công!')
+    } else {
+      await adminStore.createNotification(notificationData)
+      ElMessage.success('Tạo thông báo thành công!')
+    }
+    
     closeDialog()
     fetchNotifications()
   } catch (error) {
     console.error('Lỗi lưu:', error)
-    alert('Có lỗi xảy ra!')
+    ElMessage.error('Có lỗi xảy ra khi lưu thông báo!')
   } finally {
     saving.value = false
   }
 }
 
 const deleteNotification = async (item) => {
-  if (!confirm('Bạn có chắc muốn xóa thông báo này?')) return
-  // TODO: Call API
-  alert('Đã xóa!')
-  fetchNotifications()
+  try {
+    await ElMessageBox.confirm(
+      'Bạn có chắc muốn xóa thông báo này?',
+      'Xác nhận xóa',
+      {
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy',
+        type: 'warning'
+      }
+    )
+    
+    await adminStore.deleteNotification(item.id)
+    ElMessage.success('Đã xóa thông báo!')
+    fetchNotifications()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Lỗi xóa:', error)
+      ElMessage.error('Có lỗi xảy ra khi xóa thông báo!')
+    }
+  }
 }
 
 const closeDialog = () => {

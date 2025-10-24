@@ -535,7 +535,7 @@
                   v-model="variant.imageUrl"
                   type="text" 
                   class="form-control-sm"
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="/placeholder-image.png"
                 />
               </div>
             </div>
@@ -869,7 +869,20 @@ const fetchProducts = async () => {
   try {
     loading.value = true
     
-    const result = await adminStore.fetchProducts(currentPage.value, pageSize.value, filters.value)
+    // Prepare filters for API
+    const apiFilters = {
+      search: filters.value.search || undefined,
+      brandId: filters.value.brandId || undefined,
+      categoryId: filters.value.categoryId || undefined,
+      status: filters.value.status !== 'all' ? filters.value.status : undefined,
+      minPrice: filters.value.minPrice || undefined,
+      maxPrice: filters.value.maxPrice || undefined,
+      stockLevel: filters.value.stockLevel !== 'all' ? filters.value.stockLevel : undefined,
+      sortBy: sortBy.value || undefined,
+      sortDirection: sortOrder.value || undefined
+    }
+    
+    const result = await adminStore.fetchProducts(currentPage.value, pageSize.value, apiFilters)
     products.value = result.content || []
     totalItems.value = result.totalElements || 0
     
@@ -1185,7 +1198,7 @@ const downloadTemplate = () => {
       'Giá gốc': '2500000',
       'Giá sale': '2000000',
       'Tồn kho': '50',
-      'URL ảnh': 'https://example.com/image.jpg'
+      'URL ảnh': '/placeholder-image.png'
     }
   ]
   

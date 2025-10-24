@@ -181,7 +181,7 @@
       </div>
       <div v-else class="products-grid">
         <div v-for="product in recommendedProducts" :key="product.id" class="product-item">
-          <img :src="product.imageUrl || 'https://via.placeholder.com/200'" :alt="product.name" class="product-image" />
+          <img :src="product.imageUrl || '/placeholder-image.png'" :alt="product.name" class="product-image" />
           <div class="product-info">
             <h4 class="product-name">{{ product.name }}</h4>
             <p class="product-brand">{{ product.brandName }}</p>
@@ -299,21 +299,21 @@ const loadDashboardData = async () => {
         name: 'Nike Air Force 1',
         brandName: 'Nike',
         price: 2500000,
-        imageUrl: 'https://via.placeholder.com/200'
+        imageUrl: '/placeholder-image.png'
       },
       {
         id: 2,
         name: 'Adidas Ultraboost 22',
         brandName: 'Adidas',
         price: 3200000,
-        imageUrl: 'https://via.placeholder.com/200'
+        imageUrl: '/placeholder-image.png'
       },
       {
         id: 3,
         name: 'Converse Chuck Taylor',
         brandName: 'Converse',
         price: 1200000,
-        imageUrl: 'https://via.placeholder.com/200'
+        imageUrl: '/placeholder-image.png'
       }
     ];
   } catch (error) {

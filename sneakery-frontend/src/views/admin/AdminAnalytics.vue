@@ -268,29 +268,51 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
 import LineChart from '@/assets/components/charts/LineChart.vue'
 import BarChart from '@/assets/components/charts/BarChart.vue'
 import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue'
 
+const adminStore = useAdminStore()
+
 // Refs
+const loading = ref(false)
 const selectedPeriod = ref('30d')
 const revenueChartType = ref('day')
 
-// Mock data - Stats
-const totalRevenue = ref(458750000)
-const totalOrders = ref(1247)
-const newCustomers = ref(156)
-const avgOrderValue = ref(367890)
+// Analytics data
+const revenueData = ref([])
+const orderData = ref([])
+const productData = ref([])
+const customerData = ref([])
+const topProductsTable = ref([])
+
+// Computed
+const totalRevenue = computed(() => {
+  return revenueData.value.reduce((sum, item) => sum + item.revenue, 0)
+})
+
+const totalOrders = computed(() => {
+  return orderData.value.reduce((sum, item) => sum + item.orders, 0)
+})
+
+const newCustomers = computed(() => {
+  return customerData.value.reduce((sum, item) => sum + item.newCustomers, 0)
+})
+
+const avgOrderValue = computed(() => {
+  return totalOrders.value > 0 ? totalRevenue.value / totalOrders.value : 0
+})
 
 // Dữ liệu biểu đồ doanh thu
 const revenueChartData = computed(() => ({
-  labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+  labels: revenueData.value.map(item => item.date),
   datasets: [
     {
       label: 'Doanh thu (VNĐ)',
-      data: [12000000, 19000000, 15000000, 25000000, 22000000, 30000000, 28000000, 
-             18000000, 24000000, 20000000, 32000000, 27000000, 35000000, 31000000],
+      data: revenueData.value.map(item => item.revenue),
       borderColor: '#3b82f6',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       fill: true,
@@ -328,7 +350,7 @@ const revenueChartOptions = {
 }
 
 // Dữ liệu đơn hàng theo trạng thái
-const orderStatusData = {
+const orderStatusData = computed(() => ({
   labels: ['Hoàn thành', 'Đang xử lý', 'Đang giao', 'Đã hủy'],
   datasets: [{
     data: [650, 280, 230, 87],
@@ -340,7 +362,7 @@ const orderStatusData = {
     ],
     borderWidth: 0
   }]
-}
+}))
 
 const doughnutOptions = {
   responsive: true,
@@ -353,15 +375,15 @@ const doughnutOptions = {
 }
 
 // Top sản phẩm bán chạy (Bar chart)
-const topProductsData = {
-  labels: ['Nike Air Max', 'Adidas Ultra Boost', 'Vans Old Skool', 'Converse Chuck', 'New Balance 574'],
+const topProductsData = computed(() => ({
+  labels: topProductsTable.value.map(item => item.name),
   datasets: [{
     label: 'Số lượng bán',
-    data: [245, 198, 167, 143, 128],
+    data: topProductsTable.value.map(item => item.sold),
     backgroundColor: '#3b82f6',
     borderRadius: 8
   }]
-}
+}))
 
 const barChartOptions = {
   responsive: true,
@@ -380,11 +402,11 @@ const barChartOptions = {
 }
 
 // Doanh thu theo danh mục
-const categoryRevenueData = {
-  labels: ['Giày thể thao', 'Giày sneaker', 'Giày chạy bộ', 'Giày bóng rổ', 'Phụ kiện'],
+const categoryRevenueData = computed(() => ({
+  labels: productData.value.map(item => item.category),
   datasets: [{
     label: 'Doanh thu (Triệu VNĐ)',
-    data: [180, 145, 98, 76, 45],
+    data: productData.value.map(item => item.revenue),
     backgroundColor: [
       '#3b82f6',
       '#8b5cf6',
@@ -394,7 +416,7 @@ const categoryRevenueData = {
     ],
     borderRadius: 8
   }]
-}
+}))
 
 const categoryChartOptions = {
   responsive: true,
@@ -412,17 +434,17 @@ const categoryChartOptions = {
 }
 
 // Khách hàng mới
-const newCustomersData = {
-  labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
+const newCustomersData = computed(() => ({
+  labels: customerData.value.map(item => item.date),
   datasets: [{
     label: 'Khách hàng mới',
-    data: [32, 45, 38, 41],
+    data: customerData.value.map(item => item.newCustomers),
     borderColor: '#10b981',
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
     fill: true,
     tension: 0.4
   }]
-}
+}))
 
 const lineChartOptions = {
   responsive: true,
@@ -439,16 +461,74 @@ const lineChartOptions = {
   }
 }
 
-// Bảng top sản phẩm
-const topProductsTable = ref([
-  { name: 'Nike Air Max 270', category: 'Giày thể thao', sold: 245, revenue: 122500000, growth: 18.5 },
-  { name: 'Adidas Ultra Boost 21', category: 'Giày chạy bộ', sold: 198, revenue: 118800000, growth: 12.3 },
-  { name: 'Vans Old Skool', category: 'Giày sneaker', sold: 167, revenue: 83500000, growth: -3.2 },
-  { name: 'Converse Chuck Taylor', category: 'Giày sneaker', sold: 143, revenue: 57200000, growth: 8.7 },
-  { name: 'New Balance 574', category: 'Giày thể thao', sold: 128, revenue: 64000000, growth: 15.4 }
-])
-
 // Methods
+const loadAnalytics = async () => {
+  try {
+    loading.value = true
+    
+    // Mock data cho các APIs chưa sẵn sàng
+    const mockRevenueData = [
+      { date: '2024-01-01', revenue: 15000000 },
+      { date: '2024-01-02', revenue: 18000000 },
+      { date: '2024-01-03', revenue: 22000000 },
+      { date: '2024-01-04', revenue: 19000000 },
+      { date: '2024-01-05', revenue: 25000000 },
+      { date: '2024-01-06', revenue: 28000000 },
+      { date: '2024-01-07', revenue: 30000000 }
+    ]
+    
+    const mockOrderData = [
+      { date: '2024-01-01', orders: 45 },
+      { date: '2024-01-02', orders: 52 },
+      { date: '2024-01-03', orders: 68 },
+      { date: '2024-01-04', orders: 58 },
+      { date: '2024-01-05', orders: 72 },
+      { date: '2024-01-06', orders: 85 },
+      { date: '2024-01-07', orders: 92 }
+    ]
+    
+    const mockProductData = [
+      { category: 'Giày thể thao', revenue: 45000000 },
+      { category: 'Giày chạy bộ', revenue: 32000000 },
+      { category: 'Giày bóng đá', revenue: 28000000 },
+      { category: 'Giày bóng rổ', revenue: 25000000 },
+      { category: 'Giày lifestyle', revenue: 18000000 }
+    ]
+    
+    const mockCustomerData = [
+      { date: '2024-01-01', newCustomers: 12 },
+      { date: '2024-01-02', newCustomers: 15 },
+      { date: '2024-01-03', newCustomers: 18 },
+      { date: '2024-01-04', newCustomers: 14 },
+      { date: '2024-01-05', newCustomers: 20 },
+      { date: '2024-01-06', newCustomers: 22 },
+      { date: '2024-01-07', newCustomers: 25 }
+    ]
+    
+    const mockTopProducts = [
+      { name: 'Nike Air Max 270', sold: 156, revenue: 46800000 },
+      { name: 'Adidas Ultraboost 22', sold: 142, revenue: 42600000 },
+      { name: 'Jordan 1 Retro', sold: 128, revenue: 38400000 },
+      { name: 'Converse Chuck Taylor', sold: 115, revenue: 23000000 },
+      { name: 'Vans Old Skool', sold: 98, revenue: 19600000 }
+    ]
+    
+    // Set mock data
+    revenueData.value = mockRevenueData
+    orderData.value = mockOrderData
+    productData.value = mockProductData
+    customerData.value = mockCustomerData
+    topProductsTable.value = mockTopProducts
+    
+    console.log('✅ Analytics data loaded successfully')
+  } catch (error) {
+    console.error('Error loading analytics:', error)
+    ElMessage.error('Không thể tải dữ liệu phân tích')
+  } finally {
+    loading.value = false
+  }
+}
+
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
@@ -456,10 +536,10 @@ const formatCurrency = (value) => {
   }).format(value)
 }
 
-const loadAnalytics = () => {
-  // console.log('Loading analytics for period:', selectedPeriod.value) // Debug
-  // TODO: Call API to load analytics data
-}
+// Load data on mount
+onMounted(() => {
+  loadAnalytics()
+})
 </script>
 
 <style scoped>

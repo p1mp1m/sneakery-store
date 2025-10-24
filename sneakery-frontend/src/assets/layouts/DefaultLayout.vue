@@ -4,13 +4,13 @@
     <header class="navbar" :class="{ 'navbar-scrolled': isScrolled }">
       <div class="navbar-container">
         <!-- Logo/Brand -->
-        <router-link to="/" class="navbar-brand">
+        <router-link to="/home" class="navbar-brand">
           <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
         </router-link>
 
         <!-- Desktop Navigation -->
         <nav class="nav-links desktop-nav">
-          <router-link to="/" class="nav-link" active-class="nav-link-active">
+          <router-link to="/home" class="nav-link" active-class="nav-link-active">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -18,7 +18,7 @@
             <span>Trang Chủ</span>
           </router-link>
           
-          <router-link to="/products" class="nav-link" active-class="nav-link-active">
+          <router-link to="/home/products" class="nav-link" active-class="nav-link-active">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -144,14 +144,14 @@
       <!-- Mobile Navigation -->
       <nav class="mobile-nav" :class="{ 'show': showMobileMenu }">
         <div class="mobile-nav-content">
-          <router-link to="/" class="mobile-nav-link" @click="closeMobileMenu">
+          <router-link to="/home" class="mobile-nav-link" @click="closeMobileMenu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>Trang Chủ</span>
           </router-link>
           
-          <router-link to="/products" class="mobile-nav-link" @click="closeMobileMenu">
+          <router-link to="/home/products" class="mobile-nav-link" @click="closeMobileMenu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -229,8 +229,8 @@
             <div class="footer-column">
               <h4>Liên kết</h4>
               <ul>
-                <li><router-link to="/">Trang chủ</router-link></li>
-                <li><router-link to="/products">Sản phẩm</router-link></li>
+                <li><router-link to="/home">Trang chủ</router-link></li>
+                <li><router-link to="/home/products">Sản phẩm</router-link></li>
                 <li><a href="#">Về chúng tôi</a></li>
                 <li><a href="#">Liên hệ</a></li>
               </ul>

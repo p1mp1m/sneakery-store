@@ -9,7 +9,7 @@
           class="compact"
         />
         
-        <img :src="product.imageUrl || 'https://placehold.co/400'" class="product-image" :alt="product.name" />
+        <img :src="product.imageUrl || '/placeholder-image.png'" class="product-image" :alt="product.name" />
       <div class="product-overlay">
         <button class="btn-icon btn-favorite" @click="toggleFavorite">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

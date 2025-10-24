@@ -573,8 +573,9 @@ const updateDateTime = () => {
 const loadDashboardData = async (silent = false) => {
   if (!silent) loading.value = true;
   try {
-    await adminStore.fetchDashboardStats();
-    stats.value = adminStore.dashboardStats || {
+    // Fetch dashboard stats from API
+    const response = await adminStore.fetchDashboardStats();
+    stats.value = response || {
       totalRevenue: 0,
       totalOrders: 0,
       totalProducts: 0,

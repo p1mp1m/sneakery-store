@@ -509,27 +509,21 @@ class AdminService {
     }
   }
 
-  async approveReturn(id) {
+  async updateReturnStatus(id, status, adminNote = '') {
     try {
-      const response = await adminApi.put(`/returns/${id}/approve`)
+      const response = await adminApi.put(`/returns/${id}/status`, { 
+        status, 
+        adminNote 
+      })
       return response.data
     } catch (error) {
       throw this.handleError(error)
     }
   }
 
-  async rejectReturn(id, reason) {
+  async processRefund(id) {
     try {
-      const response = await adminApi.put(`/returns/${id}/reject`, { reason })
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  async updateReturnStatus(id, status) {
-    try {
-      const response = await adminApi.put(`/returns/${id}/status`, { status })
+      const response = await adminApi.post(`/returns/${id}/refund`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -567,18 +561,24 @@ class AdminService {
     }
   }
 
-  async approveWarranty(id) {
+  async updateWarrantyStatus(id, status, adminNote = '') {
     try {
-      const response = await adminApi.put(`/warranties/${id}/approve`)
+      const response = await adminApi.put(`/warranties/${id}/status`, { 
+        status, 
+        adminNote 
+      })
       return response.data
     } catch (error) {
       throw this.handleError(error)
     }
   }
 
-  async updateWarrantyStatus(id, status) {
+  async processWarranty(id, resolutionNote, warrantyType) {
     try {
-      const response = await adminApi.put(`/warranties/${id}/status`, { status })
+      const response = await adminApi.post(`/warranties/${id}/process`, {
+        resolutionNote,
+        warrantyType
+      })
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -646,6 +646,467 @@ class AdminService {
   async sendNotification(id) {
     try {
       const response = await adminApi.post(`/notifications/${id}/send`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== REVIEWS =====
+  async getReviews(page = 0, size = 10, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/reviews?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getReviewById(id) {
+    try {
+      const response = await adminApi.get(`/reviews/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateReviewStatus(id, isApproved) {
+    try {
+      const response = await adminApi.put(`/reviews/${id}/status?isApproved=${isApproved}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteReview(id) {
+    try {
+      const response = await adminApi.delete(`/reviews/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async replyToReview(id, replyText) {
+    try {
+      const response = await adminApi.post(`/reviews/${id}/reply`, { replyText })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== FLASH SALES =====
+  async getFlashSales() {
+    try {
+      const response = await adminApi.get('/flash-sales')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getFlashSaleById(id) {
+    try {
+      const response = await adminApi.get(`/flash-sales/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createFlashSale(flashSaleData) {
+    try {
+      const response = await adminApi.post('/flash-sales', flashSaleData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateFlashSale(id, flashSaleData) {
+    try {
+      const response = await adminApi.put(`/flash-sales/${id}`, flashSaleData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteFlashSale(id) {
+    try {
+      const response = await adminApi.delete(`/flash-sales/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== PRODUCT VARIANTS =====
+  async getProductVariants(page = 0, size = 10, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/product-variants?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getProductVariantById(id) {
+    try {
+      const response = await adminApi.get(`/product-variants/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createProductVariant(variantData) {
+    try {
+      const response = await adminApi.post('/product-variants', variantData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateProductVariant(id, variantData) {
+    try {
+      const response = await adminApi.put(`/product-variants/${id}`, variantData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteProductVariant(id) {
+    try {
+      const response = await adminApi.delete(`/product-variants/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateVariantStock(id, stockData) {
+    try {
+      const response = await adminApi.put(`/product-variants/${id}/stock`, stockData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== ACTIVITY LOGS =====
+  async getActivityLogs(page = 0, size = 10, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/activity-logs?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async exportActivityLogs(format = 'csv', filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        format,
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/activity-logs/export?${params}`, {
+        responseType: 'blob'
+      })
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== EMAIL TEMPLATES =====
+  async getEmailTemplates(page = 0, size = 10, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/email-templates?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getEmailTemplateById(id) {
+    try {
+      const response = await adminApi.get(`/email-templates/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createEmailTemplate(templateData) {
+    try {
+      const response = await adminApi.post('/email-templates', templateData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateEmailTemplate(id, templateData) {
+    try {
+      const response = await adminApi.put(`/email-templates/${id}`, templateData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteEmailTemplate(id) {
+    try {
+      const response = await adminApi.delete(`/email-templates/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async sendTestEmail(id, testData) {
+    try {
+      const response = await adminApi.post(`/email-templates/${id}/test`, testData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== INVENTORY =====
+  async getInventory(page = 0, size = 10, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/inventory?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getInventoryLogs(page = 0, size = 10, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/inventory/logs?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async adjustStock(adjustmentData) {
+    try {
+      const response = await adminApi.post('/inventory/adjust', adjustmentData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== LOYALTY =====
+  async getLoyaltyUsers(page = 0, size = 10, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/loyalty/users?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async adjustLoyaltyPoints(userId, adjustmentData) {
+    try {
+      const response = await adminApi.post(`/loyalty/users/${userId}/adjust`, adjustmentData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getLoyaltyStats() {
+    try {
+      const response = await adminApi.get('/loyalty/stats')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== PAYMENTS =====
+  async getPayments(page = 0, size = 10, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/payments?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getPaymentById(id) {
+    try {
+      const response = await adminApi.get(`/payments/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async refundPayment(id, refundData) {
+    try {
+      const response = await adminApi.post(`/payments/${id}/refund`, refundData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getPaymentStats() {
+    try {
+      const response = await adminApi.get('/payments/stats')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== ANALYTICS (Bổ sung) =====
+  async getProductAnalytics(period = '30d') {
+    try {
+      const response = await adminApi.get(`/analytics/products?period=${period}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getCustomerAnalytics(period = '30d') {
+    try {
+      const response = await adminApi.get(`/analytics/customers?period=${period}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== SETTINGS =====
+  async getSettings() {
+    try {
+      const response = await adminApi.get('/settings')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateSettings(settingsData) {
+    try {
+      const response = await adminApi.put('/settings', settingsData)
       return response.data
     } catch (error) {
       throw this.handleError(error)

@@ -104,7 +104,7 @@
               :key="item.variantId"
               class="order-item"
             >
-              <img :src="item.imageUrl || 'https://placehold.co/80'" :alt="item.productName" />
+              <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.productName" />
               <div class="item-info">
                 <h5>{{ item.productName }}</h5>
                 <p class="item-brand">{{ item.brandName }}</p>

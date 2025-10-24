@@ -322,7 +322,15 @@ const executeBulkAction = async () => {
 const fetchUsers = async () => {
   try {
     loading.value = true
-    const result = await adminStore.fetchUsers(currentPage.value, pageSize.value, filters.value)
+    
+    // Prepare filters for API
+    const apiFilters = {
+      search: filters.value.search || undefined,
+      role: filters.value.role || undefined,
+      isActive: filters.value.isActive !== '' ? filters.value.isActive : undefined
+    }
+    
+    const result = await adminStore.fetchUsers(currentPage.value, pageSize.value, apiFilters)
     users.value = result.content || []
     totalItems.value = result.totalElements || 0
   } catch (error) {

@@ -16,9 +16,14 @@ import adminRoutes from './adminRoutes';
 import userRoutes from './userRoutes';
 
 const routes = [
-  // Routes với DefaultLayout (Public pages)
+  // Default route - redirect to login
   {
     path: '/',
+    redirect: '/login'
+  },
+  // Routes với DefaultLayout (Public pages)
+  {
+    path: '/home',
     component: DefaultLayout,
     children: [
       {
@@ -84,6 +89,18 @@ router.beforeEach(async (to, from, next) => {
   // ====== 3. KIỂM TRA LOGIN/REGISTER ======
   // Nếu đã đăng nhập mà vào login/register → redirect về dashboard tương ứng
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
+    const user = authStore.currentUser;
+    if (user && (user.role === 'ADMIN' || user.role === 'MODERATOR')) {
+      next({ path: '/admin/dashboard' });
+    } else {
+      next({ path: '/user/dashboard' });
+    }
+    return;
+  }
+
+  // ====== 3.1. KIỂM TRA TRANG HOME ======
+  // Nếu đã đăng nhập mà vào trang home → redirect về dashboard tương ứng
+  if (to.name === 'home' && authStore.isAuthenticated) {
     const user = authStore.currentUser;
     if (user && (user.role === 'ADMIN' || user.role === 'MODERATOR')) {
       next({ path: '/admin/dashboard' });

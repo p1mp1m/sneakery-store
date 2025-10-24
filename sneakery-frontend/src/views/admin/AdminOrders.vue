@@ -314,7 +314,14 @@ const bulkUpdateStatus = async () => {
 const fetchOrders = async () => {
   try {
     loading.value = true
-    const result = await adminStore.fetchOrders(currentPage.value, pageSize.value, filters.value)
+    
+    // Prepare filters for API
+    const apiFilters = {
+      search: filters.value.search || undefined,
+      status: filters.value.status || undefined
+    }
+    
+    const result = await adminStore.fetchOrders(currentPage.value, pageSize.value, apiFilters)
     orders.value = result.content || []
     totalItems.value = result.totalElements || 0
   } catch (error) {

@@ -252,7 +252,7 @@
                 type="url" 
                 class="form-control" 
                 v-model="formData.logoUrl"
-                placeholder="https://example.com/logo.png"
+                placeholder="/placeholder-image.png"
               />
             </div>
 
@@ -411,8 +411,8 @@ const inactiveBrandsCount = computed(() => {
 const fetchBrands = async () => {
   loading.value = true
   try {
-    await adminStore.fetchBrands()
-    brands.value = adminStore.brands
+    const result = await adminStore.fetchBrands()
+    brands.value = result.content || result || []
   } catch (error) {
     console.error('Error fetching brands:', error)
     alert('Lỗi khi tải danh sách thương hiệu')

@@ -29,7 +29,7 @@
             class="cart-item"
           >
             <div class="item-image">
-              <img :src="item.imageUrl || 'https://placehold.co/150'" :alt="item.productName" />
+              <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.productName" />
             </div>
 
             <div class="item-info">
