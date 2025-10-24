@@ -28,95 +28,57 @@
       </div>
     </div>
 
-    <!-- Enhanced Stats Grid -->
-    <div class="stats-grid animate-fade-up">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-warning)">
-          <span class="material-icons">schedule</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.pending }}</div>
-          <div class="stat-label">Chờ xử lý</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-info)">
-          <span class="material-icons">build</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.inProgress }}</div>
-          <div class="stat-label">Đang sửa chữa</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-success)">
-          <span class="material-icons">done_all</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.completed }}</div>
-          <div class="stat-label">Hoàn thành</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-danger)">
-          <span class="material-icons">highlight_off</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.rejected }}</div>
-          <div class="stat-label">Từ chối</div>
-        </div>
-      </div>
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <StatsCard
+        icon="schedule"
+        :value="stats.pending"
+        label="Chờ xử lý"
+        variant="warning"
+      />
+      <StatsCard
+        icon="build"
+        :value="stats.inProgress"
+        label="Đang sửa chữa"
+        variant="info"
+      />
+      <StatsCard
+        icon="done_all"
+        :value="stats.completed"
+        label="Hoàn thành"
+        variant="success"
+      />
+      <StatsCard
+        icon="highlight_off"
+        :value="stats.rejected"
+        label="Từ chối"
+        variant="danger"
+      />
     </div>
     
     <!-- Bulk Actions Bar -->
-    <transition name="slide-down">
-      <div v-if="showBulkActions && selectedWarranties.length > 0" class="bulk-actions-bar">
-        <div class="bulk-info">
-          <span class="material-icons">check_circle</span>
-          <span class="bulk-count">{{ selectedWarranties.length }} mục đã chọn</span>
-        </div>
-        
-        <div class="bulk-buttons">
-          <button @click="bulkApprove" class="btn btn-success btn-sm">
-            <span class="material-icons">check</span>
-            Chấp nhận
-          </button>
-          <button @click="bulkReject" class="btn btn-danger btn-sm">
-            <span class="material-icons">close</span>
-            Từ chối
-          </button>
-          <button @click="clearSelection" class="btn btn-secondary btn-sm">
-            <span class="material-icons">clear</span>
-            Bỏ chọn
-          </button>
-        </div>
-      </div>
-    </transition>
+    <BulkActions
+      v-if="showBulkActions && selectedWarranties.length > 0"
+      :selected-count="selectedWarranties.length"
+      :actions="bulkActions"
+      v-model:selected-action="bulkAction"
+      @execute="executeBulkAction"
+      @clear="clearSelection"
+    />
 
-    <!-- Enhanced Filters -->
-    <div class="filters-section">
-      <div class="filter-row">
+    <!-- Filters -->
+    <FilterBar
+      v-model:search="filters.search"
+      search-placeholder="Tìm theo mã, khách hàng, sản phẩm..."
+      @search="handleSearch"
+      @reset="resetFilters"
+    >
+      <template #filters>
         <div class="filter-group">
-          <label>Tìm kiếm</label>
-          <div class="search-box">
-            <span class="material-icons search-icon">search</span>
-            <input 
-              v-model="filters.search"
-              type="text" 
-              class="search-input" 
-              placeholder="Tìm theo mã, khách hàng, sản phẩm..."
-              @input="handleSearch"
-            />
-            <button v-if="filters.search" @click="filters.search = ''" class="search-clear">
-              <span class="material-icons">close</span>
-            </button>
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Trạng thái</label>
+          <label class="filter-label">
+            <span class="material-icons">check_circle</span>
+            Trạng thái
+          </label>
           <select v-model="filters.status" @change="fetchWarranties" class="form-control">
             <option value="">Tất cả</option>
             <option value="pending">Chờ xử lý</option>
@@ -127,7 +89,10 @@
           </select>
         </div>
         <div class="filter-group">
-          <label>Loại bảo hành</label>
+          <label class="filter-label">
+            <span class="material-icons">build</span>
+            Loại bảo hành
+          </label>
           <select v-model="filters.type" @change="fetchWarranties" class="form-control">
             <option value="">Tất cả</option>
             <option value="repair">Sửa chữa</option>
@@ -135,28 +100,19 @@
             <option value="refund">Hoàn tiền</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label>&nbsp;</label>
-          <button @click="resetFilters" class="btn btn-secondary">
-            <span class="material-icons">refresh</span>
-            Xóa bộ lọc
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </FilterBar>
 
     <!-- Table -->
     <div class="table-container">
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
-      </div>
+      <LoadingState v-if="loading" />
 
-      <div v-else-if="warranties.length === 0" class="empty-state">
-        <i class="material-icons">verified_user</i>
-        <h3>Chưa có yêu cầu bảo hành</h3>
-        <p>Danh sách yêu cầu bảo hành sẽ hiển thị ở đây</p>
-      </div>
+      <EmptyState
+        v-else-if="warranties.length === 0"
+        icon="verified_user"
+        title="Chưa có yêu cầu bảo hành"
+        description="Danh sách yêu cầu bảo hành sẽ hiển thị ở đây"
+      />
 
       <table v-else class="admin-table">
         <thead>
@@ -389,6 +345,11 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
 import { useAdminStore } from '@/stores/admin'
+import StatsCard from '@/assets/components/admin/StatsCard.vue'
+import FilterBar from '@/assets/components/admin/FilterBar.vue'
+import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
+import EmptyState from '@/assets/components/admin/EmptyState.vue'
+import BulkActions from '@/assets/components/admin/BulkActions.vue'
 
 const adminStore = useAdminStore()
 
@@ -402,6 +363,7 @@ const warranties = ref([])
 const selectedWarranties = ref([])
 const uploadedFiles = ref([])
 const fileInput = ref(null)
+const bulkAction = ref('')
 
 const filters = reactive({
   search: '',
@@ -420,6 +382,14 @@ const stats = reactive({
 const isAllSelected = computed(() => {
   return warranties.value.length > 0 && selectedWarranties.value.length === warranties.value.length
 })
+
+// Bulk actions configuration
+const bulkActions = computed(() => [
+  { value: 'approve', label: 'Chấp nhận', icon: 'check' },
+  { value: 'reject', label: 'Từ chối', icon: 'close' },
+  { value: 'in_progress', label: 'Đang sửa chữa', icon: 'build' },
+  { value: 'completed', label: 'Hoàn thành', icon: 'done_all' }
+])
 
 // Methods
 const fetchWarranties = async () => {
@@ -613,6 +583,26 @@ const toggleSelectAll = () => {
 const clearSelection = () => {
   selectedWarranties.value = []
   showBulkActions.value = false
+}
+
+// Execute bulk action based on selected action
+const executeBulkAction = async () => {
+  if (!bulkAction.value) {
+    ElMessage.warning('Vui lòng chọn hành động!')
+    return
+  }
+
+  const actionMap = {
+    'approve': bulkApprove,
+    'reject': bulkReject,
+    'in_progress': bulkInProgress,
+    'completed': bulkComplete
+  }
+
+  const action = actionMap[bulkAction.value]
+  if (action) {
+    await action()
+  }
 }
 
 // Bulk Actions

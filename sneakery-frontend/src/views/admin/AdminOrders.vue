@@ -39,7 +39,7 @@
       <div class="filter-controls">
         <div class="filter-group">
           <label>Trạng thái</label>
-          <select v-model="filters.status" @change="applyFilters" class="filter-select">
+          <select v-model="filters.status" @change="applyFilters" class="form-control status-select">
             <option value="">Tất cả</option>
             <option value="Pending">Chờ xử lý</option>
             <option value="Processing">Đang xử lý</option>
@@ -75,7 +75,7 @@
         Đã chọn <strong>{{ selectedOrders.length }}</strong> đơn hàng
       </div>
       <div class="bulk-actions">
-        <select v-model="bulkStatus" class="bulk-status-select">
+        <select v-model="bulkStatus" class="form-control status-select">
           <option value="">-- Chọn trạng thái mới --</option>
           <option value="Pending">Chờ xử lý</option>
           <option value="Processing">Đang xử lý</option>
@@ -460,6 +460,7 @@ const getStatusLabel = (status) => {
   return labels[status] || status
 }
 
+
 const viewOrderDetail = (order) => {
   selectedOrder.value = order
   showDetailModal.value = true
@@ -578,48 +579,6 @@ onMounted(() => {
   align-items: center;
 }
 
-.bulk-status-select {
-  padding: var(--space-2) var(--space-4);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
-}
-
-.bulk-status-select:hover {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: var(--border-hover);
-}
-
-.bulk-status-select:focus {
-  outline: none;
-  background: rgba(15, 23, 42, 0.9);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
-}
-
-.bulk-status-select option {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  padding: var(--space-3);
-  font-weight: var(--font-medium);
-}
-
-.bulk-status-select option:hover {
-  background: rgba(167, 139, 250, 0.15);
-  color: var(--accent-primary);
-}
-
-.bulk-status-select option:checked {
-  background: var(--accent-primary);
-  color: var(--color-white);
-  font-weight: var(--font-semibold);
-}
 
 .bulk-actions .btn {
   border: 2px solid rgba(255, 255, 255, 0.8);
@@ -765,50 +724,6 @@ onMounted(() => {
   margin-bottom: var(--space-2);
 }
 
-.filter-select {
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-  background: rgba(15, 23, 42, 0.6);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.filter-select:hover {
-  border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.filter-select:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.9);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
-}
-
-.filter-select option {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  padding: var(--space-3);
-  font-weight: var(--font-medium);
-}
-
-.filter-select option:hover {
-  background: rgba(167, 139, 250, 0.15);
-  color: var(--accent-primary);
-}
-
-.filter-select option:checked {
-  background: var(--accent-primary);
-  color: var(--color-white);
-  font-weight: var(--font-semibold);
-}
 
 .btn-reset {
   display: flex;
@@ -938,82 +853,120 @@ code {
 
 /* ===== STATUS SELECT ===== */
 .status-select {
-  padding: var(--space-2) var(--space-3);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  padding: 6px 10px;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  background: rgba(15, 23, 42, 0.6) !important;
-  color: var(--text-primary) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  background: var(--bg-card);
+  min-width: 120px;
+  max-width: 140px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 6px center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  padding-right: 28px;
+  color: var(--text-primary);
+}
+
+/* Default color cho select không có status class */
+.status-select:not([class*="status-"]) {
+  color: var(--text-primary);
+  border-color: var(--border-primary);
 }
 
 .status-select:hover {
-  transform: scale(1.02);
-  background: rgba(15, 23, 42, 0.8) !important;
-  border-color: var(--border-hover);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
 }
 
 .status-select:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-  background: rgba(15, 23, 42, 0.9) !important;
   border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
 }
 
 .status-select option {
-  background: var(--bg-primary);
+  background: var(--bg-card);
   color: var(--text-primary);
-  padding: var(--space-3);
-  font-weight: var(--font-medium);
-  text-transform: uppercase;
+  padding: 6px 10px;
+  font-weight: 500;
+  font-size: 13px;
 }
 
-.status-select option:hover {
-  background: rgba(167, 139, 250, 0.15);
-  color: var(--accent-primary);
+/* Status Select Colors - Text màu tương ứng với trạng thái */
+.status-select.status-pending {
+  border-color: #f59e0b;
+  color: #f59e0b;
 }
 
-.status-select option:checked {
-  background: var(--accent-primary);
-  color: var(--color-white);
-  font-weight: var(--font-semibold);
+.status-select.status-pending option {
+  color: #f59e0b;
 }
 
-/* Đồng nhất tất cả status select về màu tối */
-.status-select.status-pending,
-.status-select.status-processing,
-.status-select.status-shipped,
-.status-select.status-completed,
+.status-select.status-processing {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.status-select.status-processing option {
+  color: #3b82f6;
+}
+
+.status-select.status-shipped {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.status-select.status-shipped option {
+  color: #8b5cf6;
+}
+
+.status-select.status-completed {
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.status-select.status-completed option {
+  color: #10b981;
+}
+
 .status-select.status-cancelled {
-  background: rgba(15, 23, 42, 0.6) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--border-primary) !important;
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
-.status-select.status-pending:hover,
-.status-select.status-processing:hover,
-.status-select.status-shipped:hover,
-.status-select.status-completed:hover,
+.status-select.status-cancelled option {
+  color: #ef4444;
+}
+
+/* Hover effects cho từng trạng thái */
+.status-select.status-pending:hover {
+  border-color: #d97706;
+  color: #d97706;
+}
+
+.status-select.status-processing:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.status-select.status-shipped:hover {
+  border-color: #7c3aed;
+  color: #7c3aed;
+}
+
+.status-select.status-completed:hover {
+  border-color: #059669;
+  color: #059669;
+}
+
 .status-select.status-cancelled:hover {
-  background: rgba(15, 23, 42, 0.8) !important;
-  border-color: var(--border-hover) !important;
-  transform: scale(1.02);
-}
-
-.status-select.status-pending:focus,
-.status-select.status-processing:focus,
-.status-select.status-shipped:focus,
-.status-select.status-completed:focus,
-.status-select.status-cancelled:focus {
-  background: rgba(15, 23, 42, 0.9) !important;
-  border-color: var(--accent-primary) !important;
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+  border-color: #dc2626;
+  color: #dc2626;
 }
 
 /* Action buttons use global admin-tables.css styles */

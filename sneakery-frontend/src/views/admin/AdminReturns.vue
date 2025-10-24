@@ -18,70 +18,45 @@
 
     <!-- Stats Cards -->
     <div class="stats-grid">
-      <div class="stats-card warning">
-        <div class="stats-header">
-          <div class="stats-icon warning">
-            <i class="material-icons">pending_actions</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.pendingReturns }}</div>
-            <div class="stats-label">Chờ duyệt</div>
-          </div>
-        </div>
-      </div>
-      <div class="stats-card info">
-        <div class="stats-header">
-          <div class="stats-icon info">
-            <i class="material-icons">local_shipping</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.inTransit }}</div>
-            <div class="stats-label">Đang vận chuyển</div>
-          </div>
-        </div>
-      </div>
-      <div class="stats-card success">
-        <div class="stats-header">
-          <div class="stats-icon success">
-            <i class="material-icons">check_circle</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.completed }}</div>
-            <div class="stats-label">Đã hoàn thành</div>
-          </div>
-        </div>
-      </div>
-      <div class="stats-card danger">
-        <div class="stats-header">
-          <div class="stats-icon danger">
-            <i class="material-icons">cancel</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.rejected }}</div>
-            <div class="stats-label">Từ chối</div>
-          </div>
-        </div>
-      </div>
+      <StatsCard
+        icon="pending_actions"
+        :value="stats.pendingReturns"
+        label="Chờ duyệt"
+        variant="warning"
+      />
+      <StatsCard
+        icon="local_shipping"
+        :value="stats.inTransit"
+        label="Đang vận chuyển"
+        variant="info"
+      />
+      <StatsCard
+        icon="check_circle"
+        :value="stats.completed"
+        label="Đã hoàn thành"
+        variant="success"
+      />
+      <StatsCard
+        icon="cancel"
+        :value="stats.rejected"
+        label="Từ chối"
+        variant="danger"
+      />
     </div>
 
     <!-- Filters -->
-    <div class="filters-section">
-      <div class="filter-row">
+    <FilterBar
+      v-model:search="filters.search"
+      search-placeholder="Tìm theo mã đơn, khách hàng..."
+      @search="handleSearch"
+      @reset="resetFilters"
+    >
+      <template #filters>
         <div class="filter-group">
-          <label>Tìm kiếm</label>
-          <div class="search-box">
-            <i class="material-icons search-icon">search</i>
-            <input 
-              v-model="filters.search"
-              type="text" 
-              class="search-input" 
-              placeholder="Tìm theo mã đơn, khách hàng..."
-              @input="handleSearch"
-            />
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Trạng thái</label>
+          <label class="filter-label">
+            <span class="material-icons">check_circle</span>
+            Trạng thái
+          </label>
           <select v-model="filters.status" @change="fetchReturns" class="form-control">
             <option value="">Tất cả</option>
             <option value="pending">Chờ duyệt</option>
@@ -93,7 +68,10 @@
           </select>
         </div>
         <div class="filter-group">
-          <label>Lý do</label>
+          <label class="filter-label">
+            <span class="material-icons">info</span>
+            Lý do
+          </label>
           <select v-model="filters.reason" @change="fetchReturns" class="form-control">
             <option value="">Tất cả</option>
             <option value="defective">Lỗi sản phẩm</option>
@@ -103,28 +81,19 @@
             <option value="other">Khác</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label>&nbsp;</label>
-          <button @click="resetFilters" class="btn btn-secondary">
-            <i class="material-icons">refresh</i>
-            Xóa bộ lọc
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </FilterBar>
 
     <!-- Table -->
     <div class="table-container">
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
-      </div>
+      <LoadingState v-if="loading" />
 
-      <div v-else-if="returns.length === 0" class="empty-state">
-        <i class="material-icons">assignment_return</i>
-        <h3>Chưa có yêu cầu trả hàng</h3>
-        <p>Danh sách yêu cầu trả hàng sẽ hiển thị ở đây</p>
-      </div>
+      <EmptyState
+        v-else-if="returns.length === 0"
+        icon="assignment_return"
+        title="Chưa có yêu cầu trả hàng"
+        description="Danh sách yêu cầu trả hàng sẽ hiển thị ở đây"
+      />
 
       <table v-else class="admin-table">
         <thead>
@@ -262,6 +231,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
+import StatsCard from '@/assets/components/admin/StatsCard.vue'
+import FilterBar from '@/assets/components/admin/FilterBar.vue'
+import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
+import EmptyState from '@/assets/components/admin/EmptyState.vue'
 
 const adminStore = useAdminStore()
 

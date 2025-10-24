@@ -1,83 +1,69 @@
 <template>
-  <div class="admin-reviews">
+  <div class="admin-page admin-reviews">
     <!-- ===== PAGE HEADER ===== -->
     <div class="page-header">
       <div class="header-content">
         <div class="title-section">
           <h1 class="page-title">
             <span class="material-icons">star_rate</span>
-            Quản lí Đánh giá
+            Quản lý Đánh giá
           </h1>
           <p class="page-subtitle">Quản lý đánh giá sản phẩm từ khách hàng</p>
+        </div>
+        <div class="header-actions">
+          <button @click="exportReviews" class="btn btn-secondary">
+            <span class="material-icons">download</span>
+            Xuất Excel
+          </button>
         </div>
       </div>
     </div>
 
     <!-- ===== STATS GRID ===== -->
     <div class="stats-grid">
-      <div class="stats-card success">
-        <div class="stats-icon">
-          <span class="material-icons">check_circle</span>
-        </div>
-        <div class="stats-content">
-          <div class="stats-value">{{ approvedReviewsCount }}</div>
-          <div class="stats-label">ĐÃ DUYỆT</div>
-        </div>
-      </div>
+      <StatsCard
+        icon="check_circle"
+        :value="approvedReviewsCount"
+        label="Đã duyệt"
+        variant="success"
+      />
       
-      <div class="stats-card warning">
-        <div class="stats-icon">
-          <span class="material-icons">pending</span>
-        </div>
-        <div class="stats-content">
-          <div class="stats-value">{{ pendingReviewsCount }}</div>
-          <div class="stats-label">CHỜ DUYỆT</div>
-        </div>
-      </div>
+      <StatsCard
+        icon="pending"
+        :value="pendingReviewsCount"
+        label="Chờ duyệt"
+        variant="warning"
+      />
       
-      <div class="stats-card info">
-        <div class="stats-icon">
-          <span class="material-icons">star</span>
-        </div>
-        <div class="stats-content">
-          <div class="stats-value">{{ averageRating.toFixed(1) }}</div>
-          <div class="stats-label">ĐÁNH GIÁ TRUNG BÌNH</div>
-        </div>
-      </div>
+      <StatsCard
+        icon="star"
+        :value="averageRating.toFixed(1)"
+        label="Đánh giá trung bình"
+        variant="info"
+      />
       
-      <div class="stats-card primary">
-        <div class="stats-icon">
-          <span class="material-icons">rate_review</span>
-        </div>
-        <div class="stats-content">
-          <div class="stats-value">{{ mockReviews.length }}</div>
-          <div class="stats-label">TỔNG ĐÁNH GIÁ</div>
-        </div>
-      </div>
+      <StatsCard
+        icon="rate_review"
+        :value="mockReviews.length"
+        label="Tổng đánh giá"
+        variant="primary"
+      />
     </div>
 
     <!-- ===== FILTERS ===== -->
-    <div class="filters-section">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">search</span>
-            Tìm kiếm
-          </label>
-          <input 
-            type="text" 
-            class="filter-input" 
-            v-model="searchKeyword"
-            placeholder="Tìm theo sản phẩm, khách hàng..."
-          />
-        </div>
-        
+    <FilterBar
+      v-model:search="searchKeyword"
+      search-placeholder="Tìm theo sản phẩm, khách hàng..."
+      @search="handleSearch"
+      @reset="resetFilters"
+    >
+      <template #filters>
         <div class="filter-group">
           <label class="filter-label">
             <span class="material-icons">filter_list</span>
             Trạng thái
           </label>
-          <select class="filter-select" v-model="filterStatus">
+          <select class="form-control" v-model="filterStatus" @change="handleSearch">
             <option value="all">Tất cả</option>
             <option value="pending">Chờ duyệt</option>
             <option value="approved">Đã duyệt</option>
@@ -89,7 +75,7 @@
             <span class="material-icons">star</span>
             Đánh giá
           </label>
-          <select class="filter-select" v-model="filterRating">
+          <select class="form-control" v-model="filterRating" @change="handleSearch">
             <option value="all">Tất cả</option>
             <option value="5">5 sao</option>
             <option value="4">4 sao</option>
@@ -98,15 +84,8 @@
             <option value="1">1 sao</option>
           </select>
         </div>
-
-        <div class="filter-group">
-          <button class="btn btn-outline" @click="resetFilters">
-            <span class="material-icons">refresh</span>
-            Làm mới
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </FilterBar>
 
     <!-- ===== LOADING STATE ===== -->
     <div v-if="loading" class="loading-container">
@@ -115,11 +94,12 @@
     </div>
 
     <!-- ===== EMPTY STATE ===== -->
-    <div v-else-if="filteredReviews.length === 0" class="empty-state">
-      <span class="material-icons empty-icon">rate_review</span>
-      <h3 class="empty-title">Không có đánh giá nào</h3>
-      <p class="empty-description">Chưa có đánh giá nào từ khách hàng</p>
-    </div>
+    <EmptyState
+      v-else-if="filteredReviews.length === 0"
+      icon="rate_review"
+      title="Không có đánh giá nào"
+      description="Chưa có đánh giá nào từ khách hàng"
+    />
 
     <!-- ===== REVIEWS LIST ===== -->
     <div v-else class="reviews-list">
@@ -241,27 +221,31 @@
 
     <!-- ===== PAGINATION ===== -->
     <div v-if="totalPages > 1" class="pagination-container">
-      <button 
-        class="pagination-btn" 
-        :disabled="currentPage === 1"
-        @click="currentPage--"
-      >
-        <span class="material-icons">chevron_left</span>
-        Trước
-      </button>
-      
       <div class="pagination-info">
-        Trang {{ currentPage }} / {{ totalPages }}
+        Hiển thị {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, filteredReviews.length) }} 
+        trong tổng số {{ filteredReviews.length }} đánh giá
       </div>
-      
-      <button 
-        class="pagination-btn" 
-        :disabled="currentPage === totalPages"
-        @click="currentPage++"
-      >
-        Sau
-        <span class="material-icons">chevron_right</span>
-      </button>
+      <div class="pagination-controls">
+        <button 
+          class="pagination-btn" 
+          :disabled="currentPage === 1"
+          @click="currentPage--"
+        >
+          <span class="material-icons">chevron_left</span>
+          Trước
+        </button>
+        
+        <span class="page-info">Trang {{ currentPage }} / {{ totalPages }}</span>
+        
+        <button 
+          class="pagination-btn" 
+          :disabled="currentPage === totalPages"
+          @click="currentPage++"
+        >
+          Sau
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
     </div>
 
     <!-- ===== REPLY MODAL ===== -->

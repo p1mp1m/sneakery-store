@@ -19,31 +19,48 @@
       </div>
     </div>
 
-    <!-- Search & Filters -->
-    <div class="filters-section animate-fade-up">
-      <div class="search-box">
-        <i class="material-icons search-icon">search</i>
-        <input
-          v-model="filters.search"
-          @input="debounceSearch"
-          type="text"
-          placeholder="Tìm theo email, tên hoặc số điện thoại..."
-          class="search-input"
-        />
-        <button
-          v-if="filters.search"
-          @click="clearSearch"
-          class="clear-btn"
-          title="Xóa tìm kiếm"
-        >
-          <i class="material-icons">close</i>
-        </button>
-      </div>
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <StatsCard
+        icon="people"
+        :value="users.length"
+        label="Tổng người dùng"
+        variant="primary"
+      />
+      <StatsCard
+        icon="person"
+        :value="activeUsersCount"
+        label="Đang hoạt động"
+        variant="success"
+      />
+      <StatsCard
+        icon="lock"
+        :value="inactiveUsersCount"
+        label="Bị khóa"
+        variant="warning"
+      />
+      <StatsCard
+        icon="admin_panel_settings"
+        :value="adminUsersCount"
+        label="Quản trị viên"
+        variant="info"
+      />
+    </div>
 
-      <div class="filter-controls">
+    <!-- Search & Filters -->
+    <FilterBar
+      v-model:search="filters.search"
+      search-placeholder="Tìm theo email, tên hoặc số điện thoại..."
+      @search="debounceSearch"
+      @reset="resetFilters"
+    >
+      <template #filters>
         <div class="filter-group">
-          <label>Vai trò</label>
-          <select v-model="filters.role" @change="applyFilters" class="filter-select">
+          <label class="filter-label">
+            <span class="material-icons">admin_panel_settings</span>
+            Vai trò
+          </label>
+          <select v-model="filters.role" @change="applyFilters" class="form-control">
             <option value="">Tất cả</option>
             <option value="USER">Người dùng</option>
             <option value="ADMIN">Quản trị viên</option>
@@ -52,57 +69,39 @@
         </div>
 
         <div class="filter-group">
-          <label>Trạng thái</label>
-          <select v-model="filters.isActive" @change="applyFilters" class="filter-select">
+          <label class="filter-label">
+            <span class="material-icons">lock</span>
+            Trạng thái
+          </label>
+          <select v-model="filters.isActive" @change="applyFilters" class="form-control">
             <option value="">Tất cả</option>
             <option :value="true">Hoạt động</option>
             <option :value="false">Bị khóa</option>
           </select>
         </div>
-
-        <button @click="resetFilters" class="btn-reset" title="Xóa tất cả bộ lọc">
-          <i class="material-icons">refresh</i>
-          Reset
-        </button>
-      </div>
-    </div>
+      </template>
+    </FilterBar>
     
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container animate-fade-in">
-      <div class="loading-spinner"></div>
-      <p>Đang tải danh sách người dùng...</p>
-    </div>
-    
+    <LoadingState v-if="loading" />
+
     <!-- Empty State -->
-    <div v-else-if="users.length === 0" class="empty-state animate-fade-up">
-      <i class="material-icons">people</i>
-      <h3>Chưa có người dùng</h3>
-    </div>
+    <EmptyState
+      v-else-if="users.length === 0"
+      icon="people"
+      title="Chưa có người dùng"
+      description="Chưa có người dùng nào trong hệ thống"
+    />
 
     <!-- Bulk Action Bar for Users -->
-    <div v-if="selectedUsers.length > 0" class="bulk-action-bar">
-      <div class="bulk-info">
-        <i class="material-icons">check_circle</i>
-        Đã chọn <strong>{{ selectedUsers.length }}</strong> người dùng
-          </div>
-      <div class="bulk-actions">
-        <select v-model="bulkAction" class="bulk-action-select">
-          <option value="">-- Chọn hành động --</option>
-          <option value="lock">Khóa tài khoản</option>
-          <option value="unlock">Mở khóa tài khoản</option>
-          <option value="role-user">Đặt vai trò: USER</option>
-          <option value="role-admin">Đặt vai trò: ADMIN</option>
-        </select>
-        <button @click="executeBulkAction" :disabled="!bulkAction" class="btn btn-primary">
-          <i class="material-icons">done_all</i>
-          Thực hiện
-        </button>
-        <button @click="clearUserSelection" class="btn btn-secondary">
-          <i class="material-icons">clear</i>
-          Bỏ chọn
-        </button>
-          </div>
-        </div>
+    <BulkActions
+      v-if="selectedUsers.length > 0"
+      :selected-count="selectedUsers.length"
+      :actions="bulkActions"
+      v-model:selected-action="bulkAction"
+      @execute="executeBulkAction"
+      @clear="clearUserSelection"
+    />
 
     <!-- Users List -->
     <div v-else class="table-card animate-fade-up">
@@ -165,10 +164,24 @@
         Hiển thị {{ (currentPage * pageSize) + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} 
         trong tổng số {{ totalItems }} người dùng
       </div>
-      <div class="pagination">
-        <button :disabled="currentPage === 0" @click="changePage(currentPage - 1)" class="page-btn">Trước</button>
+      <div class="pagination-controls">
+        <button 
+          :disabled="currentPage === 0" 
+          @click="changePage(currentPage - 1)" 
+          class="pagination-btn"
+        >
+          <span class="material-icons">chevron_left</span>
+          Trước
+        </button>
         <span class="page-info">Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
-        <button :disabled="currentPage >= totalPages - 1" @click="changePage(currentPage + 1)" class="page-btn">Sau</button>
+        <button 
+          :disabled="currentPage >= totalPages - 1" 
+          @click="changePage(currentPage + 1)" 
+          class="pagination-btn"
+        >
+          Sau
+          <span class="material-icons">chevron_right</span>
+        </button>
       </div>
     </div>
 
@@ -206,6 +219,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
+import StatsCard from '@/assets/components/admin/StatsCard.vue'
+import FilterBar from '@/assets/components/admin/FilterBar.vue'
+import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
+import EmptyState from '@/assets/components/admin/EmptyState.vue'
+import BulkActions from '@/assets/components/admin/BulkActions.vue'
 import * as XLSX from 'xlsx'
 
 const adminStore = useAdminStore()
@@ -243,6 +261,19 @@ const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value))
 const isAllUsersSelected = computed(() => {
   return users.value.length > 0 && selectedUsers.value.length === users.value.length
 })
+
+// Stats computed properties
+const activeUsersCount = computed(() => users.value.filter(user => user.isActive).length)
+const inactiveUsersCount = computed(() => users.value.filter(user => !user.isActive).length)
+const adminUsersCount = computed(() => users.value.filter(user => user.role === 'ADMIN').length)
+
+// Bulk actions configuration
+const bulkActions = computed(() => [
+  { value: 'lock', label: 'Khóa tài khoản', icon: 'lock' },
+  { value: 'unlock', label: 'Mở khóa tài khoản', icon: 'lock_open' },
+  { value: 'role-user', label: 'Đặt vai trò: USER', icon: 'person' },
+  { value: 'role-admin', label: 'Đặt vai trò: ADMIN', icon: 'admin_panel_settings' }
+])
 
 // Bulk selection methods
 const toggleSelectUser = (userId) => {

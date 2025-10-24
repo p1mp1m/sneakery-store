@@ -29,67 +29,47 @@
       </div>
     </div>
 
-    <!-- Stats Grid - Enhanced with Glassmorphism -->
-    <div class="stats-grid animate-fade-in">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-primary);">
-          <span class="material-icons">local_activity</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.totalCoupons }}</div>
-          <div class="stat-label">TỔNG MÃ GIẢM GIÁ</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-success);">
-          <span class="material-icons">check_circle</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.activeCoupons }}</div>
-          <div class="stat-label">ĐANG HOẠT ĐỘNG</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-warning);">
-          <span class="material-icons">schedule</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.expiringSoon }}</div>
-          <div class="stat-label">SẮP HẾT HẠN</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-danger);">
-          <span class="material-icons">block</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.expiredCoupons }}</div>
-          <div class="stat-label">ĐÃ HẾT HẠN</div>
-        </div>
-      </div>
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <StatsCard
+        icon="local_activity"
+        :value="stats.totalCoupons"
+        label="Tổng mã giảm giá"
+        variant="primary"
+      />
+      <StatsCard
+        icon="check_circle"
+        :value="stats.activeCoupons"
+        label="Đang hoạt động"
+        variant="success"
+      />
+      <StatsCard
+        icon="schedule"
+        :value="stats.expiringSoon"
+        label="Sắp hết hạn"
+        variant="warning"
+      />
+      <StatsCard
+        icon="block"
+        :value="stats.expiredCoupons"
+        label="Đã hết hạn"
+        variant="danger"
+      />
     </div>
 
     <!-- Filters -->
-    <div class="filters-section">
-      <div class="filter-row">
+    <FilterBar
+      v-model:search="filters.search"
+      search-placeholder="Tìm theo mã, mô tả..."
+      @search="handleSearch"
+      @reset="resetFilters"
+    >
+      <template #filters>
         <div class="filter-group">
-          <label>Tìm kiếm</label>
-          <div class="search-box">
-            <i class="material-icons search-icon">search</i>
-            <input 
-              v-model="filters.search"
-              type="text" 
-              class="search-input" 
-              placeholder="Tìm theo mã, mô tả..."
-              @input="handleSearch"
-            />
-          </div>
-        </div>
-        <div class="filter-group">
-          <label>Loại giảm giá</label>
+          <label class="filter-label">
+            <span class="material-icons">percent</span>
+            Loại giảm giá
+          </label>
           <select v-model="filters.type" @change="fetchCoupons" class="form-control">
             <option value="">Tất cả</option>
             <option value="percent">Phần trăm (%)</option>
@@ -97,7 +77,10 @@
           </select>
         </div>
         <div class="filter-group">
-          <label>Trạng thái</label>
+          <label class="filter-label">
+            <span class="material-icons">check_circle</span>
+            Trạng thái
+          </label>
           <select v-model="filters.status" @change="fetchCoupons" class="form-control">
             <option value="">Tất cả</option>
             <option value="active">Đang hoạt động</option>
@@ -105,28 +88,19 @@
             <option value="upcoming">Chưa bắt đầu</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label>&nbsp;</label>
-          <button @click="resetFilters" class="btn btn-secondary">
-            <i class="material-icons">refresh</i>
-            Xóa bộ lọc
-          </button>
-        </div>
-      </div>
-    </div>
+      </template>
+    </FilterBar>
 
     <!-- Table -->
     <div class="table-container">
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
-      </div>
+      <LoadingState v-if="loading" />
 
-      <div v-else-if="coupons.length === 0" class="empty-state">
-        <i class="material-icons">local_activity</i>
-        <h3>Chưa có mã giảm giá</h3>
-        <p>Nhấn nút "Tạo mã giảm giá" để bắt đầu</p>
-      </div>
+      <EmptyState
+        v-else-if="coupons.length === 0"
+        icon="local_activity"
+        title="Chưa có mã giảm giá"
+        description="Nhấn nút 'Tạo mã giảm giá' để bắt đầu"
+      />
 
       <table v-else class="admin-table">
         <thead>
@@ -417,6 +391,10 @@ import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import adminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
+import StatsCard from '@/assets/components/admin/StatsCard.vue'
+import FilterBar from '@/assets/components/admin/FilterBar.vue'
+import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
+import EmptyState from '@/assets/components/admin/EmptyState.vue'
 
 const adminStore = useAdminStore()
 
