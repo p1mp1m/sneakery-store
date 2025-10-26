@@ -177,7 +177,7 @@ Mở trình duyệt và vào:
 **Tài khoản Admin:**
 ```
 Email: admin@sneakery.com
-Mật khẩu: admin123
+Mật khẩu: password
 ```
 
 **Tài khoản Khách hàng:**
