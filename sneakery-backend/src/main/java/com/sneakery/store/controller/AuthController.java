@@ -3,6 +3,8 @@ package com.sneakery.store.controller;
 import com.sneakery.store.dto.AuthResponseDto; // SỬA LỖI: Import DTO mới
 import com.sneakery.store.dto.LoginDto;
 import com.sneakery.store.dto.RegisterDto;
+import com.sneakery.store.dto.ForgotPasswordRequestDto;
+import com.sneakery.store.dto.ResetPasswordRequestDto;
 import com.sneakery.store.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor; // SỬA LỖI: Dùng Constructor Injection
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,5 +42,17 @@ public class AuthController {
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginDto loginDto) {
         AuthResponseDto response = authService.login(loginDto);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequestDto request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok().body(Map.of("message", "Email đặt lại mật khẩu đã được gửi!"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequestDto request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok().body(Map.of("message", "Đặt lại mật khẩu thành công!"));
     }
 }

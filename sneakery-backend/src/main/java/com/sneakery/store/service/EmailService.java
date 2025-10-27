@@ -6,7 +6,9 @@ import com.sneakery.store.repository.EmailTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
@@ -17,7 +19,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-
+    private final JavaMailSender mailSender;
     private final EmailTemplateRepository emailTemplateRepository;
 
     /**
@@ -141,5 +143,13 @@ public class EmailService {
         } catch (Exception e) {
             log.error("❌ Failed to send email: {}", e.getMessage(), e);
         }
+    }
+
+    public void sendResetPasswordEmail(String to, String resetLink) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Đặt lại mật khẩu - Sneakery Store");
+        message.setText("Nhấn vào liên kết sau để đặt lại mật khẩu:\n" + resetLink);
+        mailSender.send(message);
     }
 }

@@ -254,7 +254,7 @@ const handleLogin = async (formEl) => {
 };
 
 const handleForgotPassword = () => {
-  ElMessage.info('Tính năng quên mật khẩu sẽ được cập nhật sớm!');
+   router.push({ name: 'forgot-password' });
 };
 
 const handleGoogleLogin = () => {
