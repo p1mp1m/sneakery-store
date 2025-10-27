@@ -47,7 +47,7 @@ body,
   
   /* ─── Component Overrides ─── */
   --card-bg: var(--dark-bg-card);
-  --input-bg: rgba(15, 23, 42, 0.6);
+  --input-bg: transparent;
   --table-header-bg: rgba(30, 41, 59, 0.8);
 }
 
@@ -237,28 +237,29 @@ body,
 .form-control,
 .input-enhanced,
 .form-input {
-  background: var(--input-bg);
-  border: var(--border-medium) solid var(--input-border);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--dark-border-primary);
   color: var(--text-primary);
   padding: var(--space-3);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   transition: var(--transition-smooth);
 }
 
 .form-control:hover,
 .input-enhanced:hover,
 .form-input:hover {
-  border-color: var(--input-border-hover);
-  background: var(--input-bg-hover);
+  border-bottom-color: var(--color-purple-500);
+  background: transparent;
 }
 
 .form-control:focus,
 .input-enhanced:focus,
 .form-input:focus {
   outline: none;
-  border-color: var(--input-border-focus);
-  background: var(--input-bg-focus);
-  box-shadow: var(--focus-ring-shadow);
+  border-bottom-color: var(--color-purple-500);
+  background: transparent;
+  box-shadow: none;
 }
 
 .form-control::placeholder,

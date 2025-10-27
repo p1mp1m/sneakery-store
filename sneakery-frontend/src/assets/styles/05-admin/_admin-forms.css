@@ -102,32 +102,32 @@
 .form-textarea {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--dark-border-primary);
+  border-radius: 0;
   color: var(--text-primary);
   font-size: var(--text-base);
   font-family: var(--font-family-base);
   transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .form-input:hover,
 .form-select:hover,
 .form-textarea:hover {
-  border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.8);
+  border-bottom-color: var(--color-purple-500);
+  background: transparent;
 }
 
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.9);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15),
-              0 4px 16px rgba(167, 139, 250, 0.2);
+  border-bottom-color: var(--color-purple-500);
+  background: transparent;
+  box-shadow: none;
 }
 
 .form-input::placeholder,
