@@ -149,12 +149,12 @@
   --btn-ghost-hover-bg: rgba(167, 139, 250, 0.1);
   
   /* ─── Inputs ─── */
-  --input-bg: rgba(15, 23, 42, 0.6);
-  --input-bg-hover: rgba(15, 23, 42, 0.7);
-  --input-bg-focus: rgba(15, 23, 42, 0.8);
-  --input-border: rgba(167, 139, 250, 0.2);
-  --input-border-hover: rgba(167, 139, 250, 0.3);
-  --input-border-focus: #a78bfa;
+  --input-bg: transparent;
+  --input-bg-hover: transparent;
+  --input-bg-focus: transparent;
+  --input-border: transparent;
+  --input-border-hover: transparent;
+  --input-border-focus: transparent;
   --input-placeholder: #64748b;
   
   /* ─── Tables ─── */
