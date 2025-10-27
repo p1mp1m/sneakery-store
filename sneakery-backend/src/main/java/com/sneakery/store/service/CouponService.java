@@ -7,11 +7,15 @@ import com.sneakery.store.repository.CouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service xử lý logic cho Coupon
@@ -27,9 +31,40 @@ public class CouponService {
      */
     @Transactional(readOnly = true)
     public Page<CouponDto> getAllCoupons(String search, String type, String status, Pageable pageable) {
-        // TODO: Implement filter logic
-        Page<Coupon> coupons = couponRepository.findAll(pageable);
+        Specification<Coupon> spec = buildSpecification(search, type, status);
+        Page<Coupon> coupons = couponRepository.findAll(spec, pageable);
         return coupons.map(this::convertToDto);
+    }
+
+    /**
+     * Build specification cho filtering
+     */
+    private Specification<Coupon> buildSpecification(String search, String type, String status) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Search filter: tìm theo code, description
+            if (search != null && !search.trim().isEmpty()) {
+                String searchPattern = "%" + search.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("code")), searchPattern),
+                        cb.like(cb.lower(root.get("description")), searchPattern)
+                ));
+            }
+
+            // Type filter: lọc theo discountType
+            if (type != null && !type.trim().isEmpty() && !type.equals("all")) {
+                predicates.add(cb.equal(root.get("discountType"), type));
+            }
+
+            // Status filter: lọc theo isActive
+            if (status != null && !status.trim().isEmpty() && !status.equals("all")) {
+                Boolean isActive = status.equals("active");
+                predicates.add(cb.equal(root.get("isActive"), isActive));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
     /**

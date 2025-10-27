@@ -195,13 +195,18 @@ public class OrderService {
 
         // Lấy Payment DTO
         Payment firstPayment = order.getPayments().get(0);
-        PaymentDto paymentDto = PaymentDto.builder()
+        PaymentDto.PaymentDtoBuilder paymentDtoBuilder = PaymentDto.builder()
                 .id(firstPayment.getId())
-                .method(firstPayment.getPaymentMethod())
+                .paymentMethod(firstPayment.getPaymentMethod())
                 .status(firstPayment.getStatus())
                 .amount(firstPayment.getAmount())
-                .paymentUrl(paymentUrl) // Trả về link thanh toán (nếu có)
-                .build();
+                .orderId(order.getId());
+        
+        if (paymentUrl != null) {
+            paymentDtoBuilder.transactionId(paymentUrl);
+        }
+        
+        PaymentDto paymentDto = paymentDtoBuilder.build();
 
         return OrderDto.builder()
                 .id(order.getId())

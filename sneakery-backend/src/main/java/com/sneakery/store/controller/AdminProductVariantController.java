@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,9 +37,15 @@ public class AdminProductVariantController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection
     ) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable;
+        if (sortBy != null && !sortBy.isEmpty()) {
+            Sort.Direction direction = (sortDirection != null && sortDirection.equalsIgnoreCase("desc")) 
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+            pageable = PageRequest.of(page, size, Sort.by(direction, mapSortField(sortBy)));
+        } else {
+            pageable = PageRequest.of(page, size);
+        }
         
-        // Build filter DTO
         ProductVariantFilterDto filter = ProductVariantFilterDto.builder()
                 .search(search)
                 .color(color)
@@ -51,6 +58,18 @@ public class AdminProductVariantController {
         
         Page<AdminProductVariantDto> variantPage = adminProductVariantService.getVariantsWithFilter(filter, pageable);
         return ResponseEntity.ok(variantPage);
+    }
+    
+    private String mapSortField(String sortBy) {
+        switch (sortBy.toLowerCase()) {
+            case "sku": return "sku";
+            case "size": return "size";
+            case "color": return "color";
+            case "price": return "priceBase";
+            case "stock": return "stockQuantity";
+            case "created_at": return "createdAt";
+            default: return "id";
+        }
     }
 
     /**

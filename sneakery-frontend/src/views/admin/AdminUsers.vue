@@ -224,7 +224,7 @@ import FilterBar from '@/assets/components/admin/FilterBar.vue'
 import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
 import EmptyState from '@/assets/components/admin/EmptyState.vue'
 import BulkActions from '@/assets/components/admin/BulkActions.vue'
-import * as XLSX from 'xlsx'
+import { downloadCsv, downloadJson, exportToExcelStyled } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
 const users = ref([])
@@ -399,10 +399,9 @@ const resetFilters = () => {
   fetchUsers()
 }
 
-// Export to Excel
+// Export to CSV
 const exportToExcel = () => {
   try {
-    // Chuẩn bị data để export
     const exportData = users.value.map((user, index) => ({
       'STT': index + 1,
       'ID': user.id,
@@ -413,30 +412,17 @@ const exportToExcel = () => {
       'Trạng thái': user.isActive ? 'Hoạt động' : 'Bị khóa'
     }))
 
-    // Tạo worksheet từ data
-    const worksheet = XLSX.utils.json_to_sheet(exportData)
-    
-    // Tạo workbook
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Người dùng')
-    
-    // Tạo tên file với timestamp
-    const timestamp = new Date().toISOString().slice(0, 10)
-    const filename = `nguoi-dung_${timestamp}.xlsx`
-    
-    // Download file
-    XLSX.writeFile(workbook, filename)
-    
-    ElMessage.success({
-      message: `Đã export ${exportData.length} người dùng thành công!`,
-      duration: 3000
-    })
+    if (exportData.length === 0) {
+      ElMessage.warning('Không có dữ liệu để xuất')
+      return
+    }
+
+    // Export to styled Excel file
+    exportToExcelStyled(exportData, 'nguoi-dung.xlsx', 'Người dùng')
+    ElMessage.success(`Đã export ${exportData.length} người dùng thành công!`)
   } catch (error) {
-    console.error('Lỗi khi export Excel:', error)
-    ElMessage.error({
-      message: 'Không thể export dữ liệu. Vui lòng thử lại!',
-      duration: 3000
-    })
+    console.error('Lỗi khi export:', error)
+    ElMessage.error('Không thể export dữ liệu. Vui lòng thử lại!')
   }
 }
 

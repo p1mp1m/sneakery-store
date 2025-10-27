@@ -536,6 +536,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useAdminStore } from '@/stores/admin'
+
+// Store
+const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -651,7 +655,7 @@ const openRate = computed(() => {
 })
 
 const filteredTemplates = computed(() => {
-  let filtered = templates.value
+  let filtered = templates.value || []
 
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
@@ -707,9 +711,8 @@ const previewContent = computed(() => {
 const fetchTemplates = async () => {
   loading.value = true
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    templates.value = mockTemplates.value
+    const result = await adminStore.fetchEmailTemplates(currentPage.value, pageSize.value, {})
+    templates.value = result.content || []
   } catch (error) {
     ElMessage.error('Không thể tải danh sách templates')
   } finally {
@@ -884,7 +887,13 @@ const saveTemplate = async () => {
 
 const exportTemplates = (format) => {
   try {
-    const exportData = filteredTemplates.value.map(template => ({
+    const dataToExport = filteredTemplates.value || []
+    if (dataToExport.length === 0) {
+      ElMessage.warning('Không có dữ liệu để xuất')
+      return
+    }
+    
+    const exportData = dataToExport.map(template => ({
       'ID': template.id,
       'Tên template': template.name,
       'Loại': getTemplateTypeText(template.type),
@@ -898,7 +907,7 @@ const exportTemplates = (format) => {
     }))
 
     if (format === 'csv') {
-      downloadCsv('email-templates', exportData)
+      downloadCsv(exportData, 'email-templates.csv')
       ElMessage.success('Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('email-templates', exportData)

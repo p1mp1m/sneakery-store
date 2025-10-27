@@ -936,7 +936,56 @@ class AdminService {
 
   async sendTestEmail(id, testData) {
     try {
-      const response = await adminApi.post(`/email-templates/${id}/test`, testData)
+      const response = await adminApi.post(`/email-templates/${id}/send-test`, testData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async toggleEmailTemplateStatus(id) {
+    try {
+      const response = await adminApi.put(`/email-templates/${id}/toggle`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== ACTIVITY LOGS =====
+  async getActivityLogs(page = 0, size = 20, filters = {}) {
+    try {
+      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          acc[key] = value
+        }
+        return acc
+      }, {})
+      
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...cleanFilters
+      })
+      const response = await adminApi.get(`/activity-logs?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getActivityLogById(id) {
+    try {
+      const response = await adminApi.get(`/activity-logs/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteActivityLog(id) {
+    try {
+      const response = await adminApi.delete(`/activity-logs/${id}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -1078,6 +1127,15 @@ class AdminService {
   async getPaymentStats() {
     try {
       const response = await adminApi.get('/payments/stats')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updatePaymentStatus(id, status) {
+    try {
+      const response = await adminApi.put(`/payments/${id}/status?status=${status}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)

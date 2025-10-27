@@ -2044,6 +2044,20 @@ onUnmounted(() => {
 }
 
 /* ===== RESPONSIVE ===== */
+@media (min-width: 769px) and (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-card.large {
+    grid-column: span 1;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-page {
     max-width: 100%;
