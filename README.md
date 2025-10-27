@@ -216,7 +216,7 @@ Website có sẵn 2 tài khoản để bạn thử nghiệm:
 
 #### 👤 Tài khoản Khách hàng:
 ```
-📧 Email:    user1@example.com -> user10@example.com
+📧 Email:    user1@example.com
 🔒 Mật khẩu: password
 ```
 **Quyền:** Xem sản phẩm, đặt hàng, xem lịch sử mua hàng...
