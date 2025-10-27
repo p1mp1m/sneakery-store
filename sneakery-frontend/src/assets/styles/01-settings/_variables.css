@@ -159,11 +159,11 @@
   --dark-bg-glass-dark: rgba(15, 23, 42, 0.6);
   
   /* ─── Dark Text Colors ─── */
-  --dark-text-primary: var(--color-slate-200);
-  --dark-text-secondary: var(--color-slate-300);
-  --dark-text-tertiary: var(--color-slate-400);
-  --dark-text-quaternary: var(--color-slate-500);
-  --dark-text-muted: var(--color-slate-400);
+  --dark-text-primary: var(--color-white);  /* Màu sáng cho admin panel */
+  --dark-text-secondary: rgba(255, 255, 255, 0.9);
+  --dark-text-tertiary: rgba(255, 255, 255, 0.7);
+  --dark-text-quaternary: rgba(255, 255, 255, 0.5);
+  --dark-text-muted: rgba(255, 255, 255, 0.6);
   --dark-text-inverse: var(--color-slate-100);
   
   /* ─── Dark Borders ─── */
@@ -203,10 +203,6 @@
   --text-muted: var(--color-gray-400);
   --text-inverse: var(--color-white);
   --text-on-primary: var(--color-white);
-  
-  /* ─── Form Input Text Colors (Tối màu cho input trong login/register) ─── */
-  --input-text-color: #1e293b;
-  --input-placeholder-color: #64748b;
   
   /* ─── Border Colors (Light Theme Default) ─── */
   --border-primary: var(--color-gray-300);
