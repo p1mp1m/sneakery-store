@@ -64,7 +64,7 @@ Bạn có thể tải code về máy bằng 1 trong 2 cách sau:
 #### 🌐 Cách 1: Dùng Git (khuyến nghị)
 Mở **Command Prompt** hoặc **Terminal** và chạy lệnh:
 ```bash
-git clone https://caophuocloc.github.io/sneakery-store
+git clone https://caophuocloc.github.io/sneakery-store https://github.com/p1mp1m/sneakery-store
 cd sneakery-store
 ```
 
