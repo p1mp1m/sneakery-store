@@ -37,19 +37,21 @@
 
 ---
 
-## 🛠️ Cần cài gì trước?
+## 🛠️ Chuẩn bị trước khi cài đặt
 
-Trước khi bắt đầu, cài đặt những phần mềm sau:
+### 📋 Danh sách phần mềm cần cài:
 
-| Phần mềm | Link tải |
-|----------|----------|
-| ☕ **Java JDK 17** | [Tải Java](https://www.oracle.com/java/technologies/downloads/#java17) |
-| 🟢 **Node.js 18+** | [Tải Node.js](https://nodejs.org/) |
-| 🗄️ **SQL Server** | [Tải SQL Server](https://www.microsoft.com/sql-server/sql-server-downloads) |
-| 🔧 **SQL Server Management Studio** | [Tải SSMS](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms) |
-| 💻 **Visual Studio Code** | [Tải VS Code](https://code.visualstudio.com/) |
+Trước khi bắt đầu, bạn cần cài đặt các phần mềm sau vào máy tính:
 
-> **💡 Mẹo:** Sau khi cài xong, khởi động lại máy tính!
+| 🔢 | Phần mềm | Mục đích | Link tải |
+|----|----------|----------|----------|
+| 1️⃣ | **Java JDK 17** | Chạy phần Backend | [👉 Tải tại đây](https://www.oracle.com/java/technologies/downloads/#java17) |
+| 2️⃣ | **Node.js 18+** | Chạy phần Frontend | [👉 Tải tại đây](https://nodejs.org/) |
+| 3️⃣ | **SQL Server** | Lưu trữ dữ liệu | [👉 Tải tại đây](https://www.microsoft.com/sql-server/sql-server-downloads) |
+| 4️⃣ | **SQL Server Management Studio (SSMS)** | Quản lý database | [👉 Tải tại đây](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms) |
+| 5️⃣ | **Visual Studio Code** | Soạn thảo code (tùy chọn) | [👉 Tải tại đây](https://code.visualstudio.com/) |
+
+> **💡 Lưu ý:** Sau khi cài xong tất cả phần mềm, hãy **khởi động lại máy tính** để các cài đặt có hiệu lực!
 
 ---
 
@@ -57,134 +59,167 @@ Trước khi bắt đầu, cài đặt những phần mềm sau:
 
 ### 📥 **Bước 1: Tải code về máy**
 
-**Cách 1: Dùng Git**
+Bạn có thể tải code về máy bằng 1 trong 2 cách sau:
+
+#### 🌐 Cách 1: Dùng Git (khuyến nghị)
+Mở **Command Prompt** hoặc **Terminal** và chạy lệnh:
 ```bash
-git clone https://github.com/yourusername/sneakery-store.git
+git clone https://caophuocloc.github.io/sneakery-store
 cd sneakery-store
 ```
 
-**Cách 2: Tải ZIP**
-- Vào GitHub → Click nút **Code** → Chọn **Download ZIP**
-- Giải nén file ZIP ra một thư mục
+#### 📦 Cách 2: Tải file ZIP
+1. Vào GitHub repository
+2. Click nút **Code** (màu xanh)
+3. Chọn **Download ZIP**
+4. Giải nén file ZIP ra một thư mục trên máy tính
 
 ---
 
 ### 🗄️ **Bước 2: Tạo Database (Cơ sở dữ liệu)**
 
-#### 2.1. Mở SQL Server Management Studio
+#### 2.1. Khởi động SQL Server Management Studio
 
-1. Mở **SQL Server Management Studio (SSMS)**
-2. Kết nối với:
+1. Mở **SQL Server Management Studio (SSMS)** từ Start Menu
+2. Trong cửa sổ **Connect to Server**, nhập:
    - **Server name:** `localhost` hoặc `(local)`
    - **Authentication:** Windows Authentication
-   - Click **Connect**
+3. Click nút **Connect**
 
-#### 2.2. Chạy Script tạo Database
+> ✅ **Nếu kết nối thành công:** Sẽ thấy cửa sổ Object Explorer bên trái
 
-1. Click **File** → **Open** → **File...**
-2. Chọn 2 file theo thứ tự:
-   - `sneakery-database/1_CREATE_SCHEMA.sql` 
-   - `sneakery-database/2_INSERT_DATA.sql`
-3. Click **Execute** (hoặc nhấn F5)
+#### 2.2. Chạy script tạo database
 
-✅ **Hoàn thành:** Database `sneakery_db` đã được tạo!
+1. Trong SSMS, click **File** → **Open** → **File...** (hoặc nhấn `Ctrl+O`)
+2. Tìm và chọn file: `sneakery-database/1_CREATE_SCHEMA.sql`
+3. Click nút **Execute** (hoặc nhấn `F5`)
+4. Đợi thấy dòng "Command(s) completed successfully" là thành công
+5. Làm tương tự với file: `sneakery-database/2_INSERT_DATA.sql`
+
+✅ **Hoàn thành:** Database `sneakery_db` đã được tạo với dữ liệu mẫu!
 
 ---
 
-### ⚙️ **Bước 3: Cấu hình Backend (Phần server)**
+### ⚙️ **Bước 3: Cấu hình và cài đặt Backend**
 
-#### 3.1. Mở file cấu hình
+#### 3.1. Sửa mật khẩu database
 
-Mở file: `sneakery-backend/src/main/resources/application.properties`
-
-#### 3.2. Sửa password Database
-
-Tìm dòng có chữ `spring.datasource.password` và sửa:
+1. Mở file: `sneakery-backend/src/main/resources/application.properties`
+2. Tìm dòng có chữ `spring.datasource.password`
+3. Sửa thành mật khẩu SQL Server của bạn
 
 ```properties
-spring.datasource.password=123456
+spring.datasource.password=YOUR_PASSWORD_HERE
 ```
 
-> **⚠️ Chú ý:** Đổi `123456` thành password SQL Server của bạn!
+> **⚠️ Quan trọng:** Thay `YOUR_PASSWORD_HERE` bằng mật khẩu SQL Server mà bạn đã đặt khi cài đặt!
 
-#### 3.3. Cài đặt Backend
+#### 3.2. Cài đặt các thư viện cần thiết
 
-Mở **Command Prompt** hoặc **Terminal** tại thư mục dự án:
+Mở **Command Prompt** hoặc **Terminal**, di chuyển vào thư mục dự án và chạy:
 
 ```bash
 cd sneakery-backend
 mvn clean install
 ```
 
-⏳ **Chờ 2-3 phút** để tải các thư viện cần thiết...
+⏳ **Chờ 2-5 phút** để tải và cài đặt các thư viện cần thiết...
+
+> ✅ **Thành công:** Sẽ thấy dòng "BUILD SUCCESS" ở cuối
 
 ---
 
-### 🎨 **Bước 4: Cài đặt Frontend (Phần giao diện)**
+### 🎨 **Bước 4: Cài đặt Frontend**
 
-Mở **Command Prompt** hoặc **Terminal** mới:
+Mở **Command Prompt** hoặc **Terminal** mới (không cần đợi Backend), chạy:
 
 ```bash
 cd sneakery-frontend
 npm install
 ```
 
-⏳ **Chờ 2-3 phút** để tải các thư viện...
+⏳ **Chờ 2-5 phút** để tải và cài đặt các thư viện...
+
+> ✅ **Thành công:** Sẽ thấy thông báo "added XXX packages" ở cuối
 
 ---
 
-## 🎮 Chạy ứng dụng
+## 🎮 Hướng dẫn chạy ứng dụng
 
-### 🟢 **Bước 1: Chạy Backend (Phần server)**
+> **📌 Lưu ý:** Bạn cần mở **2 cửa sổ Terminal** để chạy cả Backend và Frontend
 
-Mở **Terminal** thứ nhất:
+---
+
+### 🟢 **Bước 1: Chạy Backend trước**
+
+Mở **Terminal** (hoặc Command Prompt) thứ nhất:
 
 ```bash
 cd sneakery-backend
 mvn spring-boot:run
 ```
 
-✅ Thấy dòng `Started SneakeryApplication` là **thành công**!
+**Chờ vài giây...**
 
-> **🌐 Server chạy tại:** http://localhost:8080
+✅ **Khi thấy dòng này là thành công:** 
+```
+Started SneakeryApplication in X.XXX seconds
+```
+
+> **🌐 Backend đã chạy tại:** http://localhost:8080
 
 ---
 
-### 🎨 **Bước 2: Chạy Frontend (Phần giao diện)**
+### 🎨 **Bước 2: Chạy Frontend** (Mở Terminal thứ hai)
 
-Mở **Terminal** thứ hai:
+Mở **Terminal** (hoặc Command Prompt) thứ hai:
 
 ```bash
 cd sneakery-frontend
 npm run dev
 ```
 
-✅ Thấy dòng `Local: http://localhost:5173` là **thành công**!
+**Chờ vài giây...**
 
-> **🌐 Website chạy tại:** http://localhost:5173
+✅ **Khi thấy dòng này là thành công:**
+```
+  VITE ready in XXX ms
+  ➜  Local:   http://localhost:5173/
+```
+
+> **🌐 Website đã sẵn sàng tại:** http://localhost:5173
 
 ---
 
-## 🎉 Truy cập Website
+## 🎉 Truy cập website
 
-Mở trình duyệt và vào:
+### 🏠 Bước 1: Mở trình duyệt
 
-### 🏠 Trang chính
-👉 http://localhost:5173
+1. Mở trình duyệt bất kỳ (Chrome, Edge, Firefox...)
+2. Nhập địa chỉ: **http://localhost:5173**
+3. Nhấn Enter
 
-### 🔑 Đăng nhập sẵn
+> **Lưu ý:** Đảm bảo cả Backend và Frontend đều đang chạy!
 
-**Tài khoản Admin:**
+---
+
+### 🔑 Bước 2: Đăng nhập vào hệ thống
+
+Website có sẵn 2 tài khoản để bạn thử nghiệm:
+
+#### 👨‍💼 Tài khoản Admin (Quản trị viên):
 ```
-Email: admin@sneakery.com
-Mật khẩu: password
+📧 Email:    admin@sneakery.com
+🔒 Mật khẩu: password
 ```
+**Quyền:** Xem thống kê, quản lý sản phẩm, đơn hàng, người dùng...
 
-**Tài khoản Khách hàng:**
+#### 👤 Tài khoản Khách hàng:
 ```
-Email: user@sneakery.com
-Mật khẩu: user123
+📧 Email:    user1@example.com -> user10@example.com
+🔒 Mật khẩu: password
 ```
+**Quyền:** Xem sản phẩm, đặt hàng, xem lịch sử mua hàng...
 
 ---
 
