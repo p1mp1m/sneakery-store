@@ -248,7 +248,7 @@
 
     <th class="sortable" @click="sortColumn('brandName')">
       <div class="th-content">
-        <span>Thương hiệu</span>
+        <span>Brands</span>
         <i class="material-icons sort-icon">{{ getSortIcon('brandName') }}</i>
       </div>
     </th>
@@ -263,13 +263,13 @@
 
     <th class="sortable" @click="sortColumn('variantCount')">
       <div class="th-content">
-        <span>Số variants</span>
+        <span>Số SPCT</span>
         <i class="material-icons sort-icon">{{ getSortIcon('variantCount') }}</i>
       </div>
     </th>
     <th class="sortable" @click="sortColumn('stockQuantity')">
       <div class="th-content">
-        <span>Tồn kho</span>
+        <span>Kho</span>
         <i class="material-icons sort-icon">{{ getSortIcon('stockQuantity') }}</i>
       </div>
     </th>
@@ -401,41 +401,53 @@
           <!-- Basic Info -->
           <div class="section-title">Thông tin cơ bản</div>
           
-          <div class="form-group">
-            <label class="form-label required">Tên sản phẩm</label>
-            <input 
-              v-model="formData.name"
-              type="text" 
-              class="form-control"
-              placeholder="Ví dụ: Nike Air Force 1 '07"
-              @input="generateSlug"
-            />
-            <span v-if="formErrors.name" class="form-error">{{ formErrors.name }}</span>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label required">Slug</label>
-            <input 
-              v-model="formData.slug"
-              type="text" 
-              class="form-control"
-              placeholder="nike-air-force-1-07"
-            />
-            <span v-if="formErrors.slug" class="form-error">{{ formErrors.slug }}</span>
-            <span class="form-help">URL thân thiện (tự động tạo từ tên)</span>
-          </div>
+          <div class="form-row two-cols">
+  <!-- 🟣 Tên sản phẩm -->
+  <div class="form-group">
+    <label class="form-label required">Tên sản phẩm</label>
+    <input 
+      v-model="formData.name"
+      type="text" 
+      class="form-control"
+      placeholder="Ví dụ: Nike Air Force 1 '07"
+      @input="generateSlug"
+    />
+    <span v-if="formErrors.name" class="form-error">{{ formErrors.name }}</span>
+  </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label required">Thương hiệu</label>
-              <select v-model="formData.brandId" class="form-control">
-                <option value="">Chọn thương hiệu</option>
-                <option v-for="brand in brands" :key="brand.id" :value="brand.id">
-                  {{ brand.name }}
-                </option>
-              </select>
-              <span v-if="formErrors.brandId" class="form-error">{{ formErrors.brandId }}</span>
-            </div>
+  <!-- 🟢 Slug -->
+  <div class="form-group">
+    <label class="form-label required">Slug</label>
+    <input 
+      v-model="formData.slug"
+      type="text" 
+      class="form-control"
+      placeholder="nike-air-force-1-07"
+    />
+    <span v-if="formErrors.slug" class="form-error">{{ formErrors.slug }}</span>
+    <span class="form-help">URL thân thiện (tự động tạo từ tên)</span>
+  </div>
+</div>
+
+
+          <div class="form-row two-cols">
+            <!-- 🟣 Thương hiệu (có nút thêm nhanh) -->
+<div class="form-group">
+  <label class="form-label required">Thương hiệu</label>
+  <div class="input-with-button">
+    <select v-model="formData.brandId" class="form-control">
+      <option v-for="brand in brands" :key="brand.id" :value="brand.id">
+        {{ brand.name }}
+      </option>
+    </select>
+    <!-- ➕ Nút mở modal thêm thương hiệu -->
+    <button type="button" class="btn btn-icon-sm btn-success" @click="openQuickAddBrand">
+      <i class="material-icons">add</i>
+    </button>
+  </div>
+  <span v-if="formErrors.brandId" class="form-error">{{ formErrors.brandId }}</span>
+</div>
+
             
             <div class="form-group">
               <label class="form-label">Trạng thái</label>
@@ -445,6 +457,44 @@
               </select>
             </div>
           </div>
+          <!-- 🟣 Hàng Chất liệu / Loại đế giày -->
+<!-- 🟣 Hàng Chất liệu / Loại đế giày -->
+<div class="form-row two-cols">
+  <!-- 🧩 Chất liệu -->
+  <div class="form-group">
+    <label class="form-label required">Chất liệu</label>
+    <div class="input-with-button">
+      <input 
+        type="text" 
+        class="form-control" 
+        v-model="selectedMaterialName"
+        placeholder="Ví dụ: Da tổng hợp, Vải canvas..."
+        readonly
+      />
+      <button type="button" class="btn btn-icon-sm btn-success" @click="openQuickAddMaterial">
+        <i class="material-icons">add</i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 🧩 Loại đế giày -->
+  <div class="form-group">
+    <label class="form-label required">Loại đế giày</label>
+    <div class="input-with-button">
+      <input 
+        type="text" 
+        class="form-control" 
+        v-model="selectedSoleName"
+        placeholder="Ví dụ: Cao su, Foam, EVA..."
+        readonly
+      />
+      <button type="button" class="btn btn-icon-sm btn-success" @click="openQuickAddSole">
+        <i class="material-icons">add</i>
+      </button>
+    </div>
+  </div>
+</div>
+
 
           <div class="form-group">
             <label class="form-label">Mô tả</label>
@@ -457,31 +507,37 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label required">Danh mục</label>
-            <div class="checkbox-group">
-              <label v-for="category in categories" :key="category.id" class="checkbox-label">
-                <input 
-                  type="checkbox" 
-                  :value="category.id"
-                  v-model="formData.categoryIds"
-                />
-                {{ category.name }}
-              </label>
-            </div>
-            <span v-if="formErrors.categoryIds" class="form-error">{{ formErrors.categoryIds }}</span>
-          </div>
+  <label class="form-label required">Danh mục</label>
+  <div class="checkbox-group">
+    <label 
+      v-for="category in childCategories" 
+      :key="category.id" 
+      class="checkbox-label"
+    >
+      <input 
+        type="checkbox" 
+        :value="category.id"
+        v-model="formData.categoryIds"
+      />
+      {{ category.name }}
+    </label>
+  </div>
+  <span v-if="formErrors.categoryIds" class="form-error">{{ formErrors.categoryIds }}</span>
+</div>
+
+
           
           <!-- Variants -->
           <div class="section-title">
-            Biến thể sản phẩm (Variants)
+            Sản phẩm chi tiết
             <button @click="addVariant" type="button" class="btn-sm btn-primary">
               <i class="material-icons">add</i>
-              Thêm variant
+              Thêm SPCT
             </button>
           </div>
 
           <div v-if="formData.variants.length === 0" class="empty-variants">
-            <p>Chưa có variant nào. Nhấn "Thêm variant" để tạo variant đầu tiên.</p>
+            <p>Chưa có SPCT nào. Nhấn "Thêm SPCT" để tạo SPCT đầu tiên.</p>
           </div>
 
           <div v-else class="variants-list">
@@ -595,6 +651,174 @@
         </div>
       </div>
     </div>
+
+<!-- Modal Thêm Thương hiệu mới -->
+<div v-if="showQuickAddBrand" class="modal-overlay" @click="closeQuickAddBrand">
+  <div class="modal" @click.stop>
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <i class="material-icons">add</i>
+        Thêm Thương hiệu mới
+      </h2>
+      <button @click="closeQuickAddBrand" class="modal-close">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tên thương hiệu *</label>
+          <input v-model="quickBrandData.name" @input="generateBrandSlug"
+                 type="text" class="form-control" placeholder="VD: Nike, Adidas..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slug *</label>
+          <input v-model="quickBrandData.slug" type="text" class="form-control"
+                 placeholder="VD: nike, adidas..." />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">URL Logo</label>
+        <input v-model="quickBrandData.logoUrl" type="text" class="form-control"
+               placeholder="/placeholder-image.png" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Website</label>
+        <input v-model="quickBrandData.websiteUrl" type="url" class="form-control"
+               placeholder="https://example.com" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mô tả</label>
+        <textarea v-model="quickBrandData.description" class="form-control" rows="3"
+                  placeholder="Nhập mô tả về thương hiệu..."></textarea>
+      </div>
+
+      <div class="form-check">
+        <input type="checkbox" v-model="quickBrandData.isActive" id="isActiveBrand" />
+        <label for="isActiveBrand">Kích hoạt thương hiệu</label>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button @click="closeQuickAddBrand" class="btn btn-secondary">
+        <i class="material-icons">close</i> Hủy
+      </button>
+      <button @click="saveQuickBrand" class="btn btn-primary" :disabled="savingQuickBrand">
+        <i class="material-icons" v-if="!savingQuickBrand">save</i>
+        <span v-if="savingQuickBrand" class="btn-loading"></span>
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>
+<!-- Modal Thêm Chất liệu mới -->
+<div v-if="showQuickAddMaterial" class="modal-overlay" @click="closeQuickAddMaterial">
+  <div class="modal" @click.stop>
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <i class="material-icons">add</i>
+        Thêm Chất liệu mới
+      </h2>
+      <button @click="closeQuickAddMaterial" class="modal-close">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tên chất liệu *</label>
+          <input v-model="quickMaterialData.name" @input="generateMaterialSlug"
+                 type="text" class="form-control" placeholder="VD: Da tổng hợp, Vải canvas..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slug *</label>
+          <input v-model="quickMaterialData.slug" type="text" class="form-control"
+                 placeholder="VD: da-tong-hop, vai-canvas..." />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mô tả</label>
+        <textarea v-model="quickMaterialData.description" class="form-control" rows="3"
+                  placeholder="Nhập mô tả về chất liệu..."></textarea>
+      </div>
+
+      <div class="form-check">
+        <input type="checkbox" v-model="quickMaterialData.isActive" id="activeMaterial" />
+        <label for="activeMaterial">Kích hoạt chất liệu</label>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button @click="closeQuickAddMaterial" class="btn btn-secondary">
+        <i class="material-icons">close</i> Hủy
+      </button>
+      <button @click="saveQuickMaterial" class="btn btn-primary" :disabled="savingQuickMaterial">
+        <i class="material-icons" v-if="!savingQuickMaterial">save</i>
+        <span v-if="savingQuickMaterial" class="btn-loading"></span>
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>
+<!-- Modal Thêm Loại đế giày mới -->
+<div v-if="showQuickAddSole" class="modal-overlay" @click="closeQuickAddSole">
+  <div class="modal" @click.stop>
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <i class="material-icons">add</i>
+        Thêm Loại đế giày mới
+      </h2>
+      <button @click="closeQuickAddSole" class="modal-close">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tên loại đế *</label>
+          <input v-model="quickSoleData.name" @input="generateSoleSlug"
+                 type="text" class="form-control" placeholder="VD: Cao su, Foam, EVA..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slug *</label>
+          <input v-model="quickSoleData.slug" type="text" class="form-control"
+                 placeholder="VD: cao-su, eva..." />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mô tả</label>
+        <textarea v-model="quickSoleData.description" class="form-control" rows="3"
+                  placeholder="Nhập mô tả về loại đế giày..."></textarea>
+      </div>
+
+      <div class="form-check">
+        <input type="checkbox" v-model="quickSoleData.isActive" id="activeSole" />
+        <label for="activeSole">Kích hoạt loại đế giày</label>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button @click="closeQuickAddSole" class="btn btn-secondary">
+        <i class="material-icons">close</i> Hủy
+      </button>
+      <button @click="saveQuickSole" class="btn btn-primary" :disabled="savingQuickSole">
+        <i class="material-icons" v-if="!savingQuickSole">save</i>
+        <span v-if="savingQuickSole" class="btn-loading"></span>
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>
+
+
 
     <!-- Import Excel Modal -->
     <div v-if="showImportModal" class="modal-overlay" @click="closeImportModal">
@@ -779,6 +1003,8 @@ const adminStore = useAdminStore()
 const products = ref([])
 const brands = ref([])
 const categories = ref([])
+const materials = ref([]) // Danh sách chất liệu
+const soles = ref([])     // Danh sách loại đế giày
 const stats = ref(null)
 const loading = ref(false)
 const currentPage = ref(0)
@@ -797,8 +1023,34 @@ const importing = ref(false)
 const bulkUpdating = ref(false)
 const productToDelete = ref(null)
 
+// ==============================
+// 🔹 MATERIAL & SOLE STATE
+// ==============================
+const selectedMaterialName = ref('')
+const selectedSoleName = ref('')
+
+// ==============================
+// 🔹 MATERIAL CHANGE HANDLER
+// ==============================
+function onMaterialChange(id) {
+  const material = materials.value.find((m) => m.id === id)
+  selectedMaterialName.value = material ? material.name : ''
+}
+
+// 🔹 SOLE CHANGE HANDLER
+function onSoleChange(id) {
+  const sole = soles.value.find((s) => s.id === id)
+  selectedSoleName.value = sole ? sole.name : ''
+}
+
 // Bulk selection state
 const selectedProducts = ref([])
+
+// ✅ Chỉ hiển thị danh mục con (level > 0)
+// ✅ Chỉ hiển thị danh mục con (có parentId)
+const childCategories = computed(() => {
+  return categories.value.filter(cat => cat.parentId != null)
+})
 
 // Advanced filters
 const filters = ref({
@@ -965,6 +1217,26 @@ const fetchStatistics = async () => {
     console.error('Lỗi khi tải thống kê:', error)
   }
 }
+
+// ===== MATERIALS & SOLES =====
+const fetchMaterials = async () => {
+  try {
+    await adminStore.fetchMaterials()
+    materials.value = adminStore.materials
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách chất liệu:', error)
+  }
+}
+
+const fetchSoles = async () => {
+  try {
+    await adminStore.fetchSoles()
+    soles.value = adminStore.soles
+  } catch (error) {
+    console.error('Lỗi khi tải danh sách loại đế giày:', error)
+  }
+}
+
 
 // ===== BULK SELECTION =====
 const toggleSelect = (productId) => {
@@ -1210,6 +1482,185 @@ const handleDelete = async () => {
   }
 }
 
+// ===== QUICK ADD BRAND MODAL =====
+const showQuickAddBrand = ref(false)
+const savingQuickBrand = ref(false)
+
+const quickBrandData = ref({
+  name: '',
+  slug: '',
+  logoUrl: '',
+  websiteUrl: '',
+  description: '',
+  isActive: true
+})
+
+// Mở modal thêm nhanh
+const openQuickAddBrand = () => {
+  showQuickAddBrand.value = true
+}
+
+// Đóng modal
+const closeQuickAddBrand = () => {
+  showQuickAddBrand.value = false
+  quickBrandData.value = {
+    name: '',
+    slug: '',
+    logoUrl: '',
+    websiteUrl: '',
+    description: '',
+    isActive: true
+  }
+}
+
+// Sinh slug tự động
+const generateBrandSlug = () => {
+  quickBrandData.value.slug = quickBrandData.value.name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim()
+}
+
+// Lưu thương hiệu nhanh
+const saveQuickBrand = async () => {
+  if (!quickBrandData.value.name.trim()) {
+    ElMessage.warning('Vui lòng nhập tên thương hiệu!')
+    return
+  }
+
+  try {
+    savingQuickBrand.value = true
+
+    // 🟢 Gọi API tạo thương hiệu (qua adminStore)
+    const res = await adminStore.createBrand(quickBrandData.value)
+
+    ElMessage.success('✅ Đã thêm thương hiệu mới thành công!')
+    showQuickAddBrand.value = false
+
+    // 🔄 Reload danh sách brands
+    await fetchBrands()
+
+    // 🔧 Tự chọn thương hiệu vừa thêm vào form sản phẩm (nếu đang mở)
+    const newBrand = adminStore.brands.find(b => b.slug === quickBrandData.value.slug)
+    if (newBrand) {
+      formData.value.brandId = newBrand.id
+    }
+
+    // Reset data
+    quickBrandData.value = {
+      name: '',
+      slug: '',
+      logoUrl: '',
+      websiteUrl: '',
+      description: '',
+      isActive: true
+    }
+  } catch (error) {
+    console.error('Lỗi khi thêm thương hiệu nhanh:', error)
+    ElMessage.error('Không thể thêm thương hiệu. Vui lòng thử lại!')
+  } finally {
+    savingQuickBrand.value = false
+  }
+}
+
+// ===== QUICK ADD MATERIAL =====
+const showQuickAddMaterial = ref(false)
+const savingQuickMaterial = ref(false)
+const quickMaterialData = ref({
+  name: '',
+  slug: '',
+  description: '',
+  isActive: true
+})
+
+const openQuickAddMaterial = () => showQuickAddMaterial.value = true
+const closeQuickAddMaterial = () => {
+  showQuickAddMaterial.value = false
+  quickMaterialData.value = { name: '', slug: '', description: '', isActive: true }
+}
+
+const generateMaterialSlug = () => {
+  quickMaterialData.value.slug = quickMaterialData.value.name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .trim()
+}
+
+const saveQuickMaterial = async () => {
+  if (!quickMaterialData.value.name.trim()) {
+    ElMessage.warning('Vui lòng nhập tên chất liệu!')
+    return
+  }
+  try {
+    savingQuickMaterial.value = true
+    await adminStore.createMaterial(quickMaterialData.value)
+    ElMessage.success('✅ Thêm chất liệu mới thành công!')
+    await fetchMaterials?.() // gọi hàm reload nếu có
+    closeQuickAddMaterial()
+  } catch (err) {
+    console.error(err)
+    ElMessage.error('Không thể thêm chất liệu.')
+  } finally {
+    savingQuickMaterial.value = false
+  }
+}
+
+// ===== QUICK ADD SOLE =====
+const showQuickAddSole = ref(false)
+const savingQuickSole = ref(false)
+const quickSoleData = ref({
+  name: '',
+  slug: '',
+  description: '',
+  isActive: true
+})
+
+const openQuickAddSole = () => showQuickAddSole.value = true
+const closeQuickAddSole = () => {
+  showQuickAddSole.value = false
+  quickSoleData.value = { name: '', slug: '', description: '', isActive: true }
+}
+
+const generateSoleSlug = () => {
+  quickSoleData.value.slug = quickSoleData.value.name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .trim()
+}
+
+const saveQuickSole = async () => {
+  if (!quickSoleData.value.name.trim()) {
+    ElMessage.warning('Vui lòng nhập tên loại đế giày!')
+    return
+  }
+  try {
+    savingQuickSole.value = true
+    await adminStore.createSole(quickSoleData.value)
+    ElMessage.success('✅ Thêm loại đế giày mới thành công!')
+    await fetchSoles?.() // gọi hàm reload nếu có
+    closeQuickAddSole()
+  } catch (err) {
+    console.error(err)
+    ElMessage.error('Không thể thêm loại đế giày.')
+  } finally {
+    savingQuickSole.value = false
+  }
+}
+
+
 // ===== IMPORT EXCEL =====
 const openImportModal = () => {
   importPreview.value = []
@@ -1440,6 +1891,8 @@ onMounted(async () => {
     fetchProducts(),
     fetchBrands(),
     fetchCategories(),
+    fetchMaterials(),   // ✅ mới thêm
+    fetchSoles(),       // ✅ mới thêm
     fetchStatistics()
   ])
 })
@@ -2060,8 +2513,40 @@ onMounted(async () => {
   align-items: center;
 }
 
+.section-title .btn-sm {
+  display: inline-flex;
+  align-items: center;      /* Căn giữa icon và text theo chiều dọc */
+  gap: 6px;                 /* Khoảng cách giữa icon và text */
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.section-title .btn-sm i {
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* Icon luôn giữa tuyệt đối */
+}
+
+.form-row.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 cột bằng nhau */
+  gap: 16px; /* Khoảng cách giữa hai ô */
+  margin-bottom: var(--space-1);
+}
+
+@media (max-width: 768px) {
+  .form-row.two-cols {
+    grid-template-columns: 1fr; /* Tự xuống hàng trên mobile */
+  }
+}
+
 .form-group {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-3);
 }
 
 .form-label {
@@ -2087,6 +2572,7 @@ onMounted(async () => {
   background-color: var(--bg-card);
   transition: var(--transition-fast);
   box-sizing: border-box;
+  margin-bottom: var(--space-2);
 }
 
 .form-control:hover {
@@ -2127,30 +2613,80 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--space-4);
+  margin-bottom: var(--space-2);
 }
 
 /* Checkbox Group */
+/* =============================
+   🟣 DANH MỤC (CHECKBOX GRID)
+   ============================= */
 .checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 👉 5 cột đều nhau */
+  gap: 10px 16px; /* khoảng cách giữa các ô */
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* 🧩 Mỗi ô danh mục */
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
+  justify-content: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e8e8e8;
   cursor: pointer;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
-.checkbox-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--accent-primary);
+/* Hiệu ứng hover */
+.checkbox-label:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
+
+/* Ô tickbox */
+.checkbox-label input[type="checkbox"] {
+  accent-color: var(--aurora-primary, #7b61ff);
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* Nếu có cấp con (sublevel) */
+.category-sublevel {
+  color: #aaa;
+  font-size: 12px;
+  margin-left: 2px;
+}
+
+/* Đảm bảo text không lệch */
+.checkbox-label span {
+  line-height: 1.3;
+}
+
+/* Responsive - giảm số cột khi hẹp */
+@media (max-width: 992px) {
+  .checkbox-group {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .checkbox-group {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 
 /* =================================================================
    VARIANTS
@@ -2758,6 +3294,63 @@ onMounted(async () => {
   color: var(--aurora-primary, #0a84ff);
   font-family: monospace;
 }
+
+.checkbox-label {
+  display: block;
+  margin: 4px 0;
+}
+
+.checkbox-label .category-sublevel {
+  color: #888;
+  font-size: 0.85em;
+}
+
+.checkbox-group label {
+  padding-left: 8px;
+}
+
+.checkbox-group label:nth-child(n+2) {
+  margin-top: 4px;
+}
+
+/* Tùy chọn: thụt lề theo cấp độ */
+.checkbox-label {
+  padding-left: calc(var(--level, 1) * 8px);
+}
+
+.input-with-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-with-button select {
+  flex: 1;
+}
+
+.btn-icon-sm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--aurora-primary, #007bff);
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-icon-sm:hover {
+  opacity: 0.85;
+}
+
+.btn-icon-sm i {
+  font-size: 20px;
+}
+
+
 
 </style>
 

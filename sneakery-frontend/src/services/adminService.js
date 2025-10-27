@@ -373,6 +373,81 @@ class AdminService {
     }
   }
 
+    // ===== MATERIAL MANAGEMENT (CHẤT LIỆU) =====
+  async getMaterials() {
+    try {
+      const response = await adminApi.get('/materials')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createMaterial(data) {
+    try {
+      const response = await adminApi.post('/materials', data)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateMaterial(id, data) {
+    try {
+      const response = await adminApi.put(`/materials/${id}`, data)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteMaterial(id) {
+    try {
+      const response = await adminApi.delete(`/materials/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== SOLE MANAGEMENT (ĐẾ GIÀY) =====
+  async getSoles() {
+    try {
+      const response = await adminApi.get('/soles')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createSole(data) {
+    try {
+      const response = await adminApi.post('/soles', data)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateSole(id, data) {
+    try {
+      const response = await adminApi.put(`/soles/${id}`, data)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteSole(id) {
+    try {
+      const response = await adminApi.delete(`/soles/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+
   // ===== EXPORT/IMPORT =====
   async exportData(type, format = 'excel') {
     try {
