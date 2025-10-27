@@ -159,12 +159,12 @@
   --dark-bg-glass-dark: rgba(15, 23, 42, 0.6);
   
   /* ─── Dark Text Colors ─── */
-  --dark-text-primary: var(--color-slate-700);
-  --dark-text-secondary: var(--color-slate-600);
-  --dark-text-tertiary: var(--color-slate-500);
-  --dark-text-quaternary: var(--color-slate-400);
+  --dark-text-primary: var(--color-slate-100);
+  --dark-text-secondary: var(--color-slate-300);
+  --dark-text-tertiary: var(--color-slate-400);
+  --dark-text-quaternary: var(--color-slate-500);
   --dark-text-muted: var(--color-slate-500);
-  --dark-text-inverse: var(--color-slate-100);
+  --dark-text-inverse: var(--color-slate-900);
   
   /* ─── Dark Borders ─── */
   --dark-border-primary: rgba(167, 139, 250, 0.15);

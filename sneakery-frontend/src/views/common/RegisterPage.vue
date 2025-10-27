@@ -401,6 +401,19 @@ const handleGoogleLogin = () => {
   box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
 }
 
+/* ===== ELEMENT PLUS INPUT CUSTOMIZATION ===== */
+.register-page :deep(.el-input__wrapper) {
+  background-color: white;
+}
+
+.register-page :deep(.el-input__inner) {
+  color: var(--color-gray-900) !important;
+}
+
+.register-page :deep(.el-input__inner::placeholder) {
+  color: var(--color-gray-500) !important;
+}
+
 /* ===== DIVIDER ===== */
 .divider {
   text-align: center;
