@@ -62,26 +62,63 @@ public class AuthService {
      * Xử lý logic Đăng nhập
      */
     public AuthResponseDto login(LoginDto loginDto) {
-        // 1. Xác thực (email + password)
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
-        );
+    final String email = loginDto.getEmail();
+    final String raw = loginDto.getPassword();
 
-        // 2. Nếu thành công, lưu thông tin xác thực vào SecurityContext
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+    // 🔍 B1: Log input (chỉ bật tạm khi debug; không log password ở prod)
+    System.out.println("🧩 Login attempt -> email=" + email + ", raw=" + raw);
 
-        // 3. Tạo JWT token
-        String token = jwtTokenProvider.generateToken(authentication);
+    // 🔍 B2: Tìm user theo email và so khớp BCrypt trước khi authenticate
+    userRepository.findByEmail(email).ifPresentOrElse(u -> {
+        System.out.println("🧩 Stored hash: " + u.getPasswordHash());
+        boolean matches = passwordEncoder.matches(raw, u.getPasswordHash());
+        System.out.println("🧩 BCrypt matches? " + matches);
+    }, () -> {
+        System.out.println("🧩 User not found with email=" + email);
+    });
 
-        // 4. Lấy thông tin User (đã được xác thực)
-        User user = (User) authentication.getPrincipal();
+    // 🔐 B3: Xác thực
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(email, raw)
+    );
 
-        // 5. Trả về DTO chứa token và thông tin user cho VueJS
-        return AuthResponseDto.builder()
-                .accessToken(token)
-                .role(user.getRole())
-                .fullName(user.getFullName())
-                .userId(user.getId())
-                .build();
-    }
+    // ✅ B4: Set security context
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    // 🔑 B5: Tạo JWT
+    String token = jwtTokenProvider.generateToken(authentication);
+
+    // 👤 B6: Trả về info
+    User user = (User) authentication.getPrincipal();
+    return AuthResponseDto.builder()
+            .accessToken(token)
+            .role(user.getRole())
+            .fullName(user.getFullName())
+            .userId(user.getId())
+            .build();
+}
+
+    // public AuthResponseDto login(LoginDto loginDto) {
+    //     // 1. Xác thực (email + password)
+    //     Authentication authentication = authenticationManager.authenticate(
+    //             new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
+    //     );
+
+    //     // 2. Nếu thành công, lưu thông tin xác thực vào SecurityContext
+    //     SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    //     // 3. Tạo JWT token
+    //     String token = jwtTokenProvider.generateToken(authentication);
+
+    //     // 4. Lấy thông tin User (đã được xác thực)
+    //     User user = (User) authentication.getPrincipal();
+
+    //     // 5. Trả về DTO chứa token và thông tin user cho VueJS
+    //     return AuthResponseDto.builder()
+    //             .accessToken(token)
+    //             .role(user.getRole())
+    //             .fullName(user.getFullName())
+    //             .userId(user.getId())
+    //             .build();
+    // }
 }
