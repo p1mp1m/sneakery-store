@@ -98,6 +98,17 @@ select {
   -webkit-backdrop-filter: none;
 }
 
+/* Màu chữ tối cho input trong trang login/register */
+.login-page input,
+.register-page input {
+  color: var(--input-text-color) !important;
+}
+
+.login-page input::placeholder,
+.register-page input::placeholder {
+  color: var(--input-placeholder-color) !important;
+}
+
 .form-control:hover,
 .form-input:hover,
 input:hover,
