@@ -772,6 +772,19 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  const updatePaymentStatus = async (id, status) => {
+    try {
+      loading.value = true
+      const result = await AdminService.updatePaymentStatus(id, status)
+      return result
+    } catch (error) {
+      console.error('Error updating payment status:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   // ===== ANALYTICS (Bổ sung) =====
   const fetchProductAnalytics = async (period = '30d') => {
     try {
@@ -1244,6 +1257,7 @@ export const useAdminStore = defineStore('admin', () => {
     fetchPayments,
     refundPayment,
     fetchPaymentStats,
+    updatePaymentStatus,
     fetchProductAnalytics,
     fetchCustomerAnalytics,
     fetchSettings,

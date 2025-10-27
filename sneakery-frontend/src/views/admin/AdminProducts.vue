@@ -219,7 +219,61 @@
       </div>
 
       <!-- Products Table -->
-      <div class="table-container animate-fade-up">
+      <!-- Mobile Card View -->
+      <div class="mobile-card-view animate-fade-up">
+        <div v-for="product in products" :key="product.id" class="mobile-card-item">
+          <div class="mobile-card-header">
+            <h4 class="mobile-card-title">{{ product.name }}</h4>
+            <input 
+              type="checkbox" 
+              :checked="selectedProducts.includes(product.id)"
+              @change="toggleSelect(product.id)"
+              class="checkbox-input"
+            />
+          </div>
+          <div class="mobile-card-body">
+            <div class="mobile-card-row">
+              <span class="mobile-card-label">Slug:</span>
+              <span class="mobile-card-value">{{ product.slug }}</span>
+            </div>
+            <div class="mobile-card-row">
+              <span class="mobile-card-label">Thương hiệu:</span>
+              <span class="mobile-card-value">{{ product.brandName || 'N/A' }}</span>
+            </div>
+            <div class="mobile-card-row">
+              <span class="mobile-card-label">Variants:</span>
+              <span class="badge badge-info">{{ product.variantCount || 0 }} variants</span>
+            </div>
+            <div class="mobile-card-row">
+              <span class="mobile-card-label">Tồn kho:</span>
+              <span class="stock-badge" :class="getStockClass(product)">
+                <i class="material-icons">{{ getStockIcon(product) }}</i>
+                {{ getStockText(product) }}
+              </span>
+            </div>
+            <div class="mobile-card-row">
+              <span class="mobile-card-label">Trạng thái:</span>
+              <span :class="['status-badge', product.isActive ? 'active' : 'inactive']">
+                {{ product.isActive ? 'Đang bán' : 'Ngừng bán' }}
+              </span>
+            </div>
+          </div>
+          <div class="mobile-card-actions">
+            <button @click="duplicateProduct(product.id)" class="btn-icon" title="Nhân bản">
+              <i class="material-icons">content_copy</i>
+            </button>
+            <button @click="openEditModal(product)" class="btn-icon" title="Chỉnh sửa">
+              <i class="material-icons">edit</i>
+            </button>
+            <button @click="confirmDelete(product)" class="btn-icon danger" title="Xóa">
+              <i class="material-icons">delete</i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View -->
+      <div class="table-container animate-fade-up show-desktop">
         <table class="products-table">
           <thead>
             <tr>
@@ -733,6 +787,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
+import { downloadCsv, downloadJson, exportToExcelStyled } from '@/utils/exportHelpers'
 import * as XLSX from 'xlsx'
 
 const adminStore = useAdminStore()
@@ -1363,7 +1418,7 @@ const resetFilters = () => {
   fetchProducts()
 }
 
-// ===== EXPORT EXCEL =====
+// ===== EXPORT =====
 const exportToExcel = () => {
   try {
     const exportData = products.value.map((product, index) => ({
@@ -1375,17 +1430,16 @@ const exportToExcel = () => {
       'Trạng thái': product.isActive ? 'Đang bán' : 'Ngừng bán'
     }))
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sản phẩm')
-    
-    const timestamp = new Date().toISOString().slice(0, 10)
-    const filename = `san-pham_${timestamp}.xlsx`
-    
-    XLSX.writeFile(workbook, filename)
+    if (exportData.length === 0) {
+      ElMessage.warning('Không có dữ liệu để xuất')
+      return
+    }
+
+    // Export to styled Excel file
+    exportToExcelStyled(exportData, 'san-pham.xlsx', 'Sản phẩm')
     ElMessage.success(`Đã export ${exportData.length} sản phẩm thành công!`)
   } catch (error) {
-    console.error('Lỗi khi export Excel:', error)
+    console.error('Lỗi khi export:', error)
     ElMessage.error('Không thể export dữ liệu. Vui lòng thử lại!')
   }
 }
@@ -2683,6 +2737,8 @@ onMounted(async () => {
     margin: var(--space-2);
     max-height: calc(100vh - var(--space-4));
     border-radius: var(--radius-lg);
+    width: calc(100vw - var(--space-4));
+    max-width: calc(100vw - var(--space-4));
   }
 
   .modal-header {
@@ -2695,15 +2751,19 @@ onMounted(async () => {
 
   .modal-body {
     padding: var(--space-4);
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
   }
 
   .modal-footer {
     padding: var(--space-4);
     flex-direction: column-reverse;
+    gap: var(--space-2);
   }
 
   .modal-footer button {
     width: 100%;
+    min-height: 44px;
   }
 
   .btn {

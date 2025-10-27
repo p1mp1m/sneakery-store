@@ -615,3 +615,87 @@
     margin-right: var(--space-4);
   }
 }
+
+/* ===== MOBILE CARD LAYOUT COMPONENTS ===== */
+@media (max-width: 768px) {
+  .mobile-card-view {
+    display: block;
+  }
+  
+  .mobile-card-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    transition: var(--transition-fast);
+  }
+  
+  .mobile-card-item:hover {
+    box-shadow: var(--shadow-card);
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+  }
+  
+  .mobile-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .mobile-card-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    margin: 0;
+  }
+  
+  .mobile-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  
+  .mobile-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .mobile-card-row:last-child {
+    border-bottom: none;
+  }
+  
+  .mobile-card-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+  }
+  
+  .mobile-card-value {
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    text-align: right;
+    flex: 1;
+  }
+  
+  .mobile-card-actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-light);
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-card-view {
+    display: none !important;
+  }
+}

@@ -253,8 +253,8 @@
               <label class="form-label required">Sản phẩm</label>
               <select class="form-input" v-model="formData.productId" required>
                 <option value="">-- Chọn sản phẩm --</option>
-                <option v-for="product in mockProducts" :key="product.id" :value="product.id">
-                  {{ product.name }} ({{ formatCurrency(product.price) }})
+                <option v-for="product in availableProducts" :key="product.id" :value="product.id">
+                  {{ product.name }} - {{ product.brandName }} ({{ formatCurrency(product.price) }})
                 </option>
               </select>
             </div>
@@ -399,6 +399,9 @@ const mockProducts = ref([
   { id: 4, name: 'Puma Suede Classic', price: 1800000, brandName: 'Puma' }
 ])
 
+// Available products from API
+const availableProducts = ref([])
+
 // Form data
 const formData = ref({
   id: null,
@@ -414,7 +417,7 @@ const flashSales = ref([])
 
 // Computed
 const selectedProduct = computed(() => {
-  return mockProducts.value.find(p => p.id === formData.value.productId)
+  return availableProducts.value.find(p => p.id === formData.value.productId)
 })
 
 const discountAmount = computed(() => {
@@ -504,99 +507,15 @@ const loadFlashSales = async () => {
   try {
     loading.value = true
     
-    // Mock data cho flash sales
-    const mockFlashSales = [
-      {
-        id: 1,
-        productId: 1,
-        productName: 'Nike Air Max 270',
-        productImage: '/placeholder-image.png',
-        originalPrice: 3000000,
-        flashSalePrice: 1500000,
-        discountPercent: 50,
-        startTime: '2024-01-15T08:00:00Z',
-        endTime: '2024-01-15T20:00:00Z',
-        isActive: true,
-        maxQuantity: 100,
-        soldQuantity: 45,
-        createdAt: '2024-01-14T10:00:00Z'
-      },
-      {
-        id: 2,
-        productId: 2,
-        productName: 'Adidas Ultraboost 22',
-        productImage: '/placeholder-image.png',
-        originalPrice: 3500000,
-        flashSalePrice: 2100000,
-        discountPercent: 40,
-        startTime: '2024-01-16T09:00:00Z',
-        endTime: '2024-01-16T21:00:00Z',
-        isActive: true,
-        maxQuantity: 80,
-        soldQuantity: 0,
-        createdAt: '2024-01-15T10:00:00Z'
-      },
-      {
-        id: 3,
-        productId: 3,
-        productName: 'Jordan 1 Retro',
-        productImage: '/placeholder-image.png',
-        originalPrice: 4000000,
-        flashSalePrice: 2400000,
-        discountPercent: 40,
-        startTime: '2024-01-10T08:00:00Z',
-        endTime: '2024-01-10T20:00:00Z',
-        isActive: false,
-        maxQuantity: 50,
-        soldQuantity: 50,
-        createdAt: '2024-01-09T10:00:00Z'
-      },
-      {
-        id: 4,
-        productId: 4,
-        productName: 'Converse Chuck Taylor',
-        productImage: '/placeholder-image.png',
-        originalPrice: 1200000,
-        flashSalePrice: 600000,
-        discountPercent: 50,
-        startTime: '2024-01-17T10:00:00Z',
-        endTime: '2024-01-17T22:00:00Z',
-        isActive: true,
-        maxQuantity: 200,
-        soldQuantity: 0,
-        createdAt: '2024-01-16T10:00:00Z'
-      }
-    ]
+    // Load flash sales from API
+    const salesResult = await adminStore.fetchFlashSales()
+    flashSales.value = salesResult || []
     
-    // Apply filters
-    let filteredFlashSales = mockFlashSales
+    // Load products for dropdown
+    const productsResult = await adminStore.fetchProducts(0, 100, { isActive: true })
+    availableProducts.value = productsResult.content || []
     
-    if (searchKeyword.value) {
-      filteredFlashSales = filteredFlashSales.filter(sale => 
-        sale.productName.toLowerCase().includes(searchKeyword.value.toLowerCase())
-      )
-    }
-    
-    if (filterStatus.value !== 'all') {
-      const now = new Date()
-      filteredFlashSales = filteredFlashSales.filter(sale => {
-        const start = new Date(sale.startTime)
-        const end = new Date(sale.endTime)
-        
-        if (filterStatus.value === 'active') {
-          return sale.isActive && now >= start && now <= end
-        } else if (filterStatus.value === 'upcoming') {
-          return sale.isActive && now < start
-        } else if (filterStatus.value === 'expired') {
-          return !sale.isActive || now > end
-        }
-        return true
-      })
-    }
-    
-    flashSales.value = filteredFlashSales
-    
-    console.log('✅ Flash sales loaded successfully')
+    console.log('✅ Flash sales loaded from API')
   } catch (error) {
     console.error('Lỗi khi tải danh sách flash sales:', error)
     ElMessage.error('Không thể tải danh sách flash sales')
@@ -679,7 +598,6 @@ const closeModal = () => {
 const saveFlashSale = async () => {
   saving.value = true
   try {
-    const product = selectedProduct.value
     const flashSaleData = {
       productId: formData.value.productId,
       discountPercentage: formData.value.discountPercentage,

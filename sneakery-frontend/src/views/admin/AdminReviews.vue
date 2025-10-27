@@ -44,7 +44,7 @@
       
       <StatsCard
         icon="rate_review"
-        :value="mockReviews.length"
+        :value="totalReviews"
         label="Tổng đánh giá"
         variant="primary"
       />
@@ -340,6 +340,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
+import StatsCard from '@/assets/components/admin/StatsCard.vue'
+import FilterBar from '@/assets/components/admin/FilterBar.vue'
+import EmptyState from '@/assets/components/admin/EmptyState.vue'
+import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
 
@@ -360,8 +364,9 @@ const itemsPerPage = 5
 
 // Reviews data
 const reviews = ref([])
+const totalReviews = ref(0)
 
-// Mock data - Replace with real API calls
+// Mock data (fallback only)
 const mockReviews = ref([
   {
     id: 1,
@@ -462,15 +467,15 @@ const mockReviews = ref([
 
 // Computed
 const filteredReviews = computed(() => {
-  let result = reviews.value
+  let result = reviews.value || []
 
   // Filter by search
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
     result = result.filter(review => 
-      review.productName.toLowerCase().includes(keyword) ||
-      review.userName.toLowerCase().includes(keyword) ||
-      review.body.toLowerCase().includes(keyword)
+      review.productName?.toLowerCase().includes(keyword) ||
+      review.userName?.toLowerCase().includes(keyword) ||
+      review.body?.toLowerCase().includes(keyword)
     )
   }
 
@@ -597,33 +602,22 @@ const loadReviews = async () => {
       }
     ]
     
-    // Apply filters
-    let filteredReviews = mockReviews
+    // Load from API
+    const apiFilters = {}
     
     if (searchKeyword.value) {
-      filteredReviews = filteredReviews.filter(review => 
-        review.productName.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
-        review.userName.toLowerCase().includes(searchKeyword.value.toLowerCase()) ||
-        review.title.toLowerCase().includes(searchKeyword.value.toLowerCase())
-      )
+      apiFilters.search = searchKeyword.value
     }
     
     if (filterStatus.value !== 'all') {
-      if (filterStatus.value === 'approved') {
-        filteredReviews = filteredReviews.filter(review => review.isApproved)
-      } else if (filterStatus.value === 'pending') {
-        filteredReviews = filteredReviews.filter(review => !review.isApproved)
-      }
+      apiFilters.isApproved = filterStatus.value === 'approved'
     }
     
-    if (filterRating.value !== 'all') {
-      const rating = parseInt(filterRating.value)
-      filteredReviews = filteredReviews.filter(review => review.rating === rating)
-    }
+    const result = await adminStore.fetchReviews(0, 50, apiFilters)
+    reviews.value = result.content || []
+    totalReviews.value = result.totalElements || 0
     
-    reviews.value = filteredReviews
-    
-    console.log('✅ Reviews loaded successfully')
+    console.log('✅ Reviews loaded from API')
   } catch (error) {
     console.error('Error loading reviews:', error)
     ElMessage.error('Lỗi khi tải danh sách đánh giá')
@@ -695,6 +689,11 @@ const deleteReview = async () => {
   }
 }
 
+const handleSearch = () => {
+  currentPage.value = 1
+  loadReviews()
+}
+
 const resetFilters = () => {
   searchKeyword.value = ''
   filterStatus.value = 'all'
@@ -712,6 +711,35 @@ const formatDate = (dateString) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+const exportReviews = () => {
+  try {
+    const dataToExport = filteredReviews.value || []
+    if (dataToExport.length === 0) {
+      ElMessage.warning('Không có dữ liệu để xuất')
+      return
+    }
+    
+    const exportData = dataToExport.map(review => ({
+      'ID': review.id,
+      'Sản phẩm': review.productName,
+      'Khách hàng': review.userName,
+      'Email': review.userEmail || 'N/A',
+      'Đánh giá': review.rating,
+      'Tiêu đề': review.title || 'N/A',
+      'Nội dung': review.body || 'N/A',
+      'Trạng thái': review.isApproved ? 'Đã duyệt' : 'Chờ duyệt',
+      'Xác minh': review.isVerifiedPurchase ? 'Đã xác minh' : 'Chưa xác minh',
+      'Ngày tạo': formatDate(review.createdAt)
+    }))
+    
+    downloadCsv(exportData, 'reviews.csv')
+    ElMessage.success('Xuất CSV thành công!')
+  } catch (error) {
+    console.error('Export error:', error)
+    ElMessage.error('Có lỗi xảy ra khi xuất dữ liệu!')
+  }
 }
 
 const handleImageError = (e) => {

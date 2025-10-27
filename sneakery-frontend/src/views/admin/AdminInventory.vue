@@ -387,6 +387,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useAdminStore } from '@/stores/admin'
+
+// Stores
+const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -404,98 +408,7 @@ const adjustmentQuantity = ref(1)
 const adjustmentReason = ref('')
 const inventoryHistory = ref([])
 
-// Mock data
-const mockProducts = ref([
-  {
-    id: 1,
-    name: 'Nike Air Force 1',
-    sku: 'NK-AF1-WH-42',
-    brandName: 'Nike',
-    size: '42',
-    color: 'Trắng',
-    image: '/placeholder-image.png',
-    stockQuantity: 25,
-    lowStockThreshold: 10,
-    costPrice: 1500000,
-    priceBase: 2500000,
-    updatedAt: '2024-01-25T10:30:00Z'
-  },
-  {
-    id: 2,
-    name: 'Adidas Ultraboost 22',
-    sku: 'AD-UB22-BK-41',
-    brandName: 'Adidas',
-    size: '41',
-    color: 'Đen',
-    image: '/placeholder-image.png',
-    stockQuantity: 5,
-    lowStockThreshold: 10,
-    costPrice: 2000000,
-    priceBase: 3500000,
-    updatedAt: '2024-01-25T11:15:00Z'
-  },
-  {
-    id: 3,
-    name: 'Converse Chuck Taylor',
-    sku: 'CV-CT-RD-40',
-    brandName: 'Converse',
-    size: '40',
-    color: 'Đỏ',
-    image: '/placeholder-image.png',
-    stockQuantity: 0,
-    lowStockThreshold: 5,
-    costPrice: 800000,
-    priceBase: 1500000,
-    updatedAt: '2024-01-25T14:20:00Z'
-  },
-  {
-    id: 4,
-    name: 'Puma Suede Classic',
-    sku: 'PM-SC-BL-43',
-    brandName: 'Puma',
-    size: '43',
-    color: 'Xanh',
-    image: '/placeholder-image.png',
-    stockQuantity: 15,
-    lowStockThreshold: 8,
-    costPrice: 1200000,
-    priceBase: 2000000,
-    updatedAt: '2024-01-25T15:45:00Z'
-  }
-])
-
-const mockHistory = ref([
-  {
-    id: 1,
-    variantId: 1,
-    changeType: 'restock',
-    quantityBefore: 20,
-    quantityChange: 5,
-    quantityAfter: 25,
-    note: 'Nhập hàng từ nhà cung cấp',
-    createdAt: '2024-01-25T10:30:00Z'
-  },
-  {
-    id: 2,
-    variantId: 2,
-    changeType: 'sale',
-    quantityBefore: 6,
-    quantityChange: -1,
-    quantityAfter: 5,
-    note: 'Bán hàng - Đơn hàng #ORD-20240125-0001',
-    createdAt: '2024-01-25T11:15:00Z'
-  },
-  {
-    id: 3,
-    variantId: 3,
-    changeType: 'adjustment',
-    quantityBefore: 2,
-    quantityChange: -2,
-    quantityAfter: 0,
-    note: 'Điều chỉnh - Hàng hỏng',
-    createdAt: '2024-01-25T14:20:00Z'
-  }
-])
+// Mock data removed - using real API data
 
 // Computed
 const totalProducts = computed(() => products.value.length)
@@ -513,7 +426,7 @@ const newProductsThisMonth = computed(() => {
 })
 
 const filteredProducts = computed(() => {
-  let filtered = products.value
+  let filtered = products.value || []
 
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
@@ -557,13 +470,24 @@ const paginatedProducts = computed(() => {
 const fetchProducts = async () => {
   loading.value = true
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    products.value = mockProducts.value
+    const result = await adminStore.fetchProducts(0, 100, { isActive: true })
+    products.value = result.content || []
   } catch (error) {
     ElMessage.error('Không thể tải danh sách sản phẩm')
   } finally {
     loading.value = false
+  }
+}
+
+const fetchInventoryLogs = async () => {
+  loadingHistory.value = true
+  try {
+    const result = await adminStore.fetchInventoryLogs(0, 50, {})
+    history.value = result.content || []
+  } catch (error) {
+    console.error('Error loading inventory logs:', error)
+  } finally {
+    loadingHistory.value = false
   }
 }
 
@@ -675,10 +599,21 @@ const restockProduct = async (product) => {
   }
 }
 
-const viewInventoryHistory = (product) => {
+const viewInventoryHistory = async (product) => {
   selectedProduct.value = product
-  inventoryHistory.value = mockHistory.value.filter(h => h.variantId === product.id)
   showHistoryModal.value = true
+  
+  // Load inventory history from API
+  loadingHistory.value = true
+  try {
+    const result = await adminStore.fetchInventoryLogs(0, 50, { variantId: product.id })
+    inventoryHistory.value = result.content || []
+  } catch (error) {
+    console.error('Error loading inventory history:', error)
+    inventoryHistory.value = []
+  } finally {
+    loadingHistory.value = false
+  }
 }
 
 const closeHistoryModal = () => {
@@ -689,7 +624,13 @@ const closeHistoryModal = () => {
 
 const exportInventory = (format) => {
   try {
-    const exportData = filteredProducts.value.map(product => ({
+    const dataToExport = filteredProducts.value || []
+    if (dataToExport.length === 0) {
+      ElMessage.warning('Không có dữ liệu để xuất')
+      return
+    }
+    
+    const exportData = dataToExport.map(product => ({
       'ID': product.id,
       'Tên sản phẩm': product.name,
       'SKU': product.sku,
@@ -705,7 +646,7 @@ const exportInventory = (format) => {
     }))
 
     if (format === 'csv') {
-      downloadCsv('inventory', exportData)
+      downloadCsv(exportData, 'inventory.csv')
       ElMessage.success('Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('inventory', exportData)
