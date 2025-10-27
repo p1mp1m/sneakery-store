@@ -5,8 +5,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * Entity: ProductImage - Hình ảnh sản phẩm
- * Lưu nhiều hình ảnh cho mỗi sản phẩm (gallery)
+ * Entity: ProductImage
+ * Lưu trữ nhiều hình ảnh của một sản phẩm.
  */
 @Data
 @Entity
@@ -20,7 +20,7 @@ public class ProductImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Quan hệ với Product (Nhiều images thuộc về 1 Product)
+    /** Nhiều hình ảnh thuộc về 1 sản phẩm */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     @ToString.Exclude
@@ -45,12 +45,7 @@ public class ProductImage {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        if (isPrimary == null) {
-            isPrimary = false;
-        }
-        if (displayOrder == null) {
-            displayOrder = 0;
-        }
+        if (isPrimary == null) isPrimary = false;
+        if (displayOrder == null) displayOrder = 0;
     }
 }
-

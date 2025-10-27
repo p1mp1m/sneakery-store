@@ -18,6 +18,9 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "product_code", unique = true, length = 50)
+    private String code; 
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;

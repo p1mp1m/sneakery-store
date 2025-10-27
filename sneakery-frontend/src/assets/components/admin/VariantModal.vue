@@ -111,14 +111,18 @@
           </div>
           
           <div class="form-group">
-            <label class="form-label">URL hình ảnh</label>
-            <input
-              v-model="formData.imageUrl"
-              type="url"
-              class="form-control"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
+  <label class="form-label">Hình ảnh biến thể</label>
+  <!-- Component Upload ảnh -->
+  <UploadGallery
+    v-if="formData.productId"
+    :productId="formData.productId"
+    @uploaded="(img) => formData.imageUrl = img.imageUrl"
+  />
+  <small v-else class="text-muted">
+    Hãy chọn sản phẩm trước khi upload ảnh
+  </small>
+</div>
+
           
           <div class="form-group">
             <label class="form-checkbox">
@@ -152,6 +156,8 @@
 import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
+import UploadGallery from '@/assets/components/admin/UploadGallery.vue'
+
 
 // ===== PROPS & EMITS =====
 const props = defineProps({

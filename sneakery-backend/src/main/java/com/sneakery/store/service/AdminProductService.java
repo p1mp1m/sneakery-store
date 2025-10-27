@@ -10,6 +10,8 @@ import com.sneakery.store.repository.BrandRepository;
 import com.sneakery.store.repository.CategoryRepository;
 import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
+import com.sneakery.store.util.CodeGenerator;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
@@ -36,42 +38,50 @@ public class AdminProductService {
     private final CategoryRepository categoryRepository;
     private final ProductVariantRepository variantRepository;
     private final EntityManager entityManager;
+    private final CodeGenerator codeGenerator;
+
 
     /**
-     * API 1: Tạo sản phẩm mới
-     */
-    @Transactional
-    public AdminProductDetailDto createProduct(AdminProductRequestDto requestDto) {
-        // 1. Lấy Brand
-        Brand brand = brandRepository.findById(requestDto.getBrandId())
-                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
+ * API 1: Tạo sản phẩm mới
+ */
+@Transactional
+public AdminProductDetailDto createProduct(AdminProductRequestDto requestDto) {
+    // 1️⃣ Lấy Brand
+    Brand brand = brandRepository.findById(requestDto.getBrandId())
+            .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
 
-        // 2. Lấy Categories
-        Set<Category> categories = requestDto.getCategoryIds().stream()
-                .map(id -> categoryRepository.findById(id)
-                        .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Danh mục không tồn tại: " + id)))
-                .collect(Collectors.toSet());
+    // 2️⃣ Lấy Categories
+    Set<Category> categories = requestDto.getCategoryIds().stream()
+            .map(id -> categoryRepository.findById(id)
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Danh mục không tồn tại: " + id)))
+            .collect(Collectors.toSet());
 
-        // 3. Tạo Product
-        Product product = new Product();
-        product.setName(requestDto.getName());
-        product.setSlug(requestDto.getSlug());
-        product.setDescription(requestDto.getDescription());
-        product.setIsActive(requestDto.getIsActive());
-        product.setBrand(brand);
-        product.setCategories(categories);
+    // 3️⃣ Khởi tạo Product
+    Product product = new Product();
+    product.setName(requestDto.getName());
+    product.setSlug(requestDto.getSlug());
+    product.setDescription(requestDto.getDescription());
+    product.setIsActive(requestDto.getIsActive());
+    product.setBrand(brand);
+    product.setCategories(categories);
 
-        // 4. Tạo Variants
-        List<ProductVariant> variants = requestDto.getVariants().stream()
-                .map(dto -> convertVariantDtoToEntity(dto, product))
-                .collect(Collectors.toList());
-        
-        product.setVariants(variants); // Gắn variants vào product
+    // 🆕 4️⃣ Sinh mã sản phẩm tự động
+    Long lastId = productRepository.findMaxId(); // lấy id lớn nhất hiện có
+    String newCode = codeGenerator.generateProductCode(lastId); // tạo mã ví dụ SP00026
+    product.setCode(newCode);
 
-        // 5. Lưu (sẽ cascade-save cả variants)
-        Product savedProduct = productRepository.save(product);
-        return convertToAdminDetailDto(savedProduct);
-    }
+    // 5️⃣ Tạo Variants
+    List<ProductVariant> variants = requestDto.getVariants().stream()
+            .map(dto -> convertVariantDtoToEntity(dto, product))
+            .collect(Collectors.toList());
+    product.setVariants(variants);
+
+    // 6️⃣ Lưu sản phẩm (cascade variants)
+    Product savedProduct = productRepository.save(product);
+
+    // 7️⃣ Trả về DTO chi tiết
+    return convertToAdminDetailDto(savedProduct);
+}
 
     /**
      * API 2: Cập nhật sản phẩm
@@ -120,29 +130,59 @@ public class AdminProductService {
     /**
      * API 4: Lấy danh sách (phân trang)
      */
-    @Transactional(readOnly = true)
-    public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
-        // Lấy Entity từ repository
-        Page<Product> productPage = productRepository.findAll(pageable);
-        
-        // Convert Entity sang DTO để tránh lỗi Jackson serialization với Hibernate proxy
-        return productPage.map(this::convertToListDto);
+    /**
+ * API 4: Lấy danh sách sản phẩm (Admin, có Brand + Categories)
+ */
+@Transactional(readOnly = true)
+public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
+    // 1️⃣ Bước 1: Lấy Page cơ bản (chỉ ID)
+    Page<Product> page = productRepository.findAll(pageable);
+
+    if (page.isEmpty()) {
+        return Page.empty(pageable);
     }
+
+    // 2️⃣ Bước 2: Lấy danh sách ID trong trang hiện tại
+    List<Long> ids = page.getContent().stream()
+            .map(Product::getId)
+            .toList();
+
+    // 3️⃣ Bước 3: Fetch join Brand + Categories cho đúng các ID đó
+    List<Product> fullProducts = productRepository.findByIdInWithBrandAndCategories(ids);
+
+    // 4️⃣ Bước 4: Convert sang DTO
+    List<AdminProductListDto> dtoList = fullProducts.stream()
+            .map(this::convertToListDto)
+            .toList();
+
+    // 5️⃣ Bước 5: Tạo PageImpl để giữ nguyên thông tin phân trang
+    return new PageImpl<>(dtoList, pageable, page.getTotalElements());
+}
+
     
     /**
-     * Helper method: Convert Product Entity sang AdminProductListDto
-     */
-    private AdminProductListDto convertToListDto(Product product) {
-        return AdminProductListDto.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .slug(product.getSlug())
-                .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
-                .brandName(product.getBrand() != null ? product.getBrand().getName() : "N/A")
-                .isActive(product.getIsActive())
-                .variantCount(product.getVariants() != null ? product.getVariants().size() : 0)
-                .build();
-    }
+ * Helper method: Convert Product Entity sang AdminProductListDto
+ */
+private AdminProductListDto convertToListDto(Product product) {
+    // Lấy danh sách category (nếu có)
+    List<SimpleCategoryDto> categoryDtos = product.getCategories() != null
+            ? product.getCategories().stream()
+                .map(cat -> new SimpleCategoryDto(cat.getId(), cat.getName()))
+                .toList()
+            : List.of();
+    return AdminProductListDto.builder()
+            .id(product.getId())
+            .code(product.getCode()) // 🆕 Thêm dòng này để hiển thị mã sản phẩm
+            .name(product.getName())
+            .slug(product.getSlug())
+            .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
+            .brandName(product.getBrand() != null ? product.getBrand().getName() : "N/A")
+            .isActive(product.getIsActive())
+            .variantCount(product.getVariants() != null ? product.getVariants().size() : 0)
+            .categories(categoryDtos)
+            .build();
+}
+
 
     /**
      * API 5: Xóa sản phẩm

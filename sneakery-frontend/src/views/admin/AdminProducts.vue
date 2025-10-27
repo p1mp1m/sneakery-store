@@ -222,94 +222,132 @@
       <div class="table-container animate-fade-up">
         <table class="products-table">
           <thead>
-            <tr>
-              <th style="width: 40px;">
-                <input 
-                  type="checkbox" 
-                  :checked="isAllSelected"
-                  @change="toggleSelectAll"
-                  class="checkbox-input"
-                />
-              </th>
-              <th class="sortable" @click="sortColumn('name')">
-                <div class="th-content">
-                  <span>Tên sản phẩm</span>
-                  <i class="material-icons sort-icon">{{ getSortIcon('name') }}</i>
-                </div>
-              </th>
-              <th class="sortable" @click="sortColumn('brandName')">
-                <div class="th-content">
-                  <span>Thương hiệu</span>
-                  <i class="material-icons sort-icon">{{ getSortIcon('brandName') }}</i>
-                </div>
-              </th>
-              <th class="sortable" @click="sortColumn('variantCount')">
-                <div class="th-content">
-                  <span>Số variants</span>
-                  <i class="material-icons sort-icon">{{ getSortIcon('variantCount') }}</i>
-                </div>
-              </th>
-              <th class="sortable" @click="sortColumn('stockQuantity')">
-                <div class="th-content">
-                  <span>Tồn kho</span>
-                  <i class="material-icons sort-icon">{{ getSortIcon('stockQuantity') }}</i>
-                </div>
-              </th>
-              <th class="sortable" @click="sortColumn('isActive')">
-                <div class="th-content">
-                  <span>Trạng thái</span>
-                  <i class="material-icons sort-icon">{{ getSortIcon('isActive') }}</i>
-                </div>
-              </th>
-              <th class="text-center">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="product in products" :key="product.id">
-              <td>
-                <input 
-                  type="checkbox" 
-                  :checked="selectedProducts.includes(product.id)"
-                  @change="toggleSelect(product.id)"
-                  class="checkbox-input"
-                />
-              </td>
-              <td>
-                <div class="product-name">{{ product.name }}</div>
-                <div class="product-slug">{{ product.slug }}</div>
-              </td>
-              <td>{{ product.brandName || 'N/A' }}</td>
-              <td>
-                <span class="badge badge-info">
-                  {{ product.variantCount || 0 }} variants
-                </span>
-              </td>
-              <td>
-                <span class="stock-badge" :class="getStockClass(product)">
-                  <i class="material-icons">{{ getStockIcon(product) }}</i>
-                  {{ getStockText(product) }}
-                </span>
-              </td>
-              <td>
-                <span :class="['status-badge', product.isActive ? 'active' : 'inactive']">
-                  {{ product.isActive ? 'Đang bán' : 'Ngừng bán' }}
-                </span>
-              </td>
-              <td class="text-center">
-                <div class="action-buttons">
-                  <button @click="duplicateProduct(product.id)" class="btn-icon" title="Nhân bản">
-                    <i class="material-icons">content_copy</i>
-                  </button>
-                  <button @click="openEditModal(product)" class="btn-icon" title="Chỉnh sửa">
-                    <i class="material-icons">edit</i>
-                  </button>
-                  <button @click="confirmDelete(product)" class="btn-icon danger" title="Xóa">
-                    <i class="material-icons">delete</i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
+  <tr>
+    <th style="width: 40px;">
+      <input 
+        type="checkbox" 
+        :checked="isAllSelected"
+        @change="toggleSelectAll"
+        class="checkbox-input"
+      />
+    </th>
+    <!-- 🆕 Mã sản phẩm -->
+    <th class="sortable" @click="sortColumn('code')">
+      <div class="th-content">
+        <span>Mã SP</span>
+        <i class="material-icons sort-icon">{{ getSortIcon('code') }}</i>
+      </div>
+    </th>
+
+    <th class="sortable" @click="sortColumn('name')">
+      <div class="th-content">
+        <span>Tên sản phẩm</span>
+        <i class="material-icons sort-icon">{{ getSortIcon('name') }}</i>
+      </div>
+    </th>
+
+    <th class="sortable" @click="sortColumn('brandName')">
+      <div class="th-content">
+        <span>Thương hiệu</span>
+        <i class="material-icons sort-icon">{{ getSortIcon('brandName') }}</i>
+      </div>
+    </th>
+
+    <!-- 🆕 Danh mục -->
+    <th class="sortable" @click="sortColumn('categoryNames')">
+      <div class="th-content">
+        <span>Danh mục</span>
+        <i class="material-icons sort-icon">{{ getSortIcon('categoryNames') }}</i>
+      </div>
+    </th>
+
+    <th class="sortable" @click="sortColumn('variantCount')">
+      <div class="th-content">
+        <span>Số variants</span>
+        <i class="material-icons sort-icon">{{ getSortIcon('variantCount') }}</i>
+      </div>
+    </th>
+    <th class="sortable" @click="sortColumn('stockQuantity')">
+      <div class="th-content">
+        <span>Tồn kho</span>
+        <i class="material-icons sort-icon">{{ getSortIcon('stockQuantity') }}</i>
+      </div>
+    </th>
+    <th class="sortable" @click="sortColumn('isActive')">
+      <div class="th-content">
+        <span>Trạng thái</span>
+        <i class="material-icons sort-icon">{{ getSortIcon('isActive') }}</i>
+      </div>
+    </th>
+    <th class="text-center">Thao tác</th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr v-for="product in products" :key="product.id">
+    <td>
+      <input 
+        type="checkbox" 
+        :checked="selectedProducts.includes(product.id)"
+        @change="toggleSelect(product.id)"
+        class="checkbox-input"
+      />
+    </td>
+
+    <!-- 🆕 Cột mã sản phẩm -->
+    <td>
+      <span class="product-code">{{ product.code || '—' }}</span>
+    </td>
+
+    <td>
+      <div class="product-name">{{ product.name }}</div>
+      <div class="product-slug">{{ product.slug }}</div>
+    </td>
+
+    <td>{{ product.brandName || 'N/A' }}</td>
+
+    <!-- 🆕 Cột danh mục -->
+    <td>
+      <span v-if="product.categories && product.categories.length > 0">
+        {{ product.categories.map(c => c.name).join(', ') }}
+      </span>
+      <span v-else>—</span>
+    </td>
+
+    <td>
+      <span class="badge badge-info">
+        {{ product.variantCount || 0 }} variants
+      </span>
+    </td>
+
+    <td>
+      <span class="stock-badge" :class="getStockClass(product)">
+        <i class="material-icons">{{ getStockIcon(product) }}</i>
+        {{ getStockText(product) }}
+      </span>
+    </td>
+
+    <td>
+      <span :class="['status-badge', product.isActive ? 'active' : 'inactive']">
+        {{ product.isActive ? 'Đang bán' : 'Ngừng bán' }}
+      </span>
+    </td>
+
+    <td class="text-center">
+      <div class="action-buttons">
+        <button @click="duplicateProduct(product.id)" class="btn-icon" title="Nhân bản">
+          <i class="material-icons">content_copy</i>
+        </button>
+        <button @click="openEditModal(product)" class="btn-icon" title="Chỉnh sửa">
+          <i class="material-icons">edit</i>
+        </button>
+        <button @click="confirmDelete(product)" class="btn-icon danger" title="Xóa">
+          <i class="material-icons">delete</i>
+        </button>
+      </div>
+    </td>
+  </tr>
+</tbody> 
         </table>
       </div>
 
@@ -2715,5 +2753,11 @@ onMounted(async () => {
     font-size: 1rem;
   }
 }
+.product-code {
+  font-weight: 600;
+  color: var(--aurora-primary, #0a84ff);
+  font-family: monospace;
+}
+
 </style>
 

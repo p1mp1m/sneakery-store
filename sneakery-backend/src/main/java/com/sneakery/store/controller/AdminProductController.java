@@ -2,6 +2,8 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.*;
 import com.sneakery.store.service.AdminProductService;
+import com.sneakery.store.repository.ProductRepository;
+import com.sneakery.store.util.CodeGenerator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,8 @@ import java.util.List;
 public class AdminProductController {
 
     private final AdminProductService adminProductService;
+    private final ProductRepository productRepository;
+    private final CodeGenerator codeGenerator;
 
     /**
      * Tạo sản phẩm mới
