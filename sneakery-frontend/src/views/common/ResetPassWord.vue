@@ -218,4 +218,16 @@ const handleReset = async () => {
   font-weight: 700;
   margin-bottom: 12px;
 }
+
+
+:deep(.el-input__inner) {
+  color: #1e293b !important; /* 🔹 Màu chữ đen đậm như login */
+  font-family: 'Poppins', sans-serif !important; /* 🔹 Giống font login */
+  font-size: 15px !important; /* 🔹 Kích thước chữ như login */
+}
+
+:deep(.el-input__inner::placeholder) {
+  color: #94a3b8 !important; /* 🔹 Placeholder xám nhẹ như login */
+  font-family: 'Poppins', sans-serif !important;
+}
 </style>
