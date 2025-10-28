@@ -28,9 +28,14 @@ public class AdminProductVariantService {
      */
     @Transactional(readOnly = true)
     public Page<AdminProductVariantDto> getVariantsWithFilter(ProductVariantFilterDto filter, Pageable pageable) {
-        // TODO: Implement filtering logic
-        // For now, return all variants with product and brand loaded
-        Page<ProductVariant> variants = productVariantRepository.findAll(pageable);
+        Page<ProductVariant> variants = productVariantRepository.findWithFilters(
+                filter.getSearch(),
+                filter.getColor(),
+                filter.getSize(),
+                filter.getProductId(),
+                filter.getStockStatus(),
+                pageable
+        );
         return variants.map(this::convertToDto);
     }
 

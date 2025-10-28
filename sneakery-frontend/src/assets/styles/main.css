@@ -69,6 +69,7 @@
 @import './05-admin/_admin-components.css';
 @import './05-admin/_admin-spacing-optimized.css';
 @import './05-admin/_admin-forms.css';
+@import './05-admin/_admin-responsive.css';
 
 /* ═══════════════════════════════════════════════════════════════════════
    🏠 6. USER PANEL - User Facing Styles

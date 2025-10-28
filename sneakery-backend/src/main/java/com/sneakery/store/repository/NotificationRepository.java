@@ -38,5 +38,40 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true, n.readAt = CURRENT_TIMESTAMP WHERE n.user.id = :userId AND n.isRead = false")
     int markAllAsRead(@Param("userId") Long userId);
+    
+    /**
+     * Tìm notifications theo tiêu đề hoặc message (dành cho admin)
+     */
+    Page<Notification> findByTitleContainingOrMessageContaining(String title, String message, Pageable pageable);
+    
+    /**
+     * Tìm notifications theo type
+     */
+    Page<Notification> findByType(String type, Pageable pageable);
+    
+    /**
+     * Tìm notifications đã đọc
+     */
+    Page<Notification> findByIsReadTrue(Pageable pageable);
+    
+    /**
+     * Tìm notifications chưa đọc
+     */
+    Page<Notification> findByIsReadFalse(Pageable pageable);
+    
+    /**
+     * Lấy tất cả notifications sắp xếp theo created_at DESC
+     */
+    Page<Notification> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    
+    /**
+     * Đếm số notifications đã đọc
+     */
+    long countByIsReadTrue();
+    
+    /**
+     * Đếm số notifications chưa đọc
+     */
+    long countByIsReadFalse();
 }
 
