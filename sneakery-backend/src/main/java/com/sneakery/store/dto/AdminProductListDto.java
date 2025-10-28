@@ -1,5 +1,6 @@
 package com.sneakery.store.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +27,12 @@ public class AdminProductListDto {
     private Integer brandId;
     private String brandName; // Tên thương hiệu để hiển thị
     private Boolean isActive;
+    // 🆕 Bổ sung hai trường này
+    @Schema(description = "ID chất liệu của sản phẩm", example = "2")
+    private Integer materialId;
+
+    @Schema(description = "ID loại đế giày của sản phẩm", example = "3")
+    private Integer shoeSoleId;
     private Integer variantCount; // Số lượng variants
 
     // 🆕 Danh sách danh mục

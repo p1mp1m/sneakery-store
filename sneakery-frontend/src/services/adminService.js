@@ -413,7 +413,7 @@ class AdminService {
   // ===== SOLE MANAGEMENT (ĐẾ GIÀY) =====
   async getSoles() {
     try {
-      const response = await adminApi.get('/soles')
+      const response = await adminApi.get('/shoe-soles')
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -422,7 +422,7 @@ class AdminService {
 
   async createSole(data) {
     try {
-      const response = await adminApi.post('/soles', data)
+      const response = await adminApi.post('/shoe-soles', data)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -431,7 +431,7 @@ class AdminService {
 
   async updateSole(id, data) {
     try {
-      const response = await adminApi.put(`/soles/${id}`, data)
+      const response = await adminApi.put(`/shoe-soles/${id}`, data)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -440,7 +440,7 @@ class AdminService {
 
   async deleteSole(id) {
     try {
-      const response = await adminApi.delete(`/soles/${id}`)
+      const response = await adminApi.delete(`/shoe-soles/${id}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)

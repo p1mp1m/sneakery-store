@@ -462,37 +462,42 @@
 <div class="form-row two-cols">
   <!-- 🧩 Chất liệu -->
   <div class="form-group">
-    <label class="form-label required">Chất liệu</label>
-    <div class="input-with-button">
-      <input 
-        type="text" 
-        class="form-control" 
-        v-model="selectedMaterialName"
-        placeholder="Ví dụ: Da tổng hợp, Vải canvas..."
-        readonly
-      />
-      <button type="button" class="btn btn-icon-sm btn-success" @click="openQuickAddMaterial">
-        <i class="material-icons">add</i>
-      </button>
-    </div>
+  <label class="form-label required">Chất liệu</label>
+  <div class="input-with-button">
+    <select v-model="formData.materialId" class="form-control">
+      <option disabled value="">Chọn chất liệu</option>
+      <option v-for="material in materials" :key="material.id" :value="material.id">
+        {{ material.name }}
+      </option>
+    </select>
+    <!-- ➕ Nút mở modal thêm chất liệu -->
+    <button type="button" class="btn btn-icon-sm btn-success" @click="showQuickAddMaterial = true">
+      <i class="material-icons">add</i>
+    </button>
   </div>
+  <span v-if="formErrors.materialId" class="form-error">{{ formErrors.materialId }}</span>
+</div>
+
+
 
   <!-- 🧩 Loại đế giày -->
   <div class="form-group">
-    <label class="form-label required">Loại đế giày</label>
-    <div class="input-with-button">
-      <input 
-        type="text" 
-        class="form-control" 
-        v-model="selectedSoleName"
-        placeholder="Ví dụ: Cao su, Foam, EVA..."
-        readonly
-      />
-      <button type="button" class="btn btn-icon-sm btn-success" @click="openQuickAddSole">
-        <i class="material-icons">add</i>
-      </button>
-    </div>
+  <label class="form-label required">Loại đế giày</label>
+  <div class="input-with-button">
+    <select v-model="formData.shoeSoleId" class="form-control">
+      <option disabled value="">Chọn loại đế giày</option>
+      <option v-for="sole in soles" :key="sole.id" :value="sole.id">
+        {{ sole.name }}
+      </option>
+    </select>
+    <!-- ➕ Nút mở modal thêm loại đế -->
+    <button type="button" class="btn btn-icon-sm btn-success" @click="showQuickAddSole = true">
+      <i class="material-icons">add</i>
+    </button>
   </div>
+  <span v-if="formErrors.shoeSoleId" class="form-error">{{ formErrors.shoeSoleId }}</span>
+</div>
+
 </div>
 
 
@@ -1083,6 +1088,8 @@ const formData = ref({
   description: '',
   isActive: true,
   categoryIds: [],
+  materialId: null,   // 🆕
+  shoeSoleId: null,   // 🆕
   variants: []
 })
 
@@ -1304,7 +1311,16 @@ const openEditModal = async (product) => {
   isEditMode.value = true
   
   try {
+    // 1) Tải dữ liệu cho dropdown trước (tránh select rỗng khi đã có id)
+    await Promise.all([
+      adminStore.fetchBrands?.(),
+      adminStore.fetchCategories?.(),
+      adminStore.fetchMaterials?.(), // 🆕 chất liệu
+      adminStore.fetchSoles?.()      // 🆕 đế giày
+    ])
+    // 2) Lấy chi tiết sản phẩm
     const detailData = await adminStore.getProductById(product.id)
+    // 3) Gán formData ĐẦY ĐỦ field, có cả materialId & shoeSoleId
     formData.value = {
       id: product.id,
       name: detailData.name || '',
@@ -1313,6 +1329,9 @@ const openEditModal = async (product) => {
       description: detailData.description || '',
       isActive: detailData.isActive !== undefined ? detailData.isActive : true,
       categoryIds: detailData.categories?.map(c => c.id) || [],
+      // 🆕 BỔ SUNG 2 TRƯỜNG MỚI:
+      materialId: detailData.materialId ?? null,
+      shoeSoleId: detailData.shoeSoleId ?? null,
       variants: detailData.variants?.map(v => ({
         id: v.id,
         sku: v.sku || '',
@@ -1326,6 +1345,7 @@ const openEditModal = async (product) => {
     }
   } catch (error) {
     console.error('Lỗi khi tải chi tiết sản phẩm:', error)
+    // Fallback vẫn giữ đủ 2 field mới để tránh mất reactivity
     formData.value = {
       id: product.id,
       name: product.name || '',
@@ -1334,16 +1354,21 @@ const openEditModal = async (product) => {
       description: '',
       isActive: true,
       categoryIds: [],
+      // 🆕 vẫn có key để v-model không bị "rỗng"
+      materialId: null,
+      shoeSoleId: null,
       variants: []
     }
   }
   
-  formErrors.value = {}
+  // formErrors.value = {}
   showModal.value = true
 }
 
 const closeModal = () => {
   showModal.value = false
+  formErrors.value = {}
+  // Reset form về mặc định — NHỚ giữ đủ key cho reactivity
   formData.value = {
     name: '',
     slug: '',
@@ -1351,6 +1376,9 @@ const closeModal = () => {
     description: '',
     isActive: true,
     categoryIds: [],
+    // 🆕 reset 2 field mới
+    materialId: null,
+    shoeSoleId: null,
     variants: []
   }
   formErrors.value = {}
@@ -1429,6 +1457,8 @@ const handleSubmit = async () => {
       description: formData.value.description || '',
       isActive: formData.value.isActive,
       categoryIds: formData.value.categoryIds,
+      materialId: formData.value.materialId || null,   // ✅ thêm
+      shoeSoleId: formData.value.shoeSoleId || null,   // ✅ thêm
       variants: formData.value.variants.map(v => ({
         id: v.id || undefined,
         sku: v.sku,
@@ -1604,15 +1634,29 @@ const saveQuickMaterial = async () => {
     savingQuickMaterial.value = true
     await adminStore.createMaterial(quickMaterialData.value)
     ElMessage.success('✅ Thêm chất liệu mới thành công!')
-    await fetchMaterials?.() // gọi hàm reload nếu có
+
+    // 🔄 Reload lại danh sách nếu có hàm fetch
+    await fetchMaterials?.()
+
+    // 🧩 Tự động gán chất liệu vừa thêm vào form
+    const newMat = adminStore.materials.find(
+      (m) => m.slug === quickMaterialData.value.slug
+    )
+    if (newMat) {
+      selectedMaterialName.value = newMat.name
+      formData.value.materialId = newMat.id
+    }
+
+    // 🔒 Đóng popup
     closeQuickAddMaterial()
   } catch (err) {
     console.error(err)
-    ElMessage.error('Không thể thêm chất liệu.')
+    ElMessage.error('❌ Không thể thêm chất liệu.')
   } finally {
     savingQuickMaterial.value = false
   }
 }
+
 
 // ===== QUICK ADD SOLE =====
 const showQuickAddSole = ref(false)
@@ -1650,15 +1694,29 @@ const saveQuickSole = async () => {
     savingQuickSole.value = true
     await adminStore.createSole(quickSoleData.value)
     ElMessage.success('✅ Thêm loại đế giày mới thành công!')
-    await fetchSoles?.() // gọi hàm reload nếu có
+
+    // 🔄 Reload lại danh sách nếu có hàm fetch
+    await fetchSoles?.()
+
+    // 🧩 Tự động gán loại đế vừa thêm vào form
+    const newSole = adminStore.soles.find(
+      (s) => s.slug === quickSoleData.value.slug
+    )
+    if (newSole) {
+      selectedSoleName.value = newSole.name
+      formData.value.shoeSoleId = newSole.id
+    }
+
+    // 🔒 Đóng popup
     closeQuickAddSole()
   } catch (err) {
     console.error(err)
-    ElMessage.error('Không thể thêm loại đế giày.')
+    ElMessage.error('❌ Không thể thêm loại đế giày.')
   } finally {
     savingQuickSole.value = false
   }
 }
+
 
 
 // ===== IMPORT EXCEL =====

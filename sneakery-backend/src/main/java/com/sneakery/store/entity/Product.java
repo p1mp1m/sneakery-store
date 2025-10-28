@@ -25,6 +25,15 @@ public class Product {
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "material_id")
+    private Material material;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shoe_sole_id")
+    private ShoeSole shoeSole;
+
+
     @Column(name = "name", nullable = false)
     private String name;
 

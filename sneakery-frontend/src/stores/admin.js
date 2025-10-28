@@ -479,7 +479,12 @@ const createMaterial = async (materialData) => {
 
     const material = await AdminService.createMaterial(materialData)
     // ✅ Thêm vào danh sách hiện tại nếu cần cập nhật UI ngay
-    if (materials.value) materials.value.push(material)
+    // ✅ Cập nhật reactive list đúng cách
+    if (materials.value) {
+      materials.value = [...materials.value, material]
+    } else {
+      materials.value = [material]
+    }
     return material
   } catch (err) {
     error.value = err.message || 'Lỗi khi tạo chất liệu'
@@ -550,7 +555,12 @@ const createSole = async (soleData) => {
     error.value = null
 
     const sole = await AdminService.createSole(soleData)
-    if (soles.value) soles.value.push(sole)
+    // ✅ Cập nhật reactive list đúng cách
+    if (soles.value) {
+      soles.value = [...soles.value, soles]
+    } else {
+      soles.value = [soles]
+    }
     return sole
   } catch (err) {
     error.value = err.message || 'Lỗi khi tạo loại đế giày'
