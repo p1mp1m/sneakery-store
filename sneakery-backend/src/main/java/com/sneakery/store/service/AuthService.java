@@ -7,7 +7,9 @@ import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.PasswordResetTokenRepository;
 import com.sneakery.store.repository.UserRepository;
 import com.sneakery.store.security.JwtTokenProvider;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -28,13 +29,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
-
-    // ✅ Thêm 3 dependency cần thiết cho forgot/reset
     private final EmailService emailService;
     private final PasswordResetTokenRepository tokenRepository;
 
+    @Value("${app.reset.token-expire-minutes:30}")
+    private int expireMinutes;
+
     /**
-     * Xử lý logic Đăng ký
+     * Đăng ký
      */
     public AuthResponseDto register(RegisterDto registerDto) {
         if (userRepository.existsByEmail(registerDto.getEmail())) {
@@ -59,18 +61,11 @@ public class AuthService {
     }
 
     /**
-     * Xử lý logic Đăng nhập
+     * Đăng nhập
      */
     public AuthResponseDto login(LoginDto loginDto) {
         final String email = loginDto.getEmail();
         final String raw = loginDto.getPassword();
-
-        // Debug (tạm bật khi dev)
-        System.out.println("🧩 Login attempt -> email=" + email);
-        userRepository.findByEmail(email).ifPresentOrElse(u -> {
-            boolean matches = passwordEncoder.matches(raw, u.getPasswordHash());
-            System.out.println("🧩 BCrypt matches? " + matches);
-        }, () -> System.out.println("🧩 User not found with email=" + email));
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, raw)
@@ -89,38 +84,46 @@ public class AuthService {
     }
 
     // -------------------- FORGOT PASSWORD --------------------
-    public void forgotPassword(ForgotPasswordRequestDto request) {
-        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
-        if (userOpt.isEmpty()) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản với email này!");
-        }
+    @Transactional
+    public void forgotPassword(String email) {
+        var userOpt = userRepository.findByEmailIgnoreCase(email);
+        if (userOpt.isEmpty()) return;
 
-        User user = userOpt.get();
-        String token = UUID.randomUUID().toString();
+        var user = userOpt.get();
+        if (Boolean.FALSE.equals(user.getIsActive())) return;
 
-        PasswordResetToken resetToken = PasswordResetToken.builder()
-                .token(token)
-                .user(user)
-                .expiryDate(LocalDateTime.now().plusMinutes(15))
-                .build();
-        tokenRepository.save(resetToken);
+        // Xoá token cũ (nếu có)
+        tokenRepository.deleteByUser(user);
 
-        String resetLink = "http://localhost:5173/reset-password?token=" + token;
-        emailService.sendResetPasswordEmail(user.getEmail(), resetLink);
+        // Tạo token mới
+        PasswordResetToken token = new PasswordResetToken();
+        token.setUser(user);
+        token.setToken(UUID.randomUUID().toString());
+        token.setExpiryDate(LocalDateTime.now().plusMinutes(expireMinutes));
+        tokenRepository.save(token);
+
+        // Gửi email
+        emailService.sendResetPasswordEmail(user, token.getToken());
     }
 
     // -------------------- RESET PASSWORD --------------------
-    public void resetPassword(ResetPasswordRequestDto request) {
-        PasswordResetToken tokenEntity = tokenRepository.findByToken(request.getToken())
-                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Token không hợp lệ hoặc đã hết hạn!"));
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        var prt = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token không hợp lệ"));
 
-        if (tokenEntity.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Token đã hết hạn!");
-        }
+        if (prt.getUsedAt() != null)
+            throw new IllegalStateException("Token đã được sử dụng");
 
-        User user = tokenEntity.getUser();
-        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword())); // ✅ dùng đúng field passwordHash
+        if (LocalDateTime.now().isAfter(prt.getExpiryDate()))
+            throw new IllegalStateException("Token đã hết hạn");
+
+        var user = prt.getUser();
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        tokenRepository.delete(tokenEntity);
+
+        // Đánh dấu đã dùng
+        prt.setUsedAt(LocalDateTime.now());
+        tokenRepository.save(prt);
     }
 }

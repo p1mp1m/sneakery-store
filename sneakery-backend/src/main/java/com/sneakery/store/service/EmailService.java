@@ -2,154 +2,148 @@ package com.sneakery.store.service;
 
 import com.sneakery.store.entity.EmailTemplate;
 import com.sneakery.store.entity.Order;
+import com.sneakery.store.entity.User;
 import com.sneakery.store.repository.EmailTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-/**
- * Email Service (Mock Implementation)
- * Trong production, tích hợp với SendGrid, AWS SES, hoặc SMTP server
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
+
     private final JavaMailSender mailSender;
     private final EmailTemplateRepository emailTemplateRepository;
+    private final EmailTemplateRenderer renderer;
 
-    /**
-     * Gửi email xác nhận đơn hàng
-     */
+    @Value("${app.web.reset-base-url}")
+    private String resetBaseUrl;
+
+    @Value("${app.reset.token-expire-minutes:30}")
+    private int expireMinutes;
+
     public void sendOrderConfirmation(Order order) {
         log.info("📧 [MOCK EMAIL] Sending order confirmation email");
-        log.info("   To: {}", order.getUser().getEmail());
-        log.info("   Subject: Xác nhận đơn hàng #{}", order.getOrderNumber());
-        log.info("   Order ID: {}", order.getId());
-        log.info("   Total: {} VND", order.getTotalAmount());
-        
-        // TODO: In production, send actual email using template
         sendEmail(
-            order.getUser().getEmail(),
-            "order_confirmation",
-            Map.of(
-                "customer_name", order.getUser().getFullName(),
-                "order_id", order.getOrderNumber(),
-                "total", order.getTotalAmount().toString()
-            )
+                order.getUser().getEmail(),
+                "order_confirmation",
+                Map.of(
+                        "customer_name", order.getUser().getFullName(),
+                        "order_id", order.getOrderNumber(),
+                        "total", order.getTotalAmount().toString()
+                )
         );
     }
 
-    /**
-     * Gửi email thông báo đơn hàng đã được giao cho shipper
-     */
     public void sendOrderShipped(Order order, String trackingNumber) {
         log.info("📦 [MOCK EMAIL] Sending shipping notification email");
-        log.info("   To: {}", order.getUser().getEmail());
-        log.info("   Order: {}", order.getOrderNumber());
-        log.info("   Tracking: {}", trackingNumber);
-        
         sendEmail(
-            order.getUser().getEmail(),
-            "order_shipped",
-            Map.of(
-                "customer_name", order.getUser().getFullName(),
-                "order_id", order.getOrderNumber(),
-                "tracking_number", trackingNumber
-            )
+                order.getUser().getEmail(),
+                "order_shipped",
+                Map.of(
+                        "customer_name", order.getUser().getFullName(),
+                        "order_id", order.getOrderNumber(),
+                        "tracking_number", trackingNumber
+                )
         );
     }
 
-    /**
-     * Gửi email thông báo đơn hàng đã giao thành công
-     */
     public void sendOrderDelivered(Order order) {
         log.info("✅ [MOCK EMAIL] Sending delivery confirmation email");
-        log.info("   To: {}", order.getUser().getEmail());
-        log.info("   Order: {}", order.getOrderNumber());
-        
         sendEmail(
-            order.getUser().getEmail(),
-            "order_delivered",
-            Map.of(
-                "customer_name", order.getUser().getFullName(),
-                "order_id", order.getOrderNumber()
-            )
+                order.getUser().getEmail(),
+                "order_delivered",
+                Map.of(
+                        "customer_name", order.getUser().getFullName(),
+                        "order_id", order.getOrderNumber()
+                )
         );
     }
 
-    /**
-     * Gửi email thông báo đơn hàng bị hủy
-     */
     public void sendOrderCancelled(Order order, String reason) {
         log.info("❌ [MOCK EMAIL] Sending order cancellation email");
         log.info("   To: {}", order.getUser().getEmail());
-        log.info("   Order: {}", order.getOrderNumber());
         log.info("   Reason: {}", reason);
     }
 
-    /**
-     * Gửi email reset password
-     */
     public void sendPasswordReset(String email, String resetToken) {
         log.info("🔐 [MOCK EMAIL] Sending password reset email");
         log.info("   To: {}", email);
         log.info("   Reset Token: {}", resetToken);
     }
 
-    /**
-     * Gửi email xác thực email
-     */
     public void sendEmailVerification(String email, String verificationToken) {
         log.info("📧 [MOCK EMAIL] Sending email verification");
         log.info("   To: {}", email);
         log.info("   Verification Token: {}", verificationToken);
     }
 
-    /**
-     * Core send email method (sử dụng template)
-     */
     private void sendEmail(String to, String templateName, Map<String, String> variables) {
         try {
             EmailTemplate template = emailTemplateRepository
-                .findByTemplateNameAndIsActiveTrue(templateName)
-                .orElse(null);
-            
+                    .findByTemplateNameAndIsActiveTrue(templateName)
+                    .orElse(null);
+
             if (template != null) {
                 String body = template.getBody();
                 String subject = template.getSubject();
-                
-                // Replace variables in template
+
                 for (Map.Entry<String, String> entry : variables.entrySet()) {
-                    String placeholder = "{" + entry.getKey() + "}";
+                    String placeholder = "{{" + entry.getKey() + "}}";
                     body = body.replace(placeholder, entry.getValue());
                     subject = subject.replace(placeholder, entry.getValue());
                 }
-                
-                log.debug("📧 Email prepared:");
-                log.debug("   Subject: {}", subject);
-                log.debug("   Body length: {} chars", body.length());
+
+                log.debug("📧 Email prepared: Subject: {}", subject);
+                log.debug("Body length: {} chars", body.length());
             } else {
                 log.warn("⚠️ Email template '{}' not found", templateName);
             }
-            
-            // TODO: Actual email sending logic here
-            // e.g., JavaMailSender, SendGrid API, AWS SES
-            
+
         } catch (Exception e) {
             log.error("❌ Failed to send email: {}", e.getMessage(), e);
         }
     }
 
-    public void sendResetPasswordEmail(String to, String resetLink) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Đặt lại mật khẩu - Sneakery Store");
-        message.setText("Nhấn vào liên kết sau để đặt lại mật khẩu:\n" + resetLink);
-        mailSender.send(message);
+    public void sendResetPasswordEmail(User user, String token) {
+        var tpl = emailTemplateRepository.findByTemplateNameAndIsActiveTrue("password_reset")
+                .orElseThrow(() -> new IllegalStateException("Missing email template: password_reset"));
+
+        String resetLink = resetBaseUrl + "?token=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+
+        Map<String, Object> vars = Map.of(
+                "full_name", user.getFullName() == null ? user.getEmail() : user.getFullName(),
+                "reset_link", resetLink,
+                "app_name", "Sneakery Store",
+                "support_email", "support@sneakery.com",
+                "expire_minutes", expireMinutes,
+                "logo_url", "https://i.postimg.cc/V6bHkXtR/logo.png"
+        );
+
+        String subject = renderer.render(tpl.getSubject(), vars);
+        String html = renderer.render(tpl.getBody(), vars);
+
+        try {
+            MimeMessage msg = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(msg, "UTF-8");
+            helper.setTo(user.getEmail());
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            mailSender.send(msg);
+            log.info("✅ Reset password email sent to {}", user.getEmail());
+        } catch (MessagingException e) {
+            log.error("❌ Error sending email: {}", e.getMessage(), e);
+        }
     }
 }

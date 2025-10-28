@@ -136,26 +136,20 @@ const features = [
 const handleForgotPassword = async (formEl) => {
   if (!formEl) return;
   await formEl.validate(async (valid) => {
-    if (valid) {
-      loading.value = true;
-      serverError.value = '';
-      try {
-        const API_URL = import.meta.env.VITE_API_URL;
-        console.log('📡 Gửi request tới:', API_URL);
-
-        const res = await axios.post(`${API_URL}/auth/forgot-password`, {
-          email: forgotForm.value.email
-        });
-
-        ElMessage.success(res.data.message || 'Đã gửi liên kết đặt lại mật khẩu!');
-      } catch (error) {
-        console.error(error);
-        serverError.value =
-          error.response?.data?.message || 'Không thể gửi email, vui lòng thử lại.';
-        ElMessage.error(serverError.value);
-      } finally {
-        loading.value = false;
-      }
+    if (!valid) return;
+    loading.value = true;
+    serverError.value = '';
+    try {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+        { email: forgotForm.value.email }
+      );
+      ElMessage.success(data?.message || 'Liên kết đặt lại đã được gửi!');
+    } catch (error) {
+      serverError.value = error.response?.data?.message || 'Không thể gửi email, thử lại.';
+      ElMessage.error(serverError.value);
+    } finally {
+      loading.value = false;
     }
   });
 };

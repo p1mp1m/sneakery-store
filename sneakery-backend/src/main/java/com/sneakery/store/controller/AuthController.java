@@ -46,13 +46,13 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequestDto request) {
-        authService.forgotPassword(request);
-        return ResponseEntity.ok().body(Map.of("message", "Email đặt lại mật khẩu đã được gửi!"));
+        authService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok("Nếu email tồn tại, hệ thống sẽ gửi link đặt lại mật khẩu.");
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequestDto request) {
-        authService.resetPassword(request);
-        return ResponseEntity.ok().body(Map.of("message", "Đặt lại mật khẩu thành công!"));
+        authService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok("Đặt lại mật khẩu thành công!");
     }
 }

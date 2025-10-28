@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Optional chứa User nếu tìm thấy
      */
     Optional<User> findByEmail(String email);
-
+    Optional<User> findByEmailIgnoreCase(String email);
     /**
      * Kiểm tra nhanh xem email đã tồn tại trong CSDL chưa.
      * Tối ưu hơn việc dùng findByEmail().isPresent()
