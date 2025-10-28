@@ -1,2 +1,45 @@
+# Dependencies
 node_modules
+target
+
+# IDE - Visual Studio Code
+.vscode
+*.code-workspace
+
+# IDE - IntelliJ IDEA
+.idea
+*.iml
+*.iws
+*.ipr
+
+# IDE - Cursor
 .cursor
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist
+build
+out
+
+# Temporary files
+*.tmp
+*.temp
+.cache
