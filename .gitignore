@@ -20,6 +20,11 @@ target
 .env.local
 .env.*.local
 
+# Application properties with secrets
+sneakery-backend/src/main/resources/application.properties
+# Keep example file instead
+# sneakery-backend/src/main/resources/application.properties.example
+
 # OS files
 .DS_Store
 Thumbs.db

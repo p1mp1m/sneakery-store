@@ -4,8 +4,7 @@ server.servlet.context-path=/
 
 spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=sneakery_db;encrypt=true;trustServerCertificate=true
 spring.datasource.username=sa
-spring.datasource.password=1234
-spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+spring.datasource.password=YOUR_DATABASE_PASSWORD_HERE
 
 # JPA Configuration
 spring.jpa.hibernate.ddl-auto=none
@@ -44,8 +43,15 @@ app.version=1.0.0
 # ==========================================
 # JWT Configuration
 # ==========================================
-# JWT Secret Key (Base64 encoded)
-app.jwt.secret=NGU2NTYyNTM0ZjM4NDMzMDM5NTUzODUxMzU0MTM5NDQzNzU4NDM1NDU0NDU1MjM2NTQzNzUzMzU1MzMyNTI0NjQ4NDYzNjM0MzQzNDU5NDU0NjU0NDU1MjM2NTQzNzUzMzU1MzMyNTI0NjQ4NDYzNjM0MzQzNDU5NDU0Mw==
+# JWT Secret Key (Generate your own secure key)
+# To generate: Run this Java code or use online tool
+# String secret = Base64.getEncoder().encodeToString(java.util.UUID.randomUUID().toString().getBytes());
+app.jwt.secret=YOUR_JWT_SECRET_KEY_HERE
 
 # JWT Token Expiration Time (in milliseconds) - 24 hours
 app.jwt.expiration-ms=86400000
+
+# ==========================================
+# NOTE: Copy this file to application.properties and fill in your credentials
+# ==========================================
+
