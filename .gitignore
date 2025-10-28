@@ -2,6 +2,10 @@
 node_modules
 target
 
+# Root level npm files (not needed for monorepo)
+package.json
+package-lock.json
+
 # Preliminary report files from JDiff/JDepend
 .auxclasspath
 .buildpath
