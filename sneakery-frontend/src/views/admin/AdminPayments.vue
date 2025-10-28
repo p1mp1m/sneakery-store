@@ -329,15 +329,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useAdminStore } from '@/stores/admin'
-
-// Store
-const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
 const payments = ref([])
-const totalItems = ref(0)
 const searchKeyword = ref('')
 const filterStatus = ref('all')
 const filterMethod = ref('all')
@@ -346,19 +341,67 @@ const pageSize = ref(10)
 const showDetailModal = ref(false)
 const selectedPayment = ref(null)
 
-// Stats
-const totalRevenue = ref(0)
-const completedPayments = ref(0)
-const failedPayments = ref(0)
-const pendingPayments = ref(0)
+// Mock data
+const mockPayments = ref([
+  {
+    id: 1,
+    orderId: 1001,
+    orderNumber: 'ORD-20240125-0001',
+    paymentMethod: 'vnpay',
+    amount: 2500000,
+    status: 'completed',
+    transactionId: 'VNPAY_20240125_001',
+    gatewayResponse: '{"code":"00","message":"Success"}',
+    createdAt: '2024-01-25T10:30:00Z',
+    paidAt: '2024-01-25T10:32:00Z'
+  },
+  {
+    id: 2,
+    orderId: 1002,
+    orderNumber: 'ORD-20240125-0002',
+    paymentMethod: 'momo',
+    amount: 1800000,
+    status: 'completed',
+    transactionId: 'MOMO_20240125_002',
+    gatewayResponse: '{"status":1,"message":"Success"}',
+    createdAt: '2024-01-25T11:15:00Z',
+    paidAt: '2024-01-25T11:17:00Z'
+  },
+  {
+    id: 3,
+    orderId: 1003,
+    orderNumber: 'ORD-20240125-0003',
+    paymentMethod: 'cod',
+    amount: 3200000,
+    status: 'pending',
+    transactionId: null,
+    gatewayResponse: null,
+    createdAt: '2024-01-25T14:20:00Z',
+    paidAt: null
+  },
+  {
+    id: 4,
+    orderId: 1004,
+    orderNumber: 'ORD-20240125-0004',
+    paymentMethod: 'zalopay',
+    amount: 1500000,
+    status: 'failed',
+    transactionId: 'ZALOPAY_20240125_004',
+    gatewayResponse: '{"return_code":-1,"return_message":"Insufficient balance"}',
+    createdAt: '2024-01-25T15:45:00Z',
+    paidAt: null
+  }
+])
 
-// Mock data removed - using real API data
-
-// Computed - Sử dụng ref values thay vì computed cho stats
+// Computed
 const totalPayments = computed(() => payments.value.length)
+const completedPayments = computed(() => payments.value.filter(p => p.status === 'completed').length)
+const failedPayments = computed(() => payments.value.filter(p => p.status === 'failed').length)
+const pendingPayments = computed(() => payments.value.filter(p => p.status === 'pending').length)
+const totalRevenue = computed(() => payments.value.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0))
 
 const filteredPayments = computed(() => {
-  let filtered = payments.value || []
+  let filtered = payments.value
 
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
@@ -390,24 +433,10 @@ const paginatedPayments = computed(() => {
 const fetchPayments = async () => {
   loading.value = true
   try {
-    const result = await adminStore.fetchPayments(currentPage.value, pageSize.value, {
-      status: filterStatus.value !== 'all' ? filterStatus.value : undefined,
-      paymentMethod: filterMethod.value !== 'all' ? filterMethod.value : undefined
-    })
-    
-    payments.value = result.content || []
-    totalItems.value = result.totalElements || 0
-    
-    // Fetch stats
-    const stats = await adminStore.fetchPaymentStats()
-    if (stats) {
-      totalRevenue.value = stats.totalRevenue || 0
-      completedPayments.value = stats.completedPayments || 0
-      failedPayments.value = stats.failedPayments || 0
-      pendingPayments.value = stats.pendingPayments || 0
-    }
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    payments.value = mockPayments.value
   } catch (error) {
-    console.error('Lỗi khi tải giao dịch:', error)
     ElMessage.error('Không thể tải danh sách giao dịch')
   } finally {
     loading.value = false
@@ -458,14 +487,11 @@ const retryPayment = async (payment) => {
       }
     )
     
-    await adminStore.updatePaymentStatus(payment.id, 'pending')
+    // Simulate retry
+    payment.status = 'pending'
     ElMessage.success('Đã gửi yêu cầu thử lại giao dịch')
-    fetchPayments()
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('Error retrying payment:', error)
-      ElMessage.error('Không thể thử lại giao dịch')
-    }
+  } catch {
+    // User cancelled
   }
 }
 
@@ -481,26 +507,18 @@ const refundPayment = async (payment) => {
       }
     )
     
-    await adminStore.refundPayment(payment.id, { reason: 'Admin refund' })
+    // Simulate refund
+    payment.status = 'refunded'
+    payment.refundedAt = new Date().toISOString()
     ElMessage.success('Đã hoàn tiền thành công')
-    fetchPayments()
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('Error refunding payment:', error)
-      ElMessage.error('Không thể hoàn tiền giao dịch')
-    }
+  } catch {
+    // User cancelled
   }
 }
 
 const exportPayments = (format) => {
   try {
-    const dataToExport = filteredPayments.value || []
-    if (dataToExport.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
-      return
-    }
-    
-    const exportData = dataToExport.map(payment => ({
+    const exportData = filteredPayments.value.map(payment => ({
       'ID': payment.id,
       'Mã giao dịch': payment.transactionId || 'N/A',
       'Đơn hàng': payment.orderNumber,
@@ -512,7 +530,7 @@ const exportPayments = (format) => {
     }))
 
     if (format === 'csv') {
-      downloadCsv(exportData, 'payments.csv')
+      downloadCsv('payments', exportData)
       ElMessage.success('Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('payments', exportData)

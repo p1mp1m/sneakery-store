@@ -1,21 +1,7 @@
 <template>
   <div class="admin-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
-    <!-- Hamburger Menu (Mobile Only) -->
-    <button 
-      v-if="isMobile"
-      class="hamburger-btn"
-      @click="toggleSidebar"
-      type="button"
-      title="Toggle menu"
-    >
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-    </button>
-
     <!-- Nút Toggle - Bên ngoài sidebar -->
     <button 
-      v-if="!isMobile"
       class="sidebar-toggle-btn"
       @click="toggleSidebar"
       type="button"
@@ -110,7 +96,7 @@
 
     <!-- Mobile Overlay -->
     <div 
-      v-if="isMobile && !sidebarCollapsed" 
+      v-if="sidebarCollapsed && isMobile" 
       class="mobile-overlay"
       @click="toggleSidebar"
     ></div>
@@ -193,17 +179,10 @@ const adminRoutes = [
     name: 'AdminNotifications', 
     meta: { title: 'Quản lý thông báo', icon: 'notifications' } 
   },
-  {
-    id: 'management-menu',
-    meta: { title: 'Quản lý hệ thống', icon: 'settings' },
-    children: [
-      { path: '/admin/inventory', name: 'AdminInventory', meta: { title: 'Quản lý kho', icon: 'inventory_2' } },
-      { path: '/admin/payments', name: 'AdminPayments', meta: { title: 'Thanh toán', icon: 'payment' } },
-      { path: '/admin/loyalty', name: 'AdminLoyalty', meta: { title: 'Điểm thưởng', icon: 'stars' } },
-      { path: '/admin/activity-logs', name: 'AdminActivityLogs', meta: { title: 'Nhật ký hoạt động', icon: 'history' } },
-      { path: '/admin/email-templates', name: 'AdminEmailTemplates', meta: { title: 'Mẫu email', icon: 'email' } },
-      { path: '/admin/settings', name: 'AdminSettings', meta: { title: 'Cài đặt', icon: 'settings' } }
-    ]
+  { 
+    path: '/admin/settings', 
+    name: 'AdminSettings', 
+    meta: { title: 'Quản lý hệ thống', icon: 'settings' } 
   }
 ]
 
@@ -251,13 +230,9 @@ const isSubmenuActive = (children) => {
 }
 
 const checkMobile = () => {
-  const wasMobile = isMobile.value
   isMobile.value = window.innerWidth < 768
-  
-  if (isMobile.value && !wasMobile) {
+  if (isMobile.value) {
     sidebarCollapsed.value = true
-  } else if (!isMobile.value && wasMobile) {
-    sidebarCollapsed.value = false
   }
 }
 
@@ -315,44 +290,6 @@ onUnmounted(() => {
   background: linear-gradient(180deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 100%);
   position: relative;
   overflow-x: hidden;
-}
-
-/* ===== HAMBURGER MENU (MOBILE) ===== */
-.hamburger-btn {
-  position: fixed;
-  top: var(--space-4);
-  left: var(--space-4);
-  z-index: 10001;
-  width: 48px;
-  height: 48px;
-  background: var(--primary-gradient);
-  border: none;
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  box-shadow: var(--shadow-glass-lg);
-  transition: all var(--transition-fast);
-}
-
-.hamburger-btn:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.hamburger-line {
-  width: 24px;
-  height: 3px;
-  background: white;
-  border-radius: 2px;
-  transition: all var(--transition-fast);
-}
-
-.hamburger-btn:hover .hamburger-line {
-  background: rgba(255, 255, 255, 0.9);
 }
 
 /* ===== NÚT TOGGLE SIDEBAR - SUBTLE & MINIMAL ===== */
@@ -752,49 +689,30 @@ onUnmounted(() => {
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .admin-sidebar {
-    width: 220px;
-  }
-  
-  .admin-main {
-    margin-left: 220px;
-    width: calc(100vw - 220px);
-    max-width: calc(100vw - 220px);
-  }
-  
-  .admin-layout.sidebar-collapsed .admin-main {
-    margin-left: 75px;
-    width: calc(100vw - 75px);
-    max-width: calc(100vw - 75px);
-  }
-}
-
 @media (max-width: 768px) {
   .admin-sidebar {
     transform: translateX(-100%);
-    width: 280px !important;
-    z-index: 10000;
   }
   
   .admin-sidebar:not(.collapsed) {
     transform: translateX(0);
+    width: 280px;
   }
   
   .admin-main {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    margin-left: 0;
+    width: 100vw;
+    max-width: 100vw;
   }
   
   .admin-layout.sidebar-collapsed .admin-main {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    margin-left: 0;
+    width: 100vw;
+    max-width: 100vw;
   }
   
   .admin-content {
-    padding: 0.875rem;
+    padding: 0.875rem; /* Mobile: 14px */
   }
   
   .sidebar-header {
@@ -802,23 +720,12 @@ onUnmounted(() => {
   }
   
   .logo {
-    width: 160px;
-    height: 75px;
+    width: 48px;
+    height: 48px;
   }
   
-  /* Nút toggle trên mobile - ẩn */
+  /* Nút toggle trên mobile */
   .sidebar-toggle-btn {
-    display: none;
-  }
-  
-  /* Hiện hamburger menu trên mobile */
-  .hamburger-btn {
-    display: flex;
-  }
-}
-
-@media (min-width: 769px) {
-  .hamburger-btn {
     display: none;
   }
 }

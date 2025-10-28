@@ -23,17 +23,6 @@ public class FlashSaleController {
     private final FlashSaleService flashSaleService;
 
     /**
-     * ADMIN: Lấy tất cả flash sales (cho admin panel)
-     */
-    @GetMapping("/admin/flash-sales")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<FlashSaleDto>> getAllFlashSales() {
-        log.info("📍 GET /api/admin/flash-sales");
-        List<FlashSaleDto> flashSales = flashSaleService.getAllFlashSales();
-        return ResponseEntity.ok(flashSales);
-    }
-
-    /**
      * PUBLIC: Lấy tất cả flash sales đang active
      */
     @GetMapping("/flash-sales/active")

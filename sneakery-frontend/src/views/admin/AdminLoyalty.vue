@@ -342,10 +342,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useAdminStore } from '@/stores/admin'
-
-// Stores
-const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -363,46 +359,106 @@ const settings = ref({
   minRedeemPoints: 1000
 })
 
-// Mock data removed - using real API data
+// Mock data
+const mockPoints = ref([
+  {
+    id: 1,
+    customerId: 1,
+    customerName: 'Nguyễn Văn A',
+    customerEmail: 'nguyenvana@email.com',
+    customerAvatar: null,
+    customerLevel: 'gold',
+    points: 500,
+    transactionType: 'earn',
+    earnedFromOrderId: 1001,
+    redeemedInOrderId: null,
+    description: 'Tích điểm từ đơn hàng #ORD-20240125-0001',
+    expiresAt: '2025-01-25T00:00:00Z',
+    createdAt: '2024-01-25T10:30:00Z'
+  },
+  {
+    id: 2,
+    customerId: 2,
+    customerName: 'Trần Thị B',
+    customerEmail: 'tranthib@email.com',
+    customerAvatar: null,
+    customerLevel: 'silver',
+    points: -200,
+    transactionType: 'redeem',
+    earnedFromOrderId: null,
+    redeemedInOrderId: 1002,
+    description: 'Đổi điểm cho đơn hàng #ORD-20240125-0002',
+    expiresAt: null,
+    createdAt: '2024-01-25T11:15:00Z'
+  },
+  {
+    id: 3,
+    customerId: 3,
+    customerName: 'Lê Văn C',
+    customerEmail: 'levanc@email.com',
+    customerAvatar: null,
+    customerLevel: 'platinum',
+    points: 1000,
+    transactionType: 'earn',
+    earnedFromOrderId: 1003,
+    redeemedInOrderId: null,
+    description: 'Tích điểm từ đơn hàng #ORD-20240125-0003',
+    expiresAt: '2025-01-25T00:00:00Z',
+    createdAt: '2024-01-25T14:20:00Z'
+  },
+  {
+    id: 4,
+    customerId: 4,
+    customerName: 'Phạm Thị D',
+    customerEmail: 'phamthid@email.com',
+    customerAvatar: null,
+    customerLevel: 'bronze',
+    points: -50,
+    transactionType: 'expire',
+    earnedFromOrderId: null,
+    redeemedInOrderId: null,
+    description: 'Điểm hết hạn',
+    expiresAt: null,
+    createdAt: '2024-01-25T15:45:00Z'
+  }
+])
 
 // Computed
 const totalPointsEarned = computed(() => 
-  (points.value || []).filter(p => p.transactionType === 'earn').reduce((sum, p) => sum + (p.points || 0), 0)
+  points.value.filter(p => p.transactionType === 'earn').reduce((sum, p) => sum + p.points, 0)
 )
 const totalPointsRedeemed = computed(() => 
-  Math.abs((points.value || []).filter(p => p.transactionType === 'redeem').reduce((sum, p) => sum + (p.points || 0), 0))
+  Math.abs(points.value.filter(p => p.transactionType === 'redeem').reduce((sum, p) => sum + p.points, 0))
 )
 const expiringPoints = computed(() => {
   const thirtyDaysFromNow = new Date()
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
   
-  return (points.value || [])
+  return points.value
     .filter(p => p.transactionType === 'earn' && p.expiresAt && new Date(p.expiresAt) <= thirtyDaysFromNow)
-    .reduce((sum, p) => sum + (p.points || 0), 0)
+    .reduce((sum, p) => sum + p.points, 0)
 })
 const pointsThisMonth = computed(() => {
   const thisMonth = new Date().getMonth()
   const thisYear = new Date().getFullYear()
   
-  return (points.value || [])
+  return points.value
     .filter(p => {
-      if (!p.createdAt) return false
       const pointDate = new Date(p.createdAt)
       return p.transactionType === 'earn' && 
              pointDate.getMonth() === thisMonth && 
              pointDate.getFullYear() === thisYear
     })
-    .reduce((sum, p) => sum + (p.points || 0), 0)
+    .reduce((sum, p) => sum + p.points, 0)
 })
 const vipCustomers = computed(() => 
-  new Set((points.value || []).filter(p => ['gold', 'platinum'].includes(p.customerLevel)).map(p => p.customerId)).size
+  new Set(points.value.filter(p => ['gold', 'platinum'].includes(p.customerLevel)).map(p => p.customerId)).size
 )
 const newVipThisMonth = computed(() => {
   const thisMonth = new Date().getMonth()
   const thisYear = new Date().getFullYear()
   
-  const vipThisMonth = (points.value || []).filter(p => {
-    if (!p.createdAt) return false
+  const vipThisMonth = points.value.filter(p => {
     const pointDate = new Date(p.createdAt)
     return ['gold', 'platinum'].includes(p.customerLevel) && 
            pointDate.getMonth() === thisMonth && 
@@ -413,13 +469,13 @@ const newVipThisMonth = computed(() => {
 })
 
 const filteredPoints = computed(() => {
-  let filtered = points.value || []
+  let filtered = points.value
 
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
     filtered = filtered.filter(p => 
-      (p.customerName || '').toLowerCase().includes(keyword) ||
-      (p.customerEmail || '').toLowerCase().includes(keyword)
+      p.customerName.toLowerCase().includes(keyword) ||
+      p.customerEmail.toLowerCase().includes(keyword)
     )
   }
 
@@ -445,35 +501,11 @@ const paginatedPoints = computed(() => {
 const fetchPoints = async () => {
   loading.value = true
   try {
-    console.log('🔍 Fetching loyalty users...')
-    const result = await adminStore.fetchLoyaltyUsers(currentPage.value, pageSize.value, {})
-    console.log('📦 API Result:', result)
-    
-    const loyaltyDtos = result?.content || []
-    console.log('📊 Loyalty DTOs received:', loyaltyDtos.length, loyaltyDtos)
-    
-    // Map LoyaltyDto directly to points format
-    points.value = loyaltyDtos.map(dto => ({
-      id: dto.id,
-      customerId: dto.userId,
-      customerName: dto.userName || 'Không tên',
-      customerEmail: dto.userEmail || 'N/A',
-      customerAvatar: null, // DTO doesn't include avatar
-      customerLevel: 'regular', // Default level
-      points: dto.points || 0,
-      transactionType: dto.transactionType || 'unknown',
-      earnedFromOrderId: null, // Not in DTO
-      redeemedInOrderId: null, // Not in DTO
-      description: dto.description || '',
-      expiresAt: dto.expiresAt,
-      createdAt: dto.createdAt || new Date().toISOString()
-    }))
-    
-    console.log('✅ Points mapped:', points.value.length, 'items')
-    console.log('📊 Points sample:', points.value.slice(0, 3))
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    points.value = mockPoints.value
   } catch (error) {
-    console.error('❌ Error fetching loyalty:', error)
-    ElMessage.error('Không thể tải danh sách điểm thưởng: ' + (error.message || 'Unknown error'))
+    ElMessage.error('Không thể tải danh sách điểm thưởng')
   } finally {
     loading.value = false
   }
@@ -538,13 +570,7 @@ const extendExpiry = async (point) => {
 
 const exportLoyalty = (format) => {
   try {
-    const dataToExport = filteredPoints.value || []
-    if (dataToExport.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
-      return
-    }
-    
-    const exportData = dataToExport.map(point => ({
+    const exportData = filteredPoints.value.map(point => ({
       'ID': point.id,
       'Khách hàng': point.customerName,
       'Email': point.customerEmail,
@@ -558,7 +584,7 @@ const exportLoyalty = (format) => {
     }))
 
     if (format === 'csv') {
-      downloadCsv(exportData, 'loyalty-points.csv')
+      downloadCsv('loyalty-points', exportData)
       ElMessage.success('Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('loyalty-points', exportData)

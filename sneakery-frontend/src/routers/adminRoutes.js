@@ -21,11 +21,6 @@ const AdminNotifications = () => import('@/views/admin/AdminNotifications.vue')
 const AdminSettings = () => import('@/views/admin/AdminSettings.vue')
 const AdminReviews = () => import('@/views/admin/AdminReviews.vue')
 const AdminFlashSales = () => import('@/views/admin/AdminFlashSales.vue')
-const AdminActivityLogs = () => import('@/views/admin/AdminActivityLogs.vue')
-const AdminInventory = () => import('@/views/admin/AdminInventory.vue')
-const AdminLoyalty = () => import('@/views/admin/AdminLoyalty.vue')
-const AdminPayments = () => import('@/views/admin/AdminPayments.vue')
-const AdminEmailTemplates = () => import('@/views/admin/AdminEmailTemplates.vue')
 
 const adminRoutes = [
   {
@@ -192,56 +187,6 @@ const adminRoutes = [
           requiresAdmin: true,
           title: 'Cài đặt',
           icon: 'settings'
-        }
-      },
-      {
-        path: 'activity-logs',
-        name: 'AdminActivityLogs',
-        component: AdminActivityLogs,
-        meta: { 
-          requiresAdmin: true,
-          title: 'Nhật ký hoạt động',
-          icon: 'history'
-        }
-      },
-      {
-        path: 'inventory',
-        name: 'AdminInventory',
-        component: AdminInventory,
-        meta: { 
-          requiresAdmin: true,
-          title: 'Quản lý kho',
-          icon: 'inventory_2'
-        }
-      },
-      {
-        path: 'loyalty',
-        name: 'AdminLoyalty',
-        component: AdminLoyalty,
-        meta: { 
-          requiresAdmin: true,
-          title: 'Điểm thưởng',
-          icon: 'stars'
-        }
-      },
-      {
-        path: 'payments',
-        name: 'AdminPayments',
-        component: AdminPayments,
-        meta: { 
-          requiresAdmin: true,
-          title: 'Thanh toán',
-          icon: 'payment'
-        }
-      },
-      {
-        path: 'email-templates',
-        name: 'AdminEmailTemplates',
-        component: AdminEmailTemplates,
-        meta: { 
-          requiresAdmin: true,
-          title: 'Mẫu email',
-          icon: 'email'
         }
       }
     ]

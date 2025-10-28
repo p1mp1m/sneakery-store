@@ -233,34 +233,3 @@
 .pointer-events-none { pointer-events: none; }
 .pointer-events-auto { pointer-events: auto; }
 
-/* ===== RESPONSIVE UTILITIES ===== */
-@media (max-width: 768px) {
-  .hide-mobile { 
-    display: none !important; 
-  }
-  .show-mobile { 
-    display: block !important; 
-  }
-  .show-mobile-flex { 
-    display: flex !important; 
-  }
-}
-
-@media (min-width: 769px) {
-  .hide-desktop { 
-    display: none !important; 
-  }
-  .show-desktop { 
-    display: block !important; 
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .hide-tablet { 
-    display: none !important; 
-  }
-  .show-tablet { 
-    display: block !important; 
-  }
-}
-

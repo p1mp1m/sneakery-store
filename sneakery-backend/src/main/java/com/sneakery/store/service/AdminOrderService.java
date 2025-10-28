@@ -103,7 +103,7 @@ public class AdminOrderService {
         Payment p = order.getPayments().stream().findFirst().orElse(null);
         PaymentDto paymentDto = (p == null) ? null : PaymentDto.builder()
                 .id(p.getId())
-                .paymentMethod(p.getPaymentMethod())
+                .method(p.getPaymentMethod())
                 .status(p.getStatus())
                 .amount(p.getAmount())
                 .paidAt(p.getPaidAt())

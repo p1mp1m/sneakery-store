@@ -385,10 +385,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useAdminStore } from '@/stores/admin'
-
-// Stores
-const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -402,7 +398,89 @@ const pageSize = ref(20)
 const showDetailModal = ref(false)
 const selectedLog = ref(null)
 
-// Mock data removed - using real API data
+// Mock data
+const mockLogs = ref([
+  {
+    id: 1,
+    userId: 1,
+    userName: 'Admin User',
+    userRole: 'ADMIN',
+    userAvatar: '/placeholder-image.png',
+    action: 'login',
+    entityType: 'User',
+    entityId: 1,
+    oldValue: null,
+    newValue: '{"loginTime": "2024-01-25T10:30:00Z"}',
+    ipAddress: '192.168.1.100',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    status: 'success',
+    createdAt: '2024-01-25T10:30:00Z'
+  },
+  {
+    id: 2,
+    userId: 2,
+    userName: 'John Doe',
+    userRole: 'USER',
+    userAvatar: '/placeholder-image.png',
+    action: 'create',
+    entityType: 'Order',
+    entityId: 123,
+    oldValue: null,
+    newValue: '{"orderNumber": "ORD-20240125-0001", "total": 2500000}',
+    ipAddress: '192.168.1.101',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    status: 'success',
+    createdAt: '2024-01-25T11:15:00Z'
+  },
+  {
+    id: 3,
+    userId: null,
+    userName: null,
+    userRole: null,
+    userAvatar: null,
+    action: 'view',
+    entityType: 'Product',
+    entityId: 456,
+    oldValue: null,
+    newValue: null,
+    ipAddress: '192.168.1.102',
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+    status: 'success',
+    createdAt: '2024-01-25T12:00:00Z'
+  },
+  {
+    id: 4,
+    userId: 1,
+    userName: 'Admin User',
+    userRole: 'ADMIN',
+    userAvatar: '/placeholder-image.png',
+    action: 'update',
+    entityType: 'Product',
+    entityId: 789,
+    oldValue: '{"price": 2000000, "stock": 10}',
+    newValue: '{"price": 2500000, "stock": 15}',
+    ipAddress: '192.168.1.100',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    status: 'success',
+    createdAt: '2024-01-25T14:30:00Z'
+  },
+  {
+    id: 5,
+    userId: 3,
+    userName: 'Jane Smith',
+    userRole: 'USER',
+    userAvatar: '/placeholder-image.png',
+    action: 'delete',
+    entityType: 'Wishlist',
+    entityId: 321,
+    oldValue: '{"productId": 123, "addedAt": "2024-01-20T10:00:00Z"}',
+    newValue: null,
+    ipAddress: '192.168.1.103',
+    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    status: 'success',
+    createdAt: '2024-01-25T15:45:00Z'
+  }
+])
 
 // Computed
 const totalLogs = computed(() => logs.value.length)
@@ -423,11 +501,11 @@ const suspiciousLogs = computed(() => {
   ).length
 })
 const adminLogs = computed(() => {
-  return (logs.value || []).filter(log => log.userRole === 'ADMIN').length
+  return logs.value.filter(log => log.userRole === 'ADMIN').length
 })
 
 const filteredLogs = computed(() => {
-  let filtered = logs.value || []
+  let filtered = logs.value
 
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
@@ -494,36 +572,11 @@ const paginatedLogs = computed(() => {
 const fetchLogs = async () => {
   loading.value = true
   try {
-    console.log('🔍 Fetching activity logs...')
-    const result = await adminStore.fetchActivityLogs(currentPage.value, pageSize.value, {})
-    console.log('📦 API Result:', result)
-    
-    const activityLogDtos = result.content || []
-    console.log('📊 Activity logs received:', activityLogDtos.length, activityLogDtos)
-    
-    // Map ActivityLogDto to frontend format
-    logs.value = activityLogDtos.map(dto => ({
-      id: dto.id,
-      userId: dto.userId,
-      userName: dto.userName,
-      userRole: 'USER', // Default role - DTO doesn't provide this
-      userAvatar: null,
-      action: dto.action,
-      entityType: dto.entityType,
-      entityId: dto.entityId,
-      oldValue: dto.oldValue,
-      newValue: dto.newValue,
-      ipAddress: dto.ipAddress,
-      userAgent: dto.userAgent,
-      status: 'success', // Default status
-      createdAt: dto.createdAt
-    }))
-    
-    console.log('✅ Logs mapped:', logs.value.length, 'items')
-    console.log('📊 Logs sample:', logs.value.slice(0, 3))
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    logs.value = mockLogs.value
   } catch (error) {
-    console.error('❌ Error fetching logs:', error)
-    ElMessage.error('Không thể tải nhật ký hoạt động: ' + (error.message || 'Unknown error'))
+    ElMessage.error('Không thể tải nhật ký hoạt động')
   } finally {
     loading.value = false
   }
@@ -585,13 +638,7 @@ const clearOldLogs = async () => {
 
 const exportLogs = (format) => {
   try {
-    const dataToExport = filteredLogs.value || []
-    if (dataToExport.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
-      return
-    }
-    
-    const exportData = dataToExport.map(log => ({
+    const exportData = filteredLogs.value.map(log => ({
       'ID': log.id,
       'Thời gian': formatDateTime(log.createdAt),
       'Người dùng': log.userName || 'Khách',
@@ -608,7 +655,7 @@ const exportLogs = (format) => {
     }))
 
     if (format === 'csv') {
-      downloadCsv(exportData, 'activity-logs.csv')
+      downloadCsv('activity-logs', exportData)
       ElMessage.success('Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('activity-logs', exportData)

@@ -31,19 +31,6 @@ public class FlashSaleService {
     private final ProductRepository productRepository;
 
     /**
-     * Lấy tất cả flash sales (cho admin panel)
-     */
-    @Transactional(readOnly = true)
-    public List<FlashSaleDto> getAllFlashSales() {
-        log.info("Fetching all flash sales");
-        List<FlashSale> flashSales = flashSaleRepository.findAll();
-        
-        return flashSales.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * Lấy tất cả flash sales đang active
      */
     @Transactional(readOnly = true)
