@@ -39,8 +39,7 @@ public class EmailService {
         log.info("   Subject: Xác nhận đơn hàng #{}", order.getOrderNumber());
         log.info("   Order ID: {}", order.getId());
         log.info("   Total: {} VND", order.getTotalAmount());
-        
-        // TODO: In production, send actual email using template
+               
         sendEmail(
             order.getUser().getEmail(),
             "order_confirmation",
