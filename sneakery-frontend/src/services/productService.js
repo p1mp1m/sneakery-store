@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Sử dụng relative path để Vite proxy có thể forward requests
-const API_URL = '/api/products';
+// Backend API URL
+const API_URL = 'http://localhost:8080/api/products';
 
 class ProductService {
     // Lấy danh sách sản phẩm với phân trang

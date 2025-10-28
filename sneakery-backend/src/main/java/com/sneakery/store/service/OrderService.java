@@ -5,6 +5,7 @@ import com.sneakery.store.entity.*;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -23,7 +25,8 @@ public class OrderService {
     private final AddressRepository addressRepository;
     private final ProductVariantRepository variantRepository;
     private final UserRepository userRepository;
-    // private final CartService cartService; // Không cần nữa
+    private final EmailService emailService;
+    private final PaymentGatewayService paymentGatewayService;
 
     /**
      * API 1: Xử lý Checkout (Tạo đơn hàng)
@@ -105,16 +108,18 @@ public class OrderService {
         history.setChangedAt(LocalDateTime.now());
         order.getStatusHistories().add(history);
 
-        // 10. Lưu Order (và các quan hệ con) vào CSDL
         Order savedOrder = orderRepository.save(order);
-        
-        // 11. Xóa giỏ hàng cũ
         cartRepository.delete(cart);
 
-        // 12. Trả về DTO (hoặc tạo link thanh toán nếu là 'online')
         String paymentUrl = null;
         if ("online".equalsIgnoreCase(requestDto.getPaymentMethod())) {
-            paymentUrl = "https://sandbox.vnpayment.vn/pay.html?token=example_token_" + savedOrder.getId(); // Ví dụ
+            paymentUrl = paymentGatewayService.createVNPayPaymentUrl(savedOrder.getId(), totalAmount, "Thanh toan don hang " + savedOrder.getId());
+        }
+        
+        try {
+            emailService.sendOrderConfirmation(savedOrder);
+        } catch (Exception e) {
+            // Log error but don't fail the order creation
         }
         
         return convertToOrderDto(savedOrder, paymentUrl);

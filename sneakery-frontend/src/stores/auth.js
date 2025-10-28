@@ -73,6 +73,13 @@ export const useAuthStore = defineStore('auth', () => {
         // Gọi API service để đăng nhập
         const responseData = await AuthService.login(credentials);
         console.log('✅ Auth Store - Login response:', responseData);
+        console.log('✅ Auth Store - accessToken:', responseData.accessToken);
+        
+        // Kiểm tra có token không
+        if (!responseData.accessToken) {
+            console.error('❌ Không có accessToken trong response!');
+            throw new Error('Login failed: No token received');
+        }
         
         // Lưu token
         token.value = responseData.accessToken;
@@ -82,8 +89,8 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = responseData;
         localStorage.setItem('user', JSON.stringify(responseData));
         
+        console.log('✅ Auth Store - Token saved to localStorage:', localStorage.getItem('token'));
         console.log('✅ Auth Store - User saved:', user.value);
-        console.log('✅ Auth Store - Token saved:', token.value);
     }
 
     async function register(userData) {

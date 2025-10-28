@@ -37,6 +37,21 @@
 
       <!-- Products Grid -->
       <div class="products-main">
+        <!-- Sort Bar -->
+        <div class="sort-bar">
+          <div class="sort-info">
+            <span>Tìm thấy {{ totalItems }} sản phẩm</span>
+          </div>
+          <select v-model="sortBy" @change="fetchProducts" class="sort-select">
+            <option value="">Sắp xếp</option>
+            <option value="price-asc">Giá: Thấp → Cao</option>
+            <option value="price-desc">Giá: Cao → Thấp</option>
+            <option value="name-asc">Tên: A → Z</option>
+            <option value="name-desc">Tên: Z → A</option>
+            <option value="newest">Mới nhất</option>
+          </select>
+        </div>
+
         <!-- Loading State -->
         <div v-if="loading" class="loading-container">
           <div class="loading-spinner-lg"></div>
@@ -113,6 +128,8 @@ const error = ref(null)
 const currentPage = ref(0)
 const pageSize = ref(8)
 const totalPages = ref(0)
+const totalItems = ref(0)
+const sortBy = ref('')
 
 // Filters
 const brands = ref(['Nike', 'Adidas', 'Puma', 'New Balance', 'Vans', 'Converse'])
@@ -132,11 +149,23 @@ const fetchProducts = async () => {
     loading.value = true
     error.value = null
     
-    const response = await productService.getProducts(currentPage.value, pageSize.value)
+    const filters = {}
+    if (selectedBrands.value.length > 0) {
+      filters.brands = selectedBrands.value.join(',')
+    }
+    if (selectedPriceRange.value) {
+      filters.minPrice = selectedPriceRange.value.min
+      filters.maxPrice = selectedPriceRange.value.max
+    }
+    if (sortBy.value) {
+      filters.sortBy = sortBy.value
+    }
     
-    // response.data là Page object từ Spring
-    products.value = response.data.content
-    totalPages.value = response.data.totalPages
+    const response = await productService.searchProducts('', filters)
+    
+    products.value = response
+    totalItems.value = response.length
+    totalPages.value = Math.ceil(response.length / pageSize.value)
     
   } catch (err) {
     error.value = 'Không thể tải danh sách sản phẩm. Vui lòng thử lại.'
@@ -168,12 +197,15 @@ const nextPage = () => {
 const clearFilters = () => {
   selectedBrands.value = []
   selectedPriceRange.value = null
+  sortBy.value = ''
+  fetchProducts()
 }
 
-// Watch for page changes
-watch(currentPage, () => {
+// Watch filters
+watch([selectedBrands, selectedPriceRange], () => {
+  currentPage.value = 0
   fetchProducts()
-})
+}, { deep: true })
 
 // Initial load
 onMounted(() => {
@@ -250,6 +282,39 @@ onMounted(() => {
 
 .products-main {
   min-height: 500px;
+}
+
+.sort-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  backdrop-filter: blur(10px);
+}
+
+.sort-info {
+  color: #94a3b8;
+  font-size: var(--text-sm);
+}
+
+.sort-select {
+  padding: var(--space-2) var(--space-4);
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: var(--radius-md);
+  color: #f1f5f9;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #a78bfa;
 }
 
 .loading-container,

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-// Sử dụng relative path để Vite proxy có thể forward requests
-const API_BASE_URL = '/api/admin'
+// Backend API URL
+const API_BASE_URL = 'http://localhost:8080/api/admin'
 
 // Tạo axios instance cho admin API
 const adminApi = axios.create({

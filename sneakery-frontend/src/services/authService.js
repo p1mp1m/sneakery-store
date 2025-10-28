@@ -1,16 +1,23 @@
 import axios from 'axios';
 
-// Sử dụng relative path để Vite proxy có thể forward requests
-const API_URL = '/api/auth/';
+// Backend API URL
+const API_URL = 'http://localhost:8080/api/auth/';
 
 class AuthService {
     // Phương thức đăng nhập
     async login(user) {
-        const response = await axios.post(API_URL + 'login', {
-            email: user.email,
-            password: user.password
-        });
-        return response.data;
+        console.log('🔐 AuthService - Login attempt:', user.email);
+        try {
+            const response = await axios.post(API_URL + 'login', {
+                email: user.email,
+                password: user.password
+            });
+            console.log('✅ AuthService - Login response:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('❌ AuthService - Login error:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
     // Phương thức đăng ký

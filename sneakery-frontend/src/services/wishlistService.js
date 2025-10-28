@@ -9,7 +9,7 @@ const API_URL = 'http://localhost:8080/api/wishlist'
 
 // Lấy access token từ localStorage
 const getAuthHeader = () => {
-  const token = localStorage.getItem('accessToken')
+  const token = localStorage.getItem('token')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 

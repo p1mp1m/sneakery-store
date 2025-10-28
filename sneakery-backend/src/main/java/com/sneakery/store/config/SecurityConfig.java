@@ -44,7 +44,7 @@ public class SecurityConfig {
                         // 1. Các API Public (Không cần đăng nhập)
                         .requestMatchers("/api/auth/**").permitAll() // API Đăng nhập/Đăng ký
                         .requestMatchers("/api/test/**").permitAll() // TEST API - CHỈ DÙNG CHO DEBUG, XÓA KHI PRODUCTION!
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll() // Swagger
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll() // Swagger
 
                         // 2. API Product & Review (Chỉ cho phép GET public)
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
