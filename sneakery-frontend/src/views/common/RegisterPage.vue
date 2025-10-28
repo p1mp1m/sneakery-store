@@ -422,7 +422,7 @@ const handleGoogleLogin = () => {
 }
 
 .divider-text {
-  color: var(--text-muted);
+  color: #1e293b;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
@@ -441,7 +441,7 @@ const handleGoogleLogin = () => {
 }
 
 .login-link p {
-  color: var(--text-secondary);
+  color: #1e293b;
   font-size: var(--text-sm);
   margin: 0;
 }
