@@ -212,8 +212,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
+import * as XLSX from 'xlsx'
 import { printInvoice } from '@/utils/pdfGenerator'
-import { downloadCsv, downloadJson, prepareOrdersForExport, exportToExcelStyled } from '@/utils/exportHelpers'
+import { downloadCsv, prepareOrdersForExport } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
 
@@ -357,9 +358,10 @@ const resetFilters = () => {
   fetchOrders()
 }
 
-// Export to CSV
+// Export to Excel
 const exportToExcel = () => {
   try {
+    // Chuẩn bị data để export
     const exportData = orders.value.map((order, index) => ({
       'STT': index + 1,
       'Mã đơn hàng': `#${order.id}`,
@@ -370,17 +372,30 @@ const exportToExcel = () => {
       'Ngày đặt': new Date(order.createdAt).toLocaleString('vi-VN')
     }))
 
-    if (exportData.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
-      return
-    }
-
-    // Export to styled Excel file
-    exportToExcelStyled(exportData, 'don-hang.xlsx', 'Đơn hàng')
-    ElMessage.success(`Đã export ${exportData.length} đơn hàng thành công!`)
+    // Tạo worksheet từ data
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    
+    // Tạo workbook
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Đơn hàng')
+    
+    // Tạo tên file với timestamp
+    const timestamp = new Date().toISOString().slice(0, 10)
+    const filename = `don-hang_${timestamp}.xlsx`
+    
+    // Download file
+    XLSX.writeFile(workbook, filename)
+    
+    ElMessage.success({
+      message: `Đã export ${exportData.length} đơn hàng thành công!`,
+      duration: 3000
+    })
   } catch (error) {
-    console.error('Lỗi khi export:', error)
-    ElMessage.error('Không thể export dữ liệu. Vui lòng thử lại!')
+    console.error('Lỗi khi export Excel:', error)
+    ElMessage.error({
+      message: 'Không thể export dữ liệu. Vui lòng thử lại!',
+      duration: 3000
+    })
   }
 }
 

@@ -445,65 +445,111 @@ const formData = reactive({
   scheduledAt: ''
 })
 
-// Map backend DTO to frontend format
-const mapNotification = (notification) => {
-  return {
-    id: notification.id,
-    type: notification.type,
-    title: notification.title,
-    message: notification.message,
-    status: notification.isRead ? 'sent' : 'scheduled',
-    sentAt: notification.createdAt,
-    scheduledAt: notification.isRead ? notification.readAt : null,
-    recipientType: 'all',
-    recipientCount: 1,
-    openedCount: notification.isRead ? 1 : 0,
-    createdAt: notification.createdAt,
-    // User info
-    userId: notification.userId,
-    userName: notification.userName,
-    userEmail: notification.userEmail
-  }
-}
-
 // Methods
 const fetchNotifications = async () => {
   try {
     loading.value = true
     
-    // Load from API
-    const apiFilters = {}
+    // Mock data cho notifications
+    const mockNotifications = [
+      {
+        id: 1,
+        type: 'order',
+        title: 'Đơn hàng mới #ORD001',
+        message: 'Bạn có đơn hàng mới từ khách hàng Nguyễn Văn A',
+        status: 'sent',
+        createdAt: '2024-01-15T10:30:00Z',
+        scheduledAt: null,
+        sentAt: '2024-01-15T10:30:00Z',
+        openedCount: 1,
+        targetUsers: 1,
+        priority: 'high'
+      },
+      {
+        id: 2,
+        type: 'promotion',
+        title: 'Flash Sale 50%',
+        message: 'Chương trình flash sale giảm giá 50% cho tất cả sản phẩm Nike',
+        status: 'scheduled',
+        createdAt: '2024-01-15T09:00:00Z',
+        scheduledAt: '2024-01-16T08:00:00Z',
+        sentAt: null,
+        openedCount: 0,
+        targetUsers: 1000,
+        priority: 'medium'
+      },
+      {
+        id: 3,
+        type: 'system',
+        title: 'Bảo trì hệ thống',
+        message: 'Hệ thống sẽ bảo trì từ 2:00 - 4:00 ngày mai',
+        status: 'sent',
+        createdAt: '2024-01-15T08:00:00Z',
+        scheduledAt: null,
+        sentAt: '2024-01-15T08:00:00Z',
+        openedCount: 5,
+        targetUsers: 5,
+        priority: 'high'
+      },
+      {
+        id: 4,
+        type: 'marketing',
+        title: 'Khuyến mãi cuối tuần',
+        message: 'Giảm giá 30% cho tất cả sản phẩm Adidas cuối tuần này',
+        status: 'failed',
+        createdAt: '2024-01-14T15:00:00Z',
+        scheduledAt: '2024-01-14T16:00:00Z',
+        sentAt: null,
+        openedCount: 0,
+        targetUsers: 500,
+        priority: 'low'
+      },
+      {
+        id: 5,
+        type: 'order',
+        title: 'Đơn hàng đã hủy #ORD002',
+        message: 'Đơn hàng #ORD002 đã được hủy bởi khách hàng',
+        status: 'sent',
+        createdAt: '2024-01-14T14:30:00Z',
+        scheduledAt: null,
+        sentAt: '2024-01-14T14:30:00Z',
+        openedCount: 1,
+        targetUsers: 1,
+        priority: 'medium'
+      }
+    ]
     
-    if (filters.search) apiFilters.search = filters.search
-    if (filters.type) apiFilters.type = filters.type
+    // Apply filters
+    let filteredNotifications = mockNotifications
     
-    // Map status filter to backend format
-    if (filters.status === 'sent') {
-      apiFilters.status = 'read' // Đã gửi = đã đọc
-    } else if (filters.status === 'scheduled') {
-      apiFilters.status = 'unread' // Chờ gửi = chưa đọc
+    if (filters.search) {
+      filteredNotifications = filteredNotifications.filter(n => 
+        n.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+        n.message.toLowerCase().includes(filters.search.toLowerCase())
+      )
     }
     
-    const result = await adminStore.fetchNotifications(0, 50, apiFilters)
+    if (filters.type) {
+      filteredNotifications = filteredNotifications.filter(n => n.type === filters.type)
+    }
     
-    // Map backend data to frontend format
-    notifications.value = (result.content || []).map(mapNotification)
+    if (filters.status) {
+      filteredNotifications = filteredNotifications.filter(n => n.status === filters.status)
+    }
     
+    notifications.value = filteredNotifications
     updateStats()
     
     console.log('✅ Notifications loaded successfully')
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
     ElMessage.error('Không thể tải danh sách thông báo')
-    notifications.value = []
-    updateStats()
   } finally {
     loading.value = false
   }
 }
 
 const updateStats = () => {
-  // Map từ notification entity sang stats
   stats.sent = notifications.value.filter(n => n.status === 'sent').length
   stats.opened = notifications.value.reduce((sum, n) => sum + (n.openedCount || 0), 0)
   stats.scheduled = notifications.value.filter(n => n.status === 'scheduled').length
