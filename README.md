@@ -15,9 +15,34 @@
 
 ## 📖 Giới thiệu
 
-**Sneakery Store** là website bán giày trực tuyến, gồm 2 phần:
-- 👥 **Khách hàng:** Xem giày, thêm vào giỏ hàng, đặt mua
-- 🛡️ **Quản trị:** Quản lý sản phẩm, đơn hàng, thống kê doanh thu
+**Sneakery Store** là website bán giày trực tuyến được xây dựng với kiến trúc hiện đại, gồm 2 phần:
+
+- 👥 **Khách hàng:** Xem giày, thêm vào giỏ hàng, đặt mua, quản lý tài khoản
+- 🛡️ **Quản trị:** Quản lý sản phẩm, đơn hàng, thống kê doanh thu, quản lý người dùng
+
+---
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Java 17** - Ngôn ngữ lập trình
+- **Spring Boot 3.2.0** - Framework chính
+- **Spring Security** - Xác thực và phân quyền
+- **Spring Data JPA** - ORM cho database
+- **SQL Server** - Hệ quản trị cơ sở dữ liệu
+- **Maven** - Quản lý dependencies
+
+### Frontend
+- **Vue.js 3.5** - Framework JavaScript
+- **Vue Router** - Routing
+- **Pinia/Vuex** - State Management
+- **Axios** - HTTP Client
+- **Vite** - Build tool
+- **Tailwind CSS / Custom CSS** - Styling
+
+### Development Tools
+- **Git & GitHub** - Version control
+- **Visual Studio Code / IntelliJ IDEA** - IDE
 
 ---
 
@@ -102,17 +127,31 @@ cd sneakery-store
 
 ### ⚙️ **Bước 3: Cấu hình và cài đặt Backend**
 
-#### 3.1. Sửa mật khẩu database
+#### 3.1. Tạo file cấu hình
 
-1. Mở file: `sneakery-backend/src/main/resources/application.properties`
-2. Tìm dòng có chữ `spring.datasource.password`
-3. Sửa thành mật khẩu SQL Server của bạn
+1. **Copy file example thành file chính:**
+```bash
+# Trên Windows (Command Prompt)
+copy sneakery-backend\src\main\resources\application.properties.example sneakery-backend\src\main\resources\application.properties
 
-```properties
-spring.datasource.password=YOUR_PASSWORD_HERE
+# Trên Windows (PowerShell)
+Copy-Item sneakery-backend\src\main\resources\application.properties.example sneakery-backend\src\main\resources\application.properties
+
+# Trên Linux/Mac
+cp sneakery-backend/src/main/resources/application.properties.example sneakery-backend/src/main/resources/application.properties
 ```
 
-> **⚠️ Quan trọng:** Thay `YOUR_PASSWORD_HERE` bằng mật khẩu SQL Server mà bạn đã đặt khi cài đặt!
+2. **Mở file:** `sneakery-backend/src/main/resources/application.properties`
+
+3. Điền thông tin kết nối database của bạn:
+```properties
+spring.datasource.password=YOUR_PASSWORD_HERE
+app.jwt.secret=YOUR_JWT_SECRET_KEY_HERE
+```
+
+> **⚠️ Quan trọng:** 
+> - Thay `YOUR_PASSWORD_HERE` bằng mật khẩu SQL Server của bạn
+> - Tạo JWT secret mới bằng online generator hoặc UUID (KHÔNG dùng secret mặc định!)
 
 #### 3.2. Cài đặt các thư viện cần thiết
 
@@ -188,6 +227,59 @@ npm run dev
 ```
 
 > **🌐 Website đã sẵn sàng tại:** http://localhost:5173
+
+---
+
+## 📚 Tài liệu cho Team Developers
+
+### Tài liệu quan trọng
+
+Nếu bạn là developer trong team, đây là các tài liệu bạn **PHẢI ĐỌC**:
+
+| 📖 | Tài liệu | Mô tả | Link |
+|---|---------|-------|------|
+| 🔄 | **Quy trình Git** | Hướng dẫn chi tiết workflow cho team | [👉 Xem](./sneakery-docs/Hướng%20dẫn%20push%20code.md) |
+| 🎓 | **Lệnh Git & Tips** | Tổng hợp lệnh Git và mẹo hữu ích | [👉 Xem](./sneakery-docs/Lệnh%20Github.md) |
+| 📋 | **Phân tích nghiệp vụ** | Chi tiết các chức năng của hệ thống | [👉 Xem](./sneakery-docs/Phân%20tích%20nghiệp%20vụ%20và%20chức%20năng.md) |
+| 🗄️ | **ERD & Luồng nghiệp vụ** | Sơ đồ database và luồng xử lý | [👉 Xem](./sneakery-docs/ERD%20và%20luồng%20nghiệp%20vụ.md) |
+
+### 👥 Quy trình làm việc cho Developer
+
+1. **📥 Setup môi trường:**
+   ```bash
+   git clone https://github.com/p1mp1m/sneakery-store
+   cd sneakery-store
+   # Copy application.properties như hướng dẫn trên
+   ```
+
+2. **🔄 Workflow làm việc:**
+   ```bash
+   # Lấy code mới nhất
+   git checkout main
+   git pull origin main
+   
+   # Tạo branch mới cho task
+   git checkout -b feature/tên-tính-năng
+   
+   # Code và commit
+   git add .
+   git commit -m "feat: mô tả thay đổi"
+   
+   # Push lên GitHub
+   git push -u origin feature/tên-tính-năng
+   ```
+
+3. **✅ Tạo Pull Request:** Vào GitHub để tạo PR và đợi review
+
+4. **📖 Đọc thêm:** Xem chi tiết tại [Workflow](./sneakery-docs/Hướng%20dẫn%20push%20code.md)
+
+### ⚠️ Quy tắc bắt buộc
+
+- ❌ **KHÔNG BAO GIỜ** commit trực tiếp vào `main`
+- ✅ Luôn tạo branch mới cho mỗi task
+- ✅ Luôn pull code mới nhất trước khi bắt đầu
+- ✅ Test code trước khi push
+- ✅ Không commit file nhạy cảm (password, secrets)
 
 ---
 
@@ -360,14 +452,44 @@ Nếu gặp khó khăn, hãy:
 1. 📖 Đọc lại hướng dẫn từ đầu
 2. 🔍 Kiểm tra phần "Gặp lỗi? Sửa như sau!"
 3. 💻 Kiểm tra log lỗi trong Terminal
-4. 📧 Liên hệ: pombie789456123@gmail.com
+4. 📧 Email: pombie789456123@gmail.com
+5. 🐛 Báo bug: [Tạo Issue trên GitHub](https://github.com/p1mp1m/sneakery-store/issues)
+
+---
+
+## 👥 Contributors
+
+Dự án được phát triển bởi **Sneakery Team**:
+
+- **Backend Developers** - Xây dựng API và business logic
+- **Frontend Developers** - Thiết kế và phát triển giao diện
+- **Team Leader** - Quản lý dự án và code review
+
+> **Mong muốn đóng góp?** Vui lòng đọc [Hướng dẫn Workflow](./sneakery-docs/Hướng%20dẫn%20push%20code.md)
+
+---
+
+## 📄 License
+
+Dự án này được phát triển cho mục đích học tập và portfolio.
+
+---
+
+## 🔗 Links hữu ích
+
+- 📁 **Repository:** https://github.com/p1mp1m/sneakery-store
+- 📖 **Documentation:** [Xem thư mục sneakery-docs](./sneakery-docs)
+- 🎯 **Project Board:** [GitHub Projects](https://github.com/p1mp1m/sneakery-store/projects)
 
 ---
 
 <div align="center">
 
-**✨ Chúc bạn cài đặt thành công! ✨**
+**✨ Chúc bạn phát triển dự án thành công! ✨**
 
 Made with ❤️ by Sneakery Team
+
+![GitHub stars](https://img.shields.io/github/stars/p1mp1m/sneakery-store?style=social)
+![GitHub forks](https://img.shields.io/github/forks/p1mp1m/sneakery-store?style=social)
 
 </div>
