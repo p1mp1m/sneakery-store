@@ -4,9 +4,11 @@
 Schema và dữ liệu mẫu được tối ưu để tương thích hoàn toàn với Frontend Admin API đã được phát triển.
 
 ## Cấu trúc Files
-- `1_CREATE_SCHEMA_V2.sql` - Schema database mới (25 tables)
-- `2_INSERT_DATA_V2.sql` - Dữ liệu mẫu phù hợp với API
-- `README_V2.md` - Hướng dẫn sử dụng
+- `1_CREATE_SCHEMA.sql` - Schema database (25 tables)
+- `2_INSERT_DATA.sql` - Dữ liệu mẫu cơ bản
+- `3_ADD_MORE_DATA.sql` - Thêm dữ liệu mẫu bổ sung (tùy chọn)
+- `4_UPDATE_PRODUCT_IMAGES.sql` - **UPDATE ẢNH THẬT** từ Unsplash (QUAN TRỌNG!)
+- `README.md` - Hướng dẫn sử dụng
 
 ## Cài đặt
 
@@ -17,10 +19,21 @@ sqlcmd -S localhost -i 1_CREATE_SCHEMA_V2.sql
 ```
 
 ### 2. Thêm dữ liệu mẫu
-```sql
--- Chạy file dữ liệu sau
-sqlcmd -S localhost -i 2_INSERT_DATA_V2.sql
+```bash
+# Chạy file dữ liệu cơ bản
+sqlcmd -S localhost -i sneakery-database\2_INSERT_DATA.sql
+
+# (Tùy chọn) Thêm dữ liệu bổ sung
+sqlcmd -S localhost -i sneakery-database\3_ADD_MORE_DATA.sql
 ```
+
+### 3. **UPDATE ẢNH SẢN PHẨM THẬT (QUAN TRỌNG!)**
+```bash
+# File này sẽ thay thế URLs ảnh giả bằng ảnh thật từ Unsplash
+sqlcmd -S localhost -i sneakery-database\4_UPDATE_PRODUCT_IMAGES.sql
+```
+
+> **⚠️ Lưu ý:** Nếu website vẫn hiển thị placeholder, hãy **chạy file này** để update ảnh sản phẩm thành ảnh thật!
 
 ## Cấu trúc Database
 
