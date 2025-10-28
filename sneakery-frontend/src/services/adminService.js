@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-// Backend API URL
-const API_BASE_URL = 'http://localhost:8080/api/admin'
+// Sử dụng relative path để Vite proxy có thể forward requests
+const API_BASE_URL = '/api/admin'
 
 // Tạo axios instance cho admin API
 const adminApi = axios.create({
@@ -372,6 +372,81 @@ class AdminService {
       throw this.handleError(error)
     }
   }
+
+    // ===== MATERIAL MANAGEMENT (CHẤT LIỆU) =====
+  async getMaterials() {
+    try {
+      const response = await adminApi.get('/materials')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createMaterial(data) {
+    try {
+      const response = await adminApi.post('/materials', data)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateMaterial(id, data) {
+    try {
+      const response = await adminApi.put(`/materials/${id}`, data)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteMaterial(id) {
+    try {
+      const response = await adminApi.delete(`/materials/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== SOLE MANAGEMENT (ĐẾ GIÀY) =====
+  async getSoles() {
+    try {
+      const response = await adminApi.get('/shoe-soles')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async createSole(data) {
+    try {
+      const response = await adminApi.post('/shoe-soles', data)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async updateSole(id, data) {
+    try {
+      const response = await adminApi.put(`/shoe-soles/${id}`, data)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteSole(id) {
+    try {
+      const response = await adminApi.delete(`/shoe-soles/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
 
   // ===== EXPORT/IMPORT =====
   async exportData(type, format = 'excel') {
@@ -936,56 +1011,7 @@ class AdminService {
 
   async sendTestEmail(id, testData) {
     try {
-      const response = await adminApi.post(`/email-templates/${id}/send-test`, testData)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  async toggleEmailTemplateStatus(id) {
-    try {
-      const response = await adminApi.put(`/email-templates/${id}/toggle`)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  // ===== ACTIVITY LOGS =====
-  async getActivityLogs(page = 0, size = 20, filters = {}) {
-    try {
-      const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          acc[key] = value
-        }
-        return acc
-      }, {})
-      
-      const params = new URLSearchParams({
-        page: page.toString(),
-        size: size.toString(),
-        ...cleanFilters
-      })
-      const response = await adminApi.get(`/activity-logs?${params}`)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  async getActivityLogById(id) {
-    try {
-      const response = await adminApi.get(`/activity-logs/${id}`)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  async deleteActivityLog(id) {
-    try {
-      const response = await adminApi.delete(`/activity-logs/${id}`)
+      const response = await adminApi.post(`/email-templates/${id}/test`, testData)
       return response.data
     } catch (error) {
       throw this.handleError(error)
@@ -1127,15 +1153,6 @@ class AdminService {
   async getPaymentStats() {
     try {
       const response = await adminApi.get('/payments/stats')
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  async updatePaymentStatus(id, status) {
-    try {
-      const response = await adminApi.put(`/payments/${id}/status?status=${status}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)

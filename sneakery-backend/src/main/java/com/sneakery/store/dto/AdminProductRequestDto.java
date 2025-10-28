@@ -1,10 +1,12 @@
 package com.sneakery.store.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +25,13 @@ public class AdminProductRequestDto {
     
     @NotNull(message = "Trạng thái active không được để trống")
     private Boolean isActive;
+
+    // 🆕 Bổ sung 2 trường mới
+    @Schema(description = "ID chất liệu của sản phẩm", example = "2")
+    private Integer materialId;
+
+    @Schema(description = "ID loại đế giày của sản phẩm", example = "3")
+    private Integer shoeSoleId;
 
     // Danh sách các ID của Category
     @NotEmpty(message = "Sản phẩm phải thuộc ít nhất 1 danh mục")

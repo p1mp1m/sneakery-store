@@ -13,6 +13,8 @@ const AdminOrders = () => import('@/views/admin/AdminOrders.vue')
 const AdminUsers = () => import('@/views/admin/AdminUsers.vue')
 const AdminBrands = () => import('@/views/admin/AdminBrands.vue')
 const AdminCategories = () => import('@/views/admin/AdminCategories.vue')
+const AdminMaterials = () => import('@/views/admin/AdminMaterials.vue')
+const AdminShoeSoles = () => import('@/views/admin/AdminShoeSoles.vue')
 const AdminDiscounts = () => import('@/views/admin/AdminDiscounts.vue')
 const AdminReturns = () => import('@/views/admin/AdminReturns.vue')
 const AdminWarranty = () => import('@/views/admin/AdminWarranty.vue')
@@ -112,6 +114,26 @@ const adminRoutes = [
           requiresAdmin: true,
           title: 'Quản lý danh mục',
           icon: 'category'
+        }
+      },
+      {
+        path: 'materials',
+        name: 'AdminMaterials',
+        component: AdminMaterials,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Quản lý chất liệu',
+          icon: 'layers'
+        }
+      },
+      {
+        path: 'shoesoles',
+        name: 'AdminShoeSoles',
+        component: AdminShoeSoles,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Quản lý loại đế giày',
+          icon: 'view_day'
         }
       },
       {

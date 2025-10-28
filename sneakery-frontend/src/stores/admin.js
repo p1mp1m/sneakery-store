@@ -14,6 +14,9 @@ export const useAdminStore = defineStore('admin', () => {
   const brands = ref([])
   const categories = ref([])
   const coupons = ref([])
+  const materials = ref([]) // Chất liệu
+  const soles = ref([])     // Đế giày
+
 
   // ===== GETTERS =====
   const isAuthenticated = computed(() => !!adminUser.value)
@@ -449,6 +452,159 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  // ===============================
+// Material management (Chất liệu)
+// ===============================
+const fetchMaterials = async () => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const result = await AdminService.getMaterials()
+    materials.value = result || []
+    return result
+  } catch (err) {
+    error.value = err.message || 'Lỗi khi tải danh sách chất liệu'
+    materials.value = []
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+const createMaterial = async (materialData) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const material = await AdminService.createMaterial(materialData)
+    // ✅ Thêm vào danh sách hiện tại nếu cần cập nhật UI ngay
+    // ✅ Cập nhật reactive list đúng cách
+    if (materials.value) {
+      materials.value = [...materials.value, material]
+    } else {
+      materials.value = [material]
+    }
+    return material
+  } catch (err) {
+    error.value = err.message || 'Lỗi khi tạo chất liệu'
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+const updateMaterial = async (id, materialData) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const updated = await AdminService.updateMaterial(id, materialData)
+    // ✅ Cập nhật lại danh sách trong store
+    const index = materials.value.findIndex((m) => m.id === id)
+    if (index !== -1) materials.value[index] = updated
+    return updated
+  } catch (err) {
+    error.value = err.message || 'Lỗi khi cập nhật chất liệu'
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+const deleteMaterial = async (id) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    await AdminService.deleteMaterial(id)
+    // ✅ Xóa trong danh sách store
+    materials.value = materials.value.filter((m) => m.id !== id)
+    return true
+  } catch (err) {
+    error.value = err.message || 'Lỗi khi xóa chất liệu'
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+// ================================
+// Shoe Sole management (Đế giày)
+// ================================
+const fetchSoles = async () => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const result = await AdminService.getSoles()
+    soles.value = result || []
+    return result
+  } catch (err) {
+    error.value = err.message || 'Lỗi khi tải danh sách loại đế'
+    soles.value = []
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+const createSole = async (soleData) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const sole = await AdminService.createSole(soleData)
+    // ✅ Cập nhật reactive list đúng cách
+    if (soles.value) {
+      soles.value = [...soles.value, soles]
+    } else {
+      soles.value = [soles]
+    }
+    return sole
+  } catch (err) {
+    error.value = err.message || 'Lỗi khi tạo loại đế giày'
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+const updateSole = async (id, soleData) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    const updated = await AdminService.updateSole(id, soleData)
+    const index = soles.value.findIndex((s) => s.id === id)
+    if (index !== -1) soles.value[index] = updated
+    return updated
+  } catch (err) {
+    error.value = err.message || 'Lỗi khi cập nhật loại đế giày'
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+const deleteSole = async (id) => {
+  try {
+    loading.value = true
+    error.value = null
+
+    await AdminService.deleteSole(id)
+    soles.value = soles.value.filter((s) => s.id !== id)
+    return true
+  } catch (err) {
+    error.value = err.message || 'Lỗi khi xóa loại đế giày'
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+  
+
   // Export/Import
   const exportData = async (type, format = 'excel') => {
     try {
@@ -766,19 +922,6 @@ export const useAdminStore = defineStore('admin', () => {
       return result
     } catch (error) {
       console.error('Error fetching payment stats:', error)
-      throw error
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const updatePaymentStatus = async (id, status) => {
-    try {
-      loading.value = true
-      const result = await AdminService.updatePaymentStatus(id, status)
-      return result
-    } catch (error) {
-      console.error('Error updating payment status:', error)
       throw error
     } finally {
       loading.value = false
@@ -1197,6 +1340,8 @@ export const useAdminStore = defineStore('admin', () => {
     error,
     brands,
     categories,
+    materials,
+    soles,
     coupons,
     
     // Getters
@@ -1231,6 +1376,18 @@ export const useAdminStore = defineStore('admin', () => {
     createCategory,
     updateCategory,
     deleteCategory,
+        // Material (Chất liệu)
+    fetchMaterials,
+    createMaterial,
+    updateMaterial,
+    deleteMaterial,
+
+    // Sole (Đế giày)
+    fetchSoles,
+    createSole,
+    updateSole,
+    deleteSole,
+
     exportData,
     importData,
     
@@ -1257,7 +1414,6 @@ export const useAdminStore = defineStore('admin', () => {
     fetchPayments,
     refundPayment,
     fetchPaymentStats,
-    updatePaymentStatus,
     fetchProductAnalytics,
     fetchCustomerAnalytics,
     fetchSettings,

@@ -1,17 +1,13 @@
 package com.sneakery.store.service;
 
 import com.sneakery.store.dto.*;
-import com.sneakery.store.entity.Brand;
-import com.sneakery.store.entity.Category;
-import com.sneakery.store.entity.Product;
-import com.sneakery.store.entity.ProductVariant;
+import com.sneakery.store.entity.*;
 import com.sneakery.store.exception.ApiException;
-import com.sneakery.store.repository.BrandRepository;
-import com.sneakery.store.repository.CategoryRepository;
-import com.sneakery.store.repository.ProductRepository;
-import com.sneakery.store.repository.ProductVariantRepository;
+import com.sneakery.store.repository.*;
+import com.sneakery.store.util.CodeGenerator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.Order;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -36,23 +32,42 @@ public class AdminProductService {
     private final CategoryRepository categoryRepository;
     private final ProductVariantRepository variantRepository;
     private final EntityManager entityManager;
+    private final CodeGenerator codeGenerator;
+    private final MaterialRepository materialRepository;
+    private final ShoeSoleRepository shoeSoleRepository;
+
+
 
     /**
-     * API 1: Tạo sản phẩm mới
-     */
+ * API 1: Tạo sản phẩm mới
+ */
     @Transactional
     public AdminProductDetailDto createProduct(AdminProductRequestDto requestDto) {
-        // 1. Lấy Brand
+        // 1️⃣ Lấy Brand
         Brand brand = brandRepository.findById(requestDto.getBrandId())
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
 
-        // 2. Lấy Categories
+        // 2️⃣ Lấy Categories
         Set<Category> categories = requestDto.getCategoryIds().stream()
                 .map(id -> categoryRepository.findById(id)
                         .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Danh mục không tồn tại: " + id)))
                 .collect(Collectors.toSet());
 
-        // 3. Tạo Product
+        // 3️⃣ Lấy Material (nếu có)
+        Material material = null;
+        if (requestDto.getMaterialId() != null) {
+            material = materialRepository.findById(requestDto.getMaterialId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Chất liệu không tồn tại"));
+        }
+
+        // 4️⃣ Lấy Shoe Sole (nếu có)
+        ShoeSole shoeSole = null;
+        if (requestDto.getShoeSoleId() != null) {
+            shoeSole = shoeSoleRepository.findById(requestDto.getShoeSoleId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Loại đế giày không tồn tại"));
+        }
+
+        // 5️⃣ Khởi tạo Product
         Product product = new Product();
         product.setName(requestDto.getName());
         product.setSlug(requestDto.getSlug());
@@ -60,53 +75,80 @@ public class AdminProductService {
         product.setIsActive(requestDto.getIsActive());
         product.setBrand(brand);
         product.setCategories(categories);
+        product.setMaterial(material);
+        product.setShoeSole(shoeSole);
 
-        // 4. Tạo Variants
+        // 6️⃣ Sinh mã sản phẩm tự động
+        Long lastId = productRepository.findMaxId();
+        String newCode = codeGenerator.generateProductCode(lastId);
+        product.setCode(newCode);
+
+        // 7️⃣ Map Variants
         List<ProductVariant> variants = requestDto.getVariants().stream()
                 .map(dto -> convertVariantDtoToEntity(dto, product))
                 .collect(Collectors.toList());
-        
-        product.setVariants(variants); // Gắn variants vào product
+        product.setVariants(variants);
 
-        // 5. Lưu (sẽ cascade-save cả variants)
+        // 8️⃣ Lưu sản phẩm (cascade variants)
         Product savedProduct = productRepository.save(product);
+
+        // 9️⃣ Trả về DTO chi tiết
         return convertToAdminDetailDto(savedProduct);
     }
+
 
     /**
      * API 2: Cập nhật sản phẩm
      */
     @Transactional
     public AdminProductDetailDto updateProduct(Long productId, AdminProductRequestDto requestDto) {
-        // 1. Tìm Product
+        // 1️⃣ Tìm Product
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
 
-        // 2. Cập nhật Brand
+        // 2️⃣ Lấy Brand
         Brand brand = brandRepository.findById(requestDto.getBrandId())
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
-        
-        // 3. Cập nhật Categories
+
+        // 3️⃣ Lấy Categories
         Set<Category> categories = requestDto.getCategoryIds().stream()
                 .map(id -> categoryRepository.findById(id)
                         .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Danh mục không tồn tại: " + id)))
                 .collect(Collectors.toSet());
 
-        // 4. Cập nhật thông tin Product
+        // 4️⃣ Lấy Material (nếu có)
+        Material material = null;
+        if (requestDto.getMaterialId() != null) {
+            material = materialRepository.findById(requestDto.getMaterialId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Chất liệu không tồn tại"));
+        }
+
+        // 5️⃣ Lấy Shoe Sole (nếu có)
+        ShoeSole shoeSole = null;
+        if (requestDto.getShoeSoleId() != null) {
+            shoeSole = shoeSoleRepository.findById(requestDto.getShoeSoleId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Loại đế giày không tồn tại"));
+        }
+
+        // 6️⃣ Cập nhật thông tin
         product.setName(requestDto.getName());
         product.setSlug(requestDto.getSlug());
         product.setDescription(requestDto.getDescription());
         product.setIsActive(requestDto.getIsActive());
         product.setBrand(brand);
         product.setCategories(categories);
+        product.setMaterial(material);
+        product.setShoeSole(shoeSole);
 
-        // 5. Xử lý Cập nhật/Thêm/Xóa Variants
+        // 7️⃣ Cập nhật variants
         updateProductVariants(product, requestDto.getVariants());
 
+        // 8️⃣ Lưu lại
         Product updatedProduct = productRepository.save(product);
         return convertToAdminDetailDto(updatedProduct);
     }
-    
+
+
     /**
      * API 3: Lấy 1 sản phẩm (cho trang Edit)
      */
@@ -120,29 +162,61 @@ public class AdminProductService {
     /**
      * API 4: Lấy danh sách (phân trang)
      */
-    @Transactional(readOnly = true)
-    public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
-        // Lấy Entity từ repository
-        Page<Product> productPage = productRepository.findAll(pageable);
-        
-        // Convert Entity sang DTO để tránh lỗi Jackson serialization với Hibernate proxy
-        return productPage.map(this::convertToListDto);
+    /**
+ * API 4: Lấy danh sách sản phẩm (Admin, có Brand + Categories)
+ */
+@Transactional(readOnly = true)
+public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
+    // 1️⃣ Bước 1: Lấy Page cơ bản (chỉ ID)
+    Page<Product> page = productRepository.findAll(pageable);
+
+    if (page.isEmpty()) {
+        return Page.empty(pageable);
     }
+
+    // 2️⃣ Bước 2: Lấy danh sách ID trong trang hiện tại
+    List<Long> ids = page.getContent().stream()
+            .map(Product::getId)
+            .toList();
+
+    // 3️⃣ Bước 3: Fetch join Brand + Categories cho đúng các ID đó
+    List<Product> fullProducts = productRepository.findByIdInWithBrandAndCategories(ids);
+
+    // 4️⃣ Bước 4: Convert sang DTO
+    List<AdminProductListDto> dtoList = fullProducts.stream()
+            .map(this::convertToListDto)
+            .toList();
+
+    // 5️⃣ Bước 5: Tạo PageImpl để giữ nguyên thông tin phân trang
+    return new PageImpl<>(dtoList, pageable, page.getTotalElements());
+}
+
     
     /**
-     * Helper method: Convert Product Entity sang AdminProductListDto
-     */
-    private AdminProductListDto convertToListDto(Product product) {
-        return AdminProductListDto.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .slug(product.getSlug())
-                .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
-                .brandName(product.getBrand() != null ? product.getBrand().getName() : "N/A")
-                .isActive(product.getIsActive())
-                .variantCount(product.getVariants() != null ? product.getVariants().size() : 0)
-                .build();
-    }
+ * Helper method: Convert Product Entity sang AdminProductListDto
+ */
+private AdminProductListDto convertToListDto(Product product) {
+    // Lấy danh sách category (nếu có)
+    List<SimpleCategoryDto> categoryDtos = product.getCategories() != null
+            ? product.getCategories().stream()
+                .map(cat -> new SimpleCategoryDto(cat.getId(), cat.getName()))
+                .toList()
+            : List.of();
+    return AdminProductListDto.builder()
+            .id(product.getId())
+            .code(product.getCode()) // 🆕 Thêm dòng này để hiển thị mã sản phẩm
+            .name(product.getName())
+            .slug(product.getSlug())
+            .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
+            .brandName(product.getBrand() != null ? product.getBrand().getName() : "N/A")
+            .isActive(product.getIsActive())
+            .variantCount(product.getVariants() != null ? product.getVariants().size() : 0)
+            .categories(categoryDtos)
+            .materialId(product.getMaterial() != null ? product.getMaterial().getId() : null)
+            .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
+            .build();
+}
+
 
     /**
      * API 5: Xóa sản phẩm
@@ -242,6 +316,8 @@ public class AdminProductService {
                 .slug(product.getSlug())
                 .description(product.getDescription())
                 .isActive(product.getIsActive())
+                .materialId(product.getMaterial() != null ? product.getMaterial().getId() : null)
+                .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
                 .categories(categoryDtos)
                 .variants(variantDtos)
                 .build();

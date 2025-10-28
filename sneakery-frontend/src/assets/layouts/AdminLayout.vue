@@ -1,34 +1,26 @@
 <template>
   <div class="admin-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
-    <!-- Hamburger Menu (Mobile Only) -->
-    <button 
-      v-if="isMobile"
-      class="hamburger-btn"
-      @click="toggleSidebar"
-      type="button"
-      title="Toggle menu"
-    >
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-    </button>
-
     <!-- Nút Toggle - Bên ngoài sidebar -->
-    <button 
-      v-if="!isMobile"
+    <button
       class="sidebar-toggle-btn"
       @click="toggleSidebar"
       type="button"
       :title="sidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
     >
-      <i class="material-icons">{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</i>
+      <i class="material-icons">{{
+        sidebarCollapsed ? "chevron_right" : "chevron_left"
+      }}</i>
     </button>
 
     <!-- Admin Sidebar -->
-    <aside class="admin-sidebar" :class="{ 'collapsed': sidebarCollapsed }">
+    <aside class="admin-sidebar" :class="{ collapsed: sidebarCollapsed }">
       <div class="sidebar-header">
         <div class="brand">
-          <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo" />
+          <img
+            src="@/assets/images/logo.png"
+            alt="Sneakery Store"
+            class="logo"
+          />
         </div>
       </div>
 
@@ -37,29 +29,45 @@
           <template v-for="route in adminRoutes" :key="route.id || route.name">
             <!-- Menu có submenu (dropdown) -->
             <li v-if="route.children" class="nav-item nav-item-parent">
-              <a 
+              <a
                 class="nav-link nav-parent"
-                :class="{ 'active': isSubmenuActive(route.children), 'open': isMenuOpen(route.id) }"
+                :class="{
+                  active: isSubmenuActive(route.children),
+                  open: isMenuOpen(route.id),
+                }"
                 @click.prevent="toggleMenu(route.id)"
                 href="#"
                 :title="sidebarCollapsed ? route.meta.title : ''"
               >
                 <i class="material-icons">{{ route.meta.icon }}</i>
-                <span v-if="!sidebarCollapsed" class="nav-text">{{ route.meta.title }}</span>
+                <span v-if="!sidebarCollapsed" class="nav-text">{{
+                  route.meta.title
+                }}</span>
                 <!-- Expand icon - hiện cả khi collapsed -->
-                <i class="material-icons expand-icon" :class="{ 'collapsed-icon': sidebarCollapsed }">
-                  {{ isMenuOpen(route.id) ? 'expand_less' : 'expand_more' }}
+                <i
+                  class="material-icons expand-icon"
+                  :class="{ 'collapsed-icon': sidebarCollapsed }"
+                >
+                  {{ isMenuOpen(route.id) ? "expand_less" : "expand_more" }}
                 </i>
               </a>
-              
+
               <!-- Submenu dropdown (Normal & Collapsed) -->
               <transition name="submenu">
-                <ul v-if="isMenuOpen(route.id)" class="submenu" :class="{ 'submenu-collapsed': sidebarCollapsed }">
-                  <li v-for="child in route.children" :key="child.name" class="submenu-item">
+                <ul
+                  v-if="isMenuOpen(route.id)"
+                  class="submenu"
+                  :class="{ 'submenu-collapsed': sidebarCollapsed }"
+                >
+                  <li
+                    v-for="child in route.children"
+                    :key="child.name"
+                    class="submenu-item"
+                  >
                     <router-link
                       :to="child.path"
                       class="nav-link nav-child"
-                      :class="{ 'active': $route.name === child.name }"
+                      :class="{ active: $route.name === child.name }"
                       :title="sidebarCollapsed ? child.meta.title : ''"
                     >
                       <i class="material-icons">{{ child.meta.icon }}</i>
@@ -72,14 +80,16 @@
 
             <!-- Menu thường (không có submenu) -->
             <li v-else class="nav-item">
-              <router-link 
-                :to="route.path" 
+              <router-link
+                :to="route.path"
                 class="nav-link"
-                :class="{ 'active': $route.name === route.name }"
+                :class="{ active: $route.name === route.name }"
                 :title="sidebarCollapsed ? route.meta.title : ''"
               >
                 <i class="material-icons">{{ route.meta.icon }}</i>
-                <span v-if="!sidebarCollapsed" class="nav-text">{{ route.meta.title }}</span>
+                <span v-if="!sidebarCollapsed" class="nav-text">{{
+                  route.meta.title
+                }}</span>
               </router-link>
             </li>
           </template>
@@ -88,7 +98,10 @@
 
       <!-- Thông tin Admin ở dưới cùng -->
       <div class="sidebar-footer">
-        <div class="admin-info" :title="sidebarCollapsed ? 'Admin - Quản trị viên' : ''">
+        <div
+          class="admin-info"
+          :title="sidebarCollapsed ? 'Admin - Quản trị viên' : ''"
+        >
           <div class="admin-avatar">
             <i class="material-icons">account_circle</i>
           </div>
@@ -109,8 +122,8 @@
     </div>
 
     <!-- Mobile Overlay -->
-    <div 
-      v-if="isMobile && !sidebarCollapsed" 
+    <div
+      v-if="sidebarCollapsed && isMobile"
       class="mobile-overlay"
       @click="toggleSidebar"
     ></div>
@@ -121,238 +134,227 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useAdminStore } from '@/stores/admin'
-import ToastContainer from '@/components/ToastContainer.vue'
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
+import { useRoute } from "vue-router";
+import { useAdminStore } from "@/stores/admin";
+import ToastContainer from "@/components/ToastContainer.vue";
 
-const route = useRoute()
-const adminStore = useAdminStore()
+const route = useRoute();
+const adminStore = useAdminStore();
 
 // State
-const sidebarCollapsed = ref(false)
-const isMobile = ref(false)
-const openMenus = ref([]) // Danh sách các menu đang mở
+const sidebarCollapsed = ref(false);
+const isMobile = ref(false);
+const openMenus = ref([]); // Danh sách các menu đang mở
 
 // Admin routes for sidebar với submenu
 const adminRoutes = [
-  { 
-    path: '/admin/dashboard', 
-    name: 'AdminDashboard', 
-    meta: { title: 'Trang chủ', icon: 'home' } 
-  },
-  { 
-    path: '/admin/sales', 
-    name: 'AdminSales', 
-    meta: { title: 'Bán Hàng', icon: 'shopping_cart' } 
-  },
-  { 
-    path: '/admin/orders', 
-    name: 'AdminOrders', 
-    meta: { title: 'Quản lý hóa đơn', icon: 'receipt' } 
+  {
+    path: "/admin/dashboard",
+    name: "AdminDashboard",
+    meta: { title: "Trang chủ", icon: "home" },
   },
   {
-    id: 'products-menu',
-    meta: { title: 'Quản lý sản phẩm', icon: 'inventory' },
-    children: [
-      { path: '/admin/products', name: 'AdminProducts', meta: { title: 'Danh sách sản phẩm', icon: 'list' } },
-      { path: '/admin/product-variants', name: 'AdminProductVariants', meta: { title: 'Quản lý biến thể', icon: 'style' } },
-      { path: '/admin/categories', name: 'AdminCategories', meta: { title: 'Quản lí danh mục', icon: 'category' } },
-      { path: '/admin/brands', name: 'AdminBrands', meta: { title: 'Quản lý thương hiệu', icon: 'local_offer' } },
-      { path: '/admin/reviews', name: 'AdminReviews', meta: { title: 'Quản lí đánh giá', icon: 'star_rate' } },
-      { path: '/admin/flash-sales', name: 'AdminFlashSales', meta: { title: 'Flash Sale', icon: 'flash_on' } }
-    ]
-  },
-  { 
-    path: '/admin/users', 
-    name: 'AdminUsers', 
-    meta: { title: 'Quản lý người dùng', icon: 'people' } 
-  },
-  { 
-    path: '/admin/discounts', 
-    name: 'AdminDiscounts', 
-    meta: { title: 'Quản lý giảm giá', icon: 'percent' } 
-  },
-  { 
-    path: '/admin/returns', 
-    name: 'AdminReturns', 
-    meta: { title: 'Quản lý trả hàng', icon: 'assignment_return' } 
-  },
-  { 
-    path: '/admin/warranty', 
-    name: 'AdminWarranty', 
-    meta: { title: 'Quản lý bảo hành', icon: 'verified_user' } 
-  },
-  { 
-    path: '/admin/analytics', 
-    name: 'AdminAnalytics', 
-    meta: { title: 'Thống kê', icon: 'analytics' } 
-  },
-  { 
-    path: '/admin/notifications', 
-    name: 'AdminNotifications', 
-    meta: { title: 'Quản lý thông báo', icon: 'notifications' } 
+    path: "/admin/sales",
+    name: "AdminSales",
+    meta: { title: "Bán Hàng", icon: "shopping_cart" },
   },
   {
-    id: 'management-menu',
-    meta: { title: 'Quản lý hệ thống', icon: 'settings' },
+    path: "/admin/orders",
+    name: "AdminOrders",
+    meta: { title: "Quản lý hóa đơn", icon: "receipt" },
+  },
+  {
+    id: "products-menu",
+    meta: { title: "Quản lý sản phẩm", icon: "inventory" },
     children: [
-      { path: '/admin/inventory', name: 'AdminInventory', meta: { title: 'Quản lý kho', icon: 'inventory_2' } },
-      { path: '/admin/payments', name: 'AdminPayments', meta: { title: 'Thanh toán', icon: 'payment' } },
-      { path: '/admin/loyalty', name: 'AdminLoyalty', meta: { title: 'Điểm thưởng', icon: 'stars' } },
-      { path: '/admin/activity-logs', name: 'AdminActivityLogs', meta: { title: 'Nhật ký hoạt động', icon: 'history' } },
-      { path: '/admin/email-templates', name: 'AdminEmailTemplates', meta: { title: 'Mẫu email', icon: 'email' } },
-      { path: '/admin/settings', name: 'AdminSettings', meta: { title: 'Cài đặt', icon: 'settings' } }
-    ]
-  }
-]
+      {
+        path: "/admin/products",
+        name: "AdminProducts",
+        meta: { title: "Danh sách sản phẩm", icon: "list" },
+      },
+      {
+        path: "/admin/product-variants",
+        name: "AdminProductVariants",
+        meta: { title: "Quản lý biến thể", icon: "style" },
+      },
+      {
+        path: "/admin/categories",
+        name: "AdminCategories",
+        meta: { title: "Quản lí danh mục", icon: "category" },
+      },
+      {
+        path: "/admin/brands",
+        name: "AdminBrands",
+        meta: { title: "Quản lý thương hiệu", icon: "local_offer" },
+      },
+      {
+        path: "/admin/materials",
+        name: "AdminMaterials",
+        meta: { title: "Quản lý chất liệu", icon: "layers" },
+      },
+      {
+        path: "/admin/shoesoles",
+        name: "AdminShoeSoles",
+        meta: { title: "Quản lý loại đế giày", icon: "view_day" },
+      },
+      {
+        path: "/admin/reviews",
+        name: "AdminReviews",
+        meta: { title: "Quản lí đánh giá", icon: "star_rate" },
+      },
+      {
+        path: "/admin/flash-sales",
+        name: "AdminFlashSales",
+        meta: { title: "Flash Sale", icon: "flash_on" },
+      },
+    ],
+  },
+  {
+    path: "/admin/users",
+    name: "AdminUsers",
+    meta: { title: "Quản lý người dùng", icon: "people" },
+  },
+  {
+    path: "/admin/discounts",
+    name: "AdminDiscounts",
+    meta: { title: "Quản lý giảm giá", icon: "percent" },
+  },
+  {
+    path: "/admin/returns",
+    name: "AdminReturns",
+    meta: { title: "Quản lý trả hàng", icon: "assignment_return" },
+  },
+  {
+    path: "/admin/warranty",
+    name: "AdminWarranty",
+    meta: { title: "Quản lý bảo hành", icon: "verified_user" },
+  },
+  {
+    path: "/admin/analytics",
+    name: "AdminAnalytics",
+    meta: { title: "Thống kê", icon: "analytics" },
+  },
+  {
+    path: "/admin/notifications",
+    name: "AdminNotifications",
+    meta: { title: "Quản lý thông báo", icon: "notifications" },
+  },
+  {
+    path: "/admin/settings",
+    name: "AdminSettings",
+    meta: { title: "Quản lý hệ thống", icon: "settings" },
+  },
+];
 
 // Methods
 const toggleSidebar = () => {
-  console.log('Toggle sidebar clicked! Current state:', sidebarCollapsed.value)
-  sidebarCollapsed.value = !sidebarCollapsed.value
-  console.log('New state:', sidebarCollapsed.value)
-}
+  console.log("Toggle sidebar clicked! Current state:", sidebarCollapsed.value);
+  sidebarCollapsed.value = !sidebarCollapsed.value;
+  console.log("New state:", sidebarCollapsed.value);
+};
 
 const toggleMenu = (menuId) => {
   if (!menuId) {
-    console.error('toggleMenu: menuId is missing!')
-    return
+    console.error("toggleMenu: menuId is missing!");
+    return;
   }
-  
-  console.log('🔄 toggleMenu called for:', menuId)
-  console.log('📋 Before toggle - openMenus:', JSON.stringify(openMenus.value))
-  
-  const index = openMenus.value.indexOf(menuId)
+
+  console.log("🔄 toggleMenu called for:", menuId);
+  console.log("📋 Before toggle - openMenus:", JSON.stringify(openMenus.value));
+
+  const index = openMenus.value.indexOf(menuId);
   if (index > -1) {
     // Đóng menu
-    openMenus.value.splice(index, 1)
-    console.log('❌ Menu closed:', menuId)
+    openMenus.value.splice(index, 1);
+    console.log("❌ Menu closed:", menuId);
   } else {
     // Mở menu
-    openMenus.value.push(menuId)
-    console.log('✅ Menu opened:', menuId)
+    openMenus.value.push(menuId);
+    console.log("✅ Menu opened:", menuId);
   }
-  
-  console.log('📋 After toggle - openMenus:', JSON.stringify(openMenus.value))
-  console.log('🎯 isMenuOpen result:', isMenuOpen(menuId))
-}
+
+  console.log("📋 After toggle - openMenus:", JSON.stringify(openMenus.value));
+  console.log("🎯 isMenuOpen result:", isMenuOpen(menuId));
+};
 
 const isMenuOpen = (menuId) => {
-  if (!menuId) return false
-  const isOpen = openMenus.value.includes(menuId)
-  return isOpen
-}
+  if (!menuId) return false;
+  const isOpen = openMenus.value.includes(menuId);
+  return isOpen;
+};
 
 // Kiểm tra xem route hiện tại có nằm trong submenu không
 const isSubmenuActive = (children) => {
-  if (!children) return false
-  return children.some(child => child.name === route.name)
-}
+  if (!children) return false;
+  return children.some((child) => child.name === route.name);
+};
 
 const checkMobile = () => {
-  const wasMobile = isMobile.value
-  isMobile.value = window.innerWidth < 768
-  
-  if (isMobile.value && !wasMobile) {
-    sidebarCollapsed.value = true
-  } else if (!isMobile.value && wasMobile) {
-    sidebarCollapsed.value = false
+  isMobile.value = window.innerWidth < 768;
+  if (isMobile.value) {
+    sidebarCollapsed.value = true;
   }
-}
+};
 
 // Function để update openMenus dựa trên route hiện tại
 const updateOpenMenus = () => {
-  const newOpenMenus = []
-  
+  const newOpenMenus = [];
+
   // Tìm menu nào chứa route hiện tại
-  adminRoutes.forEach(menuItem => {
+  adminRoutes.forEach((menuItem) => {
     if (menuItem.children) {
       if (isSubmenuActive(menuItem.children)) {
-        newOpenMenus.push(menuItem.id)
+        newOpenMenus.push(menuItem.id);
       }
     }
-  })
-  
+  });
+
   // Chỉ update nếu có thay đổi
   if (JSON.stringify(openMenus.value) !== JSON.stringify(newOpenMenus)) {
-    openMenus.value = newOpenMenus
-    console.log('📊 Updated openMenus:', JSON.stringify(openMenus.value))
+    openMenus.value = newOpenMenus;
+    console.log("📊 Updated openMenus:", JSON.stringify(openMenus.value));
   }
-}
+};
 
 // Watch route changes để tự động đóng/mở menu
 watch(
   () => route.name,
   (newRouteName, oldRouteName) => {
-    console.log('🔄 Route changed:', oldRouteName, '→', newRouteName)
-    updateOpenMenus()
+    console.log("🔄 Route changed:", oldRouteName, "→", newRouteName);
+    updateOpenMenus();
   }
-)
+);
 
 // Lifecycle
 onMounted(() => {
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
-  
-  console.log('🚀 AdminLayout mounted')
-  console.log('📋 Admin routes:', adminRoutes)
-  console.log('📍 Current route:', route.name)
-  
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+
+  console.log("🚀 AdminLayout mounted");
+  console.log("📋 Admin routes:", adminRoutes);
+  console.log("📍 Current route:", route.name);
+
   // Tự động mở menu nếu route hiện tại nằm trong submenu
-  updateOpenMenus()
-})
+  updateOpenMenus();
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
-})
+  window.removeEventListener("resize", checkMobile);
+});
 </script>
 
 <style scoped>
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(180deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--dark-bg-primary) 0%,
+    var(--dark-bg-secondary) 100%
+  );
   position: relative;
   overflow-x: hidden;
-}
-
-/* ===== HAMBURGER MENU (MOBILE) ===== */
-.hamburger-btn {
-  position: fixed;
-  top: var(--space-4);
-  left: var(--space-4);
-  z-index: 10001;
-  width: 48px;
-  height: 48px;
-  background: var(--primary-gradient);
-  border: none;
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  box-shadow: var(--shadow-glass-lg);
-  transition: all var(--transition-fast);
-}
-
-.hamburger-btn:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.hamburger-line {
-  width: 24px;
-  height: 3px;
-  background: white;
-  border-radius: 2px;
-  transition: all var(--transition-fast);
-}
-
-.hamburger-btn:hover .hamburger-line {
-  background: rgba(255, 255, 255, 0.9);
 }
 
 /* ===== NÚT TOGGLE SIDEBAR - SUBTLE & MINIMAL ===== */
@@ -373,8 +375,7 @@ onUnmounted(() => {
   justify-content: center;
   transition: all 0.3s ease;
   z-index: 9999;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.2),
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   pointer-events: auto;
   opacity: 0.7;
@@ -388,8 +389,7 @@ onUnmounted(() => {
   color: white;
   opacity: 1;
   transform: translateY(-50%) scale(1.08);
-  box-shadow: 
-    0 4px 16px rgba(167, 139, 250, 0.4),
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -399,9 +399,7 @@ onUnmounted(() => {
 
 .sidebar-toggle-btn:focus {
   outline: none;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    0 0 0 2px rgba(167, 139, 250, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(167, 139, 250, 0.3);
 }
 
 .sidebar-toggle-btn i {
@@ -529,7 +527,6 @@ onUnmounted(() => {
 .admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: rgba(167, 139, 250, 0.3);
 }
-
 
 .nav-list {
   list-style: none;
@@ -714,8 +711,8 @@ onUnmounted(() => {
 .admin-main {
   flex: 1;
   margin-left: 220px;
-  transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-              width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   width: calc(100vw - 220px);
@@ -752,73 +749,43 @@ onUnmounted(() => {
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .admin-sidebar {
-    width: 220px;
-  }
-  
-  .admin-main {
-    margin-left: 220px;
-    width: calc(100vw - 220px);
-    max-width: calc(100vw - 220px);
-  }
-  
-  .admin-layout.sidebar-collapsed .admin-main {
-    margin-left: 75px;
-    width: calc(100vw - 75px);
-    max-width: calc(100vw - 75px);
-  }
-}
-
 @media (max-width: 768px) {
   .admin-sidebar {
     transform: translateX(-100%);
-    width: 280px !important;
-    z-index: 10000;
   }
-  
+
   .admin-sidebar:not(.collapsed) {
     transform: translateX(0);
+    width: 280px;
   }
-  
+
   .admin-main {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    margin-left: 0;
+    width: 100vw;
+    max-width: 100vw;
   }
-  
+
   .admin-layout.sidebar-collapsed .admin-main {
-    margin-left: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    margin-left: 0;
+    width: 100vw;
+    max-width: 100vw;
   }
-  
+
   .admin-content {
-    padding: 0.875rem;
+    padding: 0.875rem; /* Mobile: 14px */
   }
-  
+
   .sidebar-header {
     min-height: 70px;
   }
-  
-  .logo {
-    width: 160px;
-    height: 75px;
-  }
-  
-  /* Nút toggle trên mobile - ẩn */
-  .sidebar-toggle-btn {
-    display: none;
-  }
-  
-  /* Hiện hamburger menu trên mobile */
-  .hamburger-btn {
-    display: flex;
-  }
-}
 
-@media (min-width: 769px) {
-  .hamburger-btn {
+  .logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Nút toggle trên mobile */
+  .sidebar-toggle-btn {
     display: none;
   }
 }
@@ -839,23 +806,50 @@ onUnmounted(() => {
   animation: slideIn 0.3s ease-out;
 }
 
-.nav-item:nth-child(1) { animation-delay: 0.05s; }
-.nav-item:nth-child(2) { animation-delay: 0.1s; }
-.nav-item:nth-child(3) { animation-delay: 0.15s; }
-.nav-item:nth-child(4) { animation-delay: 0.2s; }
-.nav-item:nth-child(5) { animation-delay: 0.25s; }
-.nav-item:nth-child(6) { animation-delay: 0.3s; }
-.nav-item:nth-child(7) { animation-delay: 0.35s; }
-.nav-item:nth-child(8) { animation-delay: 0.4s; }
-.nav-item:nth-child(9) { animation-delay: 0.45s; }
-.nav-item:nth-child(10) { animation-delay: 0.5s; }
-.nav-item:nth-child(11) { animation-delay: 0.55s; }
-.nav-item:nth-child(12) { animation-delay: 0.6s; }
-.nav-item:nth-child(13) { animation-delay: 0.65s; }
+.nav-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.nav-item:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.nav-item:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.nav-item:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.nav-item:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.nav-item:nth-child(6) {
+  animation-delay: 0.3s;
+}
+.nav-item:nth-child(7) {
+  animation-delay: 0.35s;
+}
+.nav-item:nth-child(8) {
+  animation-delay: 0.4s;
+}
+.nav-item:nth-child(9) {
+  animation-delay: 0.45s;
+}
+.nav-item:nth-child(10) {
+  animation-delay: 0.5s;
+}
+.nav-item:nth-child(11) {
+  animation-delay: 0.55s;
+}
+.nav-item:nth-child(12) {
+  animation-delay: 0.6s;
+}
+.nav-item:nth-child(13) {
+  animation-delay: 0.65s;
+}
 
 /* ===== GLOW EFFECT ===== */
 @keyframes glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 2px 10px rgba(102, 126, 234, 0.25);
   }
   50% {
@@ -979,7 +973,7 @@ onUnmounted(() => {
 
 /* Dot indicator trước mỗi submenu item */
 .nav-child::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0.75rem;
   top: 50%;
@@ -1021,8 +1015,7 @@ onUnmounted(() => {
   background: var(--primary-gradient);
   width: 7px;
   height: 7px;
-  box-shadow: 
-    0 0 14px rgba(167, 139, 250, 0.9),
+  box-shadow: 0 0 14px rgba(167, 139, 250, 0.9),
     0 0 24px rgba(167, 139, 250, 0.5);
 }
 
@@ -1155,7 +1148,7 @@ onUnmounted(() => {
   min-width: auto;
   max-width: none;
   width: 100%;
-  
+
   /* Visual style - giống như normal nhưng compact hơn */
   list-style: none;
   padding: 0.5rem 0.25rem;
@@ -1167,7 +1160,7 @@ onUnmounted(() => {
   box-shadow: var(--shadow-glass-sm);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  
+
   /* Normal transitions */
   opacity: 1;
   visibility: visible;
