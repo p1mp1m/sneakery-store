@@ -2,8 +2,8 @@
   <div class="user-page products-page">
     <!-- Header -->
     <div class="page-header">
-      <h1 style="color: #f1f5f9; font-size: 2.25rem; font-weight: 700;">Tất cả sản phẩm</h1>
-      <p style="color: #94a3b8;">Khám phá bộ sưu tập giày sneaker của chúng tôi</p>
+      <h1>Tất cả sản phẩm</h1>
+      <p>Khám phá bộ sưu tập giày sneaker của chúng tôi</p>
     </div>
 
     <!-- Filters & Products Grid -->
@@ -60,34 +60,36 @@
 
         <!-- Error State -->
         <div v-else-if="error" class="error-container">
-          <p class="text-error">{{ error }}</p>
-          <button @click="fetchProducts" class="btn btn-primary">Thử lại</button>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <p>{{ error }}</p>
+          <button @click="fetchProducts" class="btn btn-primary">
+            Thử lại
+          </button>
         </div>
 
         <!-- Products Grid -->
         <div v-else-if="products.length > 0" class="products-grid">
-          <div 
-            v-for="product in products" 
-            :key="product.id" 
-            class="product-card"
-          >
-            <div class="product-image">
-              <img :src="product.imageUrl" :alt="product.name" />
-            </div>
-            <div class="product-info">
-              <p class="product-brand">{{ product.brandName }}</p>
-              <h3 class="product-name">{{ product.name }}</h3>
-              <p class="product-price">{{ formatPrice(product.price) }}</p>
-              <button class="btn btn-primary btn-sm w-full">
-                Xem chi tiết
-              </button>
-            </div>
-          </div>
+          <ProductCard 
+            v-for="product in displayedProducts" 
+            :key="product.id"
+            :product="product"
+          />
         </div>
 
         <!-- Empty State -->
         <div v-else class="empty-state">
-          <p class="text-lg text-secondary">Không tìm thấy sản phẩm nào</p>
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 3L5 21L12 18L19 21L21 3M5 3H19M8 7H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3>Không tìm thấy sản phẩm</h3>
+          <p>Hãy thử điều chỉnh bộ lọc hoặc mua sắm sau</p>
+          <button @click="clearFilters" class="btn btn-primary">
+            Xóa bộ lọc
+          </button>
         </div>
 
         <!-- Pagination -->
@@ -118,8 +120,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import productService from '@/services/productService'
+import ProductCard from '@/assets/components/products/ProductCard.vue'
 
 // State
 const products = ref([])
@@ -143,43 +146,32 @@ const priceRanges = ref([
   { label: 'Trên 5 triệu', min: 5000000, max: 999999999 }
 ])
 
+// Computed
+const displayedProducts = computed(() => {
+  const start = currentPage.value * pageSize.value
+  const end = start + pageSize.value
+  return products.value.slice(start, end)
+})
+
 // Methods
 const fetchProducts = async () => {
   try {
     loading.value = true
     error.value = null
     
-    const filters = {}
-    if (selectedBrands.value.length > 0) {
-      filters.brands = selectedBrands.value.join(',')
-    }
-    if (selectedPriceRange.value) {
-      filters.minPrice = selectedPriceRange.value.min
-      filters.maxPrice = selectedPriceRange.value.max
-    }
-    if (sortBy.value) {
-      filters.sortBy = sortBy.value
-    }
+    const response = await productService.getProducts(0, 50)
+    const productData = response.data?.content || response.data || []
     
-    const response = await productService.searchProducts('', filters)
-    
-    products.value = response
-    totalItems.value = response.length
-    totalPages.value = Math.ceil(response.length / pageSize.value)
+    products.value = productData
+    totalItems.value = response.data?.totalElements || productData.length || 0
+    totalPages.value = Math.ceil(totalItems.value / pageSize.value)
     
   } catch (err) {
-    error.value = 'Không thể tải danh sách sản phẩm. Vui lòng thử lại.'
     console.error('Error fetching products:', err)
+    error.value = 'Không thể tải danh sách sản phẩm. Vui lòng thử lại.'
   } finally {
     loading.value = false
   }
-}
-
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', { 
-    style: 'currency', 
-    currency: 'VND' 
-  }).format(price)
 }
 
 const prevPage = () => {
@@ -223,13 +215,31 @@ onMounted(() => {
   background: transparent;
 }
 
+.page-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.page-header h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 var(--space-2);
+}
+
+.page-header p {
+  font-size: var(--text-lg);
+  color: #94a3b8;
+  margin: 0;
+}
+
 .products-container {
   display: grid;
-  grid-template-columns: 250px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: var(--space-6);
 }
 
-/* Filters Sidebar - Dark */
+/* Filters Sidebar */
 .filters-sidebar {
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(167, 139, 250, 0.15);
@@ -248,7 +258,7 @@ onMounted(() => {
 .filter-title {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
   color: #f1f5f9;
 }
 
@@ -261,9 +271,9 @@ onMounted(() => {
 .filter-option {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   cursor: pointer;
-  padding: var(--space-2);
+  padding: var(--space-2-5) var(--space-3);
   border-radius: var(--radius-md);
   transition: var(--transition-fast);
   color: #e2e8f0;
@@ -276,9 +286,9 @@ onMounted(() => {
 .filter-option input {
   cursor: pointer;
   accent-color: #a78bfa;
+  width: 18px;
+  height: 18px;
 }
-
-/* products-grid, product-card, product-image, product-brand đã có trong style.css */
 
 .products-main {
   min-height: 500px;
@@ -288,21 +298,22 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-5);
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(167, 139, 250, 0.15);
   border-radius: var(--radius-lg);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
   backdrop-filter: blur(10px);
 }
 
 .sort-info {
   color: #94a3b8;
   font-size: var(--text-sm);
+  font-weight: var(--font-medium);
 }
 
 .sort-select {
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2-5) var(--space-4);
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(167, 139, 250, 0.3);
   border-radius: var(--radius-md);
@@ -310,11 +321,22 @@ onMounted(() => {
   font-size: var(--text-sm);
   cursor: pointer;
   transition: var(--transition-fast);
+  font-family: inherit;
+}
+
+.sort-select:hover {
+  border-color: rgba(167, 139, 250, 0.5);
 }
 
 .sort-select:focus {
   outline: none;
   border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+}
+
+.sort-select option {
+  background: #1e293b;
+  color: #f1f5f9;
 }
 
 .loading-container,
@@ -327,11 +349,44 @@ onMounted(() => {
   min-height: 400px;
   gap: var(--space-4);
   color: #e2e8f0;
+  text-align: center;
+}
+
+.loading-container svg,
+.error-container svg,
+.empty-state svg {
+  color: #64748b;
 }
 
 .loading-container p,
 .error-container p {
   color: #94a3b8;
+  font-size: var(--text-base);
+}
+
+.error-container h3,
+.empty-state h3 {
+  color: #f1f5f9;
+  font-size: var(--text-xl);
+  margin: 0;
+}
+
+.empty-state p {
+  color: #94a3b8;
+  font-size: var(--text-base);
+}
+
+.loading-spinner-lg {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(167, 139, 250, 0.2);
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .pagination {
@@ -345,33 +400,10 @@ onMounted(() => {
 .page-info {
   font-size: var(--text-base);
   color: #e2e8f0;
+  font-weight: var(--font-medium);
 }
 
-/* Dark Theme Overrides */
-.products-page .product-card {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  backdrop-filter: blur(10px);
-}
-
-.products-page .product-card:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(167, 139, 250, 0.4);
-}
-
-.products-page .product-brand {
-  color: #94a3b8;
-}
-
-.products-page .product-name {
-  color: #f1f5f9;
-}
-
-.products-page .product-price {
-  color: #c4b5fd;
-}
-
-/* Responsive - Custom */
+/* Responsive */
 @media (max-width: 1024px) {
   .products-container {
     grid-template-columns: 1fr;
@@ -380,6 +412,21 @@ onMounted(() => {
   .filters-sidebar {
     position: static;
   }
+  
+  .page-header h1 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-page {
+    padding: var(--space-4);
+  }
+  
+  .sort-bar {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: stretch;
+  }
 }
 </style>
-

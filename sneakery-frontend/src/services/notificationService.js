@@ -26,6 +26,7 @@ class NotificationService {
             return response.data;
         } catch (error) {
             console.error('❌ Failed to fetch notifications:', error);
+            console.error('❌ Error details:', error.response?.data);
             throw error;
         }
     }
@@ -47,6 +48,7 @@ class NotificationService {
             return response.data.count;
         } catch (error) {
             console.error('❌ Failed to fetch unread count:', error);
+            console.error('❌ Error details:', error.response?.data);
             throw error;
         }
     }

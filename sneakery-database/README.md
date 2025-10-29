@@ -20,12 +20,15 @@ sqlcmd -S localhost -i 1_CREATE_SCHEMA_V2.sql
 
 ### 2. Thêm dữ liệu mẫu
 ```bash
-# Chạy file dữ liệu cơ bản
+# Chạy file dữ liệu cơ bản (~30-50 records mỗi bảng)
 sqlcmd -S localhost -i sneakery-database\2_INSERT_DATA.sql
 
-# (Tùy chọn) Thêm dữ liệu bổ sung
+# (KHÔNG BẮT BUỘC) Thêm dữ liệu bổ sung để đạt ~100 records
+# File này cần được mở rộng thủ công để add đủ 70 records mỗi bảng
 sqlcmd -S localhost -i sneakery-database\3_ADD_MORE_DATA.sql
 ```
+
+**LƯU Ý**: File 3 hiện chỉ có pattern/cấu trúc. Bạn cần mở file và add thêm data để đạt đủ ~100 records mỗi bảng.
 
 ### 3. **UPDATE ẢNH SẢN PHẨM THẬT (QUAN TRỌNG!)**
 ```bash

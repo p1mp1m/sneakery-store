@@ -28,10 +28,13 @@
           </router-link>
         </nav>
 
+        <!-- Enhanced Search -->
+        <EnhancedSearch />
+
         <!-- Action Icons -->
         <div class="nav-actions" v-if="authStore.isAuthenticated">
           <!-- Wishlist Icon -->
-          <router-link to="/wishlist" class="nav-icon" :class="{ 'active': $route.path === '/wishlist' }">
+          <router-link to="/user/wishlist" class="nav-icon" :class="{ 'active': $route.path === '/user/wishlist' }">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" stroke="currentColor" stroke-width="2" fill="none"/>
             </svg>
@@ -181,6 +184,18 @@
               </svg>
               <span>Đơn hàng của tôi</span>
             </router-link>
+            <router-link to="/user/wishlist" class="mobile-nav-link" @click="closeMobileMenu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Yêu thích</span>
+            </router-link>
+            <router-link to="/cart" class="mobile-nav-link" @click="closeMobileMenu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Giỏ hàng</span>
+            </router-link>
             <a href="#" class="mobile-nav-link" @click.prevent="handleLogout">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -286,6 +301,7 @@ import { useAdminStore } from '@/stores/admin';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useRouter } from 'vue-router';
 import NotificationDropdown from '@/assets/components/common/NotificationDropdown.vue';
+import EnhancedSearch from '@/assets/components/common/EnhancedSearch.vue';
 
 const authStore = useAuthStore();
 const adminStore = useAdminStore();
@@ -396,26 +412,26 @@ onUnmounted(() => {
   right: 0;
   z-index: var(--z-fixed);
   background: rgba(15, 23, 42, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all var(--transition-normal);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navbar-scrolled {
-  background: rgba(15, 23, 42, 0.95);
-  box-shadow: var(--shadow-xl);
-  border-bottom-color: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.98);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.1);
 }
 
 .navbar-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-6);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
+  height: 72px;
+  gap: var(--space-4);
 }
 
 /* ===== BRAND ===== */
@@ -423,21 +439,18 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   text-decoration: none;
-  transition: transform var(--transition-fast);
-  border: none;
-  background: none;
-  padding: 0;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
 }
 
 .navbar-brand .logo-image {
-  width: 120px;
-  height: 120px;
+  height: 48px;
+  width: auto;
   object-fit: contain;
-  transition: transform var(--transition-fast);
 }
 
-.navbar-brand:hover .logo-image {
-  transform: scale(1.1);
+.navbar-brand:hover {
+  opacity: 0.9;
 }
 
 /* ===== DESKTOP NAVIGATION ===== */
@@ -451,8 +464,9 @@ onUnmounted(() => {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin: 0 var(--space-4);
+  gap: var(--space-2);
+  margin-left: var(--space-4);
+  flex-shrink: 0;
 }
 
 .nav-icon {
@@ -460,24 +474,26 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  color: var(--text-secondary);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  color: #e2e8f0;
   background: transparent;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   cursor: pointer;
+  border: 1px solid transparent;
 }
 
 .nav-icon:hover {
   background: rgba(167, 139, 250, 0.1);
-  color: var(--color-primary);
-  transform: scale(1.1);
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.2);
 }
 
 .nav-icon.active {
   background: rgba(167, 139, 250, 0.15);
-  color: var(--color-primary);
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.3);
 }
 
 .nav-icon .badge {
@@ -502,24 +518,24 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2-5) var(--space-4);
   border-radius: var(--radius-md);
-  color: var(--white);
+  color: #e2e8f0;
   text-decoration: none;
-  font-weight: var(--font-medium);
-  font-size: var(--text-sm);
-  transition: all var(--transition-fast);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
   position: relative;
 }
 
 .nav-link:hover {
-  color: var(--primary-color);
-  background-color: rgba(255, 255, 255, 0.1);
+  color: #a78bfa;
+  background-color: rgba(167, 139, 250, 0.1);
 }
 
 .nav-link-active {
-  color: var(--primary-color);
-  background-color: rgba(255, 255, 255, 0.1);
+  color: #a78bfa;
+  background-color: rgba(167, 139, 250, 0.15);
 }
 
 .nav-link.admin-link {
@@ -616,19 +632,20 @@ onUnmounted(() => {
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: none;
-  border: none;
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.15);
   border-radius: var(--radius-md);
-  color: var(--white);
-  font-weight: var(--font-medium);
-  font-size: var(--text-sm);
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
 }
 
 .user-button:hover {
-  color: var(--primary-color);
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(167, 139, 250, 0.15);
+  border-color: rgba(167, 139, 250, 0.3);
+  color: #a78bfa;
 }
 
 .dropdown-arrow {
@@ -641,18 +658,19 @@ onUnmounted(() => {
 
 .user-dropdown {
   position: absolute;
-  top: calc(100% + var(--space-1));
+  top: calc(100% + var(--space-2));
   right: 0;
-  background: rgba(30, 41, 59, 0.95);
+  background: rgba(15, 23, 42, 0.98);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(167, 139, 250, 0.2);
+  border: 1px solid rgba(167, 139, 250, 0.15);
   border-radius: var(--radius-lg);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
-  min-width: 200px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  min-width: 220px;
+  padding: var(--space-2);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
-  transition: all var(--transition-fast);
+  transform: translateY(-8px);
+  transition: all 0.2s ease;
   z-index: var(--z-dropdown);
 }
 
@@ -665,25 +683,25 @@ onUnmounted(() => {
 .dropdown-item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  color: #94a3b8;
+  color: #e2e8f0;
   text-decoration: none;
-  font-size: var(--text-sm);
-  transition: all var(--transition-fast);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
   border-radius: var(--radius-md);
-  margin: var(--space-1);
 }
 
 .dropdown-item:hover {
-  color: #f1f5f9;
+  color: #a78bfa;
   background: rgba(167, 139, 250, 0.15);
 }
 
 .dropdown-divider {
   height: 1px;
-  background: rgba(167, 139, 250, 0.2);
-  margin: var(--space-2) var(--space-4);
+  background: rgba(167, 139, 250, 0.15);
+  margin: var(--space-2) 0;
 }
 
 /* ===== MOBILE MENU BUTTON ===== */
@@ -726,16 +744,16 @@ onUnmounted(() => {
 /* ===== MOBILE NAVIGATION ===== */
 .mobile-nav {
   position: fixed;
-  top: 70px;
+  top: 72px;
   left: 0;
   right: 0;
-  background-color: rgba(15, 23, 42, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow-lg);
+  background-color: rgba(15, 23, 42, 0.98);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   transform: translateY(-100%);
   opacity: 0;
   visibility: hidden;
-  transition: all var(--transition-normal);
+  transition: all 0.3s ease;
   z-index: var(--z-fixed);
   backdrop-filter: blur(20px);
 }
@@ -759,26 +777,28 @@ onUnmounted(() => {
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  color: var(--white);
+  color: #e2e8f0;
   text-decoration: none;
-  font-weight: var(--font-medium);
-  transition: all var(--transition-fast);
+  font-weight: 500;
+  font-size: 15px;
+  transition: all 0.2s ease;
 }
 
 .mobile-nav-link:hover {
-  color: var(--primary-color);
-  background-color: rgba(255, 255, 255, 0.1);
+  color: #a78bfa;
+  background-color: rgba(167, 139, 250, 0.15);
 }
 
 .mobile-nav-link.router-link-active {
-  color: var(--primary-color);
-  background-color: rgba(255, 255, 255, 0.1);
+  color: #a78bfa;
+  background-color: rgba(167, 139, 250, 0.15);
 }
 
 /* ===== MAIN CONTENT ===== */
 .main-content {
   flex: 1;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 72px);
+  margin-top: 72px;
 }
 
 /* ===== FOOTER - Dark ===== */
@@ -891,6 +911,12 @@ onUnmounted(() => {
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
+  .navbar-container {
+    padding: 0 var(--space-4);
+  }
+}
+
 @media (max-width: 768px) {
   .desktop-nav {
     display: none;
@@ -902,6 +928,21 @@ onUnmounted(() => {
   
   .navbar-container {
     padding: 0 var(--space-3);
+    height: 64px;
+    gap: var(--space-3);
+  }
+  
+  .main-content {
+    margin-top: 64px;
+    min-height: calc(100vh - 64px);
+  }
+  
+  .mobile-nav {
+    top: 64px;
+  }
+  
+  .navbar-brand .logo-image {
+    height: 40px;
   }
   
   .footer-content {
@@ -921,21 +962,17 @@ onUnmounted(() => {
 
 @media (max-width: 480px) {
   .navbar-container {
-    height: 60px;
+    padding: 0 var(--space-2);
   }
   
-  .main-content {
-    margin-top: 60px;
-    min-height: calc(100vh - 60px);
+  .nav-actions {
+    margin-left: var(--space-2);
+    gap: var(--space-1);
   }
   
-  .mobile-nav {
-    top: 60px;
-  }
-  
-  .navbar-brand .logo-image {
-    width: 80px;
-    height: 80px;
+  .nav-icon {
+    width: 38px;
+    height: 38px;
   }
   
   .footer-brand .logo-image {

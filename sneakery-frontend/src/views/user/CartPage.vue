@@ -14,7 +14,7 @@
         <div class="empty-icon">🛒</div>
         <h2>Giỏ hàng trống</h2>
         <p>Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
-        <router-link to="/products" class="btn btn-primary">
+        <router-link to="/home/products" class="btn btn-primary">
           Xem sản phẩm
         </router-link>
       </div>
@@ -136,7 +136,7 @@
             Tiến hành thanh toán
           </button>
 
-          <router-link to="/products" class="btn btn-outline btn-continue">
+          <router-link to="/home/products" class="btn btn-outline btn-continue">
             Tiếp tục mua sắm
           </router-link>
 

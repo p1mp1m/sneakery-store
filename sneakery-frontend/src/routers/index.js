@@ -54,6 +54,19 @@ const routes = [
     name: 'register',
     component: RegisterPage,
   },
+  // Cart and Checkout pages (Protected - Standalone, không dùng user routes)
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: () => import('../views/user/CartPage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: () => import('../views/user/CheckoutPage.vue'),
+    meta: { requiresAuth: true },
+  },
   // User routes (Protected - chỉ dành cho user đã đăng nhập)
   ...userRoutes,
   // Admin routes (Protected - chỉ dành cho admin)

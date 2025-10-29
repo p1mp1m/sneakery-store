@@ -277,6 +277,114 @@
           <p>Xem báo cáo và thống kê</p>
           <div class="action-badge new">Mới</div>
         </router-link>
+
+        <router-link to="/admin/inventory" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 10C16 11.1046 15.1046 12 14 12C12.8954 12 12 11.1046 12 10C12 8.89543 12.8954 8 14 8C15.1046 8 16 8.89543 16 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Quản lý kho</h3>
+          <p>Theo dõi tồn kho và nhập/xuất</p>
+          <div class="action-badge">{{ stats?.totalProducts || 0 }}</div>
+        </router-link>
+
+        <router-link to="/admin/flash-sales" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Flash Sale</h3>
+          <p>Quản lý khuyến mãi nhanh</p>
+          <div class="action-badge">Hot</div>
+        </router-link>
+
+        <router-link to="/admin/discounts" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7 7H17M7 17H17M12 2V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M18 6L6 18M18 18L6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Quản lý giảm giá</h3>
+          <p>Tạo và quản lý mã giảm giá</p>
+          <div class="action-badge">VIP</div>
+        </router-link>
+
+        <router-link to="/admin/reviews" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Quản lí đánh giá</h3>
+          <p>Xem và phê duyệt đánh giá</p>
+          <div class="action-badge">25</div>
+        </router-link>
+
+        <router-link to="/admin/loyalty" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Điểm thưởng</h3>
+          <p>Quản lý chương trình tích điểm</p>
+          <div class="action-badge">1K+</div>
+        </router-link>
+
+        <router-link to="/admin/sales" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Bán hàng (POS)</h3>
+          <p>Hệ thống bán hàng tại quầy</p>
+          <div class="action-badge">Live</div>
+        </router-link>
+
+        <router-link to="/admin/notifications" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18 8A6 6 0 0 0 6 8C6 11.0909 3.90914 13 2 13H22C20.0909 13 18 11.0909 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M13.73 21C13.5542 21.3031 13.3018 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Quản lý thông báo</h3>
+          <p>Gửi và quản lý thông báo</p>
+          <div class="action-badge">12</div>
+        </router-link>
+
+        <router-link to="/admin/returns" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 7V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 7L12 14L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 17L12 10L21 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 17V5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Quản lý trả hàng</h3>
+          <p>Xử lý yêu cầu trả hàng</p>
+          <div class="action-badge">5</div>
+        </router-link>
+
+        <router-link to="/admin/payments" class="action-card card-enhanced hover-lift hover-glow">
+          <div class="action-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M1 10H23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Thanh toán</h3>
+          <p>Theo dõi giao dịch thanh toán</p>
+          <div class="action-badge">88</div>
+        </router-link>
               </div>
             </div>
 
@@ -1033,10 +1141,9 @@ onUnmounted(() => {
 .header-content {
   position: relative;
   z-index: 2;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  flex-wrap: wrap;
   gap: 20px;
 }
 
@@ -1044,6 +1151,18 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
+  width: 100%;
+}
+
+.header-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 400px;
+  justify-self: center;
 }
 
 .header-icon {
@@ -1123,6 +1242,8 @@ onUnmounted(() => {
   position: relative;
   overflow: visible;
   min-width: 280px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .profile-card:hover {
@@ -1585,18 +1706,46 @@ onUnmounted(() => {
   width: 100%;
   max-width: 100%;
   position: relative;
-  z-index: 1; /* Ưu tiên hơn sections bên dưới khi hover */
+  z-index: 1;
+}
+
+@media (min-width: 1800px) {
+  .actions-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 1800px) {
+  .actions-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 @media (max-width: 1400px) {
+  .actions-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
   .actions-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 800px) {
   .actions-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .actions-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
   }
 }
 
@@ -2044,7 +2193,7 @@ onUnmounted(() => {
 }
 
 /* ===== RESPONSIVE ===== */
-@media (min-width: 769px) and (max-width: 1200px) {
+@media (min-width: 769px) and (max-width: 899px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -2055,6 +2204,131 @@ onUnmounted(() => {
   
   .chart-card.large {
     grid-column: span 1;
+  }
+
+  .header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .welcome-section {
+    width: 100%;
+  }
+
+  .header-info {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .profile-card {
+    min-width: 280px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-card.large {
+    grid-column: span 1;
+  }
+  .header-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .welcome-section {
+    width: 100%;
+  }
+
+  .header-info {
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    display: flex;
+  }
+
+  .profile-card {
+    min-width: 280px;
+    max-width: 100%;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .refresh-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .refresh-controls .btn-refresh,
+  .refresh-controls .btn-auto-refresh {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .last-refresh {
+    width: 100%;
+    text-align: center;
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1400px) {
+  .header-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .header-info {
+    justify-content: center;
+    justify-self: center;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .profile-card {
+    min-width: 280px;
+    max-width: 350px;
+    margin: 0 auto;
+    width: fit-content;
+  }
+}
+
+@media (min-width: 1401px) {
+  .header-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .header-info {
+    justify-content: center;
+    justify-self: center;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .profile-card {
+    min-width: 280px;
+    max-width: 400px;
+    margin: 0 auto;
+    width: fit-content;
   }
 }
 
@@ -2084,12 +2358,14 @@ onUnmounted(() => {
   .header-content {
     flex-direction: column;
     gap: 16px;
+    display: flex;
   }
 
   .welcome-section {
     flex-direction: column;
     text-align: center;
     gap: 12px;
+    width: 100%;
   }
 
   .header-icon {
@@ -2114,24 +2390,44 @@ onUnmounted(() => {
     justify-content: center;
   }
 
+  .header-info {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+  }
+
   .profile-card {
     min-width: auto;
     width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
   }
 
   .profile-main {
     flex-direction: column;
     text-align: center;
     gap: 12px;
+    padding: 16px;
+  }
+
+  .profile-avatar {
+    margin: 0 auto;
   }
 
   .profile-details {
     align-items: center;
     text-align: center;
+    width: 100%;
   }
 
   .profile-name {
     font-size: 1rem;
+    justify-content: center;
+    display: flex;
+  }
+
+  .profile-role {
+    justify-content: center;
   }
 
   .profile-time {
@@ -2140,8 +2436,12 @@ onUnmounted(() => {
   }
 
   .profile-menu-toggle {
-    width: 100%;
-    border-radius: 10px;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-lg);
   }
 
   .circle-1, .circle-2, .circle-3 {

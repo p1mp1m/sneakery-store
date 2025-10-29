@@ -17,11 +17,11 @@
             Giá tốt nhất thị trường - Miễn phí vận chuyển - Đổi trả dễ dàng.
           </p>
           <div class="hero-actions">
-            <router-link to="/products" class="btn-gradient btn-enhanced btn-hero-primary">
+            <router-link to="/home/products" class="btn-gradient btn-enhanced btn-hero-primary">
               <i class="material-icons">shopping_bag</i>
               Mua Sắm Ngay
             </router-link>
-            <router-link to="/products" class="btn-enhanced btn-hero-secondary">
+            <router-link to="/home/products" class="btn-enhanced btn-hero-secondary">
               <i class="material-icons">explore</i>
               Khám Phá
                   </router-link>
@@ -130,7 +130,7 @@
                 </div>
               </div>
             </div>
-            <router-link to="/products?sale=true" class="view-all-link">
+            <router-link to="/home/products?sale=true" class="view-all-link">
               Xem tất cả
               <i class="material-icons">arrow_forward</i>
             </router-link>
@@ -236,6 +236,9 @@
       </div>
     </section>
 
+    <!-- Testimonials Section -->
+    <TestimonialsSection />
+
     <!-- Newsletter Section -->
     <section class="newsletter-section">
       <div class="container">
@@ -274,6 +277,7 @@
 import { ref, computed, onMounted } from 'vue';
 import ProductService from '@/services/productService';
 import ProductCard from '@/assets/components/products/ProductCard.vue';
+import TestimonialsSection from '@/assets/components/common/TestimonialsSection.vue';
 
 // Categories data
 const categories = ref([

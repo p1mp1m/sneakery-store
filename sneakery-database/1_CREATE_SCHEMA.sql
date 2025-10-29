@@ -19,9 +19,14 @@ GO
 USE sneakery_db;
 GO
 
+SET NOCOUNT ON; -- Improve performance by not counting rows affected
+
 PRINT '=====================================================';
-PRINT 'DANG TAO SCHEMA V2 - API COMPATIBLE...';
+PRINT 'DANG TAO SCHEMA V2 - API COMPATIBLE';
 PRINT '=====================================================';
+PRINT '';
+PRINT 'This script creates all database tables, indexes,';
+PRINT 'views, stored procedures, and triggers.';
 PRINT '';
 
 -- =====================================================
@@ -881,17 +886,22 @@ BEGIN
 END;
 GO
 
+SET NOCOUNT OFF; -- Re-enable row count
+
 PRINT '';
 PRINT '=====================================================';
-PRINT 'HOAN THANH TAO SCHEMA V2!';
+PRINT 'HOAN THANH TAO SCHEMA!';
 PRINT '=====================================================';
 PRINT '';
-PRINT 'Da tao:';
-PRINT '  - 25 tables voi indexes';
-PRINT '  - 3 views cho admin API';
-PRINT '  - 2 stored procedures';
-PRINT '  - 2 triggers';
+PRINT 'Da tao thanh cong:';
+PRINT '  + 25 tables voi indexes';
+PRINT '  + 3 views cho admin API';
+PRINT '  + 2 stored procedures';
+PRINT '  + 2 triggers';
 PRINT '';
-PRINT 'CHUA CO DU LIEU! Chay file 2_INSERT_DATA_V2.sql de them du lieu.';
+PRINT 'CHUA CO DU LIEU!';
+PRINT 'Bước tiếp theo:';
+PRINT '  1. Chay file 2_INSERT_DATA.sql de them du lieu co ban';
+PRINT '  2. Chay file 3_ADD_MORE_DATA.sql de bo sung du lieu';
 PRINT '=====================================================';
 PRINT '';

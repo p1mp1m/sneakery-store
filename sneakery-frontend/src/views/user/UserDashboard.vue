@@ -98,7 +98,7 @@
           <p>Theo dõi trạng thái đơn hàng</p>
         </router-link>
 
-        <router-link to="/user/cart" class="action-card">
+        <router-link to="/cart" class="action-card">
           <div class="action-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="9" cy="21" r="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -144,7 +144,7 @@
         </svg>
         <h3>Chưa có đơn hàng nào</h3>
         <p>Bắt đầu mua sắm để xem đơn hàng của bạn ở đây</p>
-        <router-link to="/products" class="btn btn-primary">
+        <router-link to="/home/products" class="btn btn-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -173,6 +173,52 @@
       </div>
     </div>
 
+    <!-- Recently Viewed Products -->
+    <div class="recently-viewed">
+      <div class="section-header">
+        <h2 class="section-title">Sản phẩm đã xem gần đây</h2>
+        <button v-if="recentlyViewed.length > 0" @click="clearRecentlyViewed" class="clear-btn">
+          Xóa tất cả
+        </button>
+      </div>
+
+      <div v-if="recentlyViewed.length === 0" class="empty-state-mini">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="empty-icon">
+          <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2.45801 12C3.73201 7.943 7.52301 5 12.0001 5C16.4781 5 20.2681 7.943 21.5421 12C20.2681 16.057 16.4781 19 12.0001 19C7.52301 19 3.73201 16.057 2.45801 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p>Chưa xem sản phẩm nào</p>
+      </div>
+
+      <div v-else class="products-grid">
+        <router-link
+          v-for="product in recentlyViewed"
+          :key="product.id"
+          :to="`/products/${product.slug}`"
+          class="product-item"
+        >
+          <div class="product-image-wrapper">
+            <img :src="product.imageUrl || '/placeholder-image.png'" :alt="product.name" class="product-image" />
+            <button
+              @click.prevent="removeFromRecentlyViewed(product.id)"
+              class="remove-btn"
+              title="Xóa khỏi danh sách"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="product-info">
+            <h4 class="product-name">{{ product.name }}</h4>
+            <p class="product-brand">{{ product.brandName }}</p>
+            <p class="product-price">{{ formatCurrency(product.price) }}</p>
+          </div>
+        </router-link>
+      </div>
+    </div>
+
     <!-- Recommended Products -->
     <div class="recommended-products">
       <h2 class="section-title">Sản phẩm đề xuất</h2>
@@ -196,8 +242,10 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
 
 const authStore = useAuthStore();
+const { recentlyViewed, clearAll, removeProduct } = useRecentlyViewed();
 
 // State
 const loading = ref(false);
@@ -251,6 +299,16 @@ const getStatusText = (status) => {
     'CANCELLED': 'Đã hủy'
   };
   return statusMap[status] || status;
+};
+
+const clearRecentlyViewed = () => {
+  if (confirm('Bạn có chắc muốn xóa tất cả sản phẩm đã xem?')) {
+    clearAll();
+  }
+};
+
+const removeFromRecentlyViewed = (productId) => {
+  removeProduct(productId);
 };
 
 const loadDashboardData = async () => {
@@ -332,11 +390,9 @@ onMounted(() => {
 <style scoped>
 /* ===== USER DASHBOARD ===== */
 .user-dashboard {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: var(--space-6) var(--space-4);
-  padding-top: 90px; /* Space for fixed navbar */
-  min-height: 100vh;
+  padding: 100px var(--space-6) var(--space-8);
 }
 
 /* ===== DASHBOARD HEADER ===== */
@@ -344,24 +400,24 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--space-10);
   padding: var(--space-8);
-  background: var(--primary-gradient);
-  border-radius: var(--radius-2xl);
-  color: var(--white);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--radius-xl);
+  color: white;
   position: relative;
   overflow: hidden;
 }
 
-.dashboard-header::before {
+.dashboard-header::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  opacity: 0.3;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .welcome-section {
@@ -369,18 +425,21 @@ onMounted(() => {
   z-index: 1;
 }
 
-.welcome-section h1 {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-bold);
+.welcome-title {
+  font-size: 32px;
+  font-weight: 700;
   margin: 0 0 var(--space-2) 0;
-  line-height: var(--leading-tight);
+  color: white;
+  z-index: 1;
+  position: relative;
 }
 
 .welcome-subtitle {
-  font-size: var(--text-lg);
-  opacity: 0.9;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
-  line-height: var(--leading-relaxed);
+  z-index: 1;
+  position: relative;
 }
 
 .user-avatar {
@@ -404,21 +463,21 @@ onMounted(() => {
 }
 
 .stat-card {
-  background: var(--bg-card);
+  background: rgba(30, 41, 59, 0.6);
   padding: var(--space-6);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  border: 1px solid var(--border-light);
-  transition: all var(--transition-normal);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  transition: all 0.2s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow);
-  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  border-color: rgba(167, 139, 250, 0.3);
+  box-shadow: 0 8px 24px rgba(167, 139, 250, 0.1);
 }
 
 .stat-icon {
@@ -448,30 +507,30 @@ onMounted(() => {
   background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
 }
 
-.stat-content h3 {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
   margin: 0 0 var(--space-1) 0;
-  color: var(--text-primary);
+  color: #f1f5f9;
 }
 
 .stat-label {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
+  color: #94a3b8;
+  font-size: 14px;
   margin: 0;
-  font-weight: var(--font-medium);
+  font-weight: 500;
 }
 
 /* ===== QUICK ACTIONS ===== */
 .quick-actions {
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--space-10);
 }
 
 .section-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-8) 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 var(--space-6) 0;
 }
 
 .actions-grid {
@@ -481,14 +540,14 @@ onMounted(() => {
 }
 
 .action-card {
-  background: var(--bg-card);
+  background: rgba(30, 41, 59, 0.6);
   padding: var(--space-6);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
   text-decoration: none;
   color: inherit;
-  transition: all var(--transition-normal);
-  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+  border: 1px solid rgba(167, 139, 250, 0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -496,9 +555,9 @@ onMounted(() => {
 }
 
 .action-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow);
-  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  border-color: rgba(167, 139, 250, 0.3);
+  box-shadow: 0 8px 24px rgba(167, 139, 250, 0.1);
   text-decoration: none;
   color: inherit;
 }
@@ -516,22 +575,22 @@ onMounted(() => {
 }
 
 .action-card h3 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-size: 16px;
+  font-weight: 600;
   margin: 0 0 var(--space-2) 0;
-  color: var(--text-primary);
+  color: #f1f5f9;
 }
 
 .action-card p {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
+  color: #94a3b8;
+  font-size: 14px;
   margin: 0;
-  line-height: var(--leading-relaxed);
+  line-height: 1.5;
 }
 
 /* ===== RECENT ORDERS ===== */
 .recent-orders {
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--space-10);
 }
 
 .section-header {
@@ -608,11 +667,11 @@ onMounted(() => {
 }
 
 .orders-list {
-  background: var(--bg-card);
+  background: rgba(30, 41, 59, 0.6);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
   overflow: hidden;
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(167, 139, 250, 0.15);
 }
 
 .order-item {
@@ -620,7 +679,12 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: var(--space-6);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+  transition: background 0.2s ease;
+}
+
+.order-item:hover {
+  background: rgba(167, 139, 250, 0.05);
 }
 
 .order-item:last-child {
@@ -635,15 +699,15 @@ onMounted(() => {
 }
 
 .order-id {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  color: #f1f5f9;
   margin: 0;
 }
 
 .order-date {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
+  color: #94a3b8;
+  font-size: 13px;
 }
 
 .order-details {
@@ -651,21 +715,93 @@ onMounted(() => {
   gap: var(--space-6);
 }
 
-.order-items,
-.order-total {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
+.order-items {
+  color: #94a3b8;
+  font-size: 14px;
   margin: 0;
 }
 
 .order-total {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
+  color: #a78bfa;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ===== RECENTLY VIEWED ===== */
+.recently-viewed {
+  margin-bottom: var(--space-10);
+}
+
+.clear-btn {
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.clear-btn:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white);
+}
+
+.empty-state-mini {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  border-radius: var(--radius-xl);
+}
+
+.empty-state-mini p {
+  color: var(--text-secondary);
+  margin-top: var(--space-4);
+  margin: 0;
+}
+
+.empty-state-mini .empty-icon {
+  color: var(--text-muted);
+}
+
+.product-image-wrapper {
+  position: relative;
+}
+
+.remove-btn {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  opacity: 0;
+}
+
+.product-item:hover .remove-btn {
+  opacity: 1;
+}
+
+.remove-btn:hover {
+  background: var(--error-color);
+  transform: scale(1.1);
 }
 
 /* ===== RECOMMENDED PRODUCTS ===== */
 .recommended-products {
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--space-10);
 }
 
 .products-grid {
@@ -675,18 +811,20 @@ onMounted(() => {
 }
 
 .product-item {
-  background: var(--bg-card);
+  background: rgba(30, 41, 59, 0.6);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: all var(--transition-normal);
-  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  text-decoration: none;
+  color: inherit;
 }
 
 .product-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow);
-  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  border-color: rgba(167, 139, 250, 0.3);
+  box-shadow: 0 8px 24px rgba(167, 139, 250, 0.1);
+  text-decoration: none;
 }
 
 .product-image {
@@ -700,22 +838,22 @@ onMounted(() => {
 }
 
 .product-name {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  color: #f1f5f9;
   margin: 0 0 var(--space-1) 0;
 }
 
 .product-brand {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
+  color: #94a3b8;
+  font-size: 13px;
   margin: 0 0 var(--space-2) 0;
 }
 
 .product-price {
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  color: var(--primary-color);
+  font-size: 15px;
+  font-weight: 700;
+  color: #a78bfa;
   margin: 0;
 }
 
@@ -731,7 +869,7 @@ onMounted(() => {
     gap: var(--space-6);
   }
 
-  .welcome-section h1 {
+  .welcome-title {
     font-size: var(--text-2xl);
   }
 

@@ -1,0 +1,363 @@
+<template>
+  <section class="testimonials-section">
+    <div class="container">
+      <!-- Header -->
+      <div class="section-header">
+        <h2 class="section-title">Khách hàng nói gì về chúng tôi</h2>
+        <p class="section-subtitle">Những đánh giá chân thực từ khách hàng đã mua sắm tại Sneakery Store</p>
+      </div>
+
+      <!-- Testimonials Grid -->
+      <div class="testimonials-grid">
+        <div 
+          v-for="testimonial in testimonials" 
+          :key="testimonial.id" 
+          class="testimonial-card"
+        >
+          <!-- Rating -->
+          <div class="testimonial-rating">
+            <span 
+              v-for="i in 5" 
+              :key="i" 
+              class="star"
+              :class="{ active: i <= testimonial.rating }"
+            >
+              ★
+            </span>
+          </div>
+
+          <!-- Content -->
+          <div class="testimonial-content">
+            <p class="testimonial-text">"{{ testimonial.comment }}"</p>
+          </div>
+
+          <!-- Product Info -->
+          <div class="testimonial-product">
+            <img :src="testimonial.productImage" :alt="testimonial.productName" class="product-image" />
+            <div class="product-info">
+              <span class="product-brand">{{ testimonial.brandName }}</span>
+              <span class="product-name">{{ testimonial.productName }}</span>
+            </div>
+          </div>
+
+          <!-- User Info -->
+          <div class="testimonial-user">
+            <div class="user-avatar">
+              {{ testimonial.userName.charAt(0).toUpperCase() }}
+            </div>
+            <div class="user-details">
+              <span class="user-name">{{ testimonial.userName }}</span>
+              <span v-if="testimonial.isVerified" class="verified-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Đã xác thực
+              </span>
+            </div>
+            <span class="testimonial-date">{{ formatDate(testimonial.date) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- View All Button -->
+      <div class="section-footer">
+        <router-link to="/reviews" class="view-all-btn">
+          Xem tất cả đánh giá
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </router-link>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+const testimonials = ref([]);
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('vi-VN', options);
+};
+
+onMounted(async () => {
+  try {
+    // Lấy top reviews từ API
+    const response = await axios.get('http://localhost:8080/api/admin/reviews', {
+      params: {
+        page: 0,
+        size: 6,
+        isApproved: true,
+        minRating: 4
+      }
+    });
+
+    if (response.data && response.data.content) {
+      testimonials.value = response.data.content.slice(0, 6).map(review => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.reviewText || review.body || 'Sản phẩm chất lượng tốt!',
+        userName: review.userName || 'Khách hàng',
+        isVerified: review.isVerifiedPurchase || false,
+        productName: review.productName,
+        brandName: review.brandName || '',
+        productImage: review.productImage || '/placeholder-image.png',
+        date: review.createdAt
+      }));
+    }
+  } catch (error) {
+    console.error('Error loading testimonials:', error);
+    // Fallback data for demo
+    testimonials.value = [
+      {
+        id: 1,
+        rating: 5,
+        comment: 'Giày rất đẹp, chất lượng tốt, đúng với mô tả. Giao hàng nhanh và nhân viên tư vấn nhiệt tình!',
+        userName: 'Nguyễn Văn A',
+        isVerified: true,
+        productName: 'Nike Air Max 90',
+        brandName: 'Nike',
+        productImage: '/placeholder-image.png',
+        date: new Date().toISOString()
+      },
+      {
+        id: 2,
+        rating: 5,
+        comment: 'Sản phẩm hàng chính hãng, đóng gói cẩn thận. Đã mua nhiều đôi rồi và rất hài lòng với chất lượng!',
+        userName: 'Trần Thị B',
+        isVerified: true,
+        productName: 'Adidas Ultraboost',
+        brandName: 'Adidas',
+        productImage: '/placeholder-image.png',
+        date: new Date().toISOString()
+      },
+      {
+        id: 3,
+        rating: 4,
+        comment: 'Giày vừa chân, thiết kế đẹp. Giá cả hợp lý so với chất lượng. Sẽ quay lại mua thêm!',
+        userName: 'Lê Văn C',
+        isVerified: true,
+        productName: 'Jordan 1 Retro',
+        brandName: 'Jordan',
+        productImage: '/placeholder-image.png',
+        date: new Date().toISOString()
+      }
+    ];
+  }
+});
+</script>
+
+<style scoped>
+.testimonials-section {
+  padding: var(--space-16) var(--space-4);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+.section-title {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-subtitle {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-12);
+}
+
+.testimonial-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
+}
+
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(124, 58, 237, 0.2);
+  border-color: var(--primary-color);
+}
+
+.testimonial-rating {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.star {
+  font-size: var(--text-lg);
+  color: #d1d5db;
+  transition: color var(--transition-normal);
+}
+
+.star.active {
+  color: #fbbf24;
+}
+
+.testimonial-content {
+  margin-bottom: var(--space-6);
+}
+
+.testimonial-text {
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--text-primary);
+  font-style: italic;
+  margin: 0;
+}
+
+.testimonial-product {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
+}
+
+.product-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.product-brand {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.product-name {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+}
+
+.testimonial-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--primary-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: var(--font-bold);
+  font-size: var(--text-base);
+}
+
+.user-details {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.user-name {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.verified-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: var(--radius-full);
+  color: #22c55e;
+  font-size: var(--text-xs);
+}
+
+.verified-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.testimonial-date {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.section-footer {
+  text-align: center;
+}
+
+.view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-8);
+  background: var(--primary-gradient);
+  color: white;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  font-weight: var(--font-semibold);
+  transition: all var(--transition-normal);
+}
+
+.view-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(124, 58, 237, 0.3);
+}
+
+@media (max-width: 768px) {
+  .testimonials-section {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .section-title {
+    font-size: var(--text-3xl);
+  }
+
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+

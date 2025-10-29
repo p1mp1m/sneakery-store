@@ -690,7 +690,7 @@ const handleCheckout = async () => {
 
     // Redirect to orders
     setTimeout(() => {
-      router.push({ name: 'orders' });
+      router.push({ name: 'UserOrders' });
     }, 1500);
   } catch (error) {
     console.error('Error during checkout:', error);

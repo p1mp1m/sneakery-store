@@ -74,6 +74,10 @@
 
         <!-- Actions -->
         <div class="wishlist-actions">
+          <el-button @click="shareWishlist" :disabled="wishlistItems.length === 0" type="success">
+            <el-icon><Share /></el-icon>
+            Chia sẻ
+          </el-button>
           <el-button @click="clearWishlist" :disabled="wishlistItems.length === 0">
             <el-icon><Delete /></el-icon>
             Xóa tất cả
@@ -85,22 +89,64 @@
         </div>
       </div>
     </el-card>
+
+    <!-- Share Modal -->
+    <el-dialog v-model="showShareModal" title="Chia sẻ wishlist" width="400px">
+      <div class="share-content">
+        <p class="share-description">Chia sẻ danh sách yêu thích của bạn với bạn bè:</p>
+        
+        <div class="share-link-section">
+          <label class="share-label">Link chia sẻ:</label>
+          <div class="share-link-wrapper">
+            <el-input v-model="shareLink" readonly class="share-input">
+              <template #append>
+                <el-button @click="copyLink" :icon="DocumentCopy">Copy</el-button>
+              </template>
+            </el-input>
+          </div>
+        </div>
+
+        <div class="social-share">
+          <label class="share-label">Chia sẻ qua:</label>
+          <div class="social-buttons">
+            <el-button circle @click="shareOnFacebook" style="background: #1877f2; color: white;">
+              f
+            </el-button>
+            <el-button circle @click="shareOnTwitter" style="background: #1da1f2; color: white;">
+              <el-icon><Share /></el-icon>
+            </el-button>
+            <el-button circle @click="shareOnWhatsApp" style="background: #25d366; color: white;">
+              <el-icon><Message /></el-icon>
+            </el-button>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="showShareModal = false">Đóng</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
-
+  
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Star, Delete, ShoppingCart } from '@element-plus/icons-vue';
+import { Star, Delete, ShoppingCart, Share, DocumentCopy, Message } from '@element-plus/icons-vue';
 import { useWishlistStore } from '@/stores/wishlist';
+import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
 const wishlistStore = useWishlistStore();
+const authStore = useAuthStore();
 
 // Computed từ store
 const wishlistItems = computed(() => wishlistStore.wishlistItems);
 const loading = computed(() => wishlistStore.loading);
+
+// Share state
+const showShareModal = ref(false);
+const shareLink = ref('');
 
 // Load wishlist khi component mount
 onMounted(async () => {
@@ -154,7 +200,7 @@ const addToCart = (item) => {
   }
   
   // Navigate to product detail page để user chọn size
-  router.push(`/products/${item.productSlug}`);
+  router.push(`/home/products/${item.productId}`);
 };
 
 const addAllToCart = () => {
@@ -191,13 +237,54 @@ const clearWishlist = async () => {
 };
 
 const goToHome = () => {
-  router.push('/');
+  router.push('/home');
+};
+
+const shareWishlist = () => {
+  const userId = authStore.currentUser?.id;
+  if (userId) {
+    shareLink.value = `${window.location.origin}/wishlist/shared/${userId}`;
+    showShareModal.value = true;
+  } else {
+    ElMessage.error('Vui lòng đăng nhập để chia sẻ wishlist');
+  }
+};
+
+const copyLink = async () => {
+  try {
+    await navigator.clipboard.writeText(shareLink.value);
+    ElMessage.success('Đã copy link vào clipboard');
+  } catch (error) {
+    ElMessage.error('Không thể copy link');
+  }
+};
+
+const shareOnFacebook = () => {
+  const url = encodeURIComponent(shareLink.value);
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+};
+
+const shareOnTwitter = () => {
+  const text = encodeURIComponent('Xem danh sách yêu thích của tôi trên Sneakery Store!');
+  const url = encodeURIComponent(shareLink.value);
+  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+};
+
+const shareOnWhatsApp = () => {
+  const text = encodeURIComponent('Xem danh sách yêu thích của tôi: ' + shareLink.value);
+  window.open(`https://wa.me/?text=${text}`, '_blank');
 };
 </script>
 
 <style scoped>
 .wishlist-page {
-  padding: 20px;
+  background: transparent;
+}
+
+.wishlist-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 20px;
   padding-top: 90px; /* Space for fixed navbar */
   max-width: 1200px;
   margin: 20px auto;
@@ -327,6 +414,45 @@ const goToHome = () => {
   gap: 20px;
   padding: 20px 0;
   border-top: 1px solid #ebeef5;
+}
+
+.share-content {
+  padding: 10px 0;
+}
+
+.share-description {
+  color: #606266;
+  margin-bottom: 20px;
+}
+
+.share-link-section {
+  margin-bottom: 20px;
+}
+
+.share-label {
+  display: block;
+  font-weight: 500;
+  color: #303133;
+  margin-bottom: 8px;
+}
+
+.share-link-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.share-input {
+  flex: 1;
+}
+
+.social-share {
+  margin-top: 20px;
+}
+
+.social-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 /* Responsive Design */

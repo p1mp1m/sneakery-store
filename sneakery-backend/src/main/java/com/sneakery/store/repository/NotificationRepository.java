@@ -18,12 +18,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     /**
      * Lấy notifications của user (pagination)
      */
-    Page<Notification> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+    @Query("SELECT n FROM Notification n WHERE n.user.id = :userId ORDER BY n.createdAt DESC")
+    Page<Notification> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
     
     /**
      * Đếm unread notifications
      */
-    long countByUserIdAndIsReadFalse(Long userId);
+    @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND (n.isRead IS NULL OR n.isRead = FALSE)")
+    long countByUserIdAndIsReadFalse(@Param("userId") Long userId);
     
     /**
      * Mark notification as read
@@ -36,7 +38,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * Mark all notifications as read for user
      */
     @Modifying
-    @Query("UPDATE Notification n SET n.isRead = true, n.readAt = CURRENT_TIMESTAMP WHERE n.user.id = :userId AND n.isRead = false")
+    @Query("UPDATE Notification n SET n.isRead = true, n.readAt = CURRENT_TIMESTAMP WHERE n.user.id = :userId AND (n.isRead IS NULL OR n.isRead = FALSE)")
     int markAllAsRead(@Param("userId") Long userId);
     
     /**

@@ -512,56 +512,60 @@ onMounted(() => {
 
 <style scoped>
 .profile-page {
-  min-height: 100vh;
-  background: var(--bg-secondary);
-  padding: var(--space-6);
+  background: transparent;
 }
 
 .profile-container {
   max-width: 900px;
   margin: 0 auto;
+  padding: 100px var(--space-6);
 }
 
 .page-title {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-6);
+  font-size: 28px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: var(--space-10);
 }
 
 /* Tabs */
 .profile-tabs {
   display: flex;
   gap: var(--space-2);
-  border-bottom: 2px solid var(--border-color);
-  margin-bottom: var(--space-6);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.2);
+  margin-bottom: var(--space-8);
 }
 
 .tab-btn {
-  padding: var(--space-3) var(--space-6);
+  padding: var(--space-4) var(--space-6);
   border: none;
   background: none;
   cursor: pointer;
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  transition: all var(--transition-fast);
+  font-weight: 500;
+  font-size: 15px;
+  color: #94a3b8;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
-  color: var(--primary-color);
+  color: #a78bfa;
 }
 
 .tab-btn.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
+  color: #a78bfa;
+  border-bottom-color: #a78bfa;
 }
 
 /* Tab Content */
 .tab-content {
-  background: var(--bg-primary);
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
+  background: rgba(30, 41, 59, 0.6);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(167, 139, 250, 0.15);
 }
 
 /* Forms */

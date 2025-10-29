@@ -9,8 +9,6 @@ const UserDashboard = () => import('@/views/user/UserDashboard.vue')
 const UserProfile = () => import('@/views/user/UserProfile.vue')
 const UserOrders = () => import('@/views/user/UserOrders.vue')
 const WishlistPage = () => import('@/views/user/WishlistPage.vue')
-const CartPage = () => import('@/views/user/CartPage.vue')
-const CheckoutPage = () => import('@/views/user/CheckoutPage.vue')
 
 const userRoutes = [
   {
@@ -54,35 +52,13 @@ const userRoutes = [
       },
       {
         path: 'wishlist',
-        name: 'Wishlist',
+        name: 'UserWishlist',
         component: WishlistPage,
         meta: { 
           requiresAuth: true,
           isUserRoute: true,
           title: 'Yêu thích',
           icon: 'favorite'
-        }
-      },
-      {
-        path: 'cart',
-        name: 'UserCart',
-        component: CartPage,
-        meta: { 
-          requiresAuth: true,
-          isUserRoute: true,
-          title: 'Giỏ hàng',
-          icon: 'shopping_cart'
-        }
-      },
-      {
-        path: 'checkout',
-        name: 'UserCheckout',
-        component: CheckoutPage,
-        meta: { 
-          requiresAuth: true,
-          isUserRoute: true,
-          title: 'Thanh toán',
-          icon: 'payment'
         }
       }
     ]

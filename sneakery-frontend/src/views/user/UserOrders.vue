@@ -14,7 +14,7 @@
         <div class="empty-icon">📦</div>
         <h2>Chưa có đơn hàng nào</h2>
         <p>Hãy mua sắm ngay để trải nghiệm dịch vụ của chúng tôi!</p>
-        <router-link to="/products" class="btn btn-primary">
+        <router-link to="/home/products" class="btn btn-primary">
           Khám phá sản phẩm
         </router-link>
       </div>
@@ -326,20 +326,20 @@ onMounted(() => {
 
 <style scoped>
 .orders-page {
-  min-height: 100vh;
-  background: var(--bg-secondary);
-  padding: var(--space-6);
+  background: transparent;
 }
 
 .orders-container {
   max-width: 900px;
   margin: 0 auto;
+  padding: 100px var(--space-6);
 }
 
 .page-title {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-6);
+  font-size: 28px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: var(--space-10);
 }
 
 /* Loading */
@@ -389,35 +389,39 @@ onMounted(() => {
 }
 
 .order-card {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-fast);
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
 }
 
 .order-card:hover {
-  box-shadow: var(--shadow-md);
+  border-color: rgba(167, 139, 250, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .order-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.15);
 }
 
 .order-id {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-1);
+  font-size: 18px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: var(--space-2);
 }
 
 .order-date {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
+  color: #94a3b8;
+  font-size: 14px;
 }
 
 .status-badge {
@@ -468,9 +472,9 @@ onMounted(() => {
 }
 
 .total-amount {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--primary-color);
+  font-size: 20px;
+  font-weight: 700;
+  color: #a78bfa;
 }
 
 .order-actions {
@@ -505,12 +509,15 @@ onMounted(() => {
 }
 
 .modal {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
+  background: rgba(15, 23, 42, 0.98);
+  border-radius: var(--radius-xl);
   max-width: 700px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid rgba(167, 139, 250, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
 }
 
 .modal-large {

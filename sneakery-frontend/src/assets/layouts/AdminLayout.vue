@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+  <div class="admin-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed, 'sidebar-open-mobile': isMobile && !sidebarCollapsed }">
     <!-- Hamburger Menu (Mobile Only) -->
     <button 
       v-if="isMobile"
@@ -25,11 +25,21 @@
     </button>
 
     <!-- Admin Sidebar -->
-    <aside class="admin-sidebar" :class="{ 'collapsed': sidebarCollapsed }">
+    <aside class="admin-sidebar" :class="{ 'collapsed': sidebarCollapsed, 'mobile-top': isMobile }">
       <div class="sidebar-header">
         <div class="brand">
           <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo" />
         </div>
+        <!-- Toggle Button cho Mobile - trong sidebar -->
+        <button 
+          v-if="isMobile"
+          class="sidebar-close-btn"
+          @click="toggleSidebar"
+          type="button"
+          title="Đóng menu"
+        >
+          <i class="material-icons">close</i>
+        </button>
       </div>
 
       <nav class="sidebar-nav">
@@ -61,6 +71,7 @@
                       class="nav-link nav-child"
                       :class="{ 'active': $route.name === child.name }"
                       :title="sidebarCollapsed ? child.meta.title : ''"
+                      @click="isMobile && (sidebarCollapsed = true)"
                     >
                       <i class="material-icons">{{ child.meta.icon }}</i>
                       <span class="nav-text">{{ child.meta.title }}</span>
@@ -77,6 +88,7 @@
                 class="nav-link"
                 :class="{ 'active': $route.name === route.name }"
                 :title="sidebarCollapsed ? route.meta.title : ''"
+                @click="isMobile && (sidebarCollapsed = true)"
               >
                 <i class="material-icons">{{ route.meta.icon }}</i>
                 <span v-if="!sidebarCollapsed" class="nav-text">{{ route.meta.title }}</span>
@@ -252,13 +264,24 @@ const isSubmenuActive = (children) => {
 
 const checkMobile = () => {
   const wasMobile = isMobile.value
-  isMobile.value = window.innerWidth < 768
+  const width = window.innerWidth
+  
+  // Nếu window nhỏ hơn 768px, luôn dùng top navigation (mobile layout)
+  // Bất kể là desktop hay mobile device thật
+  // Chỉ khi width >= 768px mới dùng left sidebar (desktop layout)
+  isMobile.value = width < 768
   
   if (isMobile.value && !wasMobile) {
     sidebarCollapsed.value = true
   } else if (!isMobile.value && wasMobile) {
     sidebarCollapsed.value = false
   }
+  
+  console.log('📱 Mobile check:', {
+    width,
+    isMobile: isMobile.value,
+    sidebarCollapsed: sidebarCollapsed.value
+  })
 }
 
 // Function để update openMenus dựa trên route hiện tại
@@ -432,6 +455,10 @@ onUnmounted(() => {
   border-right: 1px solid var(--dark-border-color);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
+  will-change: transform;
+  transform: translateX(0);
+  visibility: visible;
+  opacity: 1;
 }
 
 .admin-sidebar.collapsed {
@@ -501,33 +528,25 @@ onUnmounted(() => {
   overflow-x: hidden;
 }
 
-/* Ẩn scrollbar khi không collapsed */
-.admin-sidebar:not(.collapsed) .sidebar-nav::-webkit-scrollbar {
+/* Ẩn scrollbar khi không collapsed và khi collapsed */
+.admin-sidebar .sidebar-nav::-webkit-scrollbar {
   width: 0;
   display: none;
 }
 
-.admin-sidebar:not(.collapsed) .sidebar-nav {
+.admin-sidebar .sidebar-nav {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-/* Hiện scrollbar khi collapsed */
 .admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar {
-  width: 3px;
+  width: 0;
+  display: none;
 }
 
-.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar-track {
-  background: rgba(167, 139, 250, 0.05);
-}
-
-.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-sm);
-}
-
-.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(167, 139, 250, 0.3);
+.admin-sidebar.collapsed .sidebar-nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 
@@ -627,12 +646,24 @@ onUnmounted(() => {
   position: relative;
 }
 
+.admin-sidebar.collapsed .nav-parent {
+  justify-content: center;
+  padding: 0.625rem 0.5rem;
+}
+
 .admin-sidebar.collapsed .nav-link i {
   margin: 0 auto;
   font-size: 1.25rem;
   width: 24px;
   height: 24px;
   min-width: 24px;
+}
+
+.admin-sidebar.collapsed .nav-parent i:first-child {
+  margin: 0 auto;
+  position: relative;
+  left: 0;
+  transform: none;
 }
 
 /* ===== SIDEBAR FOOTER ===== */
@@ -770,27 +801,110 @@ onUnmounted(() => {
   }
 }
 
-@media (max-width: 768px) {
+/* CSS cho mobile-top - áp dụng bất kể media query khi có class này */
+.admin-sidebar.mobile-top {
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100vw !important;
+  height: auto !important;
+  max-height: 0 !important;
+  transform: translateY(-100%) !important;
+  transition: transform 0.3s ease, max-height 0.3s ease !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 10000 !important;
+  border-right: none !important;
+  border-bottom: 1px solid var(--dark-border-color) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  position: fixed !important;
+}
+
+.admin-sidebar.mobile-top:not(.collapsed) {
+  transform: translateY(0) !important;
+  max-height: 80vh !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.admin-sidebar.mobile-top.collapsed {
+  transform: translateY(-100%) !important;
+  max-height: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Hamburger button và close button luôn hiển thị khi có mobile-top */
+/* Đặt ở đây để override mọi media query */
+.admin-sidebar.mobile-top ~ * .hamburger-btn,
+.hamburger-btn {
+  /* Sẽ được override bởi CSS mobile hoặc khi có class mobile-top */
+}
+
+.admin-sidebar.mobile-top .sidebar-close-btn {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 767px) {
   .admin-sidebar {
-    transform: translateX(-100%);
-    width: 280px !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: auto !important;
+    max-height: 0;
+    transform: translateY(-100%) !important;
+    transition: transform 0.3s ease, max-height 0.3s ease;
+    overflow-y: auto;
+    overflow-x: hidden;
     z-index: 10000;
+    border-right: none !important;
+    border-bottom: 1px solid var(--dark-border-color) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    position: fixed !important;
   }
   
   .admin-sidebar:not(.collapsed) {
-    transform: translateX(0);
+    transform: translateY(0) !important;
+    max-height: 80vh !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .admin-sidebar.collapsed {
+    transform: translateY(-100%) !important;
+    max-height: 0 !important;
+    visibility: hidden !important;
+  }
+  
+  .admin-sidebar.mobile-top:not(.collapsed) {
+    transform: translateY(0) !important;
+    max-height: 80vh !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .admin-sidebar.mobile-top.collapsed {
+    transform: translateY(-100%) !important;
+    max-height: 0 !important;
+    visibility: hidden !important;
   }
   
   .admin-main {
     margin-left: 0 !important;
+    margin-top: 0 !important;
     width: 100vw !important;
     max-width: 100vw !important;
+    padding-top: 0;
   }
   
   .admin-layout.sidebar-collapsed .admin-main {
     margin-left: 0 !important;
+    margin-top: 0 !important;
     width: 100vw !important;
     max-width: 100vw !important;
+    padding-top: 0;
   }
   
   .admin-content {
@@ -798,12 +912,76 @@ onUnmounted(() => {
   }
   
   .sidebar-header {
-    min-height: 70px;
+    min-height: 60px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--dark-border-color);
+    background: var(--dark-bg-card);
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
   
   .logo {
-    width: 160px;
-    height: 75px;
+    width: 120px;
+    height: auto;
+    max-height: 50px;
+  }
+  
+  .sidebar-close-btn {
+    width: 40px !important;
+    height: 40px !important;
+    background: var(--primary-gradient) !important;
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    box-shadow: var(--shadow-glass-sm);
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .sidebar-close-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-glow-purple);
+  }
+  
+  .sidebar-close-btn i {
+    font-size: 24px;
+  }
+  
+  .sidebar-nav {
+    max-height: calc(80vh - 120px);
+    overflow-y: auto;
+    padding: 0.5rem 0;
+  }
+  
+  .nav-link {
+    padding: 0.75rem 1rem;
+  }
+  
+  .nav-parent {
+    padding: 0.75rem 1rem;
+  }
+  
+  .submenu {
+    padding: 0.5rem 0;
+    margin: 0;
+  }
+  
+  .nav-child {
+    padding: 0.625rem 1rem 0.625rem 2.5rem !important;
+  }
+  
+  .sidebar-footer {
+    display: none;
   }
   
   /* Nút toggle trên mobile - ẩn */
@@ -811,9 +989,162 @@ onUnmounted(() => {
     display: none;
   }
   
-  /* Hiện hamburger menu trên mobile */
+  /* Hiện hamburger menu trên mobile - LUÔN hiển thị khi width < 768px */
   .hamburger-btn {
-    display: flex;
+    display: flex !important;
+    position: fixed !important;
+    top: 10px !important;
+    left: 10px !important;
+    z-index: 10002 !important;
+    background: var(--primary-gradient) !important;
+    box-shadow: var(--shadow-glass-lg) !important;
+    transition: opacity var(--transition-fast);
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .admin-layout.sidebar-open-mobile .hamburger-btn {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .mobile-overlay {
+    z-index: 9999;
+  }
+}
+
+/* Đảm bảo sidebar luôn hiển thị trên desktop - CHỈ khi width >= 768px VÀ không có class mobile-top */
+/* Lưu ý: Khi có class mobile-top, luôn dùng top navigation bất kể media query */
+@media (min-width: 768px) {
+  .admin-sidebar:not(.mobile-top) {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-height: none !important;
+    height: 100vh !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    width: 220px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    border-right: 1px solid var(--dark-border-color) !important;
+    border-bottom: none !important;
+    position: fixed !important;
+    z-index: 1000 !important;
+  }
+  
+  .admin-sidebar.collapsed:not(.mobile-top) {
+    width: 75px !important;
+  }
+  
+  /* Khi có mobile-top class, override tất cả để dùng top navigation */
+  .admin-sidebar.mobile-top {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: auto !important;
+    max-height: 0 !important;
+    transform: translateY(-100%) !important;
+    transition: transform 0.3s ease, max-height 0.3s ease !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 10000 !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--dark-border-color) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    position: fixed !important;
+  }
+  
+  .admin-sidebar.mobile-top:not(.collapsed) {
+    transform: translateY(0) !important;
+    max-height: 80vh !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .admin-sidebar.mobile-top.collapsed {
+    transform: translateY(-100%) !important;
+    max-height: 0 !important;
+    visibility: hidden !important;
+  }
+  
+  .hamburger-btn {
+    display: none !important;
+  }
+  
+  .sidebar-close-btn {
+    display: none !important;
+  }
+  
+  /* Khi có mobile-top, override để hiển thị hamburger và close button */
+  .admin-sidebar.mobile-top ~ .admin-main .hamburger-btn,
+  .admin-layout .hamburger-btn {
+    /* Fallback - sẽ được override bởi mobile CSS */
+  }
+  
+  .admin-sidebar.mobile-top .sidebar-close-btn {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .sidebar-header {
+    position: relative !important;
+    min-height: 65px !important;
+    padding: 0.75rem 0.5rem !important;
+    justify-content: space-between !important;
+  }
+  
+  .admin-sidebar.mobile-top .sidebar-header {
+    min-height: 60px !important;
+    padding: 0.75rem 1rem !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+  }
+  
+  .sidebar-nav {
+    max-height: none !important;
+    overflow-y: auto !important;
+    padding: 0.5rem 0 !important;
+  }
+  
+  .admin-sidebar.mobile-top .sidebar-nav {
+    max-height: calc(80vh - 120px) !important;
+  }
+  
+  .nav-link {
+    padding: 0.5rem 0.625rem !important;
+  }
+  
+  .admin-sidebar.mobile-top .nav-link {
+    padding: 0.75rem 1rem !important;
+  }
+  
+  .nav-parent {
+    padding: 0.5rem 0.625rem !important;
+  }
+  
+  .admin-sidebar.mobile-top .nav-parent {
+    padding: 0.75rem 1rem !important;
+  }
+  
+  .nav-child {
+    padding: 0.4rem 0.5rem 0.4rem 1.625rem !important;
+  }
+  
+  .admin-sidebar.mobile-top .nav-child {
+    padding: 0.625rem 1rem 0.625rem 2.5rem !important;
+  }
+  
+  .sidebar-footer {
+    display: block !important;
+  }
+  
+  .admin-sidebar.mobile-top .sidebar-footer {
+    display: none !important;
   }
 }
 
@@ -1155,11 +1486,14 @@ onUnmounted(() => {
   min-width: auto;
   max-width: none;
   width: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center;
   
   /* Visual style - giống như normal nhưng compact hơn */
   list-style: none;
-  padding: 0.5rem 0.25rem;
-  margin: 0.25rem 0;
+  padding: 0.5rem 0.125rem;
+  margin: 0.25rem 0.125rem;
   background: var(--dark-bg-glass-dark);
   border-radius: var(--radius-lg);
   border: 1px solid var(--dark-border-light);
@@ -1180,7 +1514,9 @@ onUnmounted(() => {
 .submenu.submenu-collapsed .submenu-item {
   margin: 0;
   padding: 0;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   list-style: none;
 }
@@ -1191,7 +1527,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 0.625rem 0.5rem !important;
+  padding: 0.625rem 0.25rem !important;
   font-size: 0.875rem;
   color: var(--dark-text-secondary);
   background: transparent;
@@ -1201,8 +1537,9 @@ onUnmounted(() => {
   transition: all var(--transition-normal);
   font-weight: 500;
   text-decoration: none;
-  margin: 0.1875rem 0.25rem;
-  width: calc(100% - 0.5rem);
+  margin: 0.1875rem 0.125rem;
+  width: calc(100% - 0.25rem);
+  text-align: center;
 }
 
 /* Ẩn dot indicator khi collapsed */
@@ -1222,7 +1559,10 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin: 0 auto;
+  margin: 0;
+  position: relative;
+  left: 0;
+  transform: none;
 }
 
 /* Ẩn text khi collapsed */

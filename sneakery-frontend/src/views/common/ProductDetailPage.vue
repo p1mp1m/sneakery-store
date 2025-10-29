@@ -378,12 +378,14 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const { addProduct } = useRecentlyViewed();
 
 // State
 const product = ref(null);
@@ -435,6 +437,16 @@ const fetchProduct = async () => {
     );
     
     product.value = response.data;
+    
+    // Add to recently viewed
+    addProduct({
+      id: product.value.id,
+      name: product.value.name,
+      slug: product.value.slug,
+      brandName: product.value.brand?.name || product.value.brandName,
+      imageUrl: product.value.variants?.[0]?.imageUrl || product.value.imageUrl,
+      price: product.value.variants?.[0]?.price || product.value.price
+    });
     
     // Auto-select first variant
     if (product.value.variants && product.value.variants.length > 0) {

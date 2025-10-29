@@ -1,6 +1,7 @@
 package com.sneakery.store.controller;
 
 import com.sneakery.store.entity.Notification;
+import com.sneakery.store.entity.User;
 import com.sneakery.store.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,17 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     /**
+     * Helper method to get userId from Authentication
+     */
+    private Long getUserIdFromAuthentication(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User) {
+            return ((User) principal).getId();
+        }
+        throw new RuntimeException("Không thể lấy userId từ authentication");
+    }
+
+    /**
      * Lấy notifications của user (pagination)
      */
     @GetMapping
@@ -39,7 +51,7 @@ public class NotificationController {
     ) {
         log.info("📍 GET /api/notifications");
         
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = getUserIdFromAuthentication(authentication);
         Pageable pageable = PageRequest.of(page, size);
         
         Page<Notification> notifications = notificationService.getUserNotifications(userId, pageable);
@@ -53,7 +65,7 @@ public class NotificationController {
     public ResponseEntity<Map<String, Long>> getUnreadCount(Authentication authentication) {
         log.info("📍 GET /api/notifications/unread-count");
         
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = getUserIdFromAuthentication(authentication);
         long unreadCount = notificationService.getUnreadCount(userId);
         
         Map<String, Long> response = new HashMap<>();
@@ -72,7 +84,7 @@ public class NotificationController {
     ) {
         log.info("📍 PUT /api/notifications/{}/read", id);
         
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = getUserIdFromAuthentication(authentication);
         notificationService.markAsRead(id, userId);
         
         return ResponseEntity.ok().build();
@@ -85,7 +97,7 @@ public class NotificationController {
     public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
         log.info("📍 PUT /api/notifications/read-all");
         
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = getUserIdFromAuthentication(authentication);
         notificationService.markAllAsRead(userId);
         
         return ResponseEntity.ok().build();
