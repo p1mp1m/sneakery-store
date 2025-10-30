@@ -64,6 +64,9 @@ public class ProductImage {
     @Schema(description = "Thời điểm ảnh được thêm vào hệ thống")
     private LocalDateTime createdAt;
 
+    @Column(name = "cloudinary_public_id", length = 255)
+    private String cloudinaryPublicId;
+
     /** Thiết lập mặc định khi thêm mới */
     @PrePersist
     protected void onCreate() {

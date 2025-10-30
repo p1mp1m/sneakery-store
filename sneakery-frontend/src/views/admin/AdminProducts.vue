@@ -1319,6 +1319,7 @@ const removedImageUrls = ref([]);
 const productImages = ref([]); // danh sách ảnh hiện tại
 const initialProductImages = ref([]); // để truyền vào UploadGallery
 const uploadedImages = ref([]); // danh sách ảnh mới upload (local blob)
+const originalImagesSnapshot = ref([]); // 🆕 lưu trạng thái ảnh DB ban đầu
 
 // ================== STATE ==================
 const showCategoryModal = ref(false);
@@ -1801,13 +1802,29 @@ const openEditModal = async (product) => {
         ? img.imageUrl
         : `${window.location.origin}${img.imageUrl}`, // hỗ trợ /uploads/*
       isPrimary: !!img.isPrimary,
+      displayOrder: img.displayOrder ?? 0, // 🆕 giữ nguyên thứ tự từ BE
       file: null,
       type: "db", // ✅ phân biệt ảnh từ DB
+    }));
+
+    // 🧠 Thêm snapshot ban đầu để so sánh sau
+    originalImagesSnapshot.value = initialProductImages.value.map((x) => ({
+      id: x.id,
+      isPrimary: !!x.isPrimary,
     }));
 
     // Gán cho UploadGallery
     productImages.value = [...initialProductImages.value];
     formData.value.images = [...initialProductImages.value];
+
+    // 🟢 Lưu snapshot ảnh DB gốc để diff khi cập nhật
+    originalImagesSnapshot.value = initialProductImages.value.map(
+      (img, idx) => ({
+        id: img.id,
+        isPrimary: !!img.isPrimary,
+        displayOrder: idx,
+      })
+    );
 
     console.log("🖼️ Ảnh sản phẩm từ API:", initialProductImages.value);
   } catch (error) {
@@ -1943,6 +1960,7 @@ const validateForm = () => {
 const handleSubmit = async () => {
   try {
     isSubmitting.value = true;
+    const updatedIds = new Set(); // 🧠 tránh update trùng
 
     // ==================== [1] VALIDATE CƠ BẢN ====================
     if (!formData.value.name?.trim()) {
@@ -2055,18 +2073,32 @@ const handleSubmit = async () => {
 
     // ==================== [5] UPLOAD ẢNH MỚI ====================
     const uploadedUrls = [];
+    // 🆕 Tính thứ tự cao nhất trong DB 1 lần duy nhất trước vòng for
+    const maxDisplayOrder = Math.max(
+      0,
+      ...(initialProductImages.value
+        ?.filter((x) => x.type === "db")
+        ?.map((x) => x.displayOrder ?? 0) || [])
+    );
+    let uploadIndexStart = maxDisplayOrder + 1; // bắt đầu ngay sau ảnh cao nhất
 
     for (const [idx, img] of productImages.value.entries()) {
-      if (img.type === "db") continue; // ảnh đã có trong DB thì bỏ qua
+      if (img.type === "db") continue; // ảnh đã trong DB thì bỏ qua
 
+      const displayOrder = uploadIndexStart++; // 🧩 tăng dần theo tổng ảnh cũ
       const isPrimaryChosen = !!img.isPrimary;
+
+      // Nếu trong DB đã có primary thì không gửi thêm primary nữa
+      const dbHasPrimary = (initialProductImages.value || []).some(
+        (x) => x.isPrimary
+      );
       const willSendPrimary = dbHasPrimary ? false : isPrimaryChosen;
 
       if ((img.type === "local" || img.file) && img.file) {
         const formUpload = new FormData();
         formUpload.append("file", img.file);
         formUpload.append("isPrimary", String(willSendPrimary));
-        formUpload.append("displayOrder", String(idx));
+        formUpload.append("displayOrder", String(displayOrder));
 
         try {
           const res = await axios.post(
@@ -2086,7 +2118,7 @@ const handleSubmit = async () => {
             {
               imageUrl: img.previewUrl,
               isPrimary: willSendPrimary,
-              displayOrder: idx,
+              displayOrder: displayOrder,
             },
             { headers: { "Content-Type": "application/json" } }
           );
@@ -2098,10 +2130,135 @@ const handleSubmit = async () => {
       }
     }
 
-    // ==================== [6] GÁN ẢNH ĐẠI DIỆN (MAIN IMAGE) ====================
-    const primaryIndex = productImages.value.findIndex((i) => i.isPrimary);
-    if (!dbHasPrimary && primaryIndex >= 0) {
-      formData.value.mainImageUrl = uploadedUrls[primaryIndex] || null;
+    // ==================== [6] XỬ LÝ ẢNH BÌA & THỨ TỰ HIỂN THỊ ====================
+    try {
+      // 🔹 [6.1] Nếu ảnh mới upload được đánh dấu là ảnh bìa
+      const primaryNow = productImages.value.find((i) => i.isPrimary);
+      if (primaryNow && primaryNow.type !== "db") {
+        // Fetch lại danh sách ảnh từ BE để lấy id thực của ảnh vừa upload
+        const { data: updatedImages } = await axios.get(
+          `/api/admin/products/${productId}/images`
+        );
+        const matched = updatedImages.find((x) =>
+          x.imageUrl.includes(primaryNow.previewUrl.split("/").pop())
+        );
+        if (matched) {
+          await axios.put(
+            `/api/admin/products/${productId}/images/${matched.id}`,
+            { isPrimary: true },
+            { headers: { "Content-Type": "application/json" } }
+          );
+          console.log(
+            `✅ Ảnh mới upload được gán làm ảnh bìa ID=${matched.id}`
+          );
+        }
+      }
+
+      // 🔹 [6.2] Xử lý đổi ảnh bìa giữa các ảnh DB
+      const currentDbImages = productImages.value.filter(
+        (img) => img.type === "db" && img.id
+      );
+      const currentPrimary = currentDbImages.find((img) => img.isPrimary);
+      const oldPrimary = originalImagesSnapshot.value.find((x) => x.isPrimary);
+
+      // 🔸 Đảm bảo chỉ có 1 ảnh có isPrimary = true
+      const duplicates = currentDbImages.filter((img) => img.isPrimary);
+      if (duplicates.length > 1) {
+        await Promise.all(
+          duplicates
+            .slice(1)
+            .map((img) =>
+              axios.put(
+                `/api/admin/products/${productId}/images/${img.id}`,
+                { isPrimary: false },
+                { headers: { "Content-Type": "application/json" } }
+              )
+            )
+        );
+      }
+
+      if (currentPrimary && oldPrimary && currentPrimary.id !== oldPrimary.id) {
+        console.log(
+          `🔄 Đổi ảnh bìa từ ${oldPrimary.id} → ${currentPrimary.id}`
+        );
+
+        // 1️⃣ Bỏ cờ primary ở ảnh cũ
+        await axios.put(
+          `/api/admin/products/${productId}/images/${oldPrimary.id}`,
+          { isPrimary: false },
+          { headers: { "Content-Type": "application/json" } }
+        );
+        updatedIds.add(oldPrimary.id);
+
+        // 2️⃣ Gắn cờ primary cho ảnh mới
+        await axios.put(
+          `/api/admin/products/${productId}/images/${currentPrimary.id}`,
+          { isPrimary: true },
+          { headers: { "Content-Type": "application/json" } }
+        );
+        updatedIds.add(currentPrimary.id);
+
+        ElMessage.success("✅ Đã cập nhật ảnh bìa thành công!");
+      }
+
+      // 🔹 [6.3] Cập nhật displayOrder & isPrimary nếu thay đổi
+      for (const [idx, img] of productImages.value.entries()) {
+        if (img.type !== "db" || !img.id) continue;
+        if (updatedIds.has(img.id)) continue; // 🚫 bỏ qua ảnh đã xử lý ở trên
+        const prev = originalImagesSnapshot.value.find((x) => x.id === img.id);
+        if (!prev) continue;
+
+        // Nếu thay đổi displayOrder hoặc trạng thái primary → update
+        if (prev.isPrimary !== img.isPrimary || img.displayOrder !== idx + 1) {
+          try {
+            await axios.put(
+              `/api/admin/products/${productId}/images/${img.id}`,
+              { isPrimary: img.isPrimary, displayOrder: idx + 1 },
+              { headers: { "Content-Type": "application/json" } }
+            );
+            console.log(
+              `🆙 Update ảnh ID=${img.id} → order=${idx + 1}, primary=${
+                img.isPrimary
+              }`
+            );
+          } catch (err) {
+            console.error("❌ Update ảnh DB lỗi:", err);
+          }
+        }
+      }
+
+      // 🔹 [6.4] Cập nhật mainImageUrl cho sản phẩm
+      const finalPrimary = productImages.value.find((i) => i.isPrimary);
+      if (finalPrimary) {
+        await axios.put(
+          `/api/admin/products/${productId}`,
+          {
+            name: formData.value.name,
+            slug: formData.value.slug,
+            description: formData.value.description,
+            brandId: formData.value.brandId,
+            categoryIds: formData.value.categoryIds,
+            materialId: formData.value.materialId,
+            shoeSoleId: formData.value.shoeSoleId,
+            isActive: formData.value.isActive,
+            mainImageUrl: finalPrimary.previewUrl, // 🧩 thêm trường mới
+            variants: formData.value.variants.map((v) => ({
+              sku: v.sku,
+              color: v.color,
+              size: v.size,
+              priceBase: v.priceBase,
+              priceSale: v.priceSale,
+              stockQuantity: v.stockQuantity,
+            })),
+          },
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        formData.value.mainImageUrl = finalPrimary.previewUrl;
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi xử lý ảnh bìa / thứ tự hiển thị:", err);
+      ElMessage.error("Cập nhật ảnh bìa hoặc thứ tự hiển thị thất bại!");
     }
 
     // ==================== [7] THÔNG BÁO & RESET FORM ====================
@@ -2114,6 +2271,10 @@ const handleSubmit = async () => {
 
     await fetchProducts();
     await fetchStatistics();
+    originalImagesSnapshot.value = productImages.value
+      .filter((x) => x.type === "db" && x.id)
+      .map((x) => ({ id: x.id, isPrimary: !!x.isPrimary }));
+
     closeModal();
   } catch (error) {
     console.error("❌ Lỗi khi lưu sản phẩm:", error);
@@ -2145,27 +2306,6 @@ const onProductImagesChange = (images) => {
   formData.value.mainImageUrl = primary ? primary.previewUrl : null;
 };
 
-// const onProductImageRemove = (index) => {
-//   const removed = productImages.value[index]; // ✅ lấy ảnh trước khi splice
-
-//   // Ghi nhớ URL ảnh bị xóa (nếu là ảnh từ DB hoặc URL thật)
-//   if (
-//     removed &&
-//     removed.previewUrl &&
-//     !removed.previewUrl.startsWith("blob:")
-//   ) {
-//     removedImageUrls.value.push(removed.previewUrl);
-//   }
-
-//   // Cập nhật danh sách còn lại
-//   productImages.value.splice(index, 1);
-//   formData.value.images = [...productImages.value];
-
-//   // Nếu ảnh bị xóa là ảnh chính → bỏ gán mainImageUrl
-//   if (formData.value.mainImageUrl === removed.previewUrl) {
-//     formData.value.mainImageUrl = null;
-//   }
-// };
 const onProductImageRemove = (payload) => {
   // Chấp nhận cả kiểu cũ (string URL) lẫn kiểu mới (object)
   const { url } =
@@ -2178,7 +2318,6 @@ const onProductImageRemove = (payload) => {
       formData.value.mainImageUrl = null;
     }
   }
-  // Không splice ở đây! UploadGallery đã splice & emitChange rồi.
 };
 
 const confirmDelete = (product) => {

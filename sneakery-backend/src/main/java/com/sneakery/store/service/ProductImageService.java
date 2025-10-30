@@ -91,14 +91,17 @@ public class ProductImageService {
     // ==========================================================
     // [3] UPLOAD FILE ẢNH TỪ LOCAL (multipart/form-data)
     // ==========================================================
+    // trong ProductImageService
     @Transactional
     public ProductImageDto uploadImageFile(Long productId, MultipartFile file, boolean isPrimary, Integer displayOrder) {
         log.info("🖼️ Uploading local file for product ID: {}", productId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
 
-        // Lưu file vật lý
-        String imageUrl = fileStorageService.storeProductImage(productId, file);
+        // Upload lên Cloudinary → nhận url + publicId
+        FileStorageService.CloudinaryUploadResult up = fileStorageService.storeProductImage(productId, file);
+        String imageUrl = up.url();
+        String publicId = up.publicId();
 
         // Nếu chưa có ảnh primary => tự động set ảnh đầu tiên
         boolean hasPrimary = productImageRepository.existsByProductIdAndIsPrimaryTrue(productId);
@@ -109,26 +112,27 @@ public class ProductImageService {
             productImageRepository.clearPrimaryForProduct(productId);
         }
 
-        // Tính displayOrder (bắt đầu từ 1)
+        // Tính displayOrder
         long count = productImageRepository.countByProductId(productId);
-        int finalOrder = (displayOrder != null && displayOrder > 0)
-                ? displayOrder
-                : (int) count + 1;
+        int finalOrder = (displayOrder != null && displayOrder > 0) ? displayOrder : (int) count + 1;
 
         ProductImage image = ProductImage.builder()
                 .product(product)
                 .imageUrl(imageUrl)
+                .cloudinaryPublicId(publicId)        // <<=== LƯU PUBLIC ID
+                .altText(product.getName())
                 .isPrimary(finalPrimary)
                 .displayOrder(finalOrder)
                 .build();
 
-        productImageRepository.save(image);
+        ProductImage saved = productImageRepository.save(image);
         log.info("✅ Uploaded image {} for product {}", imageUrl, productId);
-        return convertToDto(image);
+        return convertToDto(saved);
     }
 
+
     // ==========================================================
-    // [4] XÓA ẢNH THEO URL (FE gửi { imageUrl })
+    // [4] XÓA ẢNH THEO URL (FE gửi { imageUrl }) ưu tiên xoá bằng publicId
     // ==========================================================
     @Transactional
     public void deleteByUrl(Long productId, String imageUrl) {
@@ -138,27 +142,31 @@ public class ProductImageService {
 
         log.info("🗑️ Request xoá ảnh sản phẩm {} với URL: {}", productId, imageUrl);
 
-        // Chuẩn hoá URL để khớp DB (nếu FE gửi full absolute path)
-        String normalizedUrl = normalizeImageUrl(imageUrl);
-
-        // Tìm ảnh trong DB
+        // Nếu DB lưu URL Cloudinary -> không cần normalize "/uploads/"
+        // Nhưng ta vẫn tìm theo imageUrl đúng như lưu DB
         ProductImage image = productImageRepository
-                .findByProductIdAndImageUrl(productId, normalizedUrl)
+                .findByProductIdAndImageUrl(productId, imageUrl)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,
-                        "Không tìm thấy ảnh trong DB với URL: " + normalizedUrl));
+                        "Không tìm thấy ảnh trong DB với URL: " + imageUrl));
 
-        // Xoá file vật lý (nếu tồn tại)
+        // ƯU TIÊN xoá theo public_id
         try {
-            fileStorageService.deleteFileByUrl(image.getImageUrl());
+            if (image.getCloudinaryPublicId() != null && !image.getCloudinaryPublicId().isBlank()) {
+                fileStorageService.deleteByPublicId(image.getCloudinaryPublicId());
+            } else {
+                // fallback nếu dữ liệu cũ chưa có publicId
+                fileStorageService.deleteByUrlBestEffort(image.getImageUrl());
+            }
         } catch (Exception e) {
-            log.warn("⚠️ Không thể xoá file vật lý cho ảnh {}: {}", normalizedUrl, e.getMessage());
+            log.warn("⚠️ Không thể xoá file Cloudinary cho ảnh {}: {}", imageUrl, e.getMessage());
         }
 
-        // Xoá record DB
+        // Xoá record DB + reorder
+        Long pid = image.getProduct().getId();
         productImageRepository.delete(image);
-        reorderDisplayOrder(productId);
+        reorderDisplayOrder(pid);
 
-        log.info("✅ Đã xoá ảnh [{}] của sản phẩm {}", normalizedUrl, productId);
+        log.info("✅ Đã xoá ảnh [{}] của sản phẩm {}", imageUrl, productId);
     }
 
 
@@ -169,10 +177,27 @@ public class ProductImageService {
     public void deleteProductImage(Long imageId) {
         ProductImage image = productImageRepository.findById(imageId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Hình ảnh không tồn tại"));
-        fileStorageService.deleteFileByUrl(image.getImageUrl());
+
+        try {
+            // ƯU TIÊN XOÁ TRÊN CLOUDINARY BẰNG PUBLIC ID
+            if (image.getCloudinaryPublicId() != null && !image.getCloudinaryPublicId().isBlank()) {
+                fileStorageService.deleteByPublicId(image.getCloudinaryPublicId());
+            } else {
+                // fallback nếu ảnh cũ chưa có public_id
+                fileStorageService.deleteByUrlBestEffort(image.getImageUrl());
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Không thể xoá file Cloudinary cho imageId {}: {}", imageId, e.getMessage());
+        }
+
+        // Xoá record trong DB
         Long productId = image.getProduct().getId();
         productImageRepository.delete(image);
+
+        // Reorder lại thứ tự hiển thị
         reorderDisplayOrder(productId);
+
+        log.info("✅ Đã xoá ảnh ID={} của sản phẩm {}", imageId, productId);
     }
 
     // ==========================================================
@@ -213,9 +238,11 @@ public class ProductImageService {
                 .id(image.getId())
                 .productId(image.getProduct() != null ? image.getProduct().getId() : null)
                 .imageUrl(image.getImageUrl())
+                .cloudinaryPublicId(image.getCloudinaryPublicId()) // <<=== thêm
                 .altText(image.getAltText())
                 .isPrimary(image.getIsPrimary())
                 .displayOrder(image.getDisplayOrder())
                 .build();
     }
+
 }
