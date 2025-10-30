@@ -48,4 +48,8 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             @Param("stockStatus") String stockStatus,
             Pageable pageable
     );
+    Optional<ProductVariant> findBySku(String sku);
+
+    // ✅ Có thể thêm nếu chưa có
+    boolean existsBySku(String sku);
 }

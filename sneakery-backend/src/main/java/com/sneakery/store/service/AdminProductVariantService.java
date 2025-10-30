@@ -3,8 +3,11 @@ package com.sneakery.store.service;
 import com.sneakery.store.dto.*;
 import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.ProductVariant;
+import com.sneakery.store.entity.ProductImage; // ✅ Added: import ProductImage
 import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
+import com.sneakery.store.repository.ProductImageRepository; // ✅ Added: import ProductImageRepository
+import com.sneakery.store.service.ActivityLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +27,8 @@ public class AdminProductVariantService {
 
     private final ProductVariantRepository productVariantRepository;
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository; // ✅ Added
+    private final ActivityLogService activityLogService;
 
     /**
      * Lấy danh sách biến thể với filter
@@ -75,6 +82,86 @@ public class AdminProductVariantService {
         ProductVariant savedVariant = productVariantRepository.save(variant);
         return convertToDto(savedVariant);
     }
+
+    /**
+     * ✅ Tạo nhiều biến thể cùng lúc — tự động gộp nếu SKU trùng
+     */
+    public List<AdminProductVariantDto> createVariantsBatch(List<AdminProductVariantRequestDto> requestList) {
+        if (requestList == null || requestList.isEmpty()) {
+            throw new RuntimeException("Danh sách biến thể rỗng");
+        }
+
+        List<AdminProductVariantDto> resultList = new ArrayList<>();
+
+        for (AdminProductVariantRequestDto requestDto : requestList) {
+            Product product = productRepository.findById(requestDto.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + requestDto.getProductId()));
+
+            // ✅ Kiểm tra SKU đã tồn tại chưa
+            Optional<ProductVariant> existingOpt = productVariantRepository.findBySku(requestDto.getSku());
+
+            if (existingOpt.isPresent()) {
+                // 👉 Nếu đã tồn tại → Cộng dồn số lượng
+                ProductVariant existing = existingOpt.get();
+                // 🟢 Khai báo tại đây
+                int oldStock = existing.getStockQuantity();
+                int addedStock = requestDto.getStockQuantity();
+                int newStock = oldStock + addedStock;
+                existing.setStockQuantity(newStock);
+                existing.setUpdatedAt(LocalDateTime.now());
+
+                productVariantRepository.save(existing);
+
+                // ✅ Ghi log cộng dồn
+                String logMsg = String.format(
+                        "Biến thể SKU [%s] của sản phẩm [%s] đã được cộng dồn tồn kho: %d → %d (+%d)",
+                        existing.getSku(),
+                        product.getName(),
+                        oldStock,
+                        newStock,
+                        addedStock
+                );
+                activityLogService.logAction("UPDATE_STOCK", logMsg);
+
+                resultList.add(convertToDto(existing));
+            } else {
+                // 👉 Nếu chưa tồn tại → Tạo mới
+                ProductVariant variant = new ProductVariant();
+                variant.setProduct(product);
+                variant.setSku(requestDto.getSku());
+                variant.setSize(requestDto.getSize());
+                variant.setColor(requestDto.getColor());
+                variant.setPriceBase(requestDto.getPriceBase());
+                variant.setPriceSale(requestDto.getPriceSale());
+                variant.setCostPrice(requestDto.getCostPrice());
+                variant.setStockQuantity(requestDto.getStockQuantity());
+                variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null ? requestDto.getLowStockThreshold() : 10);
+                variant.setWeightGrams(requestDto.getWeightGrams());
+                variant.setImageUrl(requestDto.getImageUrl());
+                variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
+                variant.setCreatedAt(LocalDateTime.now());
+                variant.setUpdatedAt(LocalDateTime.now());
+
+                ProductVariant saved = productVariantRepository.save(variant);
+
+                // ✅ Ghi log tạo mới
+                String logMsg = String.format(
+                        "Đã tạo mới biến thể SKU [%s] cho sản phẩm [%s] (màu: %s, size: %s, tồn: %d)",
+                        saved.getSku(),
+                        product.getName(),
+                        saved.getColor(),
+                        saved.getSize(),
+                        saved.getStockQuantity()
+                );
+                activityLogService.logAction("CREATE_VARIANT", logMsg);
+
+                resultList.add(convertToDto(saved));
+            }
+        }
+
+        return resultList;
+    }
+
 
     /**
      * Cập nhật biến thể
@@ -175,6 +262,16 @@ public class AdminProductVariantService {
         String brandName = (variant.getProduct() != null && variant.getProduct().getBrand() != null) 
                 ? variant.getProduct().getBrand().getName() : "Unknown Brand";
 
+        String imageUrl = variant.getImageUrl();
+
+        // ✅ Added: nếu imageUrl null → lấy ảnh bìa từ bảng Product_Images
+        if ((imageUrl == null || imageUrl.isBlank()) && productId != null) {
+            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+            if (coverImage.isPresent()) {
+                imageUrl = coverImage.get().getImageUrl();
+            }
+        }
+
         return AdminProductVariantDto.builder()
                 .id(variant.getId())
                 .sku(variant.getSku())
@@ -186,7 +283,7 @@ public class AdminProductVariantService {
                 .stockQuantity(variant.getStockQuantity())
                 .lowStockThreshold(variant.getLowStockThreshold())
                 .weightGrams(variant.getWeightGrams())
-                .imageUrl(variant.getImageUrl())
+                .imageUrl(imageUrl)
                 .isActive(variant.getIsActive())
                 .createdAt(variant.getCreatedAt())
                 .updatedAt(variant.getUpdatedAt())

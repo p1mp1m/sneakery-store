@@ -8,7 +8,9 @@
             <i class="material-icons">style</i>
             Quản Lý Biến Thể Sản Phẩm
           </h1>
-          <p class="page-subtitle">Quản lý màu sắc, kích thước và tồn kho của từng biến thể sản phẩm</p>
+          <p class="page-subtitle">
+            Quản lý màu sắc, kích thước và tồn kho của từng biến thể sản phẩm
+          </p>
         </div>
         <div class="header-actions">
           <button class="btn btn-primary" @click="openAddVariantModal">
@@ -84,7 +86,11 @@
             <i class="material-icons">palette</i>
             Màu sắc
           </label>
-          <select v-model="filters.color" class="filter-select" @change="handleFilter">
+          <select
+            v-model="filters.color"
+            class="filter-select"
+            @change="handleFilter"
+          >
             <option value="">Tất cả màu</option>
             <option value="black">Đen</option>
             <option value="white">Trắng</option>
@@ -99,7 +105,11 @@
             <i class="material-icons">straighten</i>
             Kích thước
           </label>
-          <select v-model="filters.size" class="filter-select" @change="handleFilter">
+          <select
+            v-model="filters.size"
+            class="filter-select"
+            @change="handleFilter"
+          >
             <option value="">Tất cả size</option>
             <option value="35">35</option>
             <option value="36">36</option>
@@ -118,7 +128,11 @@
             <i class="material-icons">inventory</i>
             Trạng thái kho
           </label>
-          <select v-model="filters.stockStatus" class="filter-select" @change="handleFilter">
+          <select
+            v-model="filters.stockStatus"
+            class="filter-select"
+            @change="handleFilter"
+          >
             <option value="">Tất cả</option>
             <option value="in_stock">Còn hàng</option>
             <option value="low_stock">Sắp hết</option>
@@ -147,12 +161,18 @@
         <tbody>
           <tr v-for="variant in variants" :key="variant.id" class="variant-row">
             <td>
-              <img :src="variant.imageUrl || '/placeholder-image.png'" :alt="variant.productName" class="variant-image" />
+              <img
+                :src="variant.imageUrl || '/placeholder-image.png'"
+                :alt="variant.productName"
+                class="variant-image"
+              />
             </td>
             <td>
               <div class="product-info">
                 <span class="product-name">{{ variant.productName }}</span>
-                <div class="product-brand" v-if="variant.brandName">{{ variant.brandName }}</div>
+                <div class="product-brand" v-if="variant.brandName">
+                  {{ variant.brandName }}
+                </div>
               </div>
             </td>
             <td>
@@ -160,7 +180,10 @@
             </td>
             <td>
               <div class="color-badge">
-                <span class="color-dot" :style="{ backgroundColor: getColorHex(variant.color) }"></span>
+                <span
+                  class="color-dot"
+                  :style="{ backgroundColor: getColorHex(variant.color) }"
+                ></span>
                 <span>{{ getColorName(variant.color) }}</span>
               </div>
             </td>
@@ -168,24 +191,40 @@
               <span class="size-badge">{{ variant.size }}</span>
             </td>
             <td>
-              <span class="price">{{ formatPrice(getCurrentPrice(variant)) }}</span>
+              <span class="price">{{
+                formatPrice(getCurrentPrice(variant))
+              }}</span>
             </td>
             <td>
-              <span class="stock-quantity" :class="getStockClass(variant.stockQuantity)">
+              <span
+                class="stock-quantity"
+                :class="getStockClass(variant.stockQuantity)"
+              >
                 {{ variant.stockQuantity }}
               </span>
             </td>
             <td>
-              <span class="status-badge" :class="getStockStatusClass(variant.stockQuantity)">
+              <span
+                class="status-badge"
+                :class="getStockStatusClass(variant.stockQuantity)"
+              >
                 {{ getStockStatusLabel(variant.stockQuantity) }}
               </span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-icon btn-edit" @click="editVariant(variant)" title="Chỉnh sửa">
+                <button
+                  class="btn-icon btn-edit"
+                  @click="editVariant(variant)"
+                  title="Chỉnh sửa"
+                >
                   <i class="material-icons">edit</i>
                 </button>
-                <button class="btn-icon btn-delete" @click="deleteVariant(variant)" title="Xóa">
+                <button
+                  class="btn-icon btn-delete"
+                  @click="openDeleteConfirm(variant)"
+                  title="Xóa"
+                >
                   <i class="material-icons">delete</i>
                 </button>
               </div>
@@ -217,8 +256,8 @@
         <i class="material-icons">chevron_left</i>
       </button>
       <span class="page-info">
-        Trang {{ paginationInfo.currentPage }} / {{ paginationInfo.totalPages }}
-        ({{ totalElements }} biến thể)
+        Trang {{ paginationInfo.currentPage }} /
+        {{ paginationInfo.totalPages }} ({{ totalElements }} biến thể)
       </span>
       <button
         class="pagination-btn"
@@ -236,45 +275,59 @@
       @close="closeModal"
       @success="handleModalSuccess"
     />
+
+    <!-- 🔹 Popup xác nhận xóa biến thể -->
+    <ConfirmDialog
+      v-model="showDeleteModal"
+      type="danger"
+      title="Xác nhận xóa biến thể"
+      :message="`Bạn có chắc chắn muốn xóa biến thể '${variantToDelete?.sku}' không?`"
+      description="Hành động này không thể hoàn tác."
+      confirm-text="Xóa biến thể"
+      cancel-text="Hủy"
+      :loading="deleting"
+      @confirm="deleteVariantConfirmed"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useAdminStore } from '@/stores/admin'
-import { useLoadingState } from '@/composables/useLoadingState'
-import toastService from '@/utils/toastService'
-import VariantModal from '@/assets/components/admin/VariantModal.vue'
+import { ref, reactive, onMounted, computed } from "vue";
+import { useAdminStore } from "@/stores/admin";
+import { useLoadingState } from "@/composables/useLoadingState";
+import toastService from "@/utils/toastService";
+import VariantModal from "@/assets/components/admin/VariantModal.vue";
+import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 
 // ===== STORES & COMPOSABLES =====
-const adminStore = useAdminStore()
-const { setLoading, isLoading } = useLoadingState()
-const toast = toastService
+const adminStore = useAdminStore();
+const { setLoading, isLoading } = useLoadingState();
+const toast = toastService;
 
 // ===== STATE =====
-const variants = ref([])
-const currentPage = ref(0)
-const pageSize = ref(10)
-const totalElements = ref(0)
-const totalPages = ref(1)
+const variants = ref([]);
+const currentPage = ref(0);
+const pageSize = ref(10);
+const totalElements = ref(0);
+const totalPages = ref(1);
 
 const stats = reactive({
   totalVariants: 0,
   inStock: 0,
   lowStock: 0,
-  outOfStock: 0
-})
+  outOfStock: 0,
+});
 
 const filters = reactive({
-  search: '',
-  color: '',
-  size: '',
-  stockStatus: ''
-})
+  search: "",
+  color: "",
+  size: "",
+  stockStatus: "",
+});
 
 // ===== MODAL STATE =====
-const isModalOpen = ref(false)
-const selectedVariant = ref(null)
+const isModalOpen = ref(false);
+const selectedVariant = ref(null);
 
 // ===== COMPUTED =====
 const paginationInfo = computed(() => ({
@@ -282,165 +335,184 @@ const paginationInfo = computed(() => ({
   totalPages: totalPages.value,
   totalElements: totalElements.value,
   hasNext: currentPage.value < totalPages.value - 1,
-  hasPrev: currentPage.value > 0
-}))
+  hasPrev: currentPage.value > 0,
+}));
 
 // ===== LIFECYCLE =====
 onMounted(async () => {
-  await loadVariants()
-  await loadStats()
-})
+  await loadVariants();
+  await loadStats();
+});
 
 // ===== METHODS =====
 const loadVariants = async () => {
   try {
-    setLoading(true, 'Đang tải danh sách biến thể...')
-    const result = await adminStore.fetchProductVariants(currentPage.value, pageSize.value, filters)
-    
-    variants.value = result.content || []
-    totalElements.value = result.totalElements || 0
-    totalPages.value = result.totalPages || 1
+    setLoading(true, "Đang tải danh sách biến thể...");
+    const result = await adminStore.fetchProductVariants(
+      currentPage.value,
+      pageSize.value,
+      filters
+    );
+
+    variants.value = result.content || [];
+    totalElements.value = result.totalElements || 0;
+    totalPages.value = result.totalPages || 1;
   } catch (error) {
-    console.error('Error loading variants:', error)
-    toast.error('Lỗi', 'Không thể tải danh sách biến thể')
+    console.error("Error loading variants:", error);
+    toast.error("Lỗi", "Không thể tải danh sách biến thể");
   } finally {
-    setLoading(false)
+    setLoading(false);
   }
-}
+};
 
 const loadStats = async () => {
   try {
-    const result = await adminStore.fetchProductVariantStats()
-    stats.totalVariants = result.totalVariants || 0
-    stats.inStock = result.inStockVariants || 0
-    stats.lowStock = result.lowStockVariants || 0
-    stats.outOfStock = result.outOfStockVariants || 0
+    const result = await adminStore.fetchProductVariantStats();
+    stats.totalVariants = result.totalVariants || 0;
+    stats.inStock = result.inStockVariants || 0;
+    stats.lowStock = result.lowStockVariants || 0;
+    stats.outOfStock = result.outOfStockVariants || 0;
   } catch (error) {
-    console.error('Error loading stats:', error)
+    console.error("Error loading stats:", error);
     // Fallback to calculating from variants if API fails
-    calculateStatsFromVariants()
+    calculateStatsFromVariants();
   }
-}
+};
 
 const calculateStatsFromVariants = () => {
-  stats.totalVariants = variants.value.length
-  stats.inStock = variants.value.filter(v => v.stockQuantity > 10).length
-  stats.lowStock = variants.value.filter(v => v.stockQuantity > 0 && v.stockQuantity <= 10).length
-  stats.outOfStock = variants.value.filter(v => v.stockQuantity === 0).length
-}
+  stats.totalVariants = variants.value.length;
+  stats.inStock = variants.value.filter((v) => v.stockQuantity > 10).length;
+  stats.lowStock = variants.value.filter(
+    (v) => v.stockQuantity > 0 && v.stockQuantity <= 10
+  ).length;
+  stats.outOfStock = variants.value.filter((v) => v.stockQuantity === 0).length;
+};
 
 const handleSearch = async () => {
-  currentPage.value = 0
-  await loadVariants()
-}
+  currentPage.value = 0;
+  await loadVariants();
+};
 
 const handleFilter = async () => {
-  currentPage.value = 0
-  await loadVariants()
-}
+  currentPage.value = 0;
+  await loadVariants();
+};
 
 const openAddVariantModal = () => {
-  selectedVariant.value = null
-  isModalOpen.value = true
-}
+  selectedVariant.value = null;
+  isModalOpen.value = true;
+};
 
 const editVariant = (variant) => {
-  selectedVariant.value = variant
-  isModalOpen.value = true
-}
+  selectedVariant.value = variant;
+  isModalOpen.value = true;
+};
 
 const closeModal = () => {
-  isModalOpen.value = false
-  selectedVariant.value = null
-}
+  isModalOpen.value = false;
+  selectedVariant.value = null;
+};
 
 const handleModalSuccess = async () => {
-  await loadVariants()
-  await loadStats()
-}
+  await loadVariants();
+  await loadStats();
+};
 
-const deleteVariant = async (variant) => {
-  if (!confirm(`Bạn có chắc chắn muốn xóa biến thể ${variant.sku}?`)) {
-    return
-  }
-  
+// ===== DELETE VARIANT (với ConfirmDialog) =====
+const showDeleteModal = ref(false);
+const deleting = ref(false);
+const variantToDelete = ref(null);
+
+const openDeleteConfirm = (variant) => {
+  variantToDelete.value = variant;
+  showDeleteModal.value = true;
+};
+
+const deleteVariantConfirmed = async () => {
+  if (!variantToDelete.value) return;
+
+  deleting.value = true;
   try {
-    setLoading(true, 'Đang xóa biến thể...')
-    await adminStore.deleteProductVariant(variant.id)
-    toast.success('Thành công', 'Đã xóa biến thể thành công')
-    await loadVariants()
-    await loadStats()
+    await adminStore.deleteProductVariant(variantToDelete.value.id);
+    toast.success("Thành công", `Đã xóa biến thể ${variantToDelete.value.sku}`);
+    await loadVariants();
+    await loadStats();
   } catch (error) {
-    console.error('Error deleting variant:', error)
-    toast.error('Lỗi', 'Không thể xóa biến thể')
+    console.error("Error deleting variant:", error);
+    toast.error("Lỗi", "Không thể xóa biến thể");
   } finally {
-    setLoading(false)
+    deleting.value = false;
+    showDeleteModal.value = false;
+    variantToDelete.value = null;
   }
-}
+};
 
 const changePage = async (page) => {
-  currentPage.value = page
-  await loadVariants()
-}
+  currentPage.value = page;
+  await loadVariants();
+};
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
-}
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(price);
+};
 
 const getColorHex = (color) => {
   const colorMap = {
-    'black': '#000000',
-    'white': '#FFFFFF',
-    'red': '#EF4444',
-    'blue': '#3B82F6',
-    'green': '#10B981',
-    'yellow': '#F59E0B',
-    'purple': '#8B5CF6',
-    'pink': '#EC4899',
-    'gray': '#6B7280',
-    'brown': '#A78BFA'
-  }
-  return colorMap[color?.toLowerCase()] || '#9CA3AF'
-}
+    black: "#000000",
+    white: "#FFFFFF",
+    red: "#EF4444",
+    blue: "#3B82F6",
+    green: "#10B981",
+    yellow: "#F59E0B",
+    purple: "#8B5CF6",
+    pink: "#EC4899",
+    gray: "#6B7280",
+    brown: "#A78BFA",
+  };
+  return colorMap[color?.toLowerCase()] || "#9CA3AF";
+};
 
 const getColorName = (color) => {
   const colorMap = {
-    'black': 'Đen',
-    'white': 'Trắng',
-    'red': 'Đỏ',
-    'blue': 'Xanh dương',
-    'green': 'Xanh lá',
-    'yellow': 'Vàng',
-    'purple': 'Tím',
-    'pink': 'Hồng',
-    'gray': 'Xám',
-    'brown': 'Nâu'
-  }
-  return colorMap[color?.toLowerCase()] || color || 'Không xác định'
-}
+    black: "Đen",
+    white: "Trắng",
+    red: "Đỏ",
+    blue: "Xanh dương",
+    green: "Xanh lá",
+    yellow: "Vàng",
+    purple: "Tím",
+    pink: "Hồng",
+    gray: "Xám",
+    brown: "Nâu",
+  };
+  return colorMap[color?.toLowerCase()] || color || "Không xác định";
+};
 
 const getCurrentPrice = (variant) => {
   // Ưu tiên giá sale nếu có, nếu không thì dùng giá base
-  return variant.priceSale || variant.priceBase || 0
-}
+  return variant.priceSale || variant.priceBase || 0;
+};
 
 const getStockClass = (quantity) => {
-  if (quantity === 0) return 'stock-out'
-  if (quantity <= 10) return 'stock-low'
-  return 'stock-ok'
-}
+  if (quantity === 0) return "stock-out";
+  if (quantity <= 10) return "stock-low";
+  return "stock-ok";
+};
 
 const getStockStatusClass = (quantity) => {
-  if (quantity === 0) return 'status-danger'
-  if (quantity <= 10) return 'status-warning'
-  return 'status-success'
-}
+  if (quantity === 0) return "status-danger";
+  if (quantity <= 10) return "status-warning";
+  return "status-success";
+};
 
 const getStockStatusLabel = (quantity) => {
-  if (quantity === 0) return 'Hết hàng'
-  if (quantity <= 10) return 'Sắp hết'
-  return 'Còn hàng'
-}
+  if (quantity === 0) return "Hết hàng";
+  if (quantity <= 10) return "Sắp hết";
+  return "Còn hàng";
+};
 </script>
 
 <style scoped>
@@ -495,7 +567,8 @@ const getStockStatusLabel = (quantity) => {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -541,7 +614,7 @@ const getStockStatusLabel = (quantity) => {
 }
 
 .stat-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -684,7 +757,7 @@ const getStockStatusLabel = (quantity) => {
   border-color: var(--accent-primary);
   background: rgba(15, 23, 42, 0.9);
   box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15),
-              0 4px 16px rgba(167, 139, 250, 0.2);
+    0 4px 16px rgba(167, 139, 250, 0.2);
 }
 
 .filter-input::placeholder {
@@ -893,8 +966,12 @@ const getStockStatusLabel = (quantity) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-container p {
@@ -1006,7 +1083,7 @@ const getStockStatusLabel = (quantity) => {
   .product-variants-page {
     padding: var(--space-6) var(--space-3);
   }
-  
+
   .filter-row {
     grid-template-columns: 1fr 1fr;
   }
@@ -1034,15 +1111,15 @@ const getStockStatusLabel = (quantity) => {
   .page-title {
     font-size: var(--text-2xl);
   }
-  
+
   .page-title .material-icons {
     font-size: 1.5rem;
   }
-  
+
   .header-actions {
     width: 100%;
   }
-  
+
   .header-actions .btn {
     flex: 1;
     justify-content: center;
@@ -1070,17 +1147,17 @@ const getStockStatusLabel = (quantity) => {
     width: 48px;
     height: 48px;
   }
-  
+
   .sku-code {
     font-size: var(--text-xs);
   }
-  
+
   .size-badge {
     padding: var(--space-1) var(--space-2);
     font-size: var(--text-xs);
     min-width: 32px;
   }
-  
+
   .price,
   .stock-quantity {
     font-size: var(--text-base);
@@ -1093,17 +1170,15 @@ const getStockStatusLabel = (quantity) => {
     padding: var(--space-2);
     font-size: var(--text-xs);
   }
-  
+
   .variant-image {
     width: 40px;
     height: 40px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: var(--space-1);
   }
-  
 }
 </style>
-

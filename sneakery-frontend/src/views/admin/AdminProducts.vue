@@ -623,6 +623,20 @@
             }}</span>
           </div>
 
+          <!-- 🟣 Thư viện hình ảnh sản phẩm -->
+          <div class="form-group">
+            <label class="form-label">Thư viện hình ảnh sản phẩm</label>
+            <UploadGallery
+              :initialImages="initialProductImages"
+              @change="onProductImagesChange"
+              @remove="onProductImageRemove"
+            />
+            <span class="form-help">
+              Có thể tải ảnh từ máy hoặc nhập URL. Chọn ảnh "Primary" để hiển
+              thị chính.
+            </span>
+          </div>
+
           <!-- Variants -->
           <div class="section-title">
             Sản phẩm chi tiết
@@ -723,7 +737,7 @@
                 </div>
               </div>
 
-              <div class="form-group">
+              <!-- <div class="form-group">
                 <label class="form-label">URL hình ảnh</label>
                 <input
                   v-model="variant.imageUrl"
@@ -731,7 +745,7 @@
                   class="form-control-sm"
                   placeholder="/placeholder-image.png"
                 />
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -1266,9 +1280,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import axios from "axios";
 import { useAdminStore } from "@/stores/admin";
 import { ElMessage } from "element-plus";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
+import UploadGallery from "@/assets/components/admin/UploadGallery.vue";
 import * as XLSX from "xlsx";
 
 const adminStore = useAdminStore();
@@ -1296,6 +1312,13 @@ const deleting = ref(false);
 const importing = ref(false);
 const bulkUpdating = ref(false);
 const productToDelete = ref(null);
+const isSubmitting = ref(false);
+const removedImageUrls = ref([]);
+
+// 🧩 Ảnh sản phẩm
+const productImages = ref([]); // danh sách ảnh hiện tại
+const initialProductImages = ref([]); // để truyền vào UploadGallery
+const uploadedImages = ref([]); // danh sách ảnh mới upload (local blob)
 
 // ================== STATE ==================
 const showCategoryModal = ref(false);
@@ -1480,6 +1503,8 @@ const formData = ref({
   description: "",
   isActive: true,
   categoryIds: [],
+  images: [],
+  mainImageUrl: null, // 🆕 Danh sách ảnh sản phẩm (gallery)
   materialId: null, // 🆕
   shoeSoleId: null, // 🆕
   variants: [],
@@ -1701,11 +1726,16 @@ const bulkDelete = async () => {
 // ===== MODAL ACTIONS =====
 const openCreateModal = () => {
   isEditMode.value = false;
+  productImages.value = [];
+  initialProductImages.value = [];
+  uploadedImages.value = [];
   formData.value = {
     name: "",
     slug: "",
     brandId: null,
     description: "",
+    images: [], // 🧹 reset hình ảnh
+    mainImageUrl: null,
     isActive: true,
     categoryIds: [],
     variants: [],
@@ -1718,16 +1748,18 @@ const openEditModal = async (product) => {
   isEditMode.value = true;
 
   try {
-    // 1) Tải dữ liệu cho dropdown trước (tránh select rỗng khi đã có id)
+    // 1️⃣ Tải dữ liệu cho dropdown trước (tránh select rỗng khi đã có id)
     await Promise.all([
       adminStore.fetchBrands?.(),
       adminStore.fetchCategories?.(),
       adminStore.fetchMaterials?.(), // 🆕 chất liệu
       adminStore.fetchSoles?.(), // 🆕 đế giày
     ]);
-    // 2) Lấy chi tiết sản phẩm
+
+    // 2️⃣ Lấy chi tiết sản phẩm
     const detailData = await adminStore.getProductById(product.id);
-    // 3) Gán formData ĐẦY ĐỦ field, có cả materialId & shoeSoleId
+
+    // 3️⃣ Gán formData ĐẦY ĐỦ field, có cả materialId & shoeSoleId
     formData.value = {
       id: product.id,
       name: detailData.name || "",
@@ -1736,6 +1768,11 @@ const openEditModal = async (product) => {
       description: detailData.description || "",
       isActive: detailData.isActive !== undefined ? detailData.isActive : true,
       categoryIds: detailData.categories?.map((c) => c.id) || [],
+      images:
+        detailData.images?.map((img) => ({
+          previewUrl: img.imageUrl,
+          isPrimary: img.isPrimary || false,
+        })) || [],
       // 🆕 BỔ SUNG 2 TRƯỜNG MỚI:
       materialId: detailData.materialId ?? null,
       shoeSoleId: detailData.shoeSoleId ?? null,
@@ -1751,8 +1788,31 @@ const openEditModal = async (product) => {
           imageUrl: v.imageUrl || "",
         })) || [],
     };
+
+    // 🟢 Bổ sung phần LOAD ẢNH từ API
+    const { data: imageData } = await axios.get(
+      `/api/admin/products/${product.id}/images`
+    );
+
+    // Chuẩn hóa về format UploadGallery hiểu được
+    initialProductImages.value = (imageData || []).map((img) => ({
+      id: img.id,
+      previewUrl: img.imageUrl.startsWith("http")
+        ? img.imageUrl
+        : `${window.location.origin}${img.imageUrl}`, // hỗ trợ /uploads/*
+      isPrimary: !!img.isPrimary,
+      file: null,
+      type: "db", // ✅ phân biệt ảnh từ DB
+    }));
+
+    // Gán cho UploadGallery
+    productImages.value = [...initialProductImages.value];
+    formData.value.images = [...initialProductImages.value];
+
+    console.log("🖼️ Ảnh sản phẩm từ API:", initialProductImages.value);
   } catch (error) {
     console.error("Lỗi khi tải chi tiết sản phẩm:", error);
+
     // Fallback vẫn giữ đủ 2 field mới để tránh mất reactivity
     formData.value = {
       id: product.id,
@@ -1762,15 +1822,35 @@ const openEditModal = async (product) => {
       description: "",
       isActive: true,
       categoryIds: [],
-      // 🆕 vẫn có key để v-model không bị "rỗng"
       materialId: null,
       shoeSoleId: null,
       variants: [],
     };
+
+    // Reset ảnh nếu API lỗi
+    initialProductImages.value = [];
+    productImages.value = [];
   }
 
-  // formErrors.value = {}
   showModal.value = true;
+};
+
+// 🟢 Lấy ảnh sản phẩm riêng (nếu BE có API riêng)
+const fetchProductImages = async (productId) => {
+  try {
+    const images = await adminStore.fetchProductImages(productId);
+    initialProductImages.value = images.map((img) => ({
+      id: img.id,
+      previewUrl: img.imageUrl,
+      isPrimary: !!img.isPrimary,
+      file: null,
+      type: "remote",
+    }));
+    productImages.value = [...initialProductImages.value];
+    formData.value.images = [...initialProductImages.value];
+  } catch (error) {
+    console.error("Lỗi tải ảnh sản phẩm:", error);
+  }
 };
 
 const closeModal = () => {
@@ -1784,11 +1864,22 @@ const closeModal = () => {
     description: "",
     isActive: true,
     categoryIds: [],
+    images: [], // 🧹 reset hình ảnh
     // 🆕 reset 2 field mới
     materialId: null,
     shoeSoleId: null,
     variants: [],
   };
+  // 🧹 Cleanup blob URL khi đóng modal
+  productImages.value.forEach((img) => {
+    if (img.file && img.previewUrl?.startsWith("blob:")) {
+      URL.revokeObjectURL(img.previewUrl);
+    }
+  });
+  productImages.value = [];
+  initialProductImages.value = [];
+  uploadedImages.value = [];
+  formData.value.mainImageUrl = null;
   formErrors.value = {};
 };
 
@@ -1850,56 +1941,244 @@ const validateForm = () => {
 };
 
 const handleSubmit = async () => {
-  if (!validateForm()) {
-    ElMessage.warning("Vui lòng kiểm tra lại thông tin form!");
-    return;
-  }
-
   try {
-    submitting.value = true;
+    isSubmitting.value = true;
 
-    const payload = {
+    // ==================== [1] VALIDATE CƠ BẢN ====================
+    if (!formData.value.name?.trim()) {
+      ElMessage.warning("Vui lòng nhập tên sản phẩm");
+      return;
+    }
+
+    if (!formData.value.slug?.trim()) {
+      ElMessage.warning(
+        "Slug không được để trống (hãy nhập tên để tự sinh slug)"
+      );
+      return;
+    }
+
+    if (!formData.value.brandId) {
+      ElMessage.warning("Vui lòng chọn thương hiệu");
+      return;
+    }
+
+    if (
+      !formData.value.categoryIds ||
+      formData.value.categoryIds.length === 0
+    ) {
+      ElMessage.warning("Vui lòng chọn ít nhất 1 danh mục");
+      return;
+    }
+
+    if (!formData.value.variants || formData.value.variants.length === 0) {
+      ElMessage.warning("Vui lòng thêm ít nhất 1 biến thể sản phẩm");
+      return;
+    }
+
+    if (productImages.value.length > 10) {
+      ElMessage.warning("Tối đa 10 ảnh cho mỗi sản phẩm");
+      return;
+    }
+
+    // ==================== [2] XÓA ẢNH ĐÃ GỠ ====================
+    if (removedImageUrls.value?.length > 0) {
+      for (const url of removedImageUrls.value) {
+        try {
+          await axios.delete(
+            `/api/admin/products/${formData.value.id}/images`,
+            {
+              data: { imageUrl: url },
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        } catch (e) {
+          console.error("❌ Xóa ảnh lỗi:", url, e);
+        }
+      }
+    }
+
+    // ==================== [3] ẢNH HIỆN CÓ TRONG DB ====================
+    // Tính danh sách ảnh DB còn lại sau khi xóa
+    const removedSet = new Set(removedImageUrls.value);
+
+    const dbImagesEffective = (initialProductImages.value || []).filter(
+      (img) => !removedSet.has(img.previewUrl)
+    );
+
+    // Xem còn ảnh nào được đánh dấu là primary không
+    const dbHasPrimary = dbImagesEffective.some(
+      (img) => img.isPrimary === true
+    );
+
+    // Sau khi tính xong mới clear để vòng sau không bị lặp
+    removedImageUrls.value = [];
+
+    // ==================== [4] TẠO / CẬP NHẬT SẢN PHẨM ====================
+    const productPayload = {
+      name: formData.value.name?.trim(),
+      slug: formData.value.slug?.trim(),
+      description: formData.value.description?.trim() || "",
       brandId: formData.value.brandId,
-      name: formData.value.name,
-      slug: formData.value.slug,
-      description: formData.value.description || "",
-      isActive: formData.value.isActive,
       categoryIds: formData.value.categoryIds,
-      materialId: formData.value.materialId || null, // ✅ thêm
-      shoeSoleId: formData.value.shoeSoleId || null, // ✅ thêm
+      materialId: formData.value.materialId,
+      shoeSoleId: formData.value.shoeSoleId,
+      isActive: formData.value.isActive ?? true,
       variants: formData.value.variants.map((v) => ({
-        id: v.id || undefined,
         sku: v.sku,
-        size: v.size,
         color: v.color,
-        priceBase: Number(v.priceBase),
-        priceSale: v.priceSale ? Number(v.priceSale) : null,
-        stockQuantity: Number(v.stockQuantity),
-        imageUrl: v.imageUrl || null,
+        size: v.size,
+        priceBase: Number(v.priceBase) || 0,
+        priceSale: Number(v.priceSale) || 0,
+        stockQuantity: Number(v.stockQuantity) || 0,
       })),
     };
 
-    if (isEditMode.value) {
-      await adminStore.updateProduct(formData.value.id, payload);
-      ElMessage.success(
-        `Đã cập nhật sản phẩm "${formData.value.name}" thành công!`
+    let savedProduct = null;
+
+    if (isEditMode.value && formData.value.id) {
+      const res = await axios.put(
+        `/api/admin/products/${formData.value.id}`,
+        productPayload,
+        { headers: { "Content-Type": "application/json" } }
       );
+      savedProduct = res.data;
     } else {
-      await adminStore.createProduct(payload);
-      ElMessage.success(
-        `Đã thêm sản phẩm "${formData.value.name}" thành công!`
-      );
+      const res = await axios.post(`/api/admin/products`, productPayload, {
+        headers: { "Content-Type": "application/json" },
+      });
+      savedProduct = res.data;
     }
+
+    if (!savedProduct?.id) throw new Error("Không thể lưu sản phẩm");
+
+    const productId = savedProduct.id;
+
+    // ==================== [5] UPLOAD ẢNH MỚI ====================
+    const uploadedUrls = [];
+
+    for (const [idx, img] of productImages.value.entries()) {
+      if (img.type === "db") continue; // ảnh đã có trong DB thì bỏ qua
+
+      const isPrimaryChosen = !!img.isPrimary;
+      const willSendPrimary = dbHasPrimary ? false : isPrimaryChosen;
+
+      if ((img.type === "local" || img.file) && img.file) {
+        const formUpload = new FormData();
+        formUpload.append("file", img.file);
+        formUpload.append("isPrimary", String(willSendPrimary));
+        formUpload.append("displayOrder", String(idx));
+
+        try {
+          const res = await axios.post(
+            `/api/admin/products/${productId}/images/upload`,
+            formUpload,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+          uploadedUrls.push(res.data?.imageUrl);
+        } catch (err) {
+          console.error("❌ Upload ảnh local lỗi:", err);
+          ElMessage.error("Upload ảnh local thất bại");
+        }
+      } else if (img.type === "url" && img.previewUrl) {
+        try {
+          await axios.post(
+            `/api/admin/products/${productId}/images`,
+            {
+              imageUrl: img.previewUrl,
+              isPrimary: willSendPrimary,
+              displayOrder: idx,
+            },
+            { headers: { "Content-Type": "application/json" } }
+          );
+          uploadedUrls.push(img.previewUrl);
+        } catch (err) {
+          console.error("❌ Upload ảnh URL lỗi:", err);
+          ElMessage.error("Upload ảnh URL thất bại");
+        }
+      }
+    }
+
+    // ==================== [6] GÁN ẢNH ĐẠI DIỆN (MAIN IMAGE) ====================
+    const primaryIndex = productImages.value.findIndex((i) => i.isPrimary);
+    if (!dbHasPrimary && primaryIndex >= 0) {
+      formData.value.mainImageUrl = uploadedUrls[primaryIndex] || null;
+    }
+
+    // ==================== [7] THÔNG BÁO & RESET FORM ====================
+    ElMessage.success({
+      message: isEditMode.value
+        ? "✅ Cập nhật sản phẩm thành công!"
+        : "✅ Tạo sản phẩm mới thành công!",
+      duration: 3000,
+    });
 
     await fetchProducts();
     await fetchStatistics();
     closeModal();
   } catch (error) {
-    console.error("Lỗi khi lưu sản phẩm:", error);
-    ElMessage.error("Có lỗi xảy ra! Vui lòng thử lại.");
+    console.error("❌ Lỗi khi lưu sản phẩm:", error);
+    const msg =
+      error.response?.data?.message ||
+      error.message ||
+      "Đã xảy ra lỗi khi lưu sản phẩm";
+    ElMessage.error(msg);
   } finally {
-    submitting.value = false;
+    isSubmitting.value = false;
   }
+};
+
+// 🟣 Khi thay đổi ảnh trong UploadGallery (giống VariantModal.vue)
+const onProductImagesChange = (images) => {
+  // images = [{ file, previewUrl, isPrimary }]
+  productImages.value = images;
+
+  // Ghi nhận vào formData để khi submit gửi đúng payload
+  formData.value.images = images.map((img) => ({
+    file: img.file,
+    previewUrl: img.previewUrl,
+    isPrimary: !!img.isPrimary,
+    type: img.type || "local",
+  }));
+
+  // Ảnh chính (primary) dùng làm đại diện sản phẩm
+  const primary = images.find((i) => i.isPrimary);
+  formData.value.mainImageUrl = primary ? primary.previewUrl : null;
+};
+
+// const onProductImageRemove = (index) => {
+//   const removed = productImages.value[index]; // ✅ lấy ảnh trước khi splice
+
+//   // Ghi nhớ URL ảnh bị xóa (nếu là ảnh từ DB hoặc URL thật)
+//   if (
+//     removed &&
+//     removed.previewUrl &&
+//     !removed.previewUrl.startsWith("blob:")
+//   ) {
+//     removedImageUrls.value.push(removed.previewUrl);
+//   }
+
+//   // Cập nhật danh sách còn lại
+//   productImages.value.splice(index, 1);
+//   formData.value.images = [...productImages.value];
+
+//   // Nếu ảnh bị xóa là ảnh chính → bỏ gán mainImageUrl
+//   if (formData.value.mainImageUrl === removed.previewUrl) {
+//     formData.value.mainImageUrl = null;
+//   }
+// };
+const onProductImageRemove = (payload) => {
+  // Chấp nhận cả kiểu cũ (string URL) lẫn kiểu mới (object)
+  const { url } =
+    typeof payload === "string" ? { url: payload } : payload || {};
+
+  if (url && !url.startsWith("blob:")) {
+    removedImageUrls.value.push(url);
+    // Nếu xoá đúng ảnh đang là main → clear
+    if (formData.value.mainImageUrl === url) {
+      formData.value.mainImageUrl = null;
+    }
+  }
+  // Không splice ở đây! UploadGallery đã splice & emitChange rồi.
 };
 
 const confirmDelete = (product) => {
@@ -2975,7 +3254,14 @@ onMounted(async () => {
 .modal-body {
   padding: var(--space-8);
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Edge cũ */
   flex: 1;
+}
+
+.modal-body::-webkit-scrollbar {
+  display: none; /* Chrome, Edge mới, Safari */
+  scroll-behavior: smooth;
 }
 
 .modal-footer {
