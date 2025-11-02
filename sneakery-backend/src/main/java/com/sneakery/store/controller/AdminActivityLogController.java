@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.ActivityLogDto;
 import com.sneakery.store.entity.ActivityLog;
+import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.ActivityLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -70,7 +72,7 @@ public class AdminActivityLogController {
         } else if (action != null && !action.trim().isEmpty()) {
             logs = activityLogRepository.findByActionOrderByCreatedAtDesc(action, pageable);
         } else if (entityType != null && !entityType.trim().isEmpty()) {
-            logs = activityLogRepository.findAll(pageable); // Filter manually
+            logs = activityLogRepository.findByEntityTypeOrderByCreatedAtDesc(entityType, pageable);
         } else {
             logs = activityLogRepository.findAll(pageable);
         }
@@ -90,7 +92,7 @@ public class AdminActivityLogController {
         log.info("📋 Fetching activity log ID: {}", id);
         
         ActivityLog log = activityLogRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Activity log not found with id: " + id));
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Activity log not found with id: " + id));
         
         return ResponseEntity.ok(mapToDto(log));
     }

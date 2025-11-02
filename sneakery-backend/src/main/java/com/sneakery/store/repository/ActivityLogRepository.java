@@ -34,6 +34,11 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
     Page<ActivityLog> findByActionOrderByCreatedAtDesc(String action, Pageable pageable);
     
     /**
+     * Lấy activity logs theo entity type
+     */
+    Page<ActivityLog> findByEntityTypeOrderByCreatedAtDesc(String entityType, Pageable pageable);
+    
+    /**
      * Lấy activity logs trong khoảng thời gian
      */
     Page<ActivityLog> findByCreatedAtBetweenOrderByCreatedAtDesc(
