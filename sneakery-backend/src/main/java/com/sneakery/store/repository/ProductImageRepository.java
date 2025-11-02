@@ -2,6 +2,9 @@ package com.sneakery.store.repository;
 
 import com.sneakery.store.entity.ProductImage;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -9,30 +12,46 @@ import java.util.Optional;
 
 /**
  * Repository: ProductImageRepository
- * Quản lý hình ảnh sản phẩm
+ * ----------------------------------
+ * Xử lý truy vấn liên quan đến hình ảnh sản phẩm (gallery).
  */
 @Repository
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
 
     /**
-     * Lấy tất cả hình ảnh của sản phẩm
-     * Sắp xếp theo display_order
+     * Lấy danh sách ảnh theo Product ID (sắp xếp theo displayOrder tăng dần)
      */
     List<ProductImage> findByProductIdOrderByDisplayOrderAsc(Long productId);
 
     /**
-     * Tìm hình ảnh chính của sản phẩm
+     * Tìm ảnh chính (primary) của một sản phẩm
      */
     Optional<ProductImage> findByProductIdAndIsPrimaryTrue(Long productId);
 
     /**
-     * Xóa tất cả hình ảnh của sản phẩm
+     * Tìm ảnh theo Product ID và đường dẫn ảnh
+     */
+    Optional<ProductImage> findByProductIdAndImageUrl(Long productId, String imageUrl);
+
+    /**
+     * Kiểm tra xem sản phẩm đã có ảnh primary chưa
+     */
+    boolean existsByProductIdAndIsPrimaryTrue(Long productId);
+
+    /**
+     * Đếm số ảnh của một sản phẩm
+     */
+    long countByProductId(Long productId);
+
+    /**
+     * Xóa toàn bộ ảnh của sản phẩm
      */
     void deleteByProductId(Long productId);
 
     /**
-     * Đếm số lượng hình ảnh của sản phẩm
+     * Gỡ bỏ cờ primary khỏi toàn bộ ảnh thuộc sản phẩm (khi set ảnh mới làm primary)
      */
-    long countByProductId(Long productId);
+    @Modifying
+    @Query("UPDATE ProductImage i SET i.isPrimary = false WHERE i.product.id = :productId")
+    void clearPrimaryForProduct(@Param("productId") Long productId);
 }
-

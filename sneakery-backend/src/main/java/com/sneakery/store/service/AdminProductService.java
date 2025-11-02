@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -234,59 +235,108 @@ private AdminProductListDto convertToListDto(Product product) {
     // HÀM HELPER
     // =================================================================
 
-    // Helper xử lý logic Cập nhật/Thêm/Xóa Variants
+    /**
+     * Helper xử lý cập nhật / thêm / xóa biến thể cho sản phẩm (chuẩn enterprise)
+     */
     private void updateProductVariants(Product product, List<AdminVariantRequestDto> variantDtos) {
-        // Lấy ID từ DTOs
-        Set<Long> dtoVariantIds = variantDtos.stream()
-                .map(AdminVariantRequestDto::getId)
-                .filter(id -> id != null)
-                .collect(Collectors.toSet());
+        if (variantDtos == null) return;
 
-        // Lấy Variants hiện tại từ CSDL
-        Map<Long, ProductVariant> existingVariantsMap = product.getVariants().stream()
+        // ✅ Map các variant hiện có từ DB theo ID
+        Map<Long, ProductVariant> existingMap = product.getVariants().stream()
                 .collect(Collectors.toMap(ProductVariant::getId, v -> v));
 
-        // 1. Xóa Variants không còn trong DTO
-        existingVariantsMap.keySet().stream()
-                .filter(id -> !dtoVariantIds.contains(id))
-                .forEach(id -> {
-                    ProductVariant variantToRemove = existingVariantsMap.get(id);
-                    product.getVariants().remove(variantToRemove); // Xóa khỏi list
-                    variantRepository.delete(variantToRemove); // Xóa khỏi CSDL
-                });
-        
-        // 2. Cập nhật / Thêm mới
+        // ✅ Lưu lại ID biến thể từ DTO
+        Set<Long> dtoIds = variantDtos.stream()
+                .map(AdminVariantRequestDto::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 1️⃣ Xóa những biến thể không còn tồn tại trong DTO
+        List<ProductVariant> toRemove = product.getVariants().stream()
+                .filter(v -> v.getId() != null && !dtoIds.contains(v.getId()))
+                .collect(Collectors.toList());
+        for (ProductVariant v : toRemove) {
+            product.getVariants().remove(v);
+            variantRepository.delete(v);
+        }
+
+        // 2️⃣ Cập nhật hoặc thêm mới các biến thể
         for (AdminVariantRequestDto dto : variantDtos) {
-            if (dto.getId() != null && existingVariantsMap.containsKey(dto.getId())) {
-                // Cập nhật
-                ProductVariant variantToUpdate = existingVariantsMap.get(dto.getId());
-                updateVariantEntityFromDto(variantToUpdate, dto);
+            if (dto.getId() != null && existingMap.containsKey(dto.getId())) {
+                // 🔁 Cập nhật biến thể cũ
+                ProductVariant existing = existingMap.get(dto.getId());
+                existing.setSku(dto.getSku());
+                existing.setSize(dto.getSize());
+                existing.setColor(dto.getColor());
+                existing.setPriceBase(dto.getPriceBase());
+                existing.setPriceSale(dto.getPriceSale());
+                existing.setStockQuantity(dto.getStockQuantity());
+                existing.setImageUrl(dto.getImageUrl());
             } else {
-                // Thêm mới
-                product.getVariants().add(convertVariantDtoToEntity(dto, product));
+                // 🆕 Thêm mới (chỉ tạo nếu SKU chưa tồn tại)
+                if (variantRepository.existsBySku(dto.getSku())) {
+                    log.warn("⚠️ Bỏ qua SKU trùng: {}", dto.getSku());
+                    continue;
+                }
+                ProductVariant newVariant = new ProductVariant();
+                newVariant.setProduct(product);
+                newVariant.setSku(dto.getSku());
+                newVariant.setSize(dto.getSize());
+                newVariant.setColor(dto.getColor());
+                newVariant.setPriceBase(dto.getPriceBase());
+                newVariant.setPriceSale(dto.getPriceSale());
+                newVariant.setStockQuantity(dto.getStockQuantity());
+                newVariant.setImageUrl(dto.getImageUrl());
+                product.getVariants().add(newVariant);
             }
         }
     }
 
-    // Mapper DTO -> Entity (Tạo mới Variant)
+
+    /**
+     * Helper: Chuyển DTO → Entity (Tạo mới Variant)
+     */
     private ProductVariant convertVariantDtoToEntity(AdminVariantRequestDto dto, Product product) {
         ProductVariant variant = new ProductVariant();
         variant.setProduct(product);
         return updateVariantEntityFromDto(variant, dto);
     }
 
-    // Mapper DTO -> Entity (Cập nhật Variant)
+    /**
+     * Helper: Cập nhật dữ liệu từ DTO vào Entity (Dùng chung cho cả update & create)
+     */
     private ProductVariant updateVariantEntityFromDto(ProductVariant variant, AdminVariantRequestDto dto) {
-        variant.setSku(dto.getSku());
+        if (dto == null) return variant;
+
+        // 🧩 Đảm bảo không ghi đè ID cũ
+        if (dto.getId() != null) {
+            variant.setId(dto.getId());
+        }
+
+        // ⚙️ Cập nhật toàn bộ field có thể thay đổi
+        variant.setSku(dto.getSku() != null ? dto.getSku().trim() : variant.getSku());
         variant.setSize(dto.getSize());
         variant.setColor(dto.getColor());
         variant.setPriceBase(dto.getPriceBase());
         variant.setPriceSale(dto.getPriceSale());
         variant.setStockQuantity(dto.getStockQuantity());
         variant.setImageUrl(dto.getImageUrl());
+
+        // 🟢 Giữ trạng thái isActive nếu có
+        if (variant.getIsActive() == null) {
+            variant.setIsActive(true);
+        }
+
+        if (variant.getCreatedAt() == null) {
+            variant.setCreatedAt(LocalDateTime.now());
+        }
+        // 🕒 Tự động cập nhật thời gian
+        variant.setUpdatedAt(LocalDateTime.now());
+
         return variant;
     }
-    
+
+
     // Mapper Entity -> DTO (Chi tiết)
     private AdminProductDetailDto convertToAdminDetailDto(Product product) {
         // Convert Categories

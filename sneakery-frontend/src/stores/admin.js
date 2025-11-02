@@ -676,6 +676,21 @@ const deleteSole = async (id) => {
     }
   }
 
+  // ✅ ====== TẠO NHIỀU BIẾN THỂ CÙNG LÚC ======
+const createMultipleProductVariants = async (variantList) => {
+  try {
+    loading.value = true
+    const result = await AdminService.createMultipleProductVariants(variantList)
+    return result
+  } catch (error) {
+    console.error('Error creating multiple product variants:', error)
+    throw error
+  } finally {
+    loading.value = false
+  }
+}
+
+
   const updateProductVariant = async (id, variantData) => {
     try {
       loading.value = true
@@ -1395,6 +1410,7 @@ const deleteSole = async (id) => {
     fetchProductVariants,
     fetchProductVariantStats,
     createProductVariant,
+    createMultipleProductVariants, // ✅ thêm dòng này
     updateProductVariant,
     deleteProductVariant,
     updateVariantStock,

@@ -880,6 +880,15 @@ class AdminService {
     }
   }
 
+  async createMultipleProductVariants(variantList) {
+  try {
+    const response = await adminApi.post('/product-variants/batch', variantList);
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
+  }
+}
+
   async updateProductVariant(id, variantData) {
     try {
       const response = await adminApi.put(`/product-variants/${id}`, variantData)

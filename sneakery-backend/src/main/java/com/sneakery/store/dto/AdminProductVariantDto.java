@@ -1,5 +1,6 @@
 package com.sneakery.store.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class AdminProductVariantDto {
     private Integer stockQuantity;
     private Integer lowStockThreshold;
     private Integer weightGrams;
+    @Schema(description = "URL hình ảnh bìa của biến thể (nếu có)")
     private String imageUrl;
     private Boolean isActive;
     private LocalDateTime createdAt;

@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin/product-variants")
 @RequiredArgsConstructor
@@ -90,6 +92,17 @@ public class AdminProductVariantController {
     ) {
         AdminProductVariantDto newVariant = adminProductVariantService.createVariant(requestDto);
         return new ResponseEntity<>(newVariant, HttpStatus.CREATED);
+    }
+
+    /**
+     * ✅ Tạo nhiều biến thể cùng lúc
+     */
+    @PostMapping("/batch")
+    public ResponseEntity<List<AdminProductVariantDto>> createVariantsBatch(
+            @Valid @RequestBody List<AdminProductVariantRequestDto> requestList
+    ) {
+        List<AdminProductVariantDto> createdVariants = adminProductVariantService.createVariantsBatch(requestList);
+        return new ResponseEntity<>(createdVariants, HttpStatus.CREATED);
     }
 
     /**
