@@ -41,4 +41,6 @@ public class ProductImageDto {
     @Builder.Default
     @Schema(description = "Thứ tự hiển thị trong gallery (1 = đầu tiên)")
     private Integer displayOrder = 1;
+
+    private String cloudinaryPublicId;
 }
