@@ -7,7 +7,6 @@ import com.sneakery.store.entity.ProductImage; // ✅ Added: import ProductImage
 import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
 import com.sneakery.store.repository.ProductImageRepository; // ✅ Added: import ProductImageRepository
-import com.sneakery.store.service.ActivityLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

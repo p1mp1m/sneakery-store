@@ -30,20 +30,6 @@ public class ProductImageService {
     private final ProductRepository productRepository;
     private final FileStorageService fileStorageService;
 
-    /**
-     * Chuẩn hoá URL ảnh về dạng tương đối để khớp DB.
-     * FE thường gửi full URL (http://localhost:5173/uploads/...),
-     * trong khi DB lưu /uploads/...
-     */
-    private String normalizeImageUrl(String url) {
-        if (url == null) return null;
-        int idx = url.indexOf("/uploads/");
-        if (idx != -1) {
-            return url.substring(idx); // chỉ lấy phần "/uploads/..."
-        }
-        return url;
-    }
-
     // ==========================================================
     // [1] LẤY DANH SÁCH ẢNH CỦA SẢN PHẨM
     // ==========================================================
