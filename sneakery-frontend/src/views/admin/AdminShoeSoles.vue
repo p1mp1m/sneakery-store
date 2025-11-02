@@ -1,19 +1,21 @@
 <template>
-  <div class="admin-brands admin-page">
+  <div class="admin-shoesoles admin-page">
     <!-- ===== PAGE HEADER ===== -->
     <div class="page-header">
       <div class="header-content">
         <div class="title-section">
           <h1 class="page-title">
-            <span class="material-icons">local_offer</span>
-            Quản lý Thương hiệu
+            <span class="material-icons">view_day</span>
+            Quản lý Loại đế giày
           </h1>
-          <p class="page-subtitle">Quản lý danh sách thương hiệu sản phẩm</p>
+          <p class="page-subtitle">
+            Quản lý danh sách loại đế giày cho sản phẩm
+          </p>
         </div>
         <div class="header-actions">
           <button class="btn btn-primary" @click="openCreateModal">
             <span class="material-icons">add</span>
-            Thêm Thương hiệu
+            Thêm Loại đế
           </button>
         </div>
       </div>
@@ -26,7 +28,7 @@
           <span class="material-icons">check_circle</span>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ activeBrandsCount }}</div>
+          <div class="stat-value">{{ activeShoeSolesCount }}</div>
           <div class="stat-label">ĐANG HOẠT ĐỘNG</div>
         </div>
       </div>
@@ -36,7 +38,7 @@
           <span class="material-icons">pause_circle</span>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ inactiveBrandsCount }}</div>
+          <div class="stat-value">{{ inactiveShoeSolesCount }}</div>
           <div class="stat-label">TẠM NGƯNG</div>
         </div>
       </div>
@@ -46,8 +48,8 @@
           <span class="material-icons">inventory</span>
         </div>
         <div class="stat-content">
-          <div class="stat-value">{{ brands.length }}</div>
-          <div class="stat-label">TỔNG THƯƠNG HIỆU</div>
+          <div class="stat-value">{{ shoeSoles.length }}</div>
+          <div class="stat-label">TỔNG LOẠI ĐẾ</div>
         </div>
       </div>
     </div>
@@ -55,7 +57,6 @@
     <!-- ===== FILTERS BAR ===== -->
     <div class="content-section">
       <div class="filters-grid">
-        <!-- Ô tìm kiếm -->
         <div class="filter-item wide">
           <label class="filter-label">
             <span class="material-icons">search</span>
@@ -66,12 +67,11 @@
               v-model="searchKeyword"
               type="text"
               class="filter-input"
-              placeholder="Tìm theo tên thương hiệu hoặc slug..."
+              placeholder="Tìm theo tên loại đế hoặc slug..."
             />
           </div>
         </div>
 
-        <!-- Ô trạng thái -->
         <div class="filter-item">
           <label class="filter-label">
             <span class="material-icons">category</span>
@@ -88,118 +88,54 @@
       </div>
     </div>
 
-    <!-- ===== LOADING STATE ===== -->
-    <div v-if="loading" class="admin-loading">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">Đang tải dữ liệu...</p>
-    </div>
-
-    <!-- ===== EMPTY STATE ===== -->
-    <div v-else-if="filteredBrands.length === 0" class="admin-empty-state">
-      <div class="empty-state-icon">
-        <span class="material-icons">local_offer</span>
-      </div>
-      <h3 class="empty-state-title">Không có thương hiệu nào</h3>
-      <p class="empty-state-description">
-        Bắt đầu thêm thương hiệu đầu tiên cho cửa hàng của bạn
-      </p>
-      <button class="btn btn-primary" @click="openCreateModal">
-        <span class="material-icons">add</span>
-        Thêm Thương hiệu
-      </button>
-    </div>
-
-    <!-- ===== BRANDS TABLE (Aurora Style) ===== -->
-    <div v-if="!loading && filteredBrands.length > 0" class="table-container">
-      <table class="admin-table brands-table">
+    <!-- ===== TABLE ===== -->
+    <div
+      v-if="!loading && filteredShoeSoles.length > 0"
+      class="table-container"
+    >
+      <table class="admin-table shoesoles-table">
         <thead>
           <tr>
             <th style="width: 6%">ID</th>
-            <th style="width: 12%">Logo</th>
-            <th style="width: 20%">Tên thương hiệu</th>
+            <th style="width: 20%">Tên loại đế giày</th>
             <th style="width: 14%">Slug</th>
-            <th style="width: 16%">Website</th>
             <th style="width: 18%">Trạng thái</th>
             <th style="width: 14%">Ngày tạo</th>
             <th style="width: 10%">Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="brand in paginatedBrands" :key="brand.id">
-            <td class="text-center">{{ brand.id }}</td>
-
-            <!-- Logo -->
+          <tr v-for="sole in paginatedShoeSoles" :key="sole.id">
+            <td>{{ sole.id }}</td>
             <td>
-              <div class="brand-logo">
-                <img
-                  v-if="brand.logoUrl"
-                  :src="brand.logoUrl"
-                  :alt="brand.name"
-                  @error="handleImageError"
-                />
-                <div v-else class="logo-placeholder">
-                  <span class="material-icons">local_offer</span>
-                </div>
-              </div>
-            </td>
-
-            <!-- Tên + mô tả -->
-            <td>
-              <strong>{{ brand.name }}</strong>
-              <p v-if="brand.description" class="desc">
-                {{ truncateText(brand.description, 50) }}
+              <strong>{{ sole.name }}</strong>
+              <p v-if="sole.description" class="desc">
+                {{ truncateText(sole.description, 50) }}
               </p>
             </td>
-
-            <!-- Slug -->
             <td>
-              <code class="code-badge">{{ brand.slug }}</code>
+              <code class="code-badge">{{ sole.slug }}</code>
             </td>
-
-            <!-- Website -->
-            <td>
-              <a
-                v-if="brand.websiteUrl"
-                :href="brand.websiteUrl"
-                target="_blank"
-                class="website-link"
-              >
-                <span class="material-icons">link</span>
-                {{ truncateText(brand.websiteUrl, 25) }}
-              </a>
-              <span v-else class="text-muted">—</span>
-            </td>
-
-            <!-- Trạng thái -->
             <td>
               <span
                 class="status-badge"
-                :class="brand.isActive ? 'status-active' : 'status-inactive'"
+                :class="sole.isActive ? 'status-active' : 'status-inactive'"
               >
-                <span class="material-icons">
-                  {{ brand.isActive ? "check_circle" : "cancel" }}
-                </span>
-                {{ brand.isActive ? "Hoạt động" : "Tạm ngưng" }}
+                <span class="material-icons">{{
+                  sole.isActive ? "check_circle" : "cancel"
+                }}</span>
+                {{ sole.isActive ? "Hoạt động" : "Tạm ngưng" }}
               </span>
             </td>
-
-            <!-- Ngày tạo -->
-            <td>{{ formatDate(brand.createdAt) }}</td>
-
-            <!-- Thao tác -->
+            <td>{{ formatDate(sole.createdAt) }}</td>
             <td>
               <div class="cell-actions">
-                <button
-                  class="btn-icon btn-edit"
-                  @click="openEditModal(brand)"
-                  title="Chỉnh sửa"
-                >
+                <button class="btn-icon btn-edit" @click="openEditModal(sole)">
                   <span class="material-icons">edit</span>
                 </button>
                 <button
                   class="btn-icon btn-delete"
-                  @click="confirmDelete(brand)"
-                  title="Xóa"
+                  @click="confirmDelete(sole)"
                 >
                   <span class="material-icons">delete</span>
                 </button>
@@ -210,6 +146,25 @@
       </table>
     </div>
 
+    <!-- ===== EMPTY/LOADING ===== -->
+    <div v-else-if="loading" class="admin-loading">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Đang tải dữ liệu...</p>
+    </div>
+    <div v-else class="admin-empty-state">
+      <div class="empty-state-icon">
+        <span class="material-icons">view_day</span>
+      </div>
+      <h3 class="empty-state-title">Không có loại đế nào</h3>
+      <p class="empty-state-description">
+        Bắt đầu thêm loại đế đầu tiên cho cửa hàng của bạn
+      </p>
+      <button class="btn btn-primary" @click="openCreateModal">
+        <span class="material-icons">add</span>
+        Thêm Loại đế
+      </button>
+    </div>
+
     <!-- ===== PAGINATION ===== -->
     <div v-if="totalPages > 1" class="table-pagination">
       <button
@@ -217,105 +172,71 @@
         :disabled="currentPage === 1"
         @click="currentPage--"
       >
-        <span class="material-icons">chevron_left</span>
-        Trước
+        <span class="material-icons">chevron_left</span> Trước
       </button>
-
       <div class="pagination-info">
         Trang {{ currentPage }} / {{ totalPages }}
       </div>
-
       <button
         class="pagination-btn"
         :disabled="currentPage === totalPages"
         @click="currentPage++"
       >
-        Sau
-        <span class="material-icons">chevron_right</span>
+        Sau <span class="material-icons">chevron_right</span>
       </button>
     </div>
 
-    <!-- ===== CREATE/EDIT MODAL ===== -->
-    <!-- ===== AURORA MODAL (Thêm / Chỉnh sửa Thương hiệu) ===== -->
+    <!-- ===== AURORA MODAL ===== -->
     <div v-if="showModal" class="aurora-modal-overlay" @click="closeModal">
-      <div class="aurora-modal aurora-modal-lg" @click.stop>
-        <!-- Header -->
+      <div class="aurora-modal" @click.stop>
         <div class="aurora-modal-header">
           <h2 class="modal-title">
-            <span class="material-icons">
-              {{ isEditMode ? "edit" : "add" }}
-            </span>
-            {{ isEditMode ? "Chỉnh sửa Thương hiệu" : "Thêm Thương hiệu mới" }}
+            <span class="material-icons">{{
+              isEditMode ? "edit" : "add"
+            }}</span>
+            {{ isEditMode ? "Chỉnh sửa Loại đế" : "Thêm Loại đế mới" }}
           </h2>
           <button class="modal-close" @click="closeModal">
             <span class="material-icons">close</span>
           </button>
         </div>
 
-        <!-- Body -->
         <div class="aurora-modal-body">
-          <form @submit.prevent="saveBrand">
+          <form @submit.prevent="saveShoeSole">
             <div class="form-row">
-              <!-- Tên thương hiệu -->
               <div class="form-group">
-                <label class="form-label">TÊN THƯƠNG HIỆU *</label>
+                <label class="form-label">TÊN LOẠI ĐẾ *</label>
                 <input
                   v-model="formData.name"
                   type="text"
                   class="form-input"
-                  placeholder="VD: Nike, Adidas..."
+                  placeholder="VD: Đế cao su, Đế EVA..."
                   @input="generateSlug"
                   required
                 />
               </div>
-
-              <!-- Slug -->
               <div class="form-group">
                 <label class="form-label">SLUG *</label>
                 <input
                   v-model="formData.slug"
                   type="text"
                   class="form-input"
-                  placeholder="vd: nike, adidas..."
+                  placeholder="vd: de-cao-su, de-eva..."
                   required
                 />
               </div>
             </div>
 
-            <!-- Logo -->
-            <div class="form-group full">
-              <label class="form-label">URL LOGO</label>
-              <input
-                v-model="formData.logoUrl"
-                type="url"
-                class="form-input"
-                placeholder="https://example.com/logo.png"
-              />
-            </div>
-
-            <!-- Website -->
-            <div class="form-group full">
-              <label class="form-label">WEBSITE</label>
-              <input
-                v-model="formData.websiteUrl"
-                type="url"
-                class="form-input"
-                placeholder="https://example.com"
-              />
-            </div>
-
-            <!-- Mô tả -->
             <div class="form-group full">
               <label class="form-label">MÔ TẢ</label>
               <textarea
                 class="form-textarea"
                 v-model="formData.description"
-                placeholder="Nhập mô tả về thương hiệu..."
+                placeholder="Nhập mô tả về loại đế..."
                 rows="3"
               ></textarea>
             </div>
 
-            <!-- Kích hoạt -->
             <div class="form-check">
               <input
                 type="checkbox"
@@ -323,12 +244,11 @@
                 v-model="formData.isActive"
                 class="form-check-input"
               />
-              <label for="isActive" class="form-check-label">
-                Kích hoạt thương hiệu
-              </label>
+              <label for="isActive" class="form-check-label"
+                >Kích hoạt loại đế</label
+              >
             </div>
 
-            <!-- Nút hành động -->
             <div class="form-actions">
               <button type="button" class="btn btn-outline" @click="closeModal">
                 <span class="material-icons">close</span> Hủy
@@ -339,9 +259,9 @@
                 :disabled="saving"
                 :class="{ 'btn-loading': saving }"
               >
-                <span class="material-icons">
-                  {{ saving ? "hourglass_empty" : "save" }}
-                </span>
+                <span class="material-icons">{{
+                  saving ? "hourglass_empty" : "save"
+                }}</span>
                 {{ saving ? "Đang lưu..." : "Lưu" }}
               </button>
             </div>
@@ -350,18 +270,17 @@
       </div>
     </div>
 
-    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
-    <!-- 🔹 Delete Confirmation Dialog -->
+    <!-- ===== DELETE CONFIRM ===== -->
     <ConfirmDialog
       v-model="showDeleteModal"
       type="danger"
-      title="Xác nhận xóa thương hiệu"
-      :message="`Bạn có chắc chắn muốn xóa thương hiệu '${brandToDelete?.name}'?`"
+      title="Xác nhận xóa loại đế"
+      :message="`Bạn có chắc chắn muốn xóa loại đế '${shoeSoleToDelete?.name}'?`"
       description="Hành động này không thể hoàn tác."
-      confirm-text="Xóa thương hiệu"
+      confirm-text="Xóa loại đế"
       cancel-text="Hủy"
       :loading="deleting"
-      @confirm="deleteBrand"
+      @confirm="deleteShoeSole"
     />
   </div>
 </template>
@@ -378,13 +297,13 @@ const adminStore = useAdminStore();
 const loading = ref(false);
 const saving = ref(false);
 const deleting = ref(false);
-const brands = ref([]);
+const shoeSoles = ref([]);
 const searchKeyword = ref("");
 const filterStatus = ref("all");
 const showModal = ref(false);
 const showDeleteModal = ref(false);
 const isEditMode = ref(false);
-const brandToDelete = ref(null);
+const shoeSoleToDelete = ref(null);
 const currentPage = ref(1);
 const itemsPerPage = 10;
 
@@ -393,64 +312,63 @@ const formData = ref({
   id: null,
   name: "",
   slug: "",
-  logoUrl: "",
-  websiteUrl: "",
   description: "",
   isActive: true,
 });
 
+// (Optional) form errors if bạn có validate từ BE
+const formErrors = ref({});
+
 // Computed
-const filteredBrands = computed(() => {
-  let result = brands.value;
+const filteredShoeSoles = computed(() => {
+  let result = shoeSoles.value;
 
   // Filter by search
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase();
     result = result.filter(
-      (brand) =>
-        brand.name.toLowerCase().includes(keyword) ||
-        brand.slug.toLowerCase().includes(keyword)
+      (item) =>
+        item.name.toLowerCase().includes(keyword) ||
+        item.slug.toLowerCase().includes(keyword)
     );
   }
 
   // Filter by status
   if (filterStatus.value !== "all") {
     const isActive = filterStatus.value === "active";
-    result = result.filter((brand) => brand.isActive === isActive);
+    result = result.filter((item) => item.isActive === isActive);
   }
 
   return result;
 });
 
-const paginatedBrands = computed(() => {
+const paginatedShoeSoles = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
-  return filteredBrands.value.slice(start, end);
+  return filteredShoeSoles.value.slice(start, end);
 });
 
-const totalPages = computed(() => {
-  return Math.ceil(filteredBrands.value.length / itemsPerPage);
-});
+const totalPages = computed(() =>
+  Math.ceil(filteredShoeSoles.value.length / itemsPerPage)
+);
 
-const activeBrandsCount = computed(() => {
-  return brands.value.filter((b) => b.isActive).length;
-});
-
-const inactiveBrandsCount = computed(() => {
-  return brands.value.filter((b) => !b.isActive).length;
-});
+const activeShoeSolesCount = computed(
+  () => shoeSoles.value.filter((b) => b.isActive).length
+);
+const inactiveShoeSolesCount = computed(
+  () => shoeSoles.value.filter((b) => !b.isActive).length
+);
 
 // Methods
-const fetchBrands = async () => {
+const fetchSoles = async () => {
   loading.value = true;
   try {
-    const result = await adminStore.fetchBrands();
-    brands.value = result.content || result || [];
+    const result = await adminStore.fetchSoles();
+    shoeSoles.value = result.content || result || [];
   } catch (error) {
-    console.error("Error fetching brands:", error);
-    // alert("Lỗi khi tải danh sách thương hiệu");
+    console.error("Error fetching shoe soles:", error);
     ElMessage.error({
-      message: "Lỗi khi tải danh sách thương hiệu",
+      message: "Lỗi khi tải danh sách loại đế",
       duration: 3000,
     });
   } finally {
@@ -464,17 +382,17 @@ const openCreateModal = () => {
     id: null,
     name: "",
     slug: "",
-    logoUrl: "",
-    websiteUrl: "",
     description: "",
     isActive: true,
   };
+  formErrors.value = {};
   showModal.value = true;
 };
 
-const openEditModal = (brand) => {
+const openEditModal = (sole) => {
   isEditMode.value = true;
-  formData.value = { ...brand };
+  formData.value = { ...sole };
+  formErrors.value = {};
   showModal.value = true;
 };
 
@@ -484,11 +402,10 @@ const closeModal = () => {
     id: null,
     name: "",
     slug: "",
-    logoUrl: "",
-    websiteUrl: "",
     description: "",
     isActive: true,
   };
+  formErrors.value = {};
 };
 
 const generateSlug = () => {
@@ -503,28 +420,28 @@ const generateSlug = () => {
     .trim();
 };
 
-const saveBrand = async () => {
+const saveShoeSole = async () => {
   saving.value = true;
   try {
     if (isEditMode.value) {
-      await adminStore.updateBrand(formData.value.id, formData.value);
+      await adminStore.updateSole(formData.value.id, formData.value);
     } else {
-      await adminStore.createBrand(formData.value);
+      await adminStore.createSole(formData.value);
     }
-    await fetchBrands();
+    await fetchSoles();
     closeModal();
-    // alert(`${isEditMode.value ? "Cập nhật" : "Thêm"} thương hiệu thành công!`);
     ElMessage.success({
-      message: `${
-        isEditMode.value ? "Cập nhật" : "Thêm"
-      } thương hiệu thành công!`,
+      message: `${isEditMode.value ? "Cập nhật" : "Thêm"} loại đế thành công!`,
       duration: 3000,
     });
   } catch (error) {
-    console.error("Error saving brand:", error);
-    // alert("Lỗi khi lưu thương hiệu");
+    console.error("Error saving shoe sole:", error);
+
+    // Nếu BE trả về lỗi validate, bạn có thể map vào formErrors
+    // ví dụ: if (error.response?.data?.validationErrors) { ... }
+
     ElMessage.error({
-      message: "Lỗi khi lưu thương hiệu",
+      message: "Lỗi khi lưu loại đế",
       duration: 3000,
     });
   } finally {
@@ -532,28 +449,26 @@ const saveBrand = async () => {
   }
 };
 
-const confirmDelete = (brand) => {
-  brandToDelete.value = brand;
+const confirmDelete = (sole) => {
+  shoeSoleToDelete.value = sole;
   showDeleteModal.value = true;
 };
 
-const deleteBrand = async () => {
+const deleteShoeSole = async () => {
   deleting.value = true;
   try {
-    await adminStore.deleteBrand(brandToDelete.value.id);
-    await fetchBrands();
+    await adminStore.deleteShoeSole(shoeSoleToDelete.value.id);
+    await fetchSoles();
     showDeleteModal.value = false;
-    brandToDelete.value = null;
-    // alert("Xóa thương hiệu thành công!");
+    shoeSoleToDelete.value = null;
     ElMessage.success({
-      message: "Xóa thương hiệu thành công!",
+      message: "Xóa loại đế thành công!",
       duration: 3000,
     });
   } catch (error) {
-    console.error("Error deleting brand:", error);
-    // alert("Lỗi khi xóa thương hiệu");
+    console.error("Error deleting shoe sole:", error);
     ElMessage.error({
-      message: "Lỗi khi xóa thương hiệu",
+      message: "Lỗi khi xóa loại đế",
       duration: 3000,
     });
   } finally {
@@ -578,21 +493,19 @@ const truncateText = (text, maxLength) => {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
-const handleImageError = (e) => {
-  e.target.style.display = "none";
-};
-
 // Lifecycle
 onMounted(() => {
-  fetchBrands();
+  fetchSoles();
 });
 </script>
 
 <style scoped>
-/* ═══════════════════════════════════════════════════════════════════
-   VIEW-SPECIFIC STYLES ONLY
-   All common styles (buttons, forms, tables, modals) use Design System v2.0
-   ═══════════════════════════════════════════════════════════════════ */
+.page-title .material-icons {
+  font-size: 2rem;
+  color: var(--accent-primary);
+  animation: pulse 2s ease-in-out infinite;
+}
+
 /* ===== STATS GRID (Aurora v2) ===== */
 .stats-grid {
   display: grid;
@@ -660,89 +573,7 @@ onMounted(() => {
   letter-spacing: 0.5px;
 }
 
-.page-title .material-icons {
-  font-size: 2rem;
-  color: var(--accent-primary);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-/* Brand Logo */
-.brand-logo {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--dark-bg-glass-light);
-  border: 1px solid var(--dark-border-primary);
-}
-
-.brand-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.logo-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  font-size: 1.5rem;
-}
-
-/* Brand Info */
-.brand-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.brand-info strong {
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-.brand-desc {
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-  margin: 0;
-}
-
-/* Code Badge */
-.code-badge {
-  background: rgba(167, 139, 250, 0.1);
-  color: var(--primary-light);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-}
-
-/* Website Link */
-.website-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  color: var(--primary-light);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  transition: var(--transition-fast);
-}
-
-.website-link:hover {
-  color: var(--primary-color);
-  text-decoration: underline;
-}
-
-.website-link .material-icons {
-  font-size: 16px;
-}
-
-/* ===== FILTER SECTION (chuẩn Aurora Admin v2) ===== */
+/* ===== FILTER SECTION ===== */
 .content-section {
   background: var(--bg-secondary);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -751,7 +582,6 @@ onMounted(() => {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
-/* Lưới 2 cột filters */
 .filters-grid {
   display: flex;
   align-items: flex-end;
@@ -763,11 +593,11 @@ onMounted(() => {
 .filter-item {
   display: flex;
   flex-direction: column;
-  flex: 0 0 220px; /* Ô trạng thái cố định */
+  flex: 0 0 220px; /* Mặc định kích thước cho ô trạng thái */
 }
 
 .filter-item.wide {
-  flex: 1; /* Ô tìm kiếm giãn hết chiều ngang còn lại */
+  flex: 1; /* Ô tìm kiếm giãn hết phần còn lại */
   min-width: 350px;
 }
 
@@ -775,13 +605,13 @@ onMounted(() => {
 .filter-label {
   display: flex;
   align-items: center;
-  gap: 6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   margin-bottom: 6px;
   text-transform: uppercase;
+  gap: 4px;
 }
 
 .filter-label .material-icons {
@@ -789,7 +619,7 @@ onMounted(() => {
   opacity: 0.8;
 }
 
-/* Ô nhập và select */
+/* Ô nhập chung */
 .filter-input-wrapper {
   position: relative;
   display: flex;
@@ -805,9 +635,8 @@ onMounted(() => {
   box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.25);
 }
 
-/* Input text và select thống nhất */
-.filter-input,
-.filter-select {
+/* Input text */
+.filter-input {
   width: 100%;
   background: transparent;
   border: none;
@@ -817,11 +646,24 @@ onMounted(() => {
   color: var(--text-primary);
 }
 
+/* Dropdown */
+.filter-select {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.6rem 0.75rem;
+  font-size: 14px;
+  color: var(--text-primary);
+  appearance: none;
+  cursor: pointer;
+}
+
 .filter-select option {
   color: #000;
 }
 
-/* Responsive (mobile-friendly) */
+/* Responsive */
 @media (max-width: 768px) {
   .filters-grid {
     flex-direction: column;
@@ -833,6 +675,12 @@ onMounted(() => {
     flex: 1;
     width: 100%;
   }
+}
+
+.brand-desc {
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  margin: 0;
 }
 
 /* ===== OVERLAY ===== */
@@ -849,16 +697,12 @@ onMounted(() => {
 
 /* ===== MODAL ===== */
 .aurora-modal {
-  width: 500px;
+  width: 480px;
   background: linear-gradient(145deg, #141726 0%, #1a1f33 100%);
   border-radius: 16px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
   overflow: hidden;
   animation: fadeInUp 0.25s ease;
-}
-
-.aurora-modal-lg {
-  width: 540px;
 }
 
 @keyframes fadeInUp {
@@ -886,8 +730,8 @@ onMounted(() => {
 .modal-title {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   font-size: 1.1rem;
+  gap: 0.5rem;
 }
 
 .modal-title .material-icons {
@@ -1021,7 +865,7 @@ onMounted(() => {
   transform: translateY(-1px);
 }
 
-/* ===== BẢNG THƯƠNG HIỆU (Aurora Style) ===== */
+/* ===== TABLE LAYOUT ===== */
 .table-container {
   background: rgba(255, 255, 255, 0.02);
   border-radius: 12px;
@@ -1030,11 +874,13 @@ onMounted(() => {
   overflow: hidden;
 }
 
+/* Bảng chính */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
-  font-size: 15px;
+  table-layout: fixed; /* ⚡ Giữ cột cố định, không lệch khi text khác độ dài */
+  font-size: 15.5px; /* 🔍 Tăng cỡ chữ bảng */
+  line-height: 1.6;
 }
 
 .admin-table thead {
@@ -1042,28 +888,27 @@ onMounted(() => {
 }
 
 .admin-table th {
-  text-align: left;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   color: var(--text-secondary);
-  padding: 0.9rem 1rem;
+  padding: 1rem; /* ⬆ tăng padding cho cân đối hơn */
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* Dòng dữ liệu */
 .admin-table td {
-  padding: 0.9rem 1rem;
-  color: #d5d9e4;
+  padding: 1rem;
+  color: #e2e6f0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   vertical-align: middle;
-  word-break: break-word;
 }
 
 .admin-table tr:hover td {
   background: rgba(255, 255, 255, 0.03);
 }
 
-/* ===== Căn chỉnh cột ===== */
+/* ===== Độ rộng các cột cố định (chuẩn cho toàn hệ thống) ===== */
 .admin-table th:nth-child(1),
 .admin-table td:nth-child(1) {
   text-align: center;
@@ -1073,6 +918,7 @@ onMounted(() => {
 .admin-table td:nth-child(2) {
   text-align: center;
 }
+
 .admin-table th:nth-child(3),
 .admin-table td:nth-child(3),
 .admin-table th:nth-child(4),
@@ -1080,20 +926,92 @@ onMounted(() => {
 .admin-table th:nth-child(5),
 .admin-table td:nth-child(5),
 .admin-table th:nth-child(6),
-.admin-table td:nth-child(6),
-.admin-table th:nth-child(7),
-.admin-table td:nth-child(7) {
+.admin-table td:nth-child(6) {
   text-align: center;
 }
 
-/* ===== Mô tả ngắn ===== */
+/* ===== Mô tả phụ ===== */
+.desc,
+.brand-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* ===== Code badge ===== */
+.code-badge {
+  background: rgba(122, 92, 255, 0.12);
+  color: #b49cff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+
+/* ===== Status badge ===== */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.status-active {
+  color: #79ffb0;
+  border-color: rgba(121, 255, 176, 0.25);
+}
+
+.status-inactive {
+  color: #ff8a8a;
+  border-color: rgba(255, 138, 138, 0.25);
+}
+
+.status-badge .material-icons {
+  font-size: 17px;
+}
+
+/* ===== Action buttons ===== */
+.cell-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  color: #d5d9e4;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: rgba(122, 92, 255, 0.15);
+  color: #fff;
+}
+
+/* ===== Tăng tương phản đầu bảng ===== */
+.admin-table thead th {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ===== DESCRIPTION BELOW NAME ===== */
 .desc {
   color: var(--text-tertiary);
   font-size: 13px;
   margin-top: 2px;
 }
 
-/* ===== Badge code ===== */
+/* ===== CODE BADGE ===== */
 .code-badge {
   background: rgba(122, 92, 255, 0.1);
   color: #9f83ff;
@@ -1103,7 +1021,7 @@ onMounted(() => {
   font-family: var(--font-mono);
 }
 
-/* ===== Trạng thái ===== */
+/* ===== STATUS BADGE ===== */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -1129,42 +1047,7 @@ onMounted(() => {
   font-size: 16px;
 }
 
-/* ===== Logo ===== */
-.brand-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  margin: 0 auto;
-}
-.brand-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.logo-placeholder {
-  color: var(--text-tertiary);
-}
-
-/* ===== Website Link ===== */
-.website-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #a88eff;
-  text-decoration: none;
-  font-size: 14px;
-}
-.website-link:hover {
-  text-decoration: underline;
-}
-
-/* ===== Nút thao tác ===== */
+/* ===== ACTION BUTTONS ===== */
 .cell-actions {
   display: flex;
   justify-content: center;
@@ -1180,6 +1063,7 @@ onMounted(() => {
   color: #d5d9e4;
   transition: all 0.2s ease;
 }
+
 .btn-icon:hover {
   background: rgba(122, 92, 255, 0.15);
   color: #fff;

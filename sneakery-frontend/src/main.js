@@ -14,6 +14,15 @@ import './assets/styles/main.css' // 🎨 Modular CSS Architecture với 25+ fil
 const app = createApp(App)
 const pinia = createPinia() // 👈 2. Tạo một instance của Pinia
 
+// ⚙️ Cấu hình mặc định
+ElMessage.defaults = {
+  offset: 20,      // cách mép trên 20px
+  showClose: true, // có nút đóng
+  grouping: false, // không gộp
+  center: false,
+  customClass: 'aurora-message'
+}
+
 // ============================================
 // 🔐 AXIOS INTERCEPTOR - TỰ ĐỘNG GỬI JWT TOKEN
 // ============================================
