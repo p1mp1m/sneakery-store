@@ -1,13 +1,15 @@
 package com.sneakery.store.service;
 
-import com.sneakery.store.dto.AuthResponseDto;
-import com.sneakery.store.dto.LoginDto;
-import com.sneakery.store.dto.RegisterDto;
+import com.sneakery.store.dto.*;
+import com.sneakery.store.entity.PasswordResetToken;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.exception.ApiException;
+import com.sneakery.store.repository.PasswordResetTokenRepository;
 import com.sneakery.store.repository.UserRepository;
 import com.sneakery.store.security.JwtTokenProvider;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,6 +17,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,17 +29,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
+    private final PasswordResetTokenRepository tokenRepository;
+
+    @Value("${app.reset.token-expire-minutes:30}")
+    private int expireMinutes;
 
     /**
-     * Xử lý logic Đăng ký
+     * Đăng ký
      */
     public AuthResponseDto register(RegisterDto registerDto) {
-        // 1. Kiểm tra email đã tồn tại chưa
         if (userRepository.existsByEmail(registerDto.getEmail())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Email đã tồn tại!");
         }
 
-        // 2. Tạo đối tượng User
         User user = User.builder()
                 .fullName(registerDto.getFullName())
                 .email(registerDto.getEmail())
@@ -44,81 +52,78 @@ public class AuthService {
                 .isActive(true)
                 .build();
 
-        // 3. Lưu vào CSDL
         userRepository.save(user);
 
-        // 4. Tự động đăng nhập user sau khi đăng ký thành công
-
-        // SỬA LỖI: Thay vì dùng new LoginDto(email, pass),
-        // chúng ta dùng hàm khởi tạo rỗng và các hàm setter
         LoginDto loginDto = new LoginDto();
         loginDto.setEmail(registerDto.getEmail());
         loginDto.setPassword(registerDto.getPassword());
-
-        return login(loginDto); // Gọi hàm login() ở dưới
+        return login(loginDto);
     }
 
     /**
-     * Xử lý logic Đăng nhập
+     * Đăng nhập
      */
     public AuthResponseDto login(LoginDto loginDto) {
-    final String email = loginDto.getEmail();
-    final String raw = loginDto.getPassword();
+        final String email = loginDto.getEmail();
+        final String raw = loginDto.getPassword();
 
-    // 🔍 B1: Log input (chỉ bật tạm khi debug; không log password ở prod)
-    System.out.println("🧩 Login attempt -> email=" + email + ", raw=" + raw);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, raw)
+        );
 
-    // 🔍 B2: Tìm user theo email và so khớp BCrypt trước khi authenticate
-    userRepository.findByEmail(email).ifPresentOrElse(u -> {
-        System.out.println("🧩 Stored hash: " + u.getPasswordHash());
-        boolean matches = passwordEncoder.matches(raw, u.getPasswordHash());
-        System.out.println("🧩 BCrypt matches? " + matches);
-    }, () -> {
-        System.out.println("🧩 User not found with email=" + email);
-    });
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtTokenProvider.generateToken(authentication);
 
-    // 🔐 B3: Xác thực
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(email, raw)
-    );
+        User user = (User) authentication.getPrincipal();
+        return AuthResponseDto.builder()
+                .accessToken(token)
+                .role(user.getRole())
+                .fullName(user.getFullName())
+                .userId(user.getId())
+                .build();
+    }
 
-    // ✅ B4: Set security context
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+    // -------------------- FORGOT PASSWORD --------------------
+    @Transactional
+    public void forgotPassword(String email) {
+        var userOpt = userRepository.findByEmailIgnoreCase(email);
+        if (userOpt.isEmpty()) return;
 
-    // 🔑 B5: Tạo JWT
-    String token = jwtTokenProvider.generateToken(authentication);
+        var user = userOpt.get();
+        if (Boolean.FALSE.equals(user.getIsActive())) return;
 
-    // 👤 B6: Trả về info
-    User user = (User) authentication.getPrincipal();
-    return AuthResponseDto.builder()
-            .accessToken(token)
-            .role(user.getRole())
-            .fullName(user.getFullName())
-            .userId(user.getId())
-            .build();
-}
+        // Xoá token cũ (nếu có)
+        tokenRepository.deleteByUser(user);
 
-    // public AuthResponseDto login(LoginDto loginDto) {
-    //     // 1. Xác thực (email + password)
-    //     Authentication authentication = authenticationManager.authenticate(
-    //             new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
-    //     );
+        // Tạo token mới
+        PasswordResetToken token = new PasswordResetToken();
+        token.setUser(user);
+        token.setToken(UUID.randomUUID().toString());
+        token.setExpiryDate(LocalDateTime.now().plusMinutes(expireMinutes));
+        tokenRepository.save(token);
 
-    //     // 2. Nếu thành công, lưu thông tin xác thực vào SecurityContext
-    //     SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Gửi email
+        emailService.sendResetPasswordEmail(user, token.getToken());
+    }
 
-    //     // 3. Tạo JWT token
-    //     String token = jwtTokenProvider.generateToken(authentication);
+    // -------------------- RESET PASSWORD --------------------
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        var prt = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token không hợp lệ"));
 
-    //     // 4. Lấy thông tin User (đã được xác thực)
-    //     User user = (User) authentication.getPrincipal();
+        if (prt.getUsedAt() != null)
+            throw new IllegalStateException("Token đã được sử dụng");
 
-    //     // 5. Trả về DTO chứa token và thông tin user cho VueJS
-    //     return AuthResponseDto.builder()
-    //             .accessToken(token)
-    //             .role(user.getRole())
-    //             .fullName(user.getFullName())
-    //             .userId(user.getId())
-    //             .build();
-    // }
+        if (LocalDateTime.now().isAfter(prt.getExpiryDate()))
+            throw new IllegalStateException("Token đã hết hạn");
+
+        var user = prt.getUser();
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Đánh dấu đã dùng
+        prt.setUsedAt(LocalDateTime.now());
+        tokenRepository.save(prt);
+    }
 }
