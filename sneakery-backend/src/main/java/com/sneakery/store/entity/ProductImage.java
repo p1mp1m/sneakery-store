@@ -64,7 +64,9 @@ public class ProductImage {
     @Schema(description = "Thời điểm ảnh được thêm vào hệ thống")
     private LocalDateTime createdAt;
 
-    @Column(name = "cloudinary_public_id", length = 255)
+    /** Cloudinary Public ID - dùng để xóa ảnh trên Cloudinary */
+    @Column(name = "cloudinary_public_id", length = 255, nullable = true)
+    @Schema(description = "Public ID từ Cloudinary (dùng để xóa ảnh)")
     private String cloudinaryPublicId;
 
     /** Thiết lập mặc định khi thêm mới */

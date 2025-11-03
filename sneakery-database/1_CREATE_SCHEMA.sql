@@ -267,6 +267,7 @@ CREATE TABLE Product_Images (
     alt_text NVARCHAR(255),
     is_primary BIT DEFAULT 0,
     display_order INT DEFAULT 0,
+    cloudinary_public_id VARCHAR(255) NULL,
     
     created_at DATETIME2 DEFAULT GETDATE(),
     

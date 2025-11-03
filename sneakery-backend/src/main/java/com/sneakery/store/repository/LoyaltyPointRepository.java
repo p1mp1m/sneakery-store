@@ -1,6 +1,9 @@
 package com.sneakery.store.repository;
 
 import com.sneakery.store.entity.LoyaltyPoint;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -65,5 +68,13 @@ public interface LoyaltyPointRepository extends JpaRepository<LoyaltyPoint, Long
            "AND lp.expiresAt <= :now " +
            "AND lp.transactionType = 'earn'")
     List<LoyaltyPoint> findExpiredPoints(@Param("now") LocalDateTime now);
+
+    /**
+     * Lấy tất cả loyalty points với User được load cùng lúc thông qua EntityGraph
+     * Để tránh LazyInitializationException
+     */
+    @EntityGraph(value = "LoyaltyPoint.withUser", type = EntityGraph.EntityGraphType.FETCH)
+    @Query("SELECT lp FROM LoyaltyPoint lp")
+    Page<LoyaltyPoint> findAllWithUser(Pageable pageable);
 }
 

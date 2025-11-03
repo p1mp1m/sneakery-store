@@ -267,9 +267,40 @@ const adminRoutes = [
     meta: { title: "Quản lý thông báo", icon: "notifications" },
   },
   {
-    path: "/admin/settings",
-    name: "AdminSettings",
+    id: "management-menu",
     meta: { title: "Quản lý hệ thống", icon: "settings" },
+    children: [
+      {
+        path: "/admin/inventory",
+        name: "AdminInventory",
+        meta: { title: "Quản lý kho", icon: "inventory_2" },
+      },
+      {
+        path: "/admin/payments",
+        name: "AdminPayments",
+        meta: { title: "Thanh toán", icon: "payment" },
+      },
+      {
+        path: "/admin/loyalty",
+        name: "AdminLoyalty",
+        meta: { title: "Điểm thưởng", icon: "stars" },
+      },
+      {
+        path: "/admin/activity-logs",
+        name: "AdminActivityLogs",
+        meta: { title: "Nhật ký hoạt động", icon: "history" },
+      },
+      {
+        path: "/admin/email-templates",
+        name: "AdminEmailTemplates",
+        meta: { title: "Mẫu email", icon: "email" },
+      },
+      {
+        path: "/admin/settings",
+        name: "AdminSettings",
+        meta: { title: "Cài đặt", icon: "settings" },
+      },
+    ],
   },
 ];
 

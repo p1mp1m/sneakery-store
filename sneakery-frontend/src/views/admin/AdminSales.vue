@@ -249,11 +249,135 @@
         </div>
       </div>
     </div>
+
+    <!-- Shortcuts Modal -->
+    <div v-if="showShortcuts" class="modal-overlay" @click="showShortcuts = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <span class="material-icons">keyboard</span>
+            Phím tắt
+          </h2>
+          <button @click="showShortcuts = false" class="modal-close">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="shortcuts-list">
+            <div class="shortcut-item">
+              <div class="shortcut-key">
+                <kbd>Ctrl</kbd> + <kbd>K</kbd>
+              </div>
+              <div class="shortcut-description">Mở/đóng thanh tìm kiếm</div>
+            </div>
+            <div class="shortcut-item">
+              <div class="shortcut-key">
+                <kbd>Ctrl</kbd> + <kbd>B</kbd>
+              </div>
+              <div class="shortcut-description">Mở/đóng quét mã vạch</div>
+            </div>
+            <div class="shortcut-item">
+              <div class="shortcut-key">
+                <kbd>Enter</kbd>
+              </div>
+              <div class="shortcut-description">Thêm sản phẩm vào giỏ hàng</div>
+            </div>
+            <div class="shortcut-item">
+              <div class="shortcut-key">
+                <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+              </div>
+              <div class="shortcut-description">Thanh toán đơn hàng</div>
+            </div>
+            <div class="shortcut-item">
+              <div class="shortcut-key">
+                <kbd>Esc</kbd>
+              </div>
+              <div class="shortcut-description">Đóng modal/hủy thao tác</div>
+            </div>
+            <div class="shortcut-item">
+              <div class="shortcut-key">
+                <kbd>Ctrl</kbd> + <kbd>R</kbd>
+              </div>
+              <div class="shortcut-description">Làm mới giỏ hàng</div>
+            </div>
+            <div class="shortcut-item">
+              <div class="shortcut-key">
+                <kbd>+</kbd> / <kbd>-</kbd>
+              </div>
+              <div class="shortcut-description">Tăng/giảm số lượng sản phẩm</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="showShortcuts = false" class="btn btn-primary">
+            <span class="material-icons">check</span>
+            Đã hiểu
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div v-if="showHistory" class="modal-overlay" @click="showHistory = false">
+      <div class="modal-content modal-large" @click.stop>
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <span class="material-icons">history</span>
+            Lịch sử bán hàng
+          </h2>
+          <button @click="showHistory = false" class="modal-close">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div v-if="loadingHistory" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Đang tải lịch sử...</p>
+          </div>
+          <div v-else-if="salesHistory.length === 0" class="empty-state">
+            <span class="material-icons">history</span>
+            <p>Chưa có lịch sử bán hàng</p>
+          </div>
+          <div v-else class="history-list">
+            <div v-for="order in salesHistory" :key="order.id" class="history-item">
+              <div class="history-icon">
+                <span class="material-icons">receipt</span>
+              </div>
+              <div class="history-content">
+                <div class="history-header">
+                  <h4>{{ order.orderNumber || `Đơn hàng #${order.id}` }}</h4>
+                  <span class="history-date">{{ formatDate(order.createdAt) }}</span>
+                </div>
+                <div class="history-details">
+                  <span class="history-amount">{{ formatCurrency(order.totalAmount) }}</span>
+                  <span class="history-payment">{{ getPaymentMethodLabel(order.paymentMethod) }}</span>
+                </div>
+                <div v-if="order.items" class="history-items">
+                  <span v-for="(item, idx) in order.items.slice(0, 3)" :key="idx" class="item-tag">
+                    {{ item.name }} x{{ item.quantity }}
+                  </span>
+                  <span v-if="order.items.length > 3" class="item-tag">+{{ order.items.length - 3 }} sản phẩm</span>
+                </div>
+              </div>
+              <button @click="viewOrderDetails(order)" class="btn-icon btn-view" title="Xem chi tiết">
+                <span class="material-icons">visibility</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="showHistory = false" class="btn btn-secondary">
+            <span class="material-icons">close</span>
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 
@@ -276,6 +400,10 @@ const showBarcode = ref(false)
 const barcodeValue = ref('')
 const showReceipt = ref(false)
 const currentReceipt = ref(null)
+const showShortcuts = ref(false)
+const showHistory = ref(false)
+const salesHistory = ref([])
+const loadingHistory = ref(false)
 
 // Computed
 const subtotal = computed(() => {
@@ -482,9 +610,124 @@ const formatCurrency = (value) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
 }
 
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date)
+}
+
+const getPaymentMethodLabel = (method) => {
+  const labels = {
+    cash: 'Tiền mặt',
+    card: 'Thẻ',
+    bank: 'Chuyển khoản',
+    online: 'Online'
+  }
+  return labels[method] || method
+}
+
+const loadSalesHistory = async () => {
+  try {
+    loadingHistory.value = true
+    const result = await adminStore.fetchOrders(0, 50, { 
+      status: 'completed',
+      sortBy: 'createdAt',
+      sortDirection: 'desc'
+    })
+    salesHistory.value = result.content || result || []
+  } catch (error) {
+    console.error('Error loading sales history:', error)
+    ElMessage.error('Không thể tải lịch sử bán hàng')
+    salesHistory.value = []
+  } finally {
+    loadingHistory.value = false
+  }
+}
+
+const viewOrderDetails = (order) => {
+  // Hiển thị chi tiết đơn hàng
+  currentReceipt.value = order
+  showReceipt.value = true
+  showHistory.value = false
+}
+
+// Watch showHistory để load data khi mở modal
+watch(showHistory, (newValue) => {
+  if (newValue) {
+    loadSalesHistory()
+  }
+})
+
+// Keyboard shortcuts
+const handleKeydown = (event) => {
+  // Ctrl + K: Toggle search
+  if (event.ctrlKey && event.key === 'k') {
+    event.preventDefault()
+    const searchInput = document.querySelector('.search-input')
+    if (searchInput) {
+      searchInput.focus()
+    }
+  }
+  
+  // Ctrl + B: Toggle barcode scanner
+  if (event.ctrlKey && event.key === 'b') {
+    event.preventDefault()
+    showBarcode.value = !showBarcode.value
+    if (showBarcode.value) {
+      setTimeout(() => {
+        const barcodeInput = document.querySelector('.barcode-input')
+        if (barcodeInput) {
+          barcodeInput.focus()
+        }
+      }, 100)
+    }
+  }
+  
+  // Ctrl + Enter: Process order
+  if (event.ctrlKey && event.key === 'Enter') {
+    event.preventDefault()
+    if (cartItems.value.length > 0) {
+      processOrder()
+    }
+  }
+  
+  // Ctrl + R: Reset cart
+  if (event.ctrlKey && event.key === 'r') {
+    event.preventDefault()
+    resetCart()
+  }
+  
+  // Esc: Close modals
+  if (event.key === 'Escape') {
+    if (showReceipt.value) {
+      showReceipt.value = false
+    }
+    if (showShortcuts.value) {
+      showShortcuts.value = false
+    }
+    if (showHistory.value) {
+      showHistory.value = false
+    }
+    if (showBarcode.value) {
+      showBarcode.value = false
+    }
+  }
+}
+
 // Load data on mount
 onMounted(() => {
   loadData()
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -1254,6 +1497,483 @@ onMounted(() => {
   justify-content: center;
   z-index: 9999;
   animation: fadeIn 0.2s ease-out;
+  padding: var(--space-4);
+}
+
+.modal-content {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(167, 139, 250, 0.05) 100%);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: 0;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.1);
+  animation: slideUp 0.3s ease-out;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  z-index: 1;
+}
+
+.modal-large {
+  max-width: 900px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-6);
+  border-bottom: 2px solid var(--border-primary);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, transparent 100%);
+  position: relative;
+  z-index: 0;
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modal-title .material-icons {
+  font-size: 1.5rem;
+  color: var(--accent-primary);
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(167, 139, 250, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.modal-close:hover {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+  border-color: var(--accent-primary);
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  background: rgba(167, 139, 250, 0.02);
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+.modal-footer {
+  padding: var(--space-6);
+  border-top: 2px solid var(--border-primary);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.05) 0%, transparent 100%);
+}
+
+.modal-footer .btn {
+  min-width: 120px;
+  font-weight: var(--font-semibold);
+  transition: all 0.3s ease;
+}
+
+.modal-footer .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.3);
+}
+
+/* Shortcuts Modal */
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(167, 139, 250, 0.05) 100%);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.shortcut-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gradient-primary);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.shortcut-item:hover {
+  border-color: var(--accent-primary);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.2);
+}
+
+.shortcut-item:hover::before {
+  transform: scaleY(1);
+}
+
+.shortcut-key {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.shortcut-key kbd {
+  padding: var(--space-2) var(--space-4);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(167, 139, 250, 0.1) 100%);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+
+.shortcut-key kbd:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-primary);
+}
+
+.shortcut-key kbd:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.shortcut-description {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+  transition: color 0.2s ease;
+}
+
+.shortcut-item:hover .shortcut-description {
+  color: var(--text-primary);
+}
+
+/* History Modal */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(167, 139, 250, 0.05) 100%);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.history-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--gradient-primary);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.history-item:hover {
+  border-color: var(--accent-primary);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%);
+  transform: translateX(4px);
+  box-shadow: 0 8px 24px rgba(167, 139, 250, 0.25);
+}
+
+.history-item:hover::before {
+  transform: scaleY(1);
+}
+
+.history-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.history-icon::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: rotate(45deg);
+  transition: transform 0.6s ease;
+}
+
+.history-item:hover .history-icon::before {
+  transform: rotate(45deg) translate(100%, 100%);
+}
+
+.history-item:hover .history-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(167, 139, 250, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.history-icon .material-icons {
+  font-size: 1.75rem;
+  color: var(--color-white);
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.history-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.history-header h4 {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.history-date {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(167, 139, 250, 0.1);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  font-weight: var(--font-medium);
+}
+
+.history-details {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.history-amount {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, rgba(167, 139, 250, 0.8) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
+}
+
+.history-payment {
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.15) 0%, rgba(167, 139, 250, 0.05) 100%);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  font-weight: var(--font-semibold);
+  transition: all 0.2s ease;
+}
+
+.history-item:hover .history-payment {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.25) 0%, rgba(167, 139, 250, 0.15) 100%);
+  border-color: var(--accent-primary);
+  transform: scale(1.05);
+}
+
+.history-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.item-tag {
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  font-weight: var(--font-medium);
+  transition: all 0.2s ease;
+}
+
+.item-tag:hover {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.2) 0%, rgba(167, 139, 250, 0.1) 100%);
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: rgba(167, 139, 250, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.btn-icon:hover {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+  border-color: var(--accent-primary);
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.4);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+.btn-view .material-icons {
+  font-size: 1.25rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.empty-state .material-icons {
+  font-size: 5rem;
+  margin-bottom: var(--space-4);
+  opacity: 0.3;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, rgba(167, 139, 250, 0.5) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+.empty-state p {
+  font-size: var(--text-base);
+  margin: 0;
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .receipt {

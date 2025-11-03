@@ -9,10 +9,65 @@
         </h1>
         <p class="page-subtitle">Theo dõi và cập nhật trạng thái đơn hàng</p>
       </div>
-      <button @click="exportToExcel" class="btn btn-secondary btn-export">
-        <i class="material-icons">download</i>
-        Export Excel
-      </button>
+      <div class="header-actions">
+        <button @click="exportToExcel" class="btn btn-secondary btn-export">
+          <i class="material-icons">download</i>
+          Export Excel
+        </button>
+        <button @click="exportToPDF" class="btn btn-secondary btn-export">
+          <i class="material-icons">picture_as_pdf</i>
+          Export PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid animate-fade-up">
+      <div class="stat-card stat-total">
+        <div class="stat-icon">
+          <i class="material-icons">shopping_bag</i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Tổng đơn hàng</div>
+          <div class="stat-value">{{ stats.totalOrders }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-pending">
+        <div class="stat-icon">
+          <i class="material-icons">schedule</i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Chờ xử lý</div>
+          <div class="stat-value">{{ stats.pendingOrders }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-processing">
+        <div class="stat-icon">
+          <i class="material-icons">refresh</i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Đang xử lý</div>
+          <div class="stat-value">{{ stats.processingOrders }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-completed">
+        <div class="stat-icon">
+          <i class="material-icons">check_circle</i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Hoàn thành</div>
+          <div class="stat-value">{{ stats.completedOrders }}</div>
+        </div>
+      </div>
+      <div class="stat-card stat-revenue">
+        <div class="stat-icon">
+          <i class="material-icons">attach_money</i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-label">Doanh thu hôm nay</div>
+          <div class="stat-value">{{ formatCurrency(stats.todayRevenue) }}</div>
+        </div>
+      </div>
     </div>
 
     <!-- Search & Filters -->
@@ -47,6 +102,26 @@
             <option value="Completed">Hoàn thành</option>
             <option value="Cancelled">Đã hủy</option>
           </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Từ ngày</label>
+          <input 
+            v-model="filters.startDate" 
+            @change="applyFilters" 
+            type="date" 
+            class="form-control date-input"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label>Đến ngày</label>
+          <input 
+            v-model="filters.endDate" 
+            @change="applyFilters" 
+            type="date" 
+            class="form-control date-input"
+          />
         </div>
 
         <button @click="resetFilters" class="btn-reset" title="Xóa tất cả bộ lọc">
@@ -147,9 +222,22 @@
             </td>
             <td>{{ formatDate(order.createdAt) }}</td>
             <td class="text-center">
-              <button @click="viewOrderDetail(order)" class="btn-icon" title="Xem chi tiết">
-            <i class="material-icons">visibility</i>
-              </button>
+              <div class="action-buttons">
+                <button @click="viewOrderDetail(order)" class="btn-icon btn-view" title="Xem chi tiết">
+                  <i class="material-icons">visibility</i>
+                </button>
+                <button @click="handlePrintInvoice(order)" class="btn-icon btn-print" title="In hóa đơn">
+                  <i class="material-icons">print</i>
+                </button>
+                <button 
+                  v-if="order.status !== 'Cancelled'" 
+                  @click="handleCancelOrder(order)" 
+                  class="btn-icon btn-cancel" 
+                  title="Hủy đơn hàng"
+                >
+                  <i class="material-icons">cancel</i>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -171,24 +259,173 @@
 
     <!-- Order Detail Modal -->
     <div v-if="showDetailModal" class="modal-overlay" @click="showDetailModal = false">
-      <div class="modal" @click.stop>
+      <div class="modal modal-large" @click.stop>
         <div class="modal-header">
-          <h2 class="modal-title">Chi tiết đơn hàng #{{ selectedOrder?.id }}</h2>
+          <div>
+            <h2 class="modal-title">
+              <i class="material-icons">receipt_long</i>
+              Chi tiết đơn hàng #{{ selectedOrder?.id }}
+            </h2>
+            <div class="order-status-badge" :class="`status-${selectedOrder?.status?.toLowerCase()}`">
+              {{ getStatusLabel(selectedOrder?.status) }}
+            </div>
+          </div>
           <button @click="showDetailModal = false" class="modal-close">
             <i class="material-icons">close</i>
           </button>
+        </div>
+        
+        <div class="modal-body" v-if="selectedOrder">
+          <!-- Customer Info -->
+          <div class="detail-section">
+            <h3 class="section-title">
+              <i class="material-icons">person</i>
+              Thông tin khách hàng
+            </h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Tên khách hàng:</span>
+                <span class="info-value">{{ selectedOrder.customerName }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ selectedOrder.customerEmail }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Ngày đặt:</span>
+                <span class="info-value">{{ formatDateTime(selectedOrder.createdAt) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Tổng tiền:</span>
+                <span class="info-value total-amount">{{ formatCurrency(selectedOrder.totalAmount) }}</span>
+              </div>
+            </div>
           </div>
-        <div class="modal-body">
-          <p class="text-muted">Xem chi tiết đơn hàng (API chi tiết sẽ được tích hợp sau)</p>
+
+          <!-- Shipping Address -->
+          <div class="detail-section" v-if="selectedOrder.addressShipping">
+            <h3 class="section-title">
+              <i class="material-icons">local_shipping</i>
+              Địa chỉ giao hàng
+            </h3>
+            <div class="address-box">
+              <p><strong>{{ selectedOrder.addressShipping.recipientName }}</strong></p>
+              <p>{{ selectedOrder.addressShipping.phone }}</p>
+              <p>{{ selectedOrder.addressShipping.line1 }}</p>
+              <p v-if="selectedOrder.addressShipping.line2">{{ selectedOrder.addressShipping.line2 }}</p>
+              <p>{{ selectedOrder.addressShipping.ward }}, {{ selectedOrder.addressShipping.district }}, {{ selectedOrder.addressShipping.city }}</p>
+              <p v-if="selectedOrder.addressShipping.postalCode">Mã bưu điện: {{ selectedOrder.addressShipping.postalCode }}</p>
+            </div>
           </div>
+
+          <!-- Order Items -->
+          <div class="detail-section">
+            <h3 class="section-title">
+              <i class="material-icons">shopping_cart</i>
+              Sản phẩm đã đặt
+            </h3>
+            <div class="order-items-table">
+              <table class="items-table">
+                <thead>
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th>Size</th>
+                    <th>Màu</th>
+                    <th class="text-right">Số lượng</th>
+                    <th class="text-right">Đơn giá</th>
+                    <th class="text-right">Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in (selectedOrder.orderDetails || [])" :key="index">
+                    <td>
+                      <div class="product-info">
+                        <img v-if="item.imageUrl" :src="item.imageUrl" :alt="item.productName" class="product-image" />
+                        <div>
+                          <div class="product-name">{{ item.productName }}</div>
+                          <div class="product-brand">{{ item.brandName }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ item.size }}</td>
+                    <td>
+                      <span class="color-badge" :style="{ backgroundColor: item.color }"></span>
+                      {{ item.color }}
+                    </td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-right">{{ formatCurrency(item.unitPrice) }}</td>
+                    <td class="text-right fw-bold">{{ formatCurrency(item.totalPrice) }}</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr class="total-row">
+                    <td colspan="5" class="text-right"><strong>Tổng cộng:</strong></td>
+                    <td class="text-right total-price">{{ formatCurrency(selectedOrder.totalAmount) }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Payment Info -->
+          <div class="detail-section" v-if="selectedOrder.payment">
+            <h3 class="section-title">
+              <i class="material-icons">payment</i>
+              Thông tin thanh toán
+            </h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Phương thức:</span>
+                <span class="info-value">{{ getPaymentMethodLabel(selectedOrder.payment.paymentMethod) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Trạng thái:</span>
+                <span class="info-value payment-status" :class="`status-${selectedOrder.payment.status?.toLowerCase()}`">
+                  {{ selectedOrder.payment.status }}
+                </span>
+              </div>
+              <div class="info-item" v-if="selectedOrder.payment.paidAt">
+                <span class="info-label">Ngày thanh toán:</span>
+                <span class="info-value">{{ formatDateTime(selectedOrder.payment.paidAt) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status History -->
+          <div class="detail-section" v-if="selectedOrder.statusHistories && selectedOrder.statusHistories.length > 0">
+            <h3 class="section-title">
+              <i class="material-icons">history</i>
+              Lịch sử thay đổi trạng thái
+            </h3>
+            <div class="status-timeline">
+              <div 
+                v-for="(history, index) in selectedOrder.statusHistories" 
+                :key="history.id" 
+                class="timeline-item"
+                :class="{ 'timeline-active': index === 0 }"
+              >
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-status">{{ getStatusLabel(history.status) }}</div>
+                  <div class="timeline-date">{{ formatDateTime(history.changedAt) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="modal-footer">
           <button @click="handlePrintInvoice(selectedOrder)" class="btn btn-primary">
             <i class="material-icons">print</i>
             In hóa đơn
           </button>
+          <button @click="exportOrderToPDF(selectedOrder)" class="btn btn-secondary">
+            <i class="material-icons">picture_as_pdf</i>
+            Export PDF
+          </button>
           <button @click="showDetailModal = false" class="btn btn-secondary">Đóng</button>
+        </div>
       </div>
-    </div>
     </div>
 
     <!-- Status Change Confirmation Dialog -->
@@ -215,6 +452,7 @@ import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import * as XLSX from 'xlsx'
 import { printInvoice } from '@/utils/pdfGenerator'
 import { downloadCsv, prepareOrdersForExport } from '@/utils/exportHelpers'
+import AdminService from '@/services/adminService'
 
 const adminStore = useAdminStore()
 
@@ -233,9 +471,20 @@ const bulkStatus = ref('')
 // Search & Filter state
 const filters = ref({
   search: '',
-  status: ''
+  status: '',
+  startDate: '',
+  endDate: ''
 })
 let searchTimeout = null
+
+// Stats state
+const stats = ref({
+  totalOrders: 0,
+  pendingOrders: 0,
+  processingOrders: 0,
+  completedOrders: 0,
+  todayRevenue: 0
+})
 
 // Status change confirmation
 const showStatusConfirm = ref(false)
@@ -318,17 +567,35 @@ const fetchOrders = async () => {
     // Prepare filters for API
     const apiFilters = {
       search: filters.value.search || undefined,
-      status: filters.value.status || undefined
+      status: filters.value.status || undefined,
+      startDate: filters.value.startDate || undefined,
+      endDate: filters.value.endDate || undefined
     }
     
     const result = await adminStore.fetchOrders(currentPage.value, pageSize.value, apiFilters)
     orders.value = result.content || []
     totalItems.value = result.totalElements || 0
+    
+    // Calculate stats
+    calculateStats()
   } catch (error) {
     console.error('Lỗi khi tải danh sách đơn hàng:', error)
     ElMessage.error('Không thể tải danh sách đơn hàng.')
   } finally {
     loading.value = false
+  }
+}
+
+const calculateStats = () => {
+  const today = new Date().toISOString().split('T')[0]
+  stats.value = {
+    totalOrders: totalItems.value,
+    pendingOrders: orders.value.filter(o => o.status === 'Pending').length,
+    processingOrders: orders.value.filter(o => o.status === 'Processing').length,
+    completedOrders: orders.value.filter(o => o.status === 'Completed').length,
+    todayRevenue: orders.value
+      .filter(o => o.createdAt && new Date(o.createdAt).toISOString().split('T')[0] === today)
+      .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
   }
 }
 
@@ -354,6 +621,8 @@ const applyFilters = () => {
 const resetFilters = () => {
   filters.value.search = ''
   filters.value.status = ''
+  filters.value.startDate = ''
+  filters.value.endDate = ''
   currentPage.value = 0
   fetchOrders()
 }
@@ -461,9 +730,63 @@ const getStatusLabel = (status) => {
 }
 
 
-const viewOrderDetail = (order) => {
-  selectedOrder.value = order
-  showDetailModal.value = true
+const viewOrderDetail = async (order) => {
+  try {
+    loading.value = true
+    // Fetch full order details from API
+    try {
+      const orderDetail = await AdminService.getOrderById(order.id)
+      if (orderDetail) {
+        selectedOrder.value = orderDetail
+      } else {
+        selectedOrder.value = order
+      }
+    } catch (apiError) {
+      console.warn('Không thể tải chi tiết từ API, sử dụng dữ liệu cơ bản:', apiError)
+      selectedOrder.value = order
+    }
+    showDetailModal.value = true
+  } catch (error) {
+    console.error('Lỗi khi tải chi tiết đơn hàng:', error)
+    selectedOrder.value = order
+    showDetailModal.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleCancelOrder = async (order) => {
+  if (!confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${order.id}?`)) {
+    return
+  }
+  
+  try {
+    await adminStore.updateOrderStatus(order.id, 'Cancelled')
+    ElMessage.success('Đã hủy đơn hàng thành công!')
+    await fetchOrders()
+  } catch (error) {
+    console.error('Lỗi khi hủy đơn hàng:', error)
+    ElMessage.error('Không thể hủy đơn hàng. Vui lòng thử lại!')
+  }
+}
+
+const exportOrderToPDF = (order) => {
+  if (!order) {
+    ElMessage.warning('Không có thông tin đơn hàng để export')
+    return
+  }
+  
+  try {
+    handlePrintInvoice(order)
+    ElMessage.success('Đang mở cửa sổ in hóa đơn...')
+  } catch (error) {
+    console.error('Error exporting to PDF:', error)
+    ElMessage.error('Không thể export PDF. Vui lòng thử lại!')
+  }
+}
+
+const exportToPDF = () => {
+  ElMessage.info('Tính năng export PDF đang được phát triển...')
 }
 
 const handlePrintInvoice = (order) => {
@@ -494,6 +817,27 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString('vi-VN')
 }
 
+const formatDateTime = (date) => {
+  if (!date) return 'N/A'
+  return new Date(date).toLocaleString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const getPaymentMethodLabel = (method) => {
+  const labels = {
+    'COD': 'Thanh toán khi nhận hàng',
+    'BANK_TRANSFER': 'Chuyển khoản ngân hàng',
+    'CREDIT_CARD': 'Thẻ tín dụng',
+    'EWALLET': 'Ví điện tử'
+  }
+  return labels[method] || method
+}
+
 onMounted(() => {
   fetchOrders()
 })
@@ -512,7 +856,12 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-6);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
 }
 
 .page-title {
@@ -540,6 +889,120 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  transition: all 0.3s ease;
+}
+
+.btn-export:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+}
+
+/* ===== STATS CARDS ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(167, 139, 250, 0.05) 100%);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(167, 139, 250, 0.25);
+  border-color: var(--accent-primary);
+}
+
+.stat-card:hover::before {
+  transform: scaleX(1);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.stat-total .stat-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.stat-pending .stat-icon {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.stat-processing .stat-icon {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.stat-completed .stat-icon {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+}
+
+.stat-revenue .stat-icon {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: white;
+}
+
+.stat-icon .material-icons {
+  font-size: 1.75rem;
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+  margin-bottom: var(--space-1);
+}
+
+.stat-value {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  line-height: 1.2;
 }
 
 /* ===== BULK ACTION BAR ===== */
@@ -724,6 +1187,24 @@ onMounted(() => {
   margin-bottom: var(--space-2);
 }
 
+.date-input {
+  padding: var(--space-3);
+  border: 2px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
+}
+
 
 .btn-reset {
   display: flex;
@@ -823,9 +1304,62 @@ onMounted(() => {
   border-bottom: none;
 }
 
+.action-buttons {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(167, 139, 250, 0.1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+}
+
+.btn-icon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+}
+
+.btn-view:hover {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.btn-print:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+}
+
+.btn-cancel:hover {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border-color: #f5576c;
+}
+
+.btn-icon .material-icons {
+  font-size: 1.25rem;
+}
+
 /* ===== UTILITY CLASSES ===== */
 .text-center {
   text-align: center;
+}
+
+.text-right {
+  text-align: right;
 }
 
 .text-sm {
@@ -1054,13 +1588,35 @@ code {
 }
 
 .modal {
-  background: var(--bg-card);
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(167, 139, 250, 0.05) 100%);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
   max-width: 600px;
   width: 100%;
-  box-shadow: var(--shadow-2xl);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.1);
   animation: modalSlideIn 0.3s ease-out;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  position: relative;
+}
+
+.modal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  z-index: 1;
+}
+
+.modal-large {
+  max-width: 900px;
 }
 
 @keyframes modalSlideIn {
@@ -1079,7 +1635,53 @@ code {
   border-bottom: 2px solid var(--border-primary);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, transparent 100%);
+  position: relative;
+  z-index: 0;
+}
+
+.modal-header > div {
+  flex: 1;
+}
+
+.order-status-badge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  margin-top: var(--space-2);
+}
+
+.order-status-badge.status-pending {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.order-status-badge.status-processing {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.order-status-badge.status-shipped {
+  background: rgba(139, 92, 246, 0.2);
+  color: #8b5cf6;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.order-status-badge.status-completed {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.order-status-badge.status-cancelled {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .modal-title {
@@ -1111,6 +1713,250 @@ code {
 
 .modal-body {
   padding: var(--space-6);
+  color: var(--text-secondary);
+  overflow-y: auto;
+  background: rgba(167, 139, 250, 0.02);
+  flex: 1;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+.detail-section {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--border-primary);
+}
+
+.section-title .material-icons {
+  font-size: 1.5rem;
+  color: var(--accent-primary);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.info-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+}
+
+.info-value {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+}
+
+.info-value.total-amount {
+  font-size: var(--text-xl);
+  color: var(--accent-primary);
+  font-weight: var(--font-bold);
+}
+
+.address-box {
+  background: var(--bg-tertiary);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-primary);
+  line-height: 1.8;
+}
+
+.address-box p {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.order-items-table {
+  overflow-x: auto;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.items-table thead {
+  background: var(--bg-tertiary);
+}
+
+.items-table th {
+  padding: var(--space-3);
+  text-align: left;
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-primary);
+}
+
+.items-table td {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.items-table tbody tr:hover {
+  background: var(--bg-secondary);
+}
+
+.product-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.product-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-primary);
+}
+
+.product-name {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.product-brand {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.color-badge {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-primary);
+  margin-right: var(--space-2);
+  vertical-align: middle;
+}
+
+.total-row {
+  background: var(--bg-tertiary);
+  font-weight: var(--font-bold);
+}
+
+.total-price {
+  font-size: var(--text-lg);
+  color: var(--accent-primary);
+}
+
+.payment-status {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.payment-status.status-paid {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.payment-status.status-pending {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.status-timeline {
+  position: relative;
+  padding-left: var(--space-6);
+}
+
+.status-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-primary);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: var(--space-4);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 3px solid var(--border-primary);
+  position: absolute;
+  left: -24px;
+  top: 2px;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.timeline-active .timeline-dot {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.2);
+}
+
+.timeline-content {
+  flex: 1;
+}
+
+.timeline-status {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.timeline-date {
+  font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 

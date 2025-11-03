@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -55,6 +56,7 @@ public class AdminLoyaltyController {
      * Lấy danh sách users với loyalty points
      */
     @GetMapping("/users")
+    @Transactional(readOnly = true)
     public ResponseEntity<Page<LoyaltyDto>> getLoyaltyUsers(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
@@ -62,9 +64,9 @@ public class AdminLoyaltyController {
         log.info("⭐ Fetching loyalty users - page: {}, size: {}", page, size);
         
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<LoyaltyPoint> points = loyaltyPointRepository.findAll(pageable);
+        Page<LoyaltyPoint> points = loyaltyPointRepository.findAllWithUser(pageable);
         
-        // Map to DTO
+        // Map to DTO - User đã được load cùng lúc nhờ JOIN FETCH
         Page<LoyaltyDto> dtoPage = points.map(this::mapToDto);
         
         return ResponseEntity.ok(dtoPage);
@@ -93,6 +95,7 @@ public class AdminLoyaltyController {
      * Điều chỉnh loyalty points cho user
      */
     @PostMapping("/users/{userId}/adjust")
+    @Transactional
     public ResponseEntity<LoyaltyDto> adjustUserPoints(
         @PathVariable Long userId,
         @RequestBody Map<String, Object> request

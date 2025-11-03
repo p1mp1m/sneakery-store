@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -54,6 +55,7 @@ public class AdminActivityLogController {
      * Lấy danh sách activity logs với pagination và filters
      */
     @GetMapping
+    @Transactional(readOnly = true)
     public ResponseEntity<Page<ActivityLogDto>> getAllLogs(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
@@ -88,6 +90,7 @@ public class AdminActivityLogController {
      * Lấy chi tiết một activity log
      */
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<ActivityLogDto> getLogById(@PathVariable Long id) {
         log.info("📋 Fetching activity log ID: {}", id);
         
@@ -102,6 +105,7 @@ public class AdminActivityLogController {
      * Lấy logs của một user cụ thể
      */
     @GetMapping("/user/{userId}")
+    @Transactional(readOnly = true)
     public ResponseEntity<Page<ActivityLogDto>> getLogsByUser(
         @PathVariable Long userId,
         @RequestParam(defaultValue = "0") int page,
@@ -123,6 +127,7 @@ public class AdminActivityLogController {
      * Lấy logs của một entity cụ thể
      */
     @GetMapping("/entity/{entityType}/{entityId}")
+    @Transactional(readOnly = true)
     public ResponseEntity<Page<ActivityLogDto>> getLogsByEntity(
         @PathVariable String entityType,
         @PathVariable Long entityId,

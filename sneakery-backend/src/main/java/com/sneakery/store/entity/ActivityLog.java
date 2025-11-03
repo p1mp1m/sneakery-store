@@ -13,6 +13,10 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "Activity_Logs")
+@NamedEntityGraph(
+    name = "ActivityLog.withUser",
+    attributeNodes = @NamedAttributeNode("user")
+)
 public class ActivityLog {
 
     @Id

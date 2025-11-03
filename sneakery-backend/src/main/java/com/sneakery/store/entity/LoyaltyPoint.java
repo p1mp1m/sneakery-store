@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@NamedEntityGraph(
+    name = "LoyaltyPoint.withUser",
+    attributeNodes = @NamedAttributeNode("user")
+)
 public class LoyaltyPoint {
 
     @Id
