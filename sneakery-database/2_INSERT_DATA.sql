@@ -54,6 +54,32 @@ INSERT INTO Brands (name, slug, logo_url, description, is_active) VALUES
 (N'ASICS', 'asics', 'https://example.com/logos/asics.png', N'Anima Sana In Corpore Sano - Thương hiệu Nhật Bản', 1);
 PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' brands';
 
+-- 2a. MATERIALS (Chất liệu - 10 materials)
+INSERT INTO Materials (name, slug, description, is_active) VALUES
+(N'Da Thật', 'da-that', N'Da thật cao cấp, bền bỉ và thoáng khí, phù hợp cho giày cao cấp', 1),
+(N'Da Tổng Hợp', 'da-tong-hop', N'Da tổng hợp (synthetic leather) có độ bền cao và dễ bảo quản', 1),
+(N'Vải Canvas', 'vai-canvas', N'Vải canvas bền chắc, thoáng khí, phù hợp cho giày casual', 1),
+(N'Vải Mesh', 'vai-mesh', N'Vải mesh nhẹ, thoáng khí, phù hợp cho giày thể thao', 1),
+(N'Knit', 'knit', N'Chất liệu knit (dệt) linh hoạt, thoải mái và hiện đại', 1),
+(N'Nylon', 'nylon', N'Nylon nhẹ, bền và chống nước, phù hợp cho giày thể thao', 1),
+(N'Lưới (Mesh)', 'luoi-mesh', N'Lưới mesh siêu nhẹ và thoáng khí cho giày chạy bộ', 1),
+(N'Microfiber', 'microfiber', N'Microfiber mềm mại, bền và dễ vệ sinh', 1),
+(N'Textile', 'textile', N'Chất liệu dệt tổng hợp linh hoạt và bền bỉ', 1),
+(N'Leather Suede', 'leather-suede', N'Da lộn (suede) mềm mại và sang trọng', 1);
+PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' materials';
+
+-- 2b. SHOE_SOLES (Loại đế giày - 8 types)
+INSERT INTO Shoe_Soles (name, slug, description, is_active) VALUES
+(N'Cao Su', 'cao-su', N'Đế cao su tự nhiên có độ bền cao và độ bám tốt', 1),
+(N'EVA', 'eva', N'Đế EVA nhẹ, đàn hồi tốt, phù hợp cho giày thể thao', 1),
+(N'TPU', 'tpu', N'Đế TPU (Thermoplastic Polyurethane) cứng chắc và bền bỉ', 1),
+(N'PU (Polyurethane)', 'pu-polyurethane', N'Đế PU nhẹ, đàn hồi và có độ bền trung bình', 1),
+(N'Phylon', 'phylon', N'Đế Phylon nhẹ và đàn hồi, phù hợp cho giày chạy bộ', 1),
+(N'Air Cushion', 'air-cushion', N'Đế công nghệ Air Cushion với túi khí, êm ái và phản hồi tốt', 1),
+(N'Boost', 'boost', N'Đế Boost với hạt TPU nén, phản hồi năng lượng xuất sắc', 1),
+(N'React', 'react', N'Đế React với foam đàn hồi, thoải mái lâu dài', 1);
+PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' shoe soles';
+
 -- 3. CATEGORIES (16 categories: 4 parents + 12 children)
 INSERT INTO Categories (name, slug, description, parent_id, lft, rgt, level, is_active, display_order) VALUES
 -- Main categories (level 0)

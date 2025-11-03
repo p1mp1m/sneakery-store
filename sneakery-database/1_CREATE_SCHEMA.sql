@@ -118,11 +118,50 @@ CREATE INDEX idx_categories_active ON Categories(is_active);
 GO
 
 -- =====================================================
--- 4. PRODUCTS TABLE (Enhanced for Admin Management)
+-- 4. MATERIALS TABLE (Chất liệu)
+-- =====================================================
+CREATE TABLE Materials (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    name NVARCHAR(100) NOT NULL UNIQUE,
+    slug NVARCHAR(100) NOT NULL UNIQUE,
+    description NVARCHAR(MAX) NULL,
+    is_active BIT NULL,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 NULL,
+    deleted_at DATETIME2 NULL
+);
+
+CREATE INDEX idx_materials_slug ON Materials(slug);
+CREATE INDEX idx_materials_active ON Materials(is_active);
+GO
+
+-- =====================================================
+-- 5. SHOE_SOLES TABLE (Loại đế giày)
+-- =====================================================
+CREATE TABLE Shoe_Soles (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    name NVARCHAR(100) NOT NULL UNIQUE,
+    slug NVARCHAR(100) NOT NULL UNIQUE,
+    description NVARCHAR(MAX) NULL,
+    is_active BIT NULL,
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 NULL,
+    deleted_at DATETIME2 NULL
+);
+
+CREATE INDEX idx_shoe_soles_slug ON Shoe_Soles(slug);
+CREATE INDEX idx_shoe_soles_active ON Shoe_Soles(is_active);
+GO
+
+-- =====================================================
+-- 6. PRODUCTS TABLE (Enhanced for Admin Management)
 -- =====================================================
 CREATE TABLE Products (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
     brand_id INT NOT NULL,
+    product_code NVARCHAR(50) NULL,
+    material_id INT NULL,
+    shoe_sole_id INT NULL,
     name NVARCHAR(255) NOT NULL,
     slug VARCHAR(255) NOT NULL UNIQUE,
     description NVARCHAR(MAX),
@@ -146,7 +185,9 @@ CREATE TABLE Products (
     updated_at DATETIME2 DEFAULT GETDATE(),
     deleted_at DATETIME2 NULL,
     
-    CONSTRAINT fk_products_brand FOREIGN KEY (brand_id) REFERENCES Brands(id)
+    CONSTRAINT fk_products_brand FOREIGN KEY (brand_id) REFERENCES Brands(id),
+    CONSTRAINT fk_products_material FOREIGN KEY (material_id) REFERENCES Materials(id) ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_products_shoe_sole FOREIGN KEY (shoe_sole_id) REFERENCES Shoe_Soles(id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE INDEX idx_products_brand ON Products(brand_id);
@@ -155,10 +196,17 @@ CREATE INDEX idx_products_active ON Products(is_active);
 CREATE INDEX idx_products_featured ON Products(is_featured);
 CREATE INDEX idx_products_rating ON Products(avg_rating);
 CREATE INDEX idx_products_deleted ON Products(deleted_at);
+CREATE INDEX idx_products_material ON Products(material_id);
+CREATE INDEX idx_products_shoe_sole ON Products(shoe_sole_id);
+
+-- Unique index for product_code (ignores NULL values)
+CREATE UNIQUE INDEX UQ_Products_ProductCode
+ON Products(product_code)
+WHERE product_code IS NOT NULL;
 GO
 
 -- =====================================================
--- 5. PRODUCT_CATEGORIES (Many-to-Many)
+-- 7. PRODUCT_CATEGORIES (Many-to-Many)
 -- =====================================================
 CREATE TABLE Product_Categories (
     product_id BIGINT NOT NULL,
@@ -175,7 +223,7 @@ CREATE INDEX idx_pc_category ON Product_Categories(category_id);
 GO
 
 -- =====================================================
--- 6. PRODUCT_VARIANTS TABLE (Enhanced for Admin)
+-- 8. PRODUCT_VARIANTS TABLE (Enhanced for Admin)
 -- =====================================================
 CREATE TABLE Product_Variants (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -210,7 +258,7 @@ CREATE INDEX idx_variants_active ON Product_Variants(is_active);
 GO
 
 -- =====================================================
--- 7. PRODUCT_IMAGES TABLE
+-- 9. PRODUCT_IMAGES TABLE
 -- =====================================================
 CREATE TABLE Product_Images (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -230,7 +278,7 @@ CREATE INDEX idx_images_primary ON Product_Images(is_primary);
 GO
 
 -- =====================================================
--- 8. COUPONS TABLE (Admin Management)
+-- 10. COUPONS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Coupons (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -266,7 +314,7 @@ CREATE INDEX idx_coupons_active ON Coupons(is_active);
 GO
 
 -- =====================================================
--- 9. FLASH_SALES TABLE (Admin Management)
+-- 11. FLASH_SALES TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Flash_Sales (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -291,7 +339,7 @@ CREATE INDEX idx_flashsale_active ON Flash_Sales(is_active, start_time, end_time
 GO
 
 -- =====================================================
--- 10. ADDRESSES TABLE
+-- 12. ADDRESSES TABLE
 -- =====================================================
 CREATE TABLE Addresses (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -894,7 +942,7 @@ PRINT 'HOAN THANH TAO SCHEMA!';
 PRINT '=====================================================';
 PRINT '';
 PRINT 'Da tao thanh cong:';
-PRINT '  + 25 tables voi indexes';
+PRINT '  + 27 tables voi indexes (bao gom Materials va Shoe_Soles)';
 PRINT '  + 3 views cho admin API';
 PRINT '  + 2 stored procedures';
 PRINT '  + 2 triggers';
