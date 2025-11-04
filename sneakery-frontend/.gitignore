@@ -1,24 +1,275 @@
+# =====================================================
+# Sneakery Frontend - .gitignore
+# =====================================================
+# Vue.js/Vite/Node.js specific ignores
+# =====================================================
+
+# =====================================================
+# Dependencies
+# =====================================================
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# =====================================================
+# Build outputs
+# =====================================================
+dist/
+dist-ssr/
+build/
+*.local
+
+# =====================================================
+# Vite
+# =====================================================
+.vite/
+vite.config.*.timestamp-*
+vite.config.*.temp.*
+
+# =====================================================
+# Environment variables
+# =====================================================
+.env
+.env.local
+.env.*.local
+.env.production.local
+.env.development.local
+.env.test.local
+.env.staging.local
+*.env
+
+# =====================================================
 # Logs
-logs
+# =====================================================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+pnpm-error.log*
 lerna-debug.log*
+*.log.*
 
-node_modules
-dist
-dist-ssr
-*.local
-
+# =====================================================
 # Editor directories and files
+# =====================================================
+# VS Code
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.code-workspace
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Cursor
+.cursor/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+
+# =====================================================
+# OS files
+# =====================================================
+# macOS
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+.nfs*
+
+# =====================================================
+# Testing
+# =====================================================
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+.nyc_output/
+
+# Test results
+test-results/
+test-results.xml
+junit.xml
+*.trx
+playwright-report/
+test-results/
+
+# =====================================================
+# Cache & temporary files
+# =====================================================
+.cache/
+.parcel-cache/
+.turbo/
+.temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# =====================================================
+# Package manager
+# =====================================================
+# Yarn
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# pnpm
+.pnpm-store/
+.pnpm-debug.log*
+
+# =====================================================
+# Storybook
+# =====================================================
+storybook-static/
+.out/
+
+# =====================================================
+# TypeScript
+# =====================================================
+*.tsbuildinfo
+*.tsbuildinfo.*
+
+# =====================================================
+# Optional npm cache directory
+# =====================================================
+.npm
+
+# =====================================================
+# Optional eslint cache
+# =====================================================
+.eslintcache
+
+# =====================================================
+# Optional stylelint cache
+# =====================================================
+.stylelintcache
+
+# =====================================================
+# Microbundle cache
+# =====================================================
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# =====================================================
+# Optional REPL history
+# =====================================================
+.node_repl_history
+
+# =====================================================
+# Output of 'npm pack'
+# =====================================================
+*.tgz
+
+# =====================================================
+# Yarn Integrity file
+# =====================================================
+.yarn-integrity
+
+# =====================================================
+# dotenv environment variable files
+# =====================================================
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# =====================================================
+# parcel-bundler cache
+# =====================================================
+.cache
+.parcel-cache
+
+# =====================================================
+# Next.js (if migrating in future)
+# =====================================================
+.next/
+out/
+
+# =====================================================
+# Nuxt.js (if migrating in future)
+# =====================================================
+.nuxt/
+.output/
+
+# =====================================================
+# Vue.js specific
+# =====================================================
+# Vue CLI
+.vue-cli/
+
+# =====================================================
+# Serverless directories
+# =====================================================
+.serverless/
+
+# =====================================================
+# FuseBox cache
+# =====================================================
+.fusebox/
+
+# =====================================================
+# DynamoDB Local files
+# =====================================================
+.dynamodb/
+
+# =====================================================
+# TernJS port file
+# =====================================================
+.tern-port
+
+# =====================================================
+# Stores VSCode versions used for testing VSCode extensions
+# =====================================================
+.vscode-test
+
+# =====================================================
+# Temporary folders
+# =====================================================
+tmp/
+temp/

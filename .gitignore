@@ -1,18 +1,73 @@
+# =====================================================
+# Sneakery Store - Root .gitignore
+# =====================================================
+# Git ignore file cho monorepo (Backend + Frontend + Database)
+# =====================================================
+
+# =====================================================
 # Dependencies
-node_modules
-target
+# =====================================================
+node_modules/
+target/
+.mvn/
+.m2/
 
-# Root level npm files (not needed for monorepo)
-package.json
-package-lock.json
+# =====================================================
+# Build outputs & artifacts
+# =====================================================
+dist/
+build/
+out/
+*.jar
+*.war
+*.ear
+*.class
 
-# Preliminary report files from JDiff/JDepend
+# =====================================================
+# IDE - Visual Studio Code
+# =====================================================
+.vscode/
+*.code-workspace
+.vscode-test
+
+# =====================================================
+# IDE - IntelliJ IDEA / JetBrains
+# =====================================================
+.idea/
+*.iml
+*.iws
+*.ipr
+*.ipr
+.idea_modules/
+
+# =====================================================
+# IDE - Cursor / Vim / Emacs
+# =====================================================
+.cursor/
+*.swp
+*.swo
+*~
+.vim/
+.emacs.d/
+
+# =====================================================
+# IDE - Eclipse
+# =====================================================
 .auxclasspath
 .buildpath
 .classpath
+.project
+.settings/
+bin/
+tmp/
+*.tmp
+*.bak
+*.cache
+local.properties
 
+# =====================================================
 # Maven
-target/
+# =====================================================
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -22,55 +77,243 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
 
-# IDE - Visual Studio Code
-.vscode
-*.code-workspace
+# =====================================================
+# Gradle (if used in future)
+# =====================================================
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# IDE - IntelliJ IDEA
-.idea
-*.iml
-*.iws
-*.ipr
-
-# IDE - Cursor
-.cursor
-
-# Environment variables
+# =====================================================
+# Environment variables & secrets
+# =====================================================
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
+.env.test
+.env.staging
+*.env
+*.secret
+*.key
+*.pem
+*.p12
+*.jks
 
-# Application properties with secrets
+# =====================================================
+# Application properties with secrets (Backend)
+# =====================================================
+# Ignore actual properties file (contains secrets)
 sneakery-backend/src/main/resources/application.properties
-# Keep example file instead
-# sneakery-backend/src/main/resources/application.properties.example
+sneakery-backend/src/main/resources/application-*.properties
+# Keep example files
+!sneakery-backend/src/main/resources/application.properties.example
+!sneakery-backend/src/main/resources/application-*.properties.example
 
+# =====================================================
 # OS files
+# =====================================================
+# macOS
 .DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
 
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =====================================================
 # Logs
-logs
+# =====================================================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+pnpm-error.log*
+lerna-debug.log*
+*.log.*
+*.log.[0-9]*
 
-# Build outputs
-dist
-build
-out
-
+# =====================================================
 # Frontend specific
-.vite
-sneakery-frontend/dist
-# Note: Keep package-lock.json for consistency
+# =====================================================
+# Vite
+.vite/
+vite.config.*.timestamp-*
 
+# Frontend build outputs
+sneakery-frontend/dist/
+sneakery-frontend/dist-ssr/
+sneakery-frontend/.vite/
+sneakery-frontend/.output/
+
+# Frontend dependencies
+sneakery-frontend/node_modules/
+sneakery-frontend/.pnpm-store/
+sneakery-frontend/.yarn/
+
+# Frontend cache
+sneakery-frontend/.cache/
+sneakery-frontend/.parcel-cache/
+sneakery-frontend/.turbo/
+
+# Frontend test coverage
+sneakery-frontend/coverage/
+sneakery-frontend/.nyc_output/
+
+# =====================================================
+# Backend specific
+# =====================================================
+# Java compiled files
+sneakery-backend/target/
+sneakery-backend/**/*.class
+sneakery-backend/**/target/
+
+# Backend test coverage
+sneakery-backend/coverage/
+sneakery-backend/.nyc_output/
+
+# Backend logs
+sneakery-backend/logs/
+sneakery-backend/*.log
+
+# =====================================================
+# Database
+# =====================================================
+# Database backups (if any)
+*.bak
+*.sql.bak
+*.db
+*.sqlite
+*.sqlite3
+
+# =====================================================
 # Temporary files
+# =====================================================
 *.tmp
 *.temp
-.cache
+.cache/
+.temp/
+tmp/
+temp/
+*.swp
+*.swo
+*.swn
+*.orig
+
+# =====================================================
+# Package manager locks (keep for consistency)
+# =====================================================
+# Note: Keep package-lock.json and yarn.lock for consistency
+# Uncomment if you want to ignore them:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# =====================================================
+# Testing
+# =====================================================
+# Test coverage
+coverage/
+.nyc_output/
+*.lcov
+.coverage/
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Test results
+test-results/
+test-results.xml
+junit.xml
+*.trx
+*.coverage
+
+# =====================================================
+# Documentation builds
+# =====================================================
+docs/_build/
+docs/.doctrees/
+site/
+
+# =====================================================
+# Docker
+# =====================================================
+# Docker files (if using Docker)
+.dockerignore
+docker-compose.override.yml
+*.dockerignore
+
+# =====================================================
+# CI/CD
+# =====================================================
+# CI/CD artifacts
+.ci/
+.github/workflows/*.yml.local
+.circleci/
+.travis.yml.local
+
+# =====================================================
+# Miscellaneous
+# =====================================================
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Compressed files
+*.gz
+*.bz2
+*.xz
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# System files
+.Spotlight-V100
+.Trashes
+.fseventsd
