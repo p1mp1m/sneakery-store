@@ -307,6 +307,9 @@
 import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
+import axios from 'axios';
+import ProductService from '@/services/productService';
+import { ElMessage } from 'element-plus';
 
 const authStore = useAuthStore();
 const { recentlyViewed, clearAll, removeProduct } = useRecentlyViewed();
@@ -378,68 +381,83 @@ const removeFromRecentlyViewed = (productId) => {
 const loadDashboardData = async () => {
   loading.value = true;
   try {
-    // Mock data - sẽ thay thế bằng API calls thực tế
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Load orders từ API - chỉ dùng dữ liệu thật từ database
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     
-    // Mock order stats
-    orderStats.value = {
-      totalOrders: 12,
-      pendingOrders: 2,
-      completedOrders: 8,
-      totalSpent: 2500000
-    };
-
-    // Mock recent orders
-    recentOrders.value = [
-      {
-        id: 'ORD-001',
-        createdAt: '2024-01-15T10:30:00Z',
-        itemCount: 2,
-        total: 1200000,
-        status: 'DELIVERED'
-      },
-      {
-        id: 'ORD-002',
-        createdAt: '2024-01-14T14:20:00Z',
-        itemCount: 1,
-        total: 850000,
-        status: 'SHIPPED'
-      },
-      {
-        id: 'ORD-003',
-        createdAt: '2024-01-13T09:15:00Z',
-        itemCount: 3,
-        total: 2100000,
-        status: 'PROCESSING'
+    try {
+      // Lấy orders của user
+      const ordersResponse = await axios.get('http://localhost:8080/api/orders', { headers });
+      const allOrders = ordersResponse.data || [];
+      
+      // Tính toán order stats từ dữ liệu thật
+      const totalOrders = allOrders.length;
+      const pendingOrders = allOrders.filter(o => 
+        ['pending', 'processing', 'confirmed', 'packed', 'shipped'].includes(o.status?.toLowerCase())
+      ).length;
+      const completedOrders = allOrders.filter(o => 
+        o.status?.toLowerCase() === 'delivered'
+      ).length;
+      const totalSpent = allOrders
+        .filter(o => o.status?.toLowerCase() === 'delivered')
+        .reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
+      
+      orderStats.value = {
+        totalOrders,
+        pendingOrders,
+        completedOrders,
+        totalSpent
+      };
+      
+      // Lấy 5 orders gần nhất
+      recentOrders.value = allOrders
+        .sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at))
+        .slice(0, 5)
+        .map(order => ({
+          id: order.orderNumber || order.id,
+          createdAt: order.createdAt || order.created_at,
+          itemCount: order.totalItems || order.orderDetails?.length || 0,
+          total: order.totalAmount || order.total || 0,
+          status: order.status?.toUpperCase() || 'PENDING'
+        }));
+      
+      console.log('✅ Orders loaded from API:', totalOrders, 'orders');
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      orderStats.value = { totalOrders: 0, pendingOrders: 0, completedOrders: 0, totalSpent: 0 };
+      recentOrders.value = [];
+      if (error.response?.status !== 401) {
+        ElMessage.warning('Không thể tải thông tin đơn hàng');
       }
-    ];
-
-    // Mock recommended products
-    recommendedProducts.value = [
-      {
-        id: 1,
-        name: 'Nike Air Force 1',
-        brandName: 'Nike',
-        price: 2500000,
-        imageUrl: '/placeholder-image.png'
-      },
-      {
-        id: 2,
-        name: 'Adidas Ultraboost 22',
-        brandName: 'Adidas',
-        price: 3200000,
-        imageUrl: '/placeholder-image.png'
-      },
-      {
-        id: 3,
-        name: 'Converse Chuck Taylor',
-        brandName: 'Converse',
-        price: 1200000,
-        imageUrl: '/placeholder-image.png'
+    }
+    
+    try {
+      // Load recommended products từ API - lấy top sản phẩm
+      const productsResponse = await ProductService.getProducts(0, 6);
+      const products = productsResponse.data?.content || productsResponse.data || [];
+      
+      recommendedProducts.value = products.map(product => ({
+        id: product.id,
+        name: product.name,
+        brandName: product.brand?.name || product.brandName || 'Unknown',
+        price: product.price || product.priceBase || 0,
+        imageUrl: product.images?.[0]?.url || product.imageUrl || product.mainImage || '/placeholder-image.png',
+        slug: product.slug
+      }));
+      
+      if (recommendedProducts.value.length === 0) {
+        ElMessage.info('Chưa có sản phẩm đề xuất');
+      } else {
+        console.log('✅ Recommended products loaded from API:', recommendedProducts.value.length, 'products');
       }
-    ];
+    } catch (error) {
+      console.error('Error loading recommended products:', error);
+      recommendedProducts.value = [];
+      ElMessage.warning('Không thể tải sản phẩm đề xuất');
+    }
   } catch (error) {
     console.error('Error loading dashboard data:', error);
+    ElMessage.error('Không thể tải dữ liệu dashboard');
   } finally {
     loading.value = false;
   }

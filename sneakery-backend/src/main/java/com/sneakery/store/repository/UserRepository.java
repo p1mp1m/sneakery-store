@@ -49,4 +49,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+    /**
+     * Đếm số lượng users được tạo trong khoảng thời gian
+     */
+    @Query("SELECT COUNT(u) FROM User u WHERE u.createdAt BETWEEN :startDate AND :endDate")
+    long countByCreatedAtBetween(
+            @Param("startDate") java.time.LocalDateTime startDate,
+            @Param("endDate") java.time.LocalDateTime endDate
+    );
 }

@@ -729,7 +729,60 @@ CREATE INDEX idx_return_status ON Return_Requests(status);
 GO
 
 -- =====================================================
--- 23. EMAIL_TEMPLATES TABLE
+-- 23. WARRANTIES TABLE (Admin Management)
+-- =====================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Warranties' AND type = 'U')
+BEGIN
+    CREATE TABLE Warranties (
+        id BIGINT PRIMARY KEY IDENTITY(1,1),
+        order_id BIGINT NOT NULL,
+        user_id BIGINT NOT NULL,
+        product_id BIGINT NOT NULL,
+        variant_id BIGINT,
+        
+        issue_description NVARCHAR(MAX) NOT NULL,
+        warranty_type VARCHAR(50) CHECK (warranty_type IN ('repair', 'replace')),
+        warranty_months INT DEFAULT 12,
+        
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'in_progress', 'completed')),
+        
+        images_json NVARCHAR(MAX),
+        
+        admin_note NVARCHAR(MAX),
+        resolution_note NVARCHAR(MAX),
+        
+        processed_by BIGINT,
+        processed_at DATETIME2,
+        completed_at DATETIME2,
+        
+        purchase_date DATETIME2,
+        submitted_at DATETIME2 DEFAULT GETDATE(),
+        
+        created_at DATETIME2 DEFAULT GETDATE(),
+        updated_at DATETIME2 DEFAULT GETDATE(),
+        
+        CONSTRAINT fk_warranty_order FOREIGN KEY (order_id) REFERENCES Orders(id),
+        CONSTRAINT fk_warranty_user FOREIGN KEY (user_id) REFERENCES Users(id),
+        CONSTRAINT fk_warranty_product FOREIGN KEY (product_id) REFERENCES Products(id),
+        CONSTRAINT fk_warranty_variant FOREIGN KEY (variant_id) REFERENCES Product_Variants(id),
+        CONSTRAINT fk_warranty_processor FOREIGN KEY (processed_by) REFERENCES Users(id)
+    );
+
+    CREATE INDEX idx_warranty_order ON Warranties(order_id);
+    CREATE INDEX idx_warranty_user ON Warranties(user_id);
+    CREATE INDEX idx_warranty_product ON Warranties(product_id);
+    CREATE INDEX idx_warranty_status ON Warranties(status);
+    
+    PRINT 'Table Warranties created successfully.';
+END
+ELSE
+BEGIN
+    PRINT 'Table Warranties already exists.';
+END
+GO
+
+-- =====================================================
+-- 24. EMAIL_TEMPLATES TABLE
 -- =====================================================
 CREATE TABLE Email_Templates (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -745,7 +798,7 @@ CREATE TABLE Email_Templates (
 GO
 
 -- =====================================================
--- 24. ORDER_STATUS_HISTORIES TABLE
+-- 25. ORDER_STATUS_HISTORIES TABLE
 -- =====================================================
 CREATE TABLE Order_Status_Histories (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -764,7 +817,7 @@ CREATE INDEX idx_status_history_order ON Order_Status_Histories(order_id);
 GO
 
 -- =====================================================
--- 25. SIZE_CHARTS TABLE
+-- 26. SIZE_CHARTS TABLE
 -- =====================================================
 CREATE TABLE Size_Charts (
     id INT PRIMARY KEY IDENTITY(1,1),

@@ -65,6 +65,9 @@ public class User implements UserDetails { // Implement UserDetails để tích 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 

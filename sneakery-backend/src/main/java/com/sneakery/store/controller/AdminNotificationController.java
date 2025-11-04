@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -51,6 +52,7 @@ public class AdminNotificationController {
     /**
      * Lấy tất cả notifications (phân trang)
      */
+    @Transactional(readOnly = true)
     @GetMapping
     public ResponseEntity<Page<NotificationDto>> getAllNotifications(
             @RequestParam(defaultValue = "0") int page,
@@ -108,11 +110,13 @@ public class AdminNotificationController {
     /**
      * Lấy notification theo ID
      */
+    @Transactional(readOnly = true)
     @GetMapping("/{id}")
     public ResponseEntity<NotificationDto> getNotificationById(@PathVariable Long id) {
         log.info("📍 GET /api/admin/notifications/{}", id);
         
-        Notification notification = notificationRepository.findById(id)
+        // Sử dụng method với @EntityGraph để eager load User
+        Notification notification = notificationRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new RuntimeException("Notification không tồn tại"));
         
         return ResponseEntity.ok(mapToDto(notification));

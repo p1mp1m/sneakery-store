@@ -474,64 +474,84 @@ const loadAnalytics = async () => {
   try {
     loading.value = true
     
-    // TODO: Replace with actual API call when ready
-    // const result = await adminStore.fetchAnalytics(selectedPeriod.value)
+    // Gọi API thật từ backend
+    try {
+      // Revenue analytics
+      const revenueResult = await adminStore.fetchRevenueAnalytics(selectedPeriod.value)
+      if (revenueResult && revenueResult.data) {
+        revenueData.value = revenueResult.data
+      } else {
+        // Fallback: tính từ Payments nếu API chưa sẵn sàng
+        console.warn('Revenue analytics API chưa sẵn sàng, sử dụng dữ liệu từ Payments')
+        revenueData.value = []
+      }
+    } catch (error) {
+      console.warn('Revenue analytics API error:', error)
+      revenueData.value = []
+    }
     
-    // Mock data cho các APIs chưa sẵn sàng
-    const mockRevenueData = [
-      { date: '2024-01-01', revenue: 15000000 },
-      { date: '2024-01-02', revenue: 18000000 },
-      { date: '2024-01-03', revenue: 22000000 },
-      { date: '2024-01-04', revenue: 19000000 },
-      { date: '2024-01-05', revenue: 25000000 },
-      { date: '2024-01-06', revenue: 28000000 },
-      { date: '2024-01-07', revenue: 30000000 }
-    ]
+    try {
+      // Order analytics
+      const orderResult = await adminStore.fetchOrderAnalytics(selectedPeriod.value)
+      if (orderResult && orderResult.data) {
+        orderData.value = orderResult.data
+      } else {
+        console.warn('Order analytics API chưa sẵn sàng')
+        orderData.value = []
+      }
+    } catch (error) {
+      console.warn('Order analytics API error:', error)
+      orderData.value = []
+    }
     
-    const mockOrderData = [
-      { date: '2024-01-01', orders: 45 },
-      { date: '2024-01-02', orders: 52 },
-      { date: '2024-01-03', orders: 68 },
-      { date: '2024-01-04', orders: 58 },
-      { date: '2024-01-05', orders: 72 },
-      { date: '2024-01-06', orders: 85 },
-      { date: '2024-01-07', orders: 92 }
-    ]
+    try {
+      // Product analytics
+      const productResult = await adminStore.fetchProductAnalytics(selectedPeriod.value)
+      if (productResult) {
+        // Backend trả về totalProducts, topProducts, period (không có data)
+        if (productResult.data) {
+          productData.value = productResult.data
+        } else {
+          // Nếu không có data, sử dụng mảng rỗng (backend chỉ trả về topProducts)
+          productData.value = []
+        }
+        // Extract top products if available
+        if (productResult.topProducts && Array.isArray(productResult.topProducts)) {
+          topProductsTable.value = productResult.topProducts
+        } else {
+          topProductsTable.value = []
+        }
+      } else {
+        console.warn('Product analytics API chưa sẵn sàng')
+        productData.value = []
+        topProductsTable.value = []
+      }
+    } catch (error) {
+      console.warn('Product analytics API error:', error)
+      productData.value = []
+      topProductsTable.value = []
+    }
     
-    const mockProductData = [
-      { category: 'Giày thể thao', revenue: 45000000 },
-      { category: 'Giày chạy bộ', revenue: 32000000 },
-      { category: 'Giày bóng đá', revenue: 28000000 },
-      { category: 'Giày bóng rổ', revenue: 25000000 },
-      { category: 'Giày lifestyle', revenue: 18000000 }
-    ]
+    try {
+      // Customer analytics
+      const customerResult = await adminStore.fetchCustomerAnalytics(selectedPeriod.value)
+      if (customerResult && customerResult.data) {
+        customerData.value = customerResult.data
+      } else {
+        console.warn('Customer analytics API chưa sẵn sàng')
+        customerData.value = []
+      }
+    } catch (error) {
+      console.warn('Customer analytics API error:', error)
+      customerData.value = []
+    }
     
-    const mockCustomerData = [
-      { date: '2024-01-01', newCustomers: 12 },
-      { date: '2024-01-02', newCustomers: 15 },
-      { date: '2024-01-03', newCustomers: 18 },
-      { date: '2024-01-04', newCustomers: 14 },
-      { date: '2024-01-05', newCustomers: 20 },
-      { date: '2024-01-06', newCustomers: 22 },
-      { date: '2024-01-07', newCustomers: 25 }
-    ]
-    
-    const mockTopProducts = [
-      { name: 'Nike Air Max 270', category: 'Giày thể thao', sold: 156, revenue: 46800000, growth: 12.5 },
-      { name: 'Adidas Ultraboost 22', category: 'Giày chạy bộ', sold: 142, revenue: 42600000, growth: 8.3 },
-      { name: 'Jordan 1 Retro', category: 'Giày bóng rổ', sold: 128, revenue: 38400000, growth: 15.7 },
-      { name: 'Converse Chuck Taylor', category: 'Giày lifestyle', sold: 115, revenue: 23000000, growth: -2.1 },
-      { name: 'Vans Old Skool', category: 'Giày lifestyle', sold: 98, revenue: 19600000, growth: 5.2 }
-    ]
-    
-    // Set mock data
-    revenueData.value = mockRevenueData
-    orderData.value = mockOrderData
-    productData.value = mockProductData
-    customerData.value = mockCustomerData
-    topProductsTable.value = mockTopProducts
-    
-    console.log('✅ Analytics data loaded successfully')
+    // Nếu không có dữ liệu từ API, hiển thị empty state
+    if (revenueData.value.length === 0 && orderData.value.length === 0) {
+      ElMessage.warning('Chưa có dữ liệu phân tích cho kỳ này. Vui lòng thử lại sau.')
+    } else {
+      console.log('✅ Analytics data loaded successfully from API')
+    }
   } catch (error) {
     console.error('Error loading analytics:', error)
     ElMessage.error('Không thể tải dữ liệu phân tích')

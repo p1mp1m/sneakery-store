@@ -492,100 +492,37 @@ const fetchNotifications = async () => {
   try {
     loading.value = true
     
-    // Mock data cho notifications
-    const mockNotifications = [
-      {
-        id: 1,
-        type: 'order',
-        title: 'Đơn hàng mới #ORD001',
-        message: 'Bạn có đơn hàng mới từ khách hàng Nguyễn Văn A',
-        status: 'sent',
-        createdAt: '2024-01-15T10:30:00Z',
-        scheduledAt: null,
-        sentAt: '2024-01-15T10:30:00Z',
-        openedCount: 1,
-        targetUsers: 1,
-        priority: 'high'
-      },
-      {
-        id: 2,
-        type: 'promotion',
-        title: 'Flash Sale 50%',
-        message: 'Chương trình flash sale giảm giá 50% cho tất cả sản phẩm Nike',
-        status: 'scheduled',
-        createdAt: '2024-01-15T09:00:00Z',
-        scheduledAt: '2024-01-16T08:00:00Z',
-        sentAt: null,
-        openedCount: 0,
-        targetUsers: 1000,
-        priority: 'medium'
-      },
-      {
-        id: 3,
-        type: 'system',
-        title: 'Bảo trì hệ thống',
-        message: 'Hệ thống sẽ bảo trì từ 2:00 - 4:00 ngày mai',
-        status: 'sent',
-        createdAt: '2024-01-15T08:00:00Z',
-        scheduledAt: null,
-        sentAt: '2024-01-15T08:00:00Z',
-        openedCount: 5,
-        targetUsers: 5,
-        priority: 'high'
-      },
-      {
-        id: 4,
-        type: 'marketing',
-        title: 'Khuyến mãi cuối tuần',
-        message: 'Giảm giá 30% cho tất cả sản phẩm Adidas cuối tuần này',
-        status: 'failed',
-        createdAt: '2024-01-14T15:00:00Z',
-        scheduledAt: '2024-01-14T16:00:00Z',
-        sentAt: null,
-        openedCount: 0,
-        targetUsers: 500,
-        priority: 'low'
-      },
-      {
-        id: 5,
-        type: 'order',
-        title: 'Đơn hàng đã hủy #ORD002',
-        message: 'Đơn hàng #ORD002 đã được hủy bởi khách hàng',
-        status: 'sent',
-        createdAt: '2024-01-14T14:30:00Z',
-        scheduledAt: null,
-        sentAt: '2024-01-14T14:30:00Z',
-        openedCount: 1,
-        targetUsers: 1,
-        priority: 'medium'
-      }
-    ]
-    
-    // Apply filters
-    let filteredNotifications = mockNotifications
+    // Load từ API - chỉ dùng dữ liệu thật từ database
+    const apiFilters = {}
     
     if (filters.search) {
-      filteredNotifications = filteredNotifications.filter(n => 
-        n.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-        n.message.toLowerCase().includes(filters.search.toLowerCase())
-      )
+      apiFilters.search = filters.search
     }
     
     if (filters.type) {
-      filteredNotifications = filteredNotifications.filter(n => n.type === filters.type)
+      apiFilters.type = filters.type
     }
     
     if (filters.status) {
-      filteredNotifications = filteredNotifications.filter(n => n.status === filters.status)
+      apiFilters.status = filters.status
     }
     
-    notifications.value = filteredNotifications
+    const result = await adminStore.fetchNotifications(0, 100, apiFilters)
+    notifications.value = result.content || []
+    
+    // Update stats từ dữ liệu thật
     updateStats()
     
-    console.log('✅ Notifications loaded successfully')
+    if (notifications.value.length === 0) {
+      ElMessage.info('Chưa có thông báo nào')
+    } else {
+      console.log('✅ Notifications loaded from API:', notifications.value.length, 'notifications')
+    }
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
-    ElMessage.error('Không thể tải danh sách thông báo')
+    ElMessage.error('Không thể tải danh sách thông báo: ' + (error.message || 'Không thể kết nối đến server'))
+    notifications.value = []
+    updateStats()
   } finally {
     loading.value = false
   }

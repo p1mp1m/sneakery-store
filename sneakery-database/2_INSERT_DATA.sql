@@ -288,7 +288,7 @@ INSERT INTO Addresses (user_id, recipient_name, phone, line1, line2, ward, distr
 (7, N'Hoàng Văn Em', '0987654325', N'555 Đường Lê Văn Việt', N'Tầng 15', N'Phường Hiệp Phú', N'Quận 9', N'TP. Hồ Chí Minh', '700000', 0, 'office');
 PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' addresses';
 
--- 12. NOTIFICATIONS (8 notifications for users 3-7)
+-- 12. NOTIFICATIONS (15 notifications: order_status, promotion, product_restock, review_reply, system, marketing)
 INSERT INTO Notifications (user_id, type, title, message, link, is_read, created_at) VALUES
 (3, 'system', N'Chào mừng bạn đến với Sneakery', N'Cảm ơn bạn đã đăng ký tài khoản!', '/', 1, '2024-01-15 10:00:00'),
 (4, 'promotion', N'Khuyến mãi mới', N'Giảm giá 20% cho tất cả giày. Áp dụng đến hết tháng 3.', '/products', 0, '2024-03-01 09:00:00'),
@@ -297,8 +297,15 @@ INSERT INTO Notifications (user_id, type, title, message, link, is_read, created
 (7, 'order_status', N'Đơn hàng đang được xử lý', N'Đơn hàng của bạn đang được chuẩn bị.', '/orders', 0, '2024-03-04 11:00:00'),
 (3, 'order_status', N'Đơn hàng đã được giao', N'Đơn hàng của bạn đã được giao thành công.', '/orders', 1, '2024-03-05 16:00:00'),
 (4, 'promotion', N'Flash Sale sắp bắt đầu!', N'Flash Sale 50% sẽ bắt đầu trong 1 giờ nữa.', '/flash-sales', 0, '2024-03-06 08:00:00'),
-(5, 'system', N'Thông báo hệ thống', N'Hệ thống sẽ bảo trì vào đêm nay từ 23:00 đến 1:00.', '/', 0, '2024-03-07 20:00:00');
-PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' notifications';
+(5, 'system', N'Thông báo hệ thống', N'Hệ thống sẽ bảo trì vào đêm nay từ 23:00 đến 1:00.', '/', 0, '2024-03-07 20:00:00'),
+(6, 'order_status', N'Đơn hàng đã được xác nhận', N'Đơn hàng ORD-20240215-0001 của bạn đã được xác nhận.', '/orders', 0, '2024-02-15 13:30:00'),
+(7, 'promotion', N'Khuyến mãi cuối tuần', N'Giảm giá 30% cho tất cả sản phẩm Nike cuối tuần này!', '/products?brand=nike', 0, '2024-03-08 08:00:00'),
+(3, 'product_restock', N'Sản phẩm yêu thích đã có hàng', N'Air Jordan 1 Retro High đã có hàng trở lại!', '/products/6', 1, '2024-02-28 10:00:00'),
+(4, 'review_reply', N'Bạn có phản hồi mới', N'Admin đã trả lời đánh giá của bạn về sản phẩm New Balance 550.', '/products/14', 0, '2024-03-06 15:00:00'),
+(5, 'order_status', N'Đơn hàng đang được vận chuyển', N'Đơn hàng ORD-20240210-0001 của bạn đang được vận chuyển.', '/orders', 0, '2024-02-11 09:00:00'),
+(6, 'system', N'Cập nhật chính sách', N'Chúng tôi đã cập nhật chính sách đổi trả. Vui lòng xem chi tiết.', '/policy', 0, '2024-03-09 10:00:00'),
+(7, 'product_restock', N'Sản phẩm mới đã có hàng', N'Converse Chuck Taylor phiên bản mới đã có hàng!', '/products/8', 0, '2024-03-10 11:00:00');
+PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' notifications (order_status, promotion, product_restock, review_reply, system)';
 
 -- 13. WISHLISTS (10 wishlist items for users 3-7)
 INSERT INTO Wishlists (user_id, product_id, created_at) VALUES
@@ -375,7 +382,7 @@ INSERT INTO Order_Details (order_id, variant_id, product_name, variant_sku, size
 (10, 22, N'Vans Authentic', 'VANS-AUTH-BLK-40', '40', N'Đen', 1, 1400000, 1400000);
 PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' order details';
 
--- 17. PAYMENTS (10 payments for 10 orders)
+-- 17. PAYMENTS (12 payments for 10 orders: 8 completed, 2 pending, 2 failed)
 INSERT INTO Payments (order_id, payment_method, amount, status, transaction_id, paid_at, created_at) VALUES
 (1, 'vnpay', 2570000, 'completed', 'VNPAY_20240115_001', '2024-01-15 10:35:00', '2024-01-15 10:30:00'),
 (2, 'momo', 3250000, 'completed', 'MOMO_20240201_001', '2024-02-01 14:10:00', '2024-02-01 14:00:00'),
@@ -386,8 +393,10 @@ INSERT INTO Payments (order_id, payment_method, amount, status, transaction_id, 
 (7, 'vnpay', 4600000, 'completed', 'VNPAY_20240215_001', '2024-02-15 13:15:00', '2024-02-15 13:00:00'),
 (8, 'cod', 1630000, 'completed', NULL, '2024-02-20 16:50:00', '2024-02-20 16:30:00'),
 (9, 'momo', 3520000, 'completed', 'MOMO_20240225_001', '2024-02-25 11:15:00', '2024-02-25 11:00:00'),
-(10, 'cod', 1430000, 'completed', NULL, '2024-03-01 15:00:00', '2024-03-01 14:30:00');
-PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' payments';
+(10, 'cod', 1430000, 'completed', NULL, '2024-03-01 15:00:00', '2024-03-01 14:30:00'),
+(6, 'zalopay', 2030000, 'failed', 'ZALOPAY_20240210_001', NULL, '2024-02-10 10:05:00'),
+(9, 'vnpay', 3520000, 'failed', 'VNPAY_20240225_002', NULL, '2024-02-25 11:20:00');
+PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' payments (8 completed, 2 pending, 2 failed)';
 
 -- 18. ORDER_STATUS_HISTORIES (10 histories for 10 orders)
 INSERT INTO Order_Status_Histories (order_id, status, note, changed_by, created_at) VALUES
@@ -412,14 +421,19 @@ GO
 PRINT '';
 PRINT 'TIER 7: Dang them Reviews, Inventory_Logs, Activity_Logs, Loyalty_Points, Cart_Items, Size_Charts, Return_Requests...';
 
--- 19. REVIEWS (5 reviews for verified purchases)
+-- 19. REVIEWS (10 reviews: 7 approved, 3 pending)
 INSERT INTO Reviews (product_id, user_id, order_id, rating, title, body, is_approved, is_verified_purchase, helpful_count, created_at) VALUES
 (1, 3, 1, 5, N'Giày rất đẹp và thoải mái', N'Tôi rất hài lòng với đôi giày này. Chất lượng tốt, thiết kế đẹp và rất thoải mái khi đi.', 1, 1, 3, '2024-01-20 10:00:00'),
 (3, 4, 3, 4, N'Chất lượng tốt', N'Giày Adidas Stan Smith có chất lượng tốt, thiết kế đẹp.', 1, 1, 2, '2024-01-25 14:30:00'),
 (15, 3, 2, 5, N'New Balance tuyệt vời', N'Giày New Balance 993 rất thoải mái và đẹp. Đáng giá tiền bỏ ra.', 1, 1, 5, '2024-02-05 09:15:00'),
 (6, 4, 4, 5, N'Air Jordan tuyệt vời', N'Air Jordan 1 Retro High là đôi giày tuyệt vời. Chất lượng cao cấp.', 1, 1, 8, '2024-02-10 16:20:00'),
-(14, 7, 10, 4, N'New Balance rất thoải mái', N'Giày New Balance 550 rất thoải mái và dễ phối đồ.', 1, 1, 1, '2024-03-05 11:45:00');
-PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' reviews';
+(14, 7, 10, 4, N'New Balance rất thoải mái', N'Giày New Balance 550 rất thoải mái và dễ phối đồ.', 1, 1, 1, '2024-03-05 11:45:00'),
+(2, 5, 5, 5, N'Nike Air Force 1 tuyệt vời', N'Đôi giày này rất đẹp và chất lượng. Tôi rất hài lòng với sản phẩm.', 1, 1, 4, '2024-02-15 09:30:00'),
+(8, 6, 8, 4, N'Converse Chuck Taylor', N'Giày Converse rất đẹp và dễ phối đồ. Chất lượng tốt.', 1, 0, 2, '2024-02-22 14:20:00'),
+(5, 5, 6, 3, N'Adidas NMD chưa đạt mong đợi', N'Giày hơi cứng so với mong đợi. Cần thời gian để làm quen.', 0, 1, 0, '2024-02-12 10:15:00'),
+(10, 7, 9, 4, N'Vans Old Skool ổn', N'Giày Vans có thiết kế đẹp nhưng đế hơi mỏng.', 0, 1, 1, '2024-02-26 16:45:00'),
+(12, 6, 7, 2, N'Puma Suede không đúng kích thước', N'Size hơi nhỏ so với thông thường. Cần đổi size lớn hơn.', 0, 0, 0, '2024-02-18 11:30:00');
+PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' reviews (7 approved, 3 pending)';
 
 -- 20. INVENTORY_LOGS (10 logs: restock + sales)
 INSERT INTO Inventory_Logs (variant_id, change_type, quantity_before, quantity_change, quantity_after, reference_type, reference_id, note, changed_by, created_at) VALUES
@@ -478,11 +492,23 @@ INSERT INTO Size_Charts (brand_id, category, size, size_us, size_uk, length_cm, 
 (5, 'skateboard', '41', '8', '7', 26.0, 9.8);
 PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' size charts';
 
--- 25. RETURN_REQUESTS (2 return requests)
-INSERT INTO Return_Requests (order_id, user_id, reason, status, created_at) VALUES
-(1, 3, N'Không đúng kích thước', 'approved', '2024-01-16 10:00:00'),
-(3, 4, N'Sản phẩm bị lỗi', 'pending', '2024-01-21 14:00:00');
-PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' return requests';
+-- 25a. WARRANTIES (5 warranty requests: pending, in_progress, completed, rejected)
+INSERT INTO Warranties (order_id, user_id, product_id, variant_id, issue_description, warranty_type, warranty_months, status, admin_note, resolution_note, processed_by, processed_at, completed_at, purchase_date, submitted_at, created_at) VALUES
+(1, 3, 1, 1, N'Giày bị bong keo sau 2 tuần sử dụng', 'repair', 12, 'pending', NULL, NULL, NULL, NULL, NULL, '2024-01-15 10:30:00', '2024-01-15 10:30:00', '2024-01-29 10:30:00'),
+(2, 3, 15, 6, N'Đế giày bị nứt sau 1 tháng sử dụng', 'replace', 12, 'in_progress', N'Đang kiểm tra và liên hệ nhà sản xuất', NULL, 1, '2024-02-02 09:00:00', NULL, '2024-02-01 14:00:00', '2024-02-01 14:00:00', '2024-02-15 14:20:00'),
+(4, 4, 6, 12, N'Logo bị phai màu sau 2 tháng', 'replace', 12, 'completed', N'Đã xác nhận lỗi sản xuất', N'Đã gửi sản phẩm thay thế cho khách hàng', 1, '2024-02-07 10:00:00', '2024-02-14 15:30:00', '2024-02-05 09:30:00', '2024-02-05 09:30:00', '2024-02-05 09:30:00'),
+(5, 5, 4, 7, N'Vải bị rách do sử dụng bình thường', 'repair', 12, 'rejected', N'Lỗi do sử dụng không đúng cách', N'Không thuộc phạm vi bảo hành', 1, '2024-01-27 14:00:00', '2024-01-27 14:00:00', '2024-01-25 15:00:00', '2024-01-25 15:00:00', '2024-01-26 10:15:00'),
+(7, 6, 6, 12, N'Đế giày bị tách rời khỏi thân giày', 'repair', 12, 'pending', NULL, NULL, NULL, NULL, NULL, '2024-02-15 13:00:00', '2024-02-15 13:00:00', '2024-02-29 13:20:00');
+PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' warranty requests (2 pending, 1 in_progress, 1 completed, 1 rejected)';
+
+-- 25. RETURN_REQUESTS (5 return requests: pending, approved, rejected, completed)
+INSERT INTO Return_Requests (order_id, user_id, reason, status, admin_note, approved_by, approved_at, created_at) VALUES
+(1, 3, N'Không đúng kích thước', 'approved', N'Đã xác nhận, cho phép đổi size', 1, '2024-01-16 11:00:00', '2024-01-16 10:00:00'),
+(3, 4, N'Sản phẩm bị lỗi', 'pending', NULL, NULL, NULL, '2024-01-21 14:00:00'),
+(5, 5, N'Không đúng màu sắc', 'rejected', N'Màu sắc đúng như mô tả, không thể đổi trả', 1, '2024-01-26 10:00:00', '2024-01-26 09:00:00'),
+(7, 6, N'Sản phẩm bị hỏng khi nhận hàng', 'approved', N'Đã xác nhận lỗi, sẽ gửi sản phẩm thay thế', 1, '2024-02-16 14:00:00', '2024-02-16 13:30:00'),
+(8, 6, N'Không vừa với chân', 'completed', N'Đã hoàn tất đổi trả', 1, '2024-02-21 10:00:00', '2024-02-21 09:00:00');
+PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' return requests (2 pending, 1 approved, 1 rejected, 1 completed)';
 
 PRINT 'TIER 7 HOAN THANH!';
 GO
@@ -511,9 +537,9 @@ PRINT '  + 5 flash sales';
 PRINT '  + 10 addresses';
 PRINT '  + 10 orders';
 PRINT '  + 10 order details';
-PRINT '  + 10 payments';
-PRINT '  + 5 reviews';
-PRINT '  + 8 notifications';
+PRINT '  + 12 payments (8 completed, 2 pending, 2 failed)';
+PRINT '  + 10 reviews (7 approved, 3 pending)';
+PRINT '  + 15 notifications (order_status, promotion, product_restock, review_reply, system)';
 PRINT '  + 10 wishlist items';
 PRINT '  + 5 carts';
 PRINT '  + 5 cart items';
@@ -522,7 +548,8 @@ PRINT '  + 10 loyalty points';
 PRINT '  + 10 inventory logs';
 PRINT '  + 5 activity logs';
 PRINT '  + 5 size charts';
-PRINT '  + 2 return requests';
+PRINT '  + 5 warranty requests (2 pending, 1 in_progress, 1 completed, 1 rejected)';
+PRINT '  + 5 return requests (2 pending, 1 approved, 1 rejected, 1 completed)';
 PRINT '';
 PRINT 'Tien hanh chay file 3_ADD_MORE_DATA.sql de bo sung du lieu';
 PRINT '=====================================================';

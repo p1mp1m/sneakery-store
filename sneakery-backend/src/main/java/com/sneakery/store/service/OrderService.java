@@ -74,8 +74,13 @@ public class OrderService {
             }
             
             // 6.2. Giảm tồn kho
-            variant.setStockQuantity(variant.getStockQuantity() - cartItem.getQuantity());
+            int quantityBefore = variant.getStockQuantity();
+            int quantityChange = -cartItem.getQuantity();
+            variant.setStockQuantity(quantityBefore + quantityChange);
             variantRepository.save(variant);
+            
+            // Note: Inventory log sẽ được tạo tự động bởi trigger trg_ProductVariants_InventoryLog
+            // khi stock_quantity thay đổi. Chúng ta chỉ cần đảm bảo stock được cập nhật đúng.
 
             // 6.3. Tạo OrderDetail (chốt giá)
             OrderDetail detail = new OrderDetail();
@@ -109,6 +114,10 @@ public class OrderService {
         order.getStatusHistories().add(history);
 
         Order savedOrder = orderRepository.save(order);
+        
+        // Note: Inventory logs được tạo tự động bởi database trigger khi stock_quantity thay đổi
+        // Trigger sẽ tự động log mọi thay đổi inventory
+        
         cartRepository.delete(cart);
 
         String paymentUrl = null;

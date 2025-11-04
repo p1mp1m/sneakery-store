@@ -412,105 +412,6 @@ const itemsPerPage = 5
 const reviews = ref([])
 const totalReviews = ref(0)
 
-// Mock data (fallback only)
-const mockReviews = ref([
-  {
-    id: 1,
-    productId: 1,
-    productName: 'Nike Air Force 1',
-    productImage: '/placeholder-image.png',
-    userId: 101,
-    userName: 'Nguyễn Văn A',
-    rating: 5,
-    title: 'Sản phẩm tuyệt vời!',
-    body: 'Giày rất đẹp, chất lượng tốt, đúng như mô tả. Giao hàng nhanh chóng. Rất hài lòng!',
-    images: [],
-    isApproved: true,
-    isVerifiedPurchase: true,
-    helpfulCount: 15,
-    unhelpfulCount: 2,
-    replyText: 'Cảm ơn bạn đã tin tưởng và ủng hộ shop! Chúc bạn sử dụng sản phẩm vui vẻ!',
-    repliedAt: '2024-01-20T10:30:00',
-    createdAt: '2024-01-15T14:20:00'
-  },
-  {
-    id: 2,
-    productId: 2,
-    productName: 'Adidas Ultraboost',
-    productImage: '/placeholder-image.png',
-    userId: 102,
-    userName: 'Trần Thị B',
-    rating: 4,
-    title: 'Tốt nhưng giá hơi cao',
-    body: 'Giày êm chân, thiết kế đẹp. Tuy nhiên giá hơi cao so với mặt bằng chung.',
-    images: [],
-    isApproved: true,
-    isVerifiedPurchase: true,
-    helpfulCount: 8,
-    unhelpfulCount: 1,
-    replyText: null,
-    repliedAt: null,
-    createdAt: '2024-01-18T09:15:00'
-  },
-  {
-    id: 3,
-    productId: 3,
-    productName: 'Converse Chuck Taylor',
-    productImage: '/placeholder-image.png',
-    userId: 103,
-    userName: 'Lê Văn C',
-    rating: 3,
-    title: 'Bình thường',
-    body: 'Sản phẩm ổn, không có gì đặc biệt. Size hơi nhỏ so với thông thường.',
-    images: ['/placeholder-image.png'],
-    isApproved: false,
-    isVerifiedPurchase: false,
-    helpfulCount: 3,
-    unhelpfulCount: 0,
-    replyText: null,
-    repliedAt: null,
-    createdAt: '2024-01-22T16:45:00'
-  },
-  {
-    id: 4,
-    productId: 1,
-    productName: 'Nike Air Force 1',
-    productImage: '/placeholder-image.png',
-    userId: 104,
-    userName: 'Phạm Thị D',
-    rating: 5,
-    title: 'Rất đáng mua!',
-    body: 'Mình đã mua 3 đôi rồi, chất lượng luôn ổn định. Shop phục vụ tận tình.',
-    images: ['/placeholder-image.png', '/placeholder-image.png'],
-    isApproved: false,
-    isVerifiedPurchase: true,
-    helpfulCount: 0,
-    unhelpfulCount: 0,
-    replyText: null,
-    repliedAt: null,
-    createdAt: '2024-01-23T11:20:00'
-  },
-  {
-    id: 5,
-    productId: 4,
-    productName: 'Puma Suede Classic',
-    productImage: '/placeholder-image.png',
-    userId: 105,
-    userName: 'Hoàng Văn E',
-    rating: 2,
-    title: 'Không như mong đợi',
-    body: 'Màu sắc không giống hình. Chất liệu cảm giác kém hơn bản gốc.',
-    images: [],
-    isApproved: true,
-    isVerifiedPurchase: true,
-    helpfulCount: 5,
-    unhelpfulCount: 3,
-    replyText: 'Xin lỗi bạn về trải nghiệm không tốt. Vui lòng liên hệ CSKH để được hỗ trợ đổi trả.',
-    repliedAt: '2024-01-24T09:00:00',
-    createdAt: '2024-01-23T20:30:00'
-  }
-])
-
 // Computed
 const filteredReviews = computed(() => {
   let result = reviews.value || []
@@ -569,86 +470,7 @@ const loadReviews = async () => {
   try {
     loading.value = true
     
-    // Mock data cho reviews
-    const mockReviews = [
-      {
-        id: 1,
-        productId: 1,
-        productName: 'Nike Air Force 1',
-        productImage: '/placeholder-image.png',
-        userId: 101,
-        userName: 'Nguyễn Văn A',
-        userEmail: 'nguyenvana@email.com',
-        rating: 5,
-        title: 'Sản phẩm tuyệt vời',
-        body: 'Giày rất đẹp, chất lượng tốt. Tôi rất hài lòng với sản phẩm này.',
-        isApproved: true,
-        createdAt: '2024-01-15T10:30:00Z',
-        images: ['/placeholder-image.png']
-      },
-      {
-        id: 2,
-        productId: 2,
-        productName: 'Adidas Ultraboost',
-        productImage: '/placeholder-image.png',
-        userId: 102,
-        userName: 'Trần Thị B',
-        userEmail: 'tranthib@email.com',
-        rating: 4,
-        title: 'Tốt nhưng giá hơi cao',
-        body: 'Giày êm chân, thiết kế đẹp. Tuy nhiên giá hơi cao so với mặt bằng chung.',
-        isApproved: false,
-        createdAt: '2024-01-14T14:20:00Z',
-        images: ['/placeholder-image.png']
-      },
-      {
-        id: 3,
-        productId: 3,
-        productName: 'Jordan 1 Retro',
-        productImage: '/placeholder-image.png',
-        userId: 103,
-        userName: 'Lê Văn C',
-        userEmail: 'levanc@email.com',
-        rating: 5,
-        title: 'Classic không bao giờ lỗi mốt',
-        body: 'Jordan 1 là một trong những mẫu giày đẹp nhất mọi thời đại. Chất lượng tuyệt vời.',
-        isApproved: true,
-        createdAt: '2024-01-13T16:45:00Z',
-        images: ['/placeholder-image.png', '/placeholder-image.png']
-      },
-      {
-        id: 4,
-        productId: 4,
-        productName: 'Converse Chuck Taylor',
-        productImage: '/placeholder-image.png',
-        userId: 104,
-        userName: 'Phạm Thị D',
-        userEmail: 'phamthid@email.com',
-        rating: 3,
-        title: 'Bình thường',
-        body: 'Giày ổn, nhưng đế hơi cứng. Cần thời gian để làm quen.',
-        isApproved: false,
-        createdAt: '2024-01-12T11:15:00Z',
-        images: ['/placeholder-image.png']
-      },
-      {
-        id: 5,
-        productId: 5,
-        productName: 'Vans Old Skool',
-        productImage: '/placeholder-image.png',
-        userId: 105,
-        userName: 'Hoàng Văn E',
-        userEmail: 'hoangvane@email.com',
-        rating: 4,
-        title: 'Thiết kế đẹp',
-        body: 'Vans Old Skool có thiết kế rất đẹp và dễ phối đồ. Chất lượng tốt.',
-        isApproved: true,
-        createdAt: '2024-01-11T13:20:00Z',
-        images: ['/placeholder-image.png']
-      }
-    ]
-    
-    // Load from API
+    // Load from API - chỉ dùng dữ liệu thật từ database
     const apiFilters = {}
     
     if (searchKeyword.value) {
@@ -663,10 +485,16 @@ const loadReviews = async () => {
     reviews.value = result.content || []
     totalReviews.value = result.totalElements || 0
     
-    console.log('✅ Reviews loaded from API')
+    if (reviews.value.length === 0) {
+      ElMessage.info('Chưa có đánh giá nào')
+    } else {
+      console.log('✅ Reviews loaded from API:', reviews.value.length, 'reviews')
+    }
   } catch (error) {
     console.error('Error loading reviews:', error)
-    ElMessage.error('Lỗi khi tải danh sách đánh giá')
+    ElMessage.error('Lỗi khi tải danh sách đánh giá: ' + (error.message || 'Không thể kết nối đến server'))
+    reviews.value = []
+    totalReviews.value = 0
   } finally {
     loading.value = false
   }

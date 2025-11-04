@@ -382,8 +382,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { ElMessage, ElMessageBox } from 'element-plus'
+
+const adminStore = useAdminStore()
 
 // State
 const loading = ref(false)
@@ -396,57 +399,7 @@ const pageSize = ref(10)
 const showDetailModal = ref(false)
 const selectedPayment = ref(null)
 
-// Mock data
-const mockPayments = ref([
-  {
-    id: 1,
-    orderId: 1001,
-    orderNumber: 'ORD-20240125-0001',
-    paymentMethod: 'vnpay',
-    amount: 2500000,
-    status: 'completed',
-    transactionId: 'VNPAY_20240125_001',
-    gatewayResponse: '{"code":"00","message":"Success"}',
-    createdAt: '2024-01-25T10:30:00Z',
-    paidAt: '2024-01-25T10:32:00Z'
-  },
-  {
-    id: 2,
-    orderId: 1002,
-    orderNumber: 'ORD-20240125-0002',
-    paymentMethod: 'momo',
-    amount: 1800000,
-    status: 'completed',
-    transactionId: 'MOMO_20240125_002',
-    gatewayResponse: '{"status":1,"message":"Success"}',
-    createdAt: '2024-01-25T11:15:00Z',
-    paidAt: '2024-01-25T11:17:00Z'
-  },
-  {
-    id: 3,
-    orderId: 1003,
-    orderNumber: 'ORD-20240125-0003',
-    paymentMethod: 'cod',
-    amount: 3200000,
-    status: 'pending',
-    transactionId: null,
-    gatewayResponse: null,
-    createdAt: '2024-01-25T14:20:00Z',
-    paidAt: null
-  },
-  {
-    id: 4,
-    orderId: 1004,
-    orderNumber: 'ORD-20240125-0004',
-    paymentMethod: 'zalopay',
-    amount: 1500000,
-    status: 'failed',
-    transactionId: 'ZALOPAY_20240125_004',
-    gatewayResponse: '{"return_code":-1,"return_message":"Insufficient balance"}',
-    createdAt: '2024-01-25T15:45:00Z',
-    paidAt: null
-  }
-])
+// Payments data - sẽ được load từ API
 
 // Computed
 const totalPayments = computed(() => payments.value.length)
@@ -488,11 +441,33 @@ const paginatedPayments = computed(() => {
 const fetchPayments = async () => {
   loading.value = true
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    payments.value = mockPayments.value
+    // Load từ API - chỉ dùng dữ liệu thật từ database
+    const apiFilters = {}
+    
+    if (searchKeyword.value) {
+      apiFilters.search = searchKeyword.value
+    }
+    
+    if (filterStatus.value !== 'all') {
+      apiFilters.status = filterStatus.value
+    }
+    
+    if (filterMethod.value !== 'all') {
+      apiFilters.paymentMethod = filterMethod.value
+    }
+    
+    const result = await adminStore.fetchPayments(0, 100, apiFilters)
+    payments.value = result.content || []
+    
+    if (payments.value.length === 0) {
+      ElMessage.info('Chưa có giao dịch thanh toán nào')
+    } else {
+      console.log('✅ Payments loaded from API:', payments.value.length, 'payments')
+    }
   } catch (error) {
-    ElMessage.error('Không thể tải danh sách giao dịch')
+    console.error('Error loading payments:', error)
+    ElMessage.error('Không thể tải danh sách giao dịch: ' + (error.message || 'Không thể kết nối đến server'))
+    payments.value = []
   } finally {
     loading.value = false
   }

@@ -1152,6 +1152,82 @@ BEGIN
 END;
 
 PRINT '  + Inserted 98 additional return requests (total 100 return requests)';
+
+-- 25b. WARRANTIES (add 95 warranties to reach 100)
+DECLARE @warOrderId BIGINT;
+DECLARE @warUserId BIGINT;
+DECLARE @warProductId BIGINT;
+DECLARE @warVariantId BIGINT;
+DECLARE @warCounter INT;
+DECLARE @warStatus VARCHAR(20);
+DECLARE @warType VARCHAR(50);
+DECLARE @warIssue NVARCHAR(MAX);
+DECLARE @warMaxIterations INT = 10000;
+DECLARE @warIterations INT = 0;
+
+DECLARE @warIssues TABLE (issue NVARCHAR(MAX));
+INSERT INTO @warIssues VALUES 
+(N'Giày bị bong keo'), (N'Đế giày bị nứt'), (N'Logo bị phai màu'), 
+(N'Vải bị rách'), (N'Đế giày bị tách rời'), (N'Size không đúng'),
+(N'Không đúng màu sắc'), (N'Chất liệu kém chất lượng');
+
+SET @warOrderId = 1;
+SET @warCounter = 6;
+
+WHILE @warCounter <= 100 AND @warIterations < @warMaxIterations
+BEGIN
+    SET @warIterations = @warIterations + 1;
+    
+    -- Chỉ xử lý nếu order tồn tại và chưa có warranty cho order này
+    IF EXISTS (SELECT 1 FROM Orders WHERE id = @warOrderId)
+       AND NOT EXISTS (SELECT 1 FROM Warranties WHERE order_id = @warOrderId)
+    BEGIN
+        SET @warUserId = (SELECT user_id FROM Orders WHERE id = @warOrderId);
+        SET @warVariantId = (SELECT TOP 1 variant_id FROM Order_Details WHERE order_id = @warOrderId);
+        SET @warProductId = (SELECT product_id FROM Product_Variants WHERE id = @warVariantId);
+        
+        IF @warUserId IS NOT NULL AND @warProductId IS NOT NULL
+        BEGIN
+            SET @warIssue = (SELECT issue FROM (SELECT issue, ROW_NUMBER() OVER (ORDER BY NEWID()) as rn FROM @warIssues) t WHERE rn = (@warCounter % 8) + 1);
+            SET @warStatus = CASE (@warCounter % 5)
+                WHEN 0 THEN 'pending'
+                WHEN 1 THEN 'in_progress'
+                WHEN 2 THEN 'completed'
+                WHEN 3 THEN 'rejected'
+                ELSE 'pending'
+            END;
+            SET @warType = CASE (@warCounter % 2) WHEN 0 THEN 'repair' ELSE 'replace' END;
+            
+            INSERT INTO Warranties (order_id, user_id, product_id, variant_id, issue_description, warranty_type, warranty_months, status, 
+                                  admin_note, resolution_note, processed_by, processed_at, completed_at, purchase_date, submitted_at, created_at)
+            VALUES (@warOrderId, @warUserId, @warProductId, @warVariantId, @warIssue, @warType, 12, @warStatus,
+                   CASE WHEN @warStatus IN ('in_progress', 'completed', 'rejected') THEN N'Đã xử lý' ELSE NULL END,
+                   CASE WHEN @warStatus = 'completed' THEN N'Đã hoàn tất bảo hành' ELSE NULL END,
+                   CASE WHEN @warStatus IN ('in_progress', 'completed', 'rejected') THEN 1 ELSE NULL END,
+                   CASE WHEN @warStatus IN ('in_progress', 'completed', 'rejected') THEN DATEADD(day, @warCounter - 6, '2024-03-10') ELSE NULL END,
+                   CASE WHEN @warStatus = 'completed' THEN DATEADD(day, @warCounter - 5, '2024-03-15') ELSE NULL END,
+                   (SELECT created_at FROM Orders WHERE id = @warOrderId),
+                   DATEADD(day, @warCounter - 6, '2024-03-10'),
+                   DATEADD(day, @warCounter - 6, '2024-03-10'));
+            SET @warCounter = @warCounter + 1;
+        END;
+    END;
+    
+    SET @warOrderId = @warOrderId + 1;
+    IF @warOrderId > 100 
+    BEGIN
+        IF @warCounter < 100 AND @warIterations < @warMaxIterations
+        BEGIN
+            SET @warOrderId = 1;
+        END
+        ELSE
+        BEGIN
+            BREAK;
+        END;
+    END;
+END;
+
+PRINT '  + Inserted ~95 additional warranties (total 100 warranties)';
 PRINT 'TIER 7 HOAN THANH!';
 GO
 

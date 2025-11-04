@@ -2,9 +2,11 @@ package com.sneakery.store.service;
 
 import com.sneakery.store.dto.AdminReviewDto;
 import com.sneakery.store.dto.AdminReviewListDto;
+import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.Review;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.exception.ApiException;
+import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ReviewRepository;
 import com.sneakery.store.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,7 @@ public class AdminReviewService {
 
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     /**
      * Lấy tất cả reviews với pagination và filter
@@ -113,6 +117,17 @@ public class AdminReviewService {
         review.setUpdatedAt(LocalDateTime.now());
 
         Review updated = reviewRepository.save(review);
+        
+        // Đồng bộ: Cập nhật product rating và review_count khi review được approve/reject
+        try {
+            updateProductRating(review.getProduct().getId());
+            log.info("✅ Updated product rating for product ID: {}", review.getProduct().getId());
+        } catch (Exception e) {
+            log.error("❌ Failed to update product rating for product ID {}: {}", 
+                review.getProduct().getId(), e.getMessage());
+            // Không fail operation nếu update rating thất bại
+        }
+        
         return convertToDto(updated);
     }
 
@@ -126,8 +141,19 @@ public class AdminReviewService {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy review"));
 
+        Product product = review.getProduct();
         review.setDeletedAt(LocalDateTime.now());
         reviewRepository.save(review);
+        
+        // Đồng bộ: Cập nhật product rating và review_count khi review bị xóa
+        try {
+            updateProductRating(product.getId());
+            log.info("✅ Updated product rating after review deletion for product ID: {}", product.getId());
+        } catch (Exception e) {
+            log.error("❌ Failed to update product rating after deletion for product ID {}: {}", 
+                product.getId(), e.getMessage());
+            // Không fail operation nếu update rating thất bại
+        }
     }
 
     /**
@@ -229,6 +255,19 @@ public class AdminReviewService {
                 .updatedAt(review.getUpdatedAt())
                 .deletedAt(review.getDeletedAt())
                 .build();
+    }
+    
+    /**
+     * Đồng bộ: Cập nhật product rating và review_count bằng stored procedure
+     */
+    private void updateProductRating(Long productId) {
+        try {
+            jdbcTemplate.update("EXEC sp_UpdateProductRating ?", productId);
+            log.debug("✅ Called sp_UpdateProductRating for product ID: {}", productId);
+        } catch (Exception e) {
+            log.error("❌ Error calling sp_UpdateProductRating for product ID {}: {}", productId, e.getMessage());
+            throw new RuntimeException("Failed to update product rating", e);
+        }
     }
 }
 

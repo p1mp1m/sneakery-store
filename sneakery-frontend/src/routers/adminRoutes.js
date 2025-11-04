@@ -28,6 +28,8 @@ const AdminInventory = () => import('@/views/admin/AdminInventory.vue')
 const AdminLoyalty = () => import('@/views/admin/AdminLoyalty.vue')
 const AdminPayments = () => import('@/views/admin/AdminPayments.vue')
 const AdminEmailTemplates = () => import('@/views/admin/AdminEmailTemplates.vue')
+const AdminProfile = () => import('@/views/admin/AdminProfile.vue')
+const AdminChangePassword = () => import('@/views/admin/AdminChangePassword.vue')
 
 const adminRoutes = [
   {
@@ -214,6 +216,26 @@ const adminRoutes = [
           requiresAdmin: true,
           title: 'Cài đặt',
           icon: 'settings'
+        }
+      },
+      {
+        path: 'profile',
+        name: 'AdminProfile',
+        component: AdminProfile,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Hồ sơ',
+          icon: 'person'
+        }
+      },
+      {
+        path: 'change-password',
+        name: 'AdminChangePassword',
+        component: AdminChangePassword,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Đổi mật khẩu',
+          icon: 'lock'
         }
       },
       {

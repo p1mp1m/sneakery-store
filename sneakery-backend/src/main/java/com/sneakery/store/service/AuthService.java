@@ -7,7 +7,7 @@ import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.PasswordResetTokenRepository;
 import com.sneakery.store.repository.UserRepository;
 import com.sneakery.store.security.JwtTokenProvider;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -125,5 +125,63 @@ public class AuthService {
         // Đánh dấu đã dùng
         prt.setUsedAt(LocalDateTime.now());
         tokenRepository.save(prt);
+    }
+
+    // -------------------- GET PROFILE --------------------
+    @Transactional(readOnly = true)
+    public UserDto getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
+
+        return UserDto.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .build();
+    }
+
+    // -------------------- UPDATE PROFILE --------------------
+    @Transactional
+    public UserDto updateProfile(Long userId, UpdateProfileDto updateProfileDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
+
+        if (updateProfileDto.getFullName() != null && !updateProfileDto.getFullName().trim().isEmpty()) {
+            user.setFullName(updateProfileDto.getFullName().trim());
+        }
+
+        if (updateProfileDto.getPhoneNumber() != null) {
+            user.setPhoneNumber(updateProfileDto.getPhoneNumber().trim());
+        }
+
+        user = userRepository.save(user);
+
+        return UserDto.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .build();
+    }
+
+    // -------------------- CHANGE PASSWORD --------------------
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordDto changePasswordDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
+
+        // Xác thực mật khẩu hiện tại
+        if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không đúng");
+        }
+
+        // Cập nhật mật khẩu mới
+        user.setPasswordHash(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+        userRepository.save(user);
     }
 }

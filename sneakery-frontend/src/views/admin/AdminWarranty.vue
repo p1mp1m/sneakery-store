@@ -449,151 +449,37 @@ const fetchWarranties = async () => {
   try {
     loading.value = true
     
-    // Mock data cho warranties
-    const mockWarranties = [
-      {
-        id: 1,
-        orderId: 'ORD001',
-        orderNumber: 'ORD-2024-001',
-        userId: 101,
-        userName: 'Nguyễn Văn A',
-        userEmail: 'nguyenvana@email.com',
-        productId: 1,
-        productName: 'Nike Air Max 270',
-        productImage: '/placeholder-image.png',
-        variantId: 1,
-        variantName: 'Size 42 - Đen',
-        purchaseDate: '2024-01-01T00:00:00Z',
-        warrantyType: 'repair',
-        warrantyMonths: 12,
-        issueDescription: 'Giày bị bong keo sau 2 tuần sử dụng',
-        status: 'pending',
-        submittedAt: '2024-01-15T10:30:00Z',
-        adminNote: '',
-        resolutionNote: '',
-        processedAt: null,
-        completedAt: null
-      },
-      {
-        id: 2,
-        orderId: 'ORD002',
-        orderNumber: 'ORD-2024-002',
-        userId: 102,
-        userName: 'Trần Thị B',
-        userEmail: 'tranthib@email.com',
-        productId: 2,
-        productName: 'Adidas Ultraboost 22',
-        productImage: '/placeholder-image.png',
-        variantId: 2,
-        variantName: 'Size 40 - Trắng',
-        purchaseDate: '2023-12-15T00:00:00Z',
-        warrantyType: 'replace',
-        warrantyMonths: 12,
-        issueDescription: 'Đế giày bị nứt sau 1 tháng sử dụng',
-        status: 'in_progress',
-        submittedAt: '2024-01-10T14:20:00Z',
-        adminNote: 'Đang kiểm tra và liên hệ nhà sản xuất',
-        resolutionNote: '',
-        processedAt: '2024-01-12T09:00:00Z',
-        completedAt: null
-      },
-      {
-        id: 3,
-        orderId: 'ORD003',
-        orderNumber: 'ORD-2024-003',
-        userId: 103,
-        userName: 'Lê Văn C',
-        userEmail: 'levanc@email.com',
-        productId: 3,
-        productName: 'Jordan 1 Retro',
-        productImage: '/placeholder-image.png',
-        variantId: 3,
-        variantName: 'Size 41 - Đỏ',
-        purchaseDate: '2023-11-20T00:00:00Z',
-        warrantyType: 'replace',
-        warrantyMonths: 12,
-        issueDescription: 'Logo bị phai màu sau 2 tháng',
-        status: 'completed',
-        submittedAt: '2024-01-05T16:45:00Z',
-        adminNote: 'Đã xác nhận lỗi sản xuất',
-        resolutionNote: 'Đã gửi sản phẩm thay thế cho khách hàng',
-        processedAt: '2024-01-07T10:00:00Z',
-        completedAt: '2024-01-14T15:30:00Z'
-      },
-      {
-        id: 4,
-        orderId: 'ORD004',
-        orderNumber: 'ORD-2024-004',
-        userId: 104,
-        userName: 'Phạm Thị D',
-        userEmail: 'phamthid@email.com',
-        productId: 4,
-        productName: 'Converse Chuck Taylor',
-        productImage: '/placeholder-image.png',
-        variantId: 4,
-        variantName: 'Size 39 - Trắng',
-        purchaseDate: '2023-10-10T00:00:00Z',
-        warrantyType: 'repair',
-        warrantyMonths: 12,
-        issueDescription: 'Vải bị rách do sử dụng bình thường',
-        status: 'rejected',
-        submittedAt: '2024-01-08T11:15:00Z',
-        adminNote: 'Lỗi do sử dụng không đúng cách',
-        resolutionNote: 'Không thuộc phạm vi bảo hành',
-        processedAt: '2024-01-10T14:00:00Z',
-        completedAt: '2024-01-10T14:00:00Z'
-      },
-      {
-        id: 5,
-        orderId: 'ORD005',
-        orderNumber: 'ORD-2024-005',
-        userId: 105,
-        userName: 'Hoàng Văn E',
-        userEmail: 'hoangvane@email.com',
-        productId: 5,
-        productName: 'Vans Old Skool',
-        productImage: '/placeholder-image.png',
-        variantId: 5,
-        variantName: 'Size 43 - Đen',
-        purchaseDate: '2023-12-01T00:00:00Z',
-        warrantyType: 'repair',
-        warrantyMonths: 12,
-        issueDescription: 'Đế giày bị tách rời khỏi thân giày',
-        status: 'pending',
-        submittedAt: '2024-01-14T13:20:00Z',
-        adminNote: '',
-        resolutionNote: '',
-        processedAt: null,
-        completedAt: null
-      }
-    ]
-    
-    // Apply filters
-    let filteredWarranties = mockWarranties
+    // Load từ API - chỉ dùng dữ liệu thật từ database
+    const apiFilters = {}
     
     if (filters.search) {
-      filteredWarranties = filteredWarranties.filter(w => 
-        w.orderNumber.toLowerCase().includes(filters.search.toLowerCase()) ||
-        w.userName.toLowerCase().includes(filters.search.toLowerCase()) ||
-        w.productName.toLowerCase().includes(filters.search.toLowerCase())
-      )
+      apiFilters.search = filters.search
     }
     
     if (filters.status) {
-      filteredWarranties = filteredWarranties.filter(w => w.status === filters.status)
+      apiFilters.status = filters.status
     }
     
     if (filters.type) {
-      filteredWarranties = filteredWarranties.filter(w => w.warrantyType === filters.type)
+      apiFilters.warrantyType = filters.type
     }
     
-    warranties.value = filteredWarranties
+    const result = await adminStore.fetchWarranties(0, 100, apiFilters)
+    warranties.value = result.content || []
+    
+    // Update stats từ dữ liệu thật
     updateStats()
     
-    console.log('✅ Warranties loaded successfully')
+    if (warranties.value.length === 0) {
+      ElMessage.info('Chưa có yêu cầu bảo hành nào')
+    } else {
+      console.log('✅ Warranties loaded from API:', warranties.value.length, 'warranties')
+    }
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
-    ElMessage.error('Không thể tải danh sách bảo hành')
+    ElMessage.error('Không thể tải danh sách bảo hành: ' + (error.message || 'Không thể kết nối đến server'))
+    warranties.value = []
+    updateStats()
   } finally {
     loading.value = false
   }

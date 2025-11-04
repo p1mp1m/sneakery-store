@@ -409,15 +409,7 @@ const saleToDelete = ref(null)
 const currentPage = ref(1)
 const itemsPerPage = 10
 
-// Mock products
-const mockProducts = ref([
-  { id: 1, name: 'Nike Air Force 1', price: 2500000, brandName: 'Nike' },
-  { id: 2, name: 'Adidas Ultraboost', price: 4500000, brandName: 'Adidas' },
-  { id: 3, name: 'Converse Chuck Taylor', price: 1500000, brandName: 'Converse' },
-  { id: 4, name: 'Puma Suede Classic', price: 1800000, brandName: 'Puma' }
-])
-
-// Available products from API
+// Available products from API - chỉ dùng dữ liệu thật từ database
 const availableProducts = ref([])
 
 // Form data

@@ -327,7 +327,7 @@ const toggleProfileMenu = () => {
 
 const handleProfileEdit = () => {
   showProfileMenu.value = false;
-  ElMessage.info('Chức năng đang được phát triển');
+  router.push('/admin/profile');
 };
 
 const handleSettings = () => {
@@ -337,7 +337,7 @@ const handleSettings = () => {
 
 const handleChangePassword = () => {
   showProfileMenu.value = false;
-  ElMessage.info('Chức năng đang được phát triển');
+  router.push('/admin/change-password');
 };
 
 const handleLogout = () => {

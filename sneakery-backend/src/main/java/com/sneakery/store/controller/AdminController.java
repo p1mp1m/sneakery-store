@@ -7,6 +7,7 @@ import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.UserRepository;
 import com.sneakery.store.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -38,24 +40,50 @@ public class AdminController {
     @GetMapping("/dashboard/stats")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
+        log.info("📊 GET /api/admin/dashboard/stats");
         Map<String, Object> stats = new HashMap<>();
 
-        // Lấy dữ liệu thực từ database
-        long totalUsers = userRepository.count();
-        long totalProducts = productRepository.count();
-        long totalOrders = orderRepository.count();
+        try {
+            // Lấy dữ liệu thực từ database
+            log.debug("Fetching totalUsers...");
+            long totalUsers = userRepository.count();
+            log.debug("totalUsers: {}", totalUsers);
+            
+            log.debug("Fetching totalProducts...");
+            long totalProducts = productRepository.count();
+            log.debug("totalProducts: {}", totalProducts);
+            
+            log.debug("Fetching totalOrders...");
+            long totalOrders = orderRepository.count();
+            log.debug("totalOrders: {}", totalOrders);
+            
+            stats.put("totalUsers", totalUsers);
+            stats.put("totalProducts", totalProducts);
+            stats.put("totalOrders", totalOrders);
+        } catch (Exception e) {
+            log.error("Error fetching basic stats: {}", e.getMessage(), e);
+            stats.put("totalUsers", 0);
+            stats.put("totalProducts", 0);
+            stats.put("totalOrders", 0);
+        }
         
         // Tính tổng doanh thu từ các payment đã hoàn thành
-        BigDecimal totalRevenue = paymentRepository.sumAmountByStatus("completed");
-        if (totalRevenue == null) {
-            totalRevenue = BigDecimal.ZERO;
+        try {
+            log.debug("Fetching totalRevenue...");
+            BigDecimal revenue = paymentRepository.sumAmountByStatus("completed");
+            log.debug("Revenue from query: {}", revenue);
+            if (revenue != null) {
+                stats.put("totalRevenue", revenue.doubleValue());
+            } else {
+                stats.put("totalRevenue", 0.0);
+            }
+        } catch (Exception e) {
+            // Nếu có lỗi khi query revenue, set về 0
+            log.error("Error fetching revenue: {}", e.getMessage(), e);
+            stats.put("totalRevenue", 0.0);
         }
 
-        stats.put("totalUsers", totalUsers);
-        stats.put("totalProducts", totalProducts);
-        stats.put("totalOrders", totalOrders);
-        stats.put("totalRevenue", totalRevenue);
-
+        log.info("✅ Dashboard stats response: {}", stats);
         return ResponseEntity.ok(stats);
     }
 
