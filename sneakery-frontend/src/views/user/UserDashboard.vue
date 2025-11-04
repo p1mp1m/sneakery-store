@@ -307,7 +307,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
-import axios from 'axios';
+import userService from '@/services/userService';
 import ProductService from '@/services/productService';
 import { ElMessage } from 'element-plus';
 
@@ -382,13 +382,9 @@ const loadDashboardData = async () => {
   loading.value = true;
   try {
     // Load orders từ API - chỉ dùng dữ liệu thật từ database
-    const token = localStorage.getItem('token');
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    
     try {
       // Lấy orders của user
-      const ordersResponse = await axios.get('http://localhost:8080/api/orders', { headers });
-      const allOrders = ordersResponse.data || [];
+      const allOrders = await userService.getMyOrders() || [];
       
       // Tính toán order stats từ dữ liệu thật
       const totalOrders = allOrders.length;

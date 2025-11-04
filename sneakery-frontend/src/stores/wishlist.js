@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import wishlistService from '@/services/wishlistService'
+import userService from '@/services/userService'
 
 export const useWishlistStore = defineStore('wishlist', () => {
   // State
@@ -34,7 +34,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
     error.value = null
     
     try {
-      const data = await wishlistService.getWishlist()
+      const data = await userService.getWishlist()
       wishlistItems.value = data
       return data
     } catch (err) {
@@ -54,7 +54,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
     error.value = null
     
     try {
-      const data = await wishlistService.addToWishlist(productId)
+      const data = await userService.addToWishlist(productId)
       wishlistItems.value.unshift(data) // Thêm vào đầu mảng
       return data
     } catch (err) {
@@ -74,7 +74,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
     error.value = null
     
     try {
-      await wishlistService.removeFromWishlist(productId)
+      await userService.removeFromWishlist(productId)
       
       // Xóa khỏi state local
       wishlistItems.value = wishlistItems.value.filter(
@@ -119,7 +119,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
     error.value = null
     
     try {
-      await wishlistService.clearWishlist()
+      await userService.clearWishlist()
       wishlistItems.value = []
     } catch (err) {
       error.value = err.response?.data?.message || 'Không thể xóa wishlist'

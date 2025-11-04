@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import notificationService from '@/services/notificationService';
+import userService from '@/services/userService';
 
 export const useNotificationStore = defineStore('notification', () => {
     // State
@@ -31,7 +31,7 @@ export const useNotificationStore = defineStore('notification', () => {
         error.value = null;
 
         try {
-            const data = await notificationService.getNotifications(page, size);
+            const data = await userService.getNotifications(page, size);
             
             if (page === 0) {
                 notifications.value = data.content;
@@ -56,7 +56,7 @@ export const useNotificationStore = defineStore('notification', () => {
      */
     const fetchUnreadCount = async () => {
         try {
-            const count = await notificationService.getUnreadCount();
+            const count = await userService.getUnreadCount();
             unreadCount.value = count;
             console.log(`✅ Unread notifications: ${count}`);
         } catch (err) {
@@ -69,7 +69,7 @@ export const useNotificationStore = defineStore('notification', () => {
      */
     const markAsRead = async (notificationId) => {
         try {
-            await notificationService.markAsRead(notificationId);
+            await userService.markAsRead(notificationId);
             
             // Update local state
             const notification = notifications.value.find(n => n.id === notificationId);
@@ -95,7 +95,7 @@ export const useNotificationStore = defineStore('notification', () => {
      */
     const markAllAsRead = async () => {
         try {
-            await notificationService.markAllAsRead();
+            await userService.markAllAsRead();
             
             // Update local state
             notifications.value.forEach(n => {

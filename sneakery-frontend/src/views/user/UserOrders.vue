@@ -178,7 +178,7 @@
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import axios from 'axios';
+import userService from '@/services/userService';
 
 const authStore = useAuthStore();
 
@@ -192,17 +192,11 @@ const selectedOrder = ref(null);
 const fetchOrders = async () => {
   try {
     loading.value = true;
-    
-    const response = await axios.get('http://localhost:8080/api/orders/my', {
-      headers: {
-        Authorization: `Bearer ${authStore.token}`,
-      },
-    });
-    
-    orders.value = response.data;
+    const data = await userService.getMyOrders();
+    orders.value = data;
   } catch (error) {
     console.error('Error fetching orders:', error);
-    ElMessage.error('Không thể tải danh sách đơn hàng');
+    ElMessage.error(error.message || 'Không thể tải danh sách đơn hàng');
   } finally {
     loading.value = false;
   }
@@ -210,17 +204,12 @@ const fetchOrders = async () => {
 
 const viewOrderDetail = async (orderId) => {
   try {
-    const response = await axios.get(`http://localhost:8080/api/orders/my/${orderId}`, {
-      headers: {
-        Authorization: `Bearer ${authStore.token}`,
-      },
-    });
-    
-    selectedOrder.value = response.data;
+    const data = await userService.getMyOrderById(orderId);
+    selectedOrder.value = data;
     showDetail.value = true;
   } catch (error) {
     console.error('Error fetching order detail:', error);
-    ElMessage.error('Không thể tải chi tiết đơn hàng');
+    ElMessage.error(error.message || 'Không thể tải chi tiết đơn hàng');
   }
 };
 

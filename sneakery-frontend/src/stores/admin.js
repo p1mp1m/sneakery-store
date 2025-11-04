@@ -326,6 +326,36 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  const createUser = async (userData) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const user = await AdminService.createUser(userData)
+      return user
+    } catch (err) {
+      error.value = err.message || 'Lỗi khi tạo người dùng'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteUser = async (id) => {
+    try {
+      loading.value = true
+      error.value = null
+      
+      await AdminService.deleteUser(id)
+      return true
+    } catch (err) {
+      error.value = err.message || 'Lỗi khi xóa người dùng'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Brand management
   const fetchBrands = async () => {
     try {
@@ -557,9 +587,9 @@ const createSole = async (soleData) => {
     const sole = await AdminService.createSole(soleData)
     // ✅ Cập nhật reactive list đúng cách
     if (soles.value) {
-      soles.value = [...soles.value, soles]
+      soles.value = [...soles.value, sole]
     } else {
-      soles.value = [soles]
+      soles.value = [sole]
     }
     return sole
   } catch (err) {
@@ -1424,6 +1454,8 @@ const createMultipleProductVariants = async (variantList) => {
     fetchUsers,
     updateUserStatus,
     updateUserRole,
+    createUser,
+    deleteUser,
     fetchBrands,
     createBrand,
     updateBrand,

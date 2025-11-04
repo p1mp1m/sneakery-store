@@ -15,6 +15,10 @@
             <i class="material-icons text-base">download</i>
             Export Excel
           </button>
+          <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">add</i>
+            Thêm người dùng
+          </button>
         </div>
       </div>
     </div>
@@ -170,9 +174,14 @@
                 </span>
               </td>
               <td class="px-4 py-3 text-center">
-                <button @click="confirmToggleStatus(user)" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors" :class="user.isActive ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50' : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50'">
-                  {{ user.isActive ? 'Khóa' : 'Mở khóa' }}
-                </button>
+                <div class="flex items-center justify-center gap-2">
+                  <button @click="confirmToggleStatus(user)" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors" :class="user.isActive ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50' : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50'">
+                    {{ user.isActive ? 'Khóa' : 'Mở khóa' }}
+                  </button>
+                  <button @click="confirmDelete(user)" class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Xóa người dùng">
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -233,6 +242,114 @@
       :loading="updating"
       @confirm="handleToggleStatus"
     />
+
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showDeleteConfirm"
+      type="danger"
+      title="Xác nhận xóa người dùng"
+      :message="`Bạn có chắc chắn muốn xóa người dùng '${userToDelete?.fullName}' (${userToDelete?.email})?`"
+      description="Hành động này không thể hoàn tác! Người dùng sẽ bị xóa khỏi hệ thống."
+      confirm-text="Xóa người dùng"
+      cancel-text="Hủy"
+      :loading="deleting"
+      @confirm="handleDelete"
+    />
+
+    <!-- Create User Modal -->
+    <div v-if="showCreateModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeCreateModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">add</i>
+            Thêm người dùng mới
+          </h2>
+          <button @click="closeCreateModal" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
+          </button>
+        </div>
+
+        <div class="p-4 space-y-4">
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Email *</label>
+            <input 
+              v-model="newUser.email"
+              type="email" 
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="user@example.com"
+            />
+            <span v-if="formErrors.email" class="text-xs text-red-600 dark:text-red-400">{{ formErrors.email }}</span>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Mật khẩu *</label>
+            <input 
+              v-model="newUser.password"
+              type="password" 
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Tối thiểu 6 ký tự"
+            />
+            <span v-if="formErrors.password" class="text-xs text-red-600 dark:text-red-400">{{ formErrors.password }}</span>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Họ tên *</label>
+            <input 
+              v-model="newUser.fullName"
+              type="text" 
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Nguyễn Văn A"
+            />
+            <span v-if="formErrors.fullName" class="text-xs text-red-600 dark:text-red-400">{{ formErrors.fullName }}</span>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số điện thoại</label>
+            <input 
+              v-model="newUser.phoneNumber"
+              type="tel" 
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="0123456789"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Vai trò *</label>
+            <select v-model="newUser.role" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="USER">Người dùng</option>
+              <option value="ADMIN">Quản trị viên</option>
+              <option value="MODERATOR">Điều hành viên</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isActiveNew"
+              v-model="newUser.isActive"
+              class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+            />
+            <label for="isActiveNew" class="text-sm text-gray-700 dark:text-gray-300">
+              Kích hoạt tài khoản ngay
+            </label>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="closeCreateModal" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            Hủy
+          </button>
+          <button 
+            @click="handleCreateUser" 
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="creating"
+          >
+            <i class="material-icons text-base" :class="{ 'animate-spin': creating }">{{ creating ? 'hourglass_empty' : 'save' }}</i>
+            {{ creating ? 'Đang tạo...' : 'Tạo người dùng' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -276,6 +393,24 @@ const updating = ref(false)
 // Status toggle confirmation
 const showStatusConfirm = ref(false)
 const userToToggle = ref(null)
+
+// Delete confirmation
+const showDeleteConfirm = ref(false)
+const userToDelete = ref(null)
+const deleting = ref(false)
+
+// Create user modal
+const showCreateModal = ref(false)
+const creating = ref(false)
+const newUser = ref({
+  email: '',
+  password: '',
+  fullName: '',
+  phoneNumber: '',
+  role: 'USER',
+  isActive: true
+})
+const formErrors = ref({})
 
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value))
 
@@ -523,6 +658,109 @@ const handleToggleStatus = async () => {
     ElMessage.error('Không thể cập nhật trạng thái. Vui lòng thử lại!')
   } finally {
     updating.value = false
+  }
+}
+
+// Delete user
+const confirmDelete = (user) => {
+  userToDelete.value = user
+  showDeleteConfirm.value = true
+}
+
+const handleDelete = async () => {
+  try {
+    deleting.value = true
+    await adminStore.deleteUser(userToDelete.value.id)
+    ElMessage.success(`Đã xóa người dùng "${userToDelete.value.fullName}" thành công!`)
+    showDeleteConfirm.value = false
+    userToDelete.value = null
+    await fetchUsers()
+  } catch (error) {
+    console.error('Lỗi khi xóa người dùng:', error)
+    const errorMsg = error?.message || error?.response?.data?.message || 'Không thể xóa người dùng. Vui lòng thử lại!'
+    ElMessage.error(errorMsg)
+  } finally {
+    deleting.value = false
+  }
+}
+
+// Create user
+const openCreateModal = () => {
+  newUser.value = {
+    email: '',
+    password: '',
+    fullName: '',
+    phoneNumber: '',
+    role: 'USER',
+    isActive: true
+  }
+  formErrors.value = {}
+  showCreateModal.value = true
+}
+
+const closeCreateModal = () => {
+  showCreateModal.value = false
+  newUser.value = {
+    email: '',
+    password: '',
+    fullName: '',
+    phoneNumber: '',
+    role: 'USER',
+    isActive: true
+  }
+  formErrors.value = {}
+}
+
+const validateCreateUser = () => {
+  formErrors.value = {}
+  
+  if (!newUser.value.email || !newUser.value.email.trim()) {
+    formErrors.value.email = 'Email không được để trống'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newUser.value.email)) {
+    formErrors.value.email = 'Email không hợp lệ'
+  }
+  
+  if (!newUser.value.password || !newUser.value.password.trim()) {
+    formErrors.value.password = 'Mật khẩu không được để trống'
+  } else if (newUser.value.password.length < 6) {
+    formErrors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
+  }
+  
+  if (!newUser.value.fullName || !newUser.value.fullName.trim()) {
+    formErrors.value.fullName = 'Họ tên không được để trống'
+  } else if (newUser.value.fullName.trim().length < 2) {
+    formErrors.value.fullName = 'Họ tên phải có ít nhất 2 ký tự'
+  }
+  
+  return Object.keys(formErrors.value).length === 0
+}
+
+const handleCreateUser = async () => {
+  if (!validateCreateUser()) {
+    ElMessage.warning('Vui lòng kiểm tra lại thông tin form!')
+    return
+  }
+
+  try {
+    creating.value = true
+    await adminStore.createUser(newUser.value)
+    ElMessage.success(`Đã tạo người dùng "${newUser.value.fullName}" thành công!`)
+    closeCreateModal()
+    await fetchUsers()
+  } catch (error) {
+    console.error('Lỗi khi tạo người dùng:', error)
+    const errorMsg = error?.message || error?.response?.data?.message || 'Không thể tạo người dùng. Vui lòng thử lại!'
+    ElMessage.error(errorMsg)
+    
+    // Hiển thị lỗi cụ thể nếu có
+    if (error?.response?.data?.validationErrors) {
+      const validationErrors = error.response.data.validationErrors
+      Object.keys(validationErrors).forEach(key => {
+        formErrors.value[key] = validationErrors[key][0]
+      })
+    }
+  } finally {
+    creating.value = false
   }
 }
 

@@ -510,9 +510,15 @@
                   {{ formatCurrency(currentReceipt?.subtotal || (currentReceipt?.totalAmount + (currentReceipt?.discountAmount || 0))) }}
                 </span>
               </div>
-              <div v-if="currentReceipt?.discountAmount && currentReceipt.discountAmount > 0" class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Giảm giá:</span>
-                <span class="font-semibold text-red-600 dark:text-red-400">-{{ formatCurrency(currentReceipt.discountAmount) }}</span>
+              <div v-if="currentReceipt?.discountAmount && currentReceipt.discountAmount > 0" class="space-y-1">
+                <div v-if="currentReceipt?.couponCode" class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500 dark:text-gray-400">Mã giảm giá:</span>
+                  <span class="font-semibold text-purple-600 dark:text-purple-400">{{ currentReceipt.couponCode }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-gray-600 dark:text-gray-400">Giảm giá:</span>
+                  <span class="font-semibold text-red-600 dark:text-red-400">-{{ formatCurrency(currentReceipt.discountAmount) }}</span>
+                </div>
               </div>
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600 dark:text-gray-400">Phương thức:</span>

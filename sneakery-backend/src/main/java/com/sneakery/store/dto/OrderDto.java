@@ -13,6 +13,9 @@ public class OrderDto {
     private Long id;
     private String orderNumber; // Mã đơn hàng
     private String status;
+    private BigDecimal subtotal; // Tạm tính (trước khi giảm giá)
+    private BigDecimal discountAmount; // Số tiền giảm giá
+    private String couponCode; // Mã giảm giá đã áp dụng
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
     private AddressDto addressShipping;

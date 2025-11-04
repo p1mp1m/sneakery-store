@@ -1,11 +1,10 @@
 package com.sneakery.store.controller;
 
+import com.sneakery.store.dto.CreateUserRequestDto;
 import com.sneakery.store.dto.UserDto;
 import com.sneakery.store.repository.OrderRepository;
-import com.sneakery.store.repository.PaymentRepository;
-import com.sneakery.store.repository.ProductRepository;
-import com.sneakery.store.repository.UserRepository;
 import com.sneakery.store.service.AdminUserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -14,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +29,8 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AdminController {
 
-    private final UserRepository userRepository;
-    private final ProductRepository productRepository;
+
     private final OrderRepository orderRepository;
-    private final PaymentRepository paymentRepository;
     private final AdminUserService adminUserService;
 
     /**
@@ -166,5 +164,30 @@ public class AdminController {
         String role = request.get("role");
         UserDto updatedUser = adminUserService.updateUserRole(id, role);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    /**
+     * API: Tạo user mới (Admin only)
+     */
+    @PostMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDto> createUser(
+            @Valid @RequestBody CreateUserRequestDto requestDto
+    ) {
+        UserDto newUser = adminUserService.createUser(requestDto);
+        return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+    }
+
+    /**
+     * API: Xóa user (Admin only)
+     */
+    @DeleteMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable Long id) {
+        adminUserService.deleteUser(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Đã xóa người dùng thành công");
+        response.put("status", "success");
+        return ResponseEntity.ok(response);
     }
 }

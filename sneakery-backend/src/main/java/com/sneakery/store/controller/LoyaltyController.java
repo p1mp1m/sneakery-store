@@ -23,6 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/api/loyalty")
 @PreAuthorize("isAuthenticated()")
+@CrossOrigin(origins = "http://localhost:5173")
 public class LoyaltyController {
 
     private final LoyaltyService loyaltyService;

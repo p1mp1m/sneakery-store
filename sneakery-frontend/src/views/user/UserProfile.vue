@@ -389,7 +389,7 @@ import { useLoyaltyStore } from '@/stores/loyalty';
 import { useTheme } from '@/composables/useTheme';
 import { storeToRefs } from 'pinia';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import axios from 'axios';
+import userService from '@/services/userService';
 
 const authStore = useAuthStore();
 const loyaltyStore = useLoyaltyStore();
@@ -496,13 +496,10 @@ const changePassword = async () => {
 const loadAddresses = async () => {
   try {
     loadingAddresses.value = true;
-    const response = await axios.get('http://localhost:8080/api/addresses', {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    });
-    addresses.value = response.data;
+    addresses.value = await userService.getMyAddresses();
   } catch (error) {
     console.error('Error loading addresses:', error);
-    ElMessage.error('Không thể tải danh sách địa chỉ');
+    ElMessage.error(error.message || 'Không thể tải danh sách địa chỉ');
   } finally {
     loadingAddresses.value = false;
   }
@@ -528,38 +525,23 @@ const saveAddress = async () => {
   try {
     if (editingAddress.value) {
       // Update existing address
-      const response = await axios.put(
-        `http://localhost:8080/api/addresses/${editingAddress.value.id}`,
-        addressForm,
-        {
-          headers: { Authorization: `Bearer ${authStore.token}` },
-        }
-      );
-      
+      const updatedAddress = await userService.updateAddress(editingAddress.value.id, addressForm);
       const index = addresses.value.findIndex(a => a.id === editingAddress.value.id);
       if (index !== -1) {
-        addresses.value[index] = response.data;
+        addresses.value[index] = updatedAddress;
       }
-      
       ElMessage.success('Cập nhật địa chỉ thành công');
     } else {
       // Create new address
-      const response = await axios.post(
-        'http://localhost:8080/api/addresses',
-        addressForm,
-        {
-          headers: { Authorization: `Bearer ${authStore.token}` },
-        }
-      );
-      
-      addresses.value.push(response.data);
+      const newAddress = await userService.createAddress(addressForm);
+      addresses.value.push(newAddress);
       ElMessage.success('Thêm địa chỉ thành công');
     }
 
     closeAddressForm();
   } catch (error) {
     console.error('Error saving address:', error);
-    ElMessage.error('Không thể lưu địa chỉ');
+    ElMessage.error(error.message || 'Không thể lưu địa chỉ');
   }
 };
 
@@ -575,10 +557,7 @@ const deleteAddress = async (id) => {
       }
     );
     
-    await axios.delete(`http://localhost:8080/api/addresses/${id}`, {
-      headers: { Authorization: `Bearer ${authStore.token}` },
-    });
-
+    await userService.deleteAddress(id);
     addresses.value = addresses.value.filter(a => a.id !== id);
     ElMessage.success('Đã xóa địa chỉ');
   } catch (error) {

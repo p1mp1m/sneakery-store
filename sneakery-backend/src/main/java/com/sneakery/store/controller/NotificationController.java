@@ -25,6 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/api/notifications")
 @PreAuthorize("isAuthenticated()")
+@CrossOrigin(origins = "http://localhost:5173")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -49,11 +50,10 @@ public class NotificationController {
             @RequestParam(defaultValue = "20") int size,
             Authentication authentication
     ) {
-        log.info("📍 GET /api/notifications");
-        
         Long userId = getUserIdFromAuthentication(authentication);
-        Pageable pageable = PageRequest.of(page, size);
+        log.info("📍 GET /api/notifications - User: {}, page: {}, size: {}", userId, page, size);
         
+        Pageable pageable = PageRequest.of(page, size);
         Page<Notification> notifications = notificationService.getUserNotifications(userId, pageable);
         return ResponseEntity.ok(notifications);
     }
@@ -63,11 +63,10 @@ public class NotificationController {
      */
     @GetMapping("/unread-count")
     public ResponseEntity<Map<String, Long>> getUnreadCount(Authentication authentication) {
-        log.info("📍 GET /api/notifications/unread-count");
-        
         Long userId = getUserIdFromAuthentication(authentication);
-        long unreadCount = notificationService.getUnreadCount(userId);
+        log.info("📍 GET /api/notifications/unread-count - User: {}", userId);
         
+        long unreadCount = notificationService.getUnreadCount(userId);
         Map<String, Long> response = new HashMap<>();
         response.put("count", unreadCount);
         
@@ -82,11 +81,10 @@ public class NotificationController {
             @PathVariable Long id,
             Authentication authentication
     ) {
-        log.info("📍 PUT /api/notifications/{}/read", id);
-        
         Long userId = getUserIdFromAuthentication(authentication);
-        notificationService.markAsRead(id, userId);
+        log.info("📍 PUT /api/notifications/{}/read - User: {}", id, userId);
         
+        notificationService.markAsRead(id, userId);
         return ResponseEntity.ok().build();
     }
 
@@ -95,11 +93,10 @@ public class NotificationController {
      */
     @PutMapping("/read-all")
     public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
-        log.info("📍 PUT /api/notifications/read-all");
-        
         Long userId = getUserIdFromAuthentication(authentication);
-        notificationService.markAllAsRead(userId);
+        log.info("📍 PUT /api/notifications/read-all - User: {}", userId);
         
+        notificationService.markAllAsRead(userId);
         return ResponseEntity.ok().build();
     }
 }

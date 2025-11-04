@@ -655,6 +655,7 @@ import { useLoyaltyStore } from '@/stores/loyalty';
 import { storeToRefs } from 'pinia';
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
+import userService from '@/services/userService';
 import * as guestCartService from '@/services/guestCartService';
 
 const router = useRouter();
@@ -766,10 +767,7 @@ const fetchData = async () => {
     } else {
       // Authenticated user flow
       // Fetch cart
-      const cartRes = await axios.get('http://localhost:8080/api/cart', {
-        headers: { Authorization: `Bearer ${authStore.token}` },
-      });
-      cart.value = cartRes.data;
+      cart.value = await userService.getMyCart();
 
       // Check if cart is empty
       if (!cart.value || !cart.value.items || cart.value.items.length === 0) {
@@ -780,10 +778,7 @@ const fetchData = async () => {
 
       // Fetch addresses
       try {
-        const addrRes = await axios.get('http://localhost:8080/api/addresses', {
-          headers: { Authorization: `Bearer ${authStore.token}` },
-        });
-        addresses.value = addrRes.data || [];
+        addresses.value = await userService.getMyAddresses() || [];
 
         // Auto-select first address
         if (addresses.value.length > 0) {
@@ -838,16 +833,10 @@ const saveAddress = async () => {
   }
 
   try {
-    const response = await axios.post(
-      'http://localhost:8080/api/addresses',
-      newAddress.value,
-      {
-        headers: { Authorization: `Bearer ${authStore.token}` },
-      }
-    );
+    const response = await userService.createAddress(newAddress.value);
 
-    addresses.value.push(response.data);
-    selectedAddress.value = response.data.id;
+    addresses.value.push(response);
+    selectedAddress.value = response.id;
     showAddressForm.value = false;
 
     // Reset form
@@ -923,14 +912,7 @@ const handleCheckout = async () => {
         pointsUsed: usePoints.value && pointsToUse.value > 0 ? pointsToUse.value : null,
       };
 
-      const response = await axios.post(
-        'http://localhost:8080/api/orders/checkout',
-        checkoutData,
-        {
-          headers: { Authorization: `Bearer ${authStore.token}` },
-        }
-      );
-
+      await userService.checkout(checkoutData);
       ElMessage.success('Đặt hàng thành công!');
 
       // Redirect to orders
@@ -940,7 +922,7 @@ const handleCheckout = async () => {
     }
   } catch (error) {
     console.error('Error during checkout:', error);
-    ElMessage.error(error.response?.data?.message || 'Không thể đặt hàng');
+    ElMessage.error(error.message || error.response?.data?.message || 'Không thể đặt hàng');
   } finally {
     processing.value = false;
   }

@@ -590,10 +590,19 @@ public class OrderService {
         
         PaymentDto paymentDto = paymentDtoBuilder.build();
 
+        // Lấy coupon code nếu có
+        String couponCode = null;
+        if (order.getCoupon() != null) {
+            couponCode = order.getCoupon().getCode();
+        }
+
         return OrderDto.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .status(order.getStatus())
+                .subtotal(order.getSubtotal())
+                .discountAmount(order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO)
+                .couponCode(couponCode)
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
                 .addressShipping(convertToAddressDto(order.getAddressShipping()))

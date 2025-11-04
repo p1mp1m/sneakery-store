@@ -42,7 +42,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(u.phoneNumber) LIKE LOWER(CONCAT('%', :search, '%'))) " +
             "AND (:role IS NULL OR :role = '' OR u.role = :role) " +
-            "AND (:isActive IS NULL OR u.isActive = :isActive)")
+            "AND (:isActive IS NULL OR u.isActive = :isActive) " +
+            "AND (u.deletedAt IS NULL)")
     Page<User> findAllWithFilters(
             @Param("search") String search,
             @Param("role") String role,

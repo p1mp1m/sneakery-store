@@ -192,7 +192,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import axios from 'axios';
+import userService from '@/services/userService';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -233,15 +233,10 @@ const totalAmount = computed(() => {
 const fetchCart = async () => {
   try {
     loading.value = true;
-    const response = await axios.get('http://localhost:8080/api/cart', {
-      headers: {
-        Authorization: `Bearer ${authStore.token}`,
-      },
-    });
-    cart.value = response.data;
+    cart.value = await userService.getMyCart();
   } catch (error) {
     console.error('Error fetching cart:', error);
-    ElMessage.error('Không thể tải giỏ hàng');
+    ElMessage.error(error.message || 'Không thể tải giỏ hàng');
   } finally {
     loading.value = false;
   }
@@ -251,25 +246,15 @@ const updateQuantity = async (item, newQuantity) => {
   if (newQuantity < 1) return;
 
   try {
-    await axios.post(
-      'http://localhost:8080/api/cart/item',
-      {
-        variantId: item.variantId,
-        quantity: newQuantity,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
-      }
-    );
-
-    // Refresh cart
+    await userService.addItemToCart({
+      variantId: item.variantId,
+      quantity: newQuantity,
+    });
     await fetchCart();
     ElMessage.success('Đã cập nhật số lượng');
   } catch (error) {
     console.error('Error updating quantity:', error);
-    ElMessage.error('Không thể cập nhật số lượng');
+    ElMessage.error(error.message || 'Không thể cập nhật số lượng');
   }
 };
 
@@ -285,18 +270,13 @@ const removeItem = async (item) => {
       }
     );
 
-    await axios.delete(`http://localhost:8080/api/cart/item/${item.variantId}`, {
-      headers: {
-        Authorization: `Bearer ${authStore.token}`,
-      },
-    });
-
+    await userService.removeItemFromCart(item.variantId);
     await fetchCart();
     ElMessage.success('Đã xóa sản phẩm khỏi giỏ hàng');
   } catch (error) {
     if (error !== 'cancel') {
       console.error('Error removing item:', error);
-      ElMessage.error('Không thể xóa sản phẩm');
+      ElMessage.error(error.message || 'Không thể xóa sản phẩm');
     }
   }
 };

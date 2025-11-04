@@ -299,6 +299,24 @@ class AdminService {
     }
   }
 
+  async createUser(userData) {
+    try {
+      const response = await adminApi.post('/users', userData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async deleteUser(id) {
+    try {
+      const response = await adminApi.delete(`/users/${id}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   // ===== BRAND MANAGEMENT =====
   async getBrands() {
     try {

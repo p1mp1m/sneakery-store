@@ -4,8 +4,10 @@ import com.sneakery.store.dto.WishlistDto;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.service.WishlistService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +18,11 @@ import java.util.Map;
  * Controller: WishlistController
  * API endpoints quản lý danh sách yêu thích
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/wishlist")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
 @CrossOrigin(origins = "http://localhost:5173")
 public class WishlistController {
 
@@ -32,6 +36,7 @@ public class WishlistController {
     public ResponseEntity<List<WishlistDto>> getMyWishlist(
             @AuthenticationPrincipal User userPrincipal
     ) {
+        log.info("📍 GET /api/wishlist - User: {}", userPrincipal.getId());
         List<WishlistDto> wishlist = wishlistService.getWishlistByUserId(userPrincipal.getId());
         return ResponseEntity.ok(wishlist);
     }
@@ -45,6 +50,7 @@ public class WishlistController {
             @PathVariable Long productId,
             @AuthenticationPrincipal User userPrincipal
     ) {
+        log.info("📍 POST /api/wishlist/{} - User: {}", productId, userPrincipal.getId());
         WishlistDto wishlistDto = wishlistService.addToWishlist(userPrincipal.getId(), productId);
         return ResponseEntity.status(HttpStatus.CREATED).body(wishlistDto);
     }
@@ -58,6 +64,7 @@ public class WishlistController {
             @PathVariable Long productId,
             @AuthenticationPrincipal User userPrincipal
     ) {
+        log.info("📍 DELETE /api/wishlist/{} - User: {}", productId, userPrincipal.getId());
         wishlistService.removeFromWishlist(userPrincipal.getId(), productId);
         return ResponseEntity.ok(Map.of("message", "Đã xóa sản phẩm khỏi danh sách yêu thích"));
     }

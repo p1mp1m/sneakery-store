@@ -6,14 +6,18 @@ import com.sneakery.store.entity.User;
 import com.sneakery.store.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173") // Cho phép VueJS gọi
+@PreAuthorize("isAuthenticated()")
+@CrossOrigin(origins = "http://localhost:5173")
 public class CartController {
 
     private final CartService cartService;
@@ -23,8 +27,9 @@ public class CartController {
      */
     @GetMapping
     public ResponseEntity<CartDto> getMyCart(
-            @AuthenticationPrincipal User userPrincipal // Tự động lấy user từ JWT
+            @AuthenticationPrincipal User userPrincipal
     ) {
+        log.info("📍 GET /api/cart - User: {}", userPrincipal.getId());
         CartDto cart = cartService.getCartByUserId(userPrincipal.getId());
         return ResponseEntity.ok(cart);
     }
@@ -37,6 +42,7 @@ public class CartController {
             @AuthenticationPrincipal User userPrincipal,
             @Valid @RequestBody AddToCartRequestDto requestDto
     ) {
+        log.info("📍 POST /api/cart/item - User: {}, VariantId: {}", userPrincipal.getId(), requestDto.getVariantId());
         CartDto cart = cartService.addItemToCart(userPrincipal.getId(), requestDto);
         return ResponseEntity.ok(cart);
     }
@@ -50,6 +56,7 @@ public class CartController {
             @AuthenticationPrincipal User userPrincipal,
             @PathVariable Long variantId
     ) {
+        log.info("📍 DELETE /api/cart/item/{} - User: {}", variantId, userPrincipal.getId());
         CartDto cart = cartService.removeItemFromCart(userPrincipal.getId(), variantId);
         return ResponseEntity.ok(cart);
     }
