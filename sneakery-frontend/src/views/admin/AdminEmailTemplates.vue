@@ -56,7 +56,7 @@
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Đang hoạt động</p>
           <div class="flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400">
             <i class="material-icons text-sm">done</i>
-            <span>{{ Math.round((activeTemplates / totalTemplates) * 100) || 0 }}% tổng số</span>
+            <span>{{ Math.round(emailTemplateStats.activeRate || 0) }}% tổng số</span>
           </div>
         </div>
       </div>
@@ -86,9 +86,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ openRate }}%</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tỷ lệ mở</p>
-          <div class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-            <i class="material-icons text-sm">trending_up</i>
-            <span>+2.3% so với tuần trước</span>
+          <div class="flex items-center gap-1 text-xs" :class="emailTemplateStats.openRateTrend > 0 ? 'text-blue-600 dark:text-blue-400' : emailTemplateStats.openRateTrend < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="emailTemplateStats.openRateTrend > 0 ? 'trending_up' : emailTemplateStats.openRateTrend < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="emailTemplateStats.openRateTrend !== 0">{{ emailTemplateStats.openRateTrend > 0 ? '+' : '' }}{{ emailTemplateStats.openRateTrend.toFixed(1) }}% so với tuần trước</span>
+            <span v-else>Không đổi so với tuần trước</span>
           </div>
         </div>
       </div>
@@ -653,9 +654,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin'
+import AdminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useAdminStore } from '@/stores/admin'
 
 // Store
 const adminStore = useAdminStore()
@@ -759,19 +761,21 @@ const newTemplatesThisMonth = computed(() => {
     return templateDate.getMonth() === thisMonth && templateDate.getFullYear() === thisYear
   }).length
 })
-const emailsSentToday = computed(() => {
-  // Mock data - in real app, this would come from API
-  return 125
+// Email template stats từ API (data thật)
+const emailTemplateStats = ref({
+  totalTemplates: 0,
+  activeTemplates: 0,
+  newTemplatesThisMonth: 0,
+  activeRate: 0,
+  emailsSentToday: 0,
+  emailsSentThisWeek: 0,
+  openRate: 0,
+  openRateTrend: 0
 })
-const emailsSentThisWeek = computed(() => {
-  // Mock data
-  return 890
-})
-const openRate = computed(() => {
-  const totalSent = templates.value.reduce((sum, t) => sum + t.sentCount, 0)
-  const totalOpened = templates.value.reduce((sum, t) => sum + (t.sentCount * t.openRate / 100), 0)
-  return totalSent > 0 ? Math.round((totalOpened / totalSent) * 100 * 10) / 10 : 0
-})
+
+const emailsSentToday = computed(() => emailTemplateStats.value.emailsSentToday || 0)
+const emailsSentThisWeek = computed(() => emailTemplateStats.value.emailsSentThisWeek || 0)
+const openRate = computed(() => emailTemplateStats.value.openRate || 0)
 
 const filteredTemplates = computed(() => {
   let filtered = templates.value || []
@@ -828,6 +832,17 @@ const previewContent = computed(() => {
 
 // Methods
 const fetchTemplates = async () => {
+  // Load email template stats từ API (data thật)
+  try {
+    const statsResult = await AdminService.getEmailTemplateStats()
+    if (statsResult) {
+      emailTemplateStats.value = statsResult
+      console.log('✅ Email template stats loaded:', emailTemplateStats.value)
+    }
+  } catch (error) {
+    console.warn('Email template stats API error:', error)
+  }
+  
   loading.value = true
   try {
     const result = await adminStore.fetchEmailTemplates(currentPage.value, pageSize.value, {})

@@ -809,7 +809,25 @@ CREATE TABLE Email_Templates (
 GO
 
 -- =====================================================
--- 25. ORDER_STATUS_HISTORIES TABLE
+-- 25. SYSTEM_SETTINGS TABLE
+-- =====================================================
+CREATE TABLE System_Settings (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value NVARCHAR(MAX),
+    setting_type VARCHAR(50),
+    description NVARCHAR(500),
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+CREATE INDEX idx_system_settings_type ON System_Settings(setting_type);
+CREATE INDEX idx_system_settings_key ON System_Settings(setting_key);
+GO
+
+-- =====================================================
+-- 26. ORDER_STATUS_HISTORIES TABLE
 -- =====================================================
 CREATE TABLE Order_Status_Histories (
     id BIGINT PRIMARY KEY IDENTITY(1,1),

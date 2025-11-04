@@ -1,29 +1,39 @@
 <template>
-  <section class="testimonials-section">
-    <div class="container">
+  <section class="testimonials-section py-16 md:py-20 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5">
+      <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 50px, rgba(147, 51, 234, 0.1) 50px, rgba(147, 51, 234, 0.1) 100px);"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <!-- Header -->
-      <div class="section-header">
-        <h2 class="section-title">Khách hàng nói gì về chúng tôi</h2>
-        <p class="section-subtitle">Những đánh giá chân thực từ khách hàng đã mua sắm tại Sneakery Store</p>
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-3">
+          Khách hàng nói gì về chúng tôi
+        </h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          Những đánh giá chân thực từ khách hàng đã mua sắm tại Sneakery Store
+        </p>
       </div>
 
       <!-- Testimonials Grid -->
-      <div class="testimonials-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
         <div 
-          v-for="testimonial in testimonials" 
+          v-for="(testimonial, index) in testimonials" 
           :key="testimonial.id" 
-          class="testimonial-card"
+          class="testimonial-card group"
+          :style="{ animationDelay: `${index * 100}ms` }"
         >
           <!-- Rating -->
           <div class="testimonial-rating">
-            <span 
+            <i 
               v-for="i in 5" 
-              :key="i" 
-              class="star"
-              :class="{ active: i <= testimonial.rating }"
+              :key="i"
+              class="material-icons star"
+              :class="{ filled: i <= testimonial.rating }"
             >
-              ★
-            </span>
+              {{ i <= testimonial.rating ? 'star' : 'star_border' }}
+            </i>
           </div>
 
           <!-- Content -->
@@ -33,7 +43,14 @@
 
           <!-- Product Info -->
           <div class="testimonial-product">
-            <img :src="testimonial.productImage" :alt="testimonial.productName" class="product-image" />
+            <div class="product-image-wrapper">
+              <img 
+                :src="testimonial.productImage || '/placeholder-image.png'" 
+                :alt="testimonial.productName" 
+                class="product-image"
+                loading="lazy"
+              />
+            </div>
             <div class="product-info">
               <span class="product-brand">{{ testimonial.brandName }}</span>
               <span class="product-name">{{ testimonial.productName }}</span>
@@ -48,10 +65,8 @@
             <div class="user-details">
               <span class="user-name">{{ testimonial.userName }}</span>
               <span v-if="testimonial.isVerified" class="verified-badge">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Đã xác thực
+                <i class="material-icons">verified</i>
+                <span>Đã xác thực</span>
               </span>
             </div>
             <span class="testimonial-date">{{ formatDate(testimonial.date) }}</span>
@@ -60,12 +75,13 @@
       </div>
 
       <!-- View All Button -->
-      <div class="section-footer">
-        <router-link to="/reviews" class="view-all-btn">
+      <div class="text-center">
+        <router-link 
+          to="/reviews" 
+          class="view-all-btn inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
+        >
           Xem tất cả đánh giá
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+          <i class="material-icons">arrow_forward</i>
         </router-link>
       </div>
     </div>
@@ -87,7 +103,6 @@ const formatDate = (dateString) => {
 
 onMounted(async () => {
   try {
-    // Lấy top reviews từ API
     const response = await axios.get('http://localhost:8080/api/admin/reviews', {
       params: {
         page: 0,
@@ -138,7 +153,7 @@ onMounted(async () => {
       },
       {
         id: 3,
-        rating: 4,
+        rating: 5,
         comment: 'Giày vừa chân, thiết kế đẹp. Giá cả hợp lý so với chất lượng. Sẽ quay lại mua thêm!',
         userName: 'Lê Văn C',
         isVerified: true,
@@ -152,6 +167,209 @@ onMounted(async () => {
 });
 </script>
 
+<style scoped>
+.testimonials-section {
+  position: relative;
+}
 
+.testimonial-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+  animation: fade-in-up 0.6s ease-out both;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
 
+.dark .testimonial-card {
+  background: #1f2937;
+  border-color: #374151;
+}
 
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: #9333ea;
+}
+
+.dark .testimonial-card:hover {
+  border-color: #a78bfa;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+.testimonial-rating {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.star {
+  font-size: 1.25rem;
+  color: #d1d5db;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+.testimonial-content {
+  flex: 1;
+}
+
+.testimonial-text {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #374151;
+  font-style: italic;
+}
+
+.dark .testimonial-text {
+  color: #d1d5db;
+}
+
+.testimonial-product {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+}
+
+.dark .testimonial-product {
+  background: #374151;
+}
+
+.product-image-wrapper {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #e5e7eb;
+}
+
+.dark .product-image-wrapper {
+  background: #4b5563;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.product-brand {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9333ea;
+  text-transform: uppercase;
+}
+
+.dark .product-brand {
+  color: #a78bfa;
+}
+
+.product-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dark .product-name {
+  color: #f9fafb;
+}
+
+.testimonial-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.dark .testimonial-user {
+  border-top-color: #374151;
+}
+
+.user-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9333ea, #7c3aed);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.dark .user-name {
+  color: #f9fafb;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 500;
+}
+
+.verified-badge i {
+  font-size: 1rem;
+}
+
+.testimonial-date {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.dark .testimonial-date {
+  color: #9ca3af;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

@@ -25,10 +25,38 @@ public class ProductService {
     public Page<ProductCardDto> getAllProductsForCard(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        // Gọi phương thức repository đã được tối ưu
-        Page<Product> productPage = productRepository.findAllWithDetails(pageable);
+        try {
+            // Gọi phương thức repository đã được tối ưu
+            Page<Product> productPage = productRepository.findAllWithDetails(pageable);
 
-        return productPage.map(this::convertToProductCardDto);
+            return productPage.map(product -> {
+                try {
+                    return convertToProductCardDto(product);
+                } catch (Exception e) {
+                    // Log error nhưng không throw để không block toàn bộ page
+                    System.err.println("Error converting product to DTO - ID: " + 
+                            (product != null ? product.getId() : "null") + 
+                            ", Error: " + e.getMessage());
+                    e.printStackTrace();
+                    // Return a minimal DTO để không crash
+                    return ProductCardDto.builder()
+                            .id(product != null ? product.getId() : 0L)
+                            .name(product != null && product.getName() != null ? product.getName() : "Unknown Product")
+                            .slug(product != null && product.getSlug() != null ? product.getSlug() : "")
+                            .brandName("Unknown")
+                            .imageUrl("https://placehold.co/400")
+                            .priceBase(BigDecimal.ZERO)
+                            .price(BigDecimal.ZERO)
+                            .totalStock(0)
+                            .inStock(false)
+                            .build();
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("Error in getAllProductsForCard: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     /**
@@ -38,16 +66,25 @@ public class ProductService {
     private ProductCardDto convertToProductCardDto(Product product) {
         // Lấy variant có giá thấp nhất (đại diện cho product)
         Optional<ProductVariant> representativeVariant = Optional.ofNullable(product.getVariants())
+                .filter(variants -> !variants.isEmpty())
                 .flatMap(variants -> variants.stream()
-                        .min(Comparator.comparing(v -> v.getPriceSale() != null ? v.getPriceSale() : v.getPriceBase())));
+                        .filter(v -> v != null)
+                        .min(Comparator.comparing(v -> {
+                            BigDecimal price = v.getPriceSale() != null ? v.getPriceSale() : v.getPriceBase();
+                            return price != null ? price : BigDecimal.ZERO;
+                        })));
 
         // Lấy ảnh đại diện (ưu tiên từ product images, fallback variant image)
         String imageUrl = Optional.ofNullable(product.getImages())
+                .filter(images -> !images.isEmpty())
                 .flatMap(images -> images.stream()
-                        .filter(img -> img.getIsPrimary())
+                        .filter(img -> img != null && img.getIsPrimary() != null && img.getIsPrimary())
                         .findFirst()
-                        .map(img -> img.getImageUrl()))
-                .or(() -> representativeVariant.map(ProductVariant::getImageUrl))
+                        .map(img -> img.getImageUrl() != null ? img.getImageUrl() : ""))
+                .filter(url -> !url.isEmpty())
+                .or(() -> representativeVariant
+                        .map(ProductVariant::getImageUrl)
+                        .filter(url -> url != null && !url.isEmpty()))
                 .orElse("https://placehold.co/400");
 
         // Tính giá (ưu tiên sale, fallback base)
@@ -57,8 +94,10 @@ public class ProductService {
 
         // Tính tổng stock
         Integer totalStock = Optional.ofNullable(product.getVariants())
+                .filter(variants -> !variants.isEmpty())
                 .map(variants -> variants.stream()
-                        .mapToInt(ProductVariant::getStockQuantity)
+                        .filter(v -> v != null)
+                        .mapToInt(v -> v.getStockQuantity() != null ? v.getStockQuantity() : 0)
                         .sum())
                 .orElse(0);
 
@@ -66,7 +105,7 @@ public class ProductService {
                 .id(product.getId())
                 .name(product.getName())
                 .slug(product.getSlug())
-                .brandName(product.getBrand().getName())
+                .brandName(product.getBrand() != null ? product.getBrand().getName() : "Unknown")
                 .imageUrl(imageUrl)
                 
                 // Pricing

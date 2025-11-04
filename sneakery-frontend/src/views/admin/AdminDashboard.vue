@@ -42,20 +42,21 @@
     </transition-group>
 
     <!-- Header -->
-    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
-            <i class="material-icons text-white text-xl">dashboard</i>
+    <div class="p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
+            <i class="material-icons text-white text-lg sm:text-xl">dashboard</i>
           </div>
           <div>
-            <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100">
-              <span class="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide">Chào mừng trở lại,</span>
+            <h1 class="text-base sm:text-lg font-bold text-gray-900 dark:text-gray-100">
+              <span class="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wide hidden sm:inline">Chào mừng trở lại,</span>
               <span class="block capitalize">{{ adminUser?.email?.split('@')[0] || 'Admin' }}</span>
             </h1>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
               <i class="material-icons text-sm">shield</i>
-              Quản lý và giám sát hệ thống Sneakery Store
+              <span class="hidden sm:inline">Quản lý và giám sát hệ thống Sneakery Store</span>
+              <span class="sm:hidden">Dashboard</span>
             </p>
           </div>
         </div>
@@ -134,7 +135,7 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:scale-[1.02] transition-all duration-200">
         <div class="flex items-center justify-between mb-3">
           <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center">
@@ -147,9 +148,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatCurrency(stats?.totalRevenue || 0) }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng doanh thu</p>
-          <div class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-            <i class="material-icons text-sm">trending_up</i>
-            <span>+12.5%</span>
+          <div class="flex items-center gap-1 text-xs" :class="statsTrends.revenue > 0 ? 'text-green-600 dark:text-green-400' : statsTrends.revenue < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="statsTrends.revenue > 0 ? 'trending_up' : statsTrends.revenue < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="statsTrends.revenue !== 0">{{ statsTrends.revenue > 0 ? '+' : '' }}{{ statsTrends.revenue.toFixed(1) }}%</span>
+            <span v-else>Không đổi</span>
           </div>
         </div>
       </div>
@@ -165,9 +167,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats?.totalOrders || 0 }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng đơn hàng</p>
-          <div class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-            <i class="material-icons text-sm">trending_up</i>
-            <span>+8.2%</span>
+          <div class="flex items-center gap-1 text-xs" :class="statsTrends.orders > 0 ? 'text-green-600 dark:text-green-400' : statsTrends.orders < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="statsTrends.orders > 0 ? 'trending_up' : statsTrends.orders < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="statsTrends.orders !== 0">{{ statsTrends.orders > 0 ? '+' : '' }}{{ statsTrends.orders.toFixed(1) }}%</span>
+            <span v-else>Không đổi</span>
           </div>
         </div>
       </div>
@@ -202,9 +205,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats?.totalUsers || 0 }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Người dùng</p>
-          <div class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-            <i class="material-icons text-sm">trending_up</i>
-            <span>+15.3%</span>
+          <div class="flex items-center gap-1 text-xs" :class="statsTrends.users > 0 ? 'text-green-600 dark:text-green-400' : statsTrends.users < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="statsTrends.users > 0 ? 'trending_up' : statsTrends.users < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="statsTrends.users !== 0">{{ statsTrends.users > 0 ? '+' : '' }}{{ statsTrends.users.toFixed(1) }}%</span>
+            <span v-else>Không đổi</span>
           </div>
         </div>
       </div>
@@ -218,7 +222,7 @@
           Quản lý nhanh
         </h2>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
         <router-link 
           v-for="action in quickActions" 
           :key="action.path"
@@ -244,25 +248,25 @@
           <i class="material-icons text-purple-600 dark:text-purple-400 text-lg">insights</i>
           Biểu đồ thống kê
         </h2>
-        <div class="flex gap-2 items-center">
+        <div class="flex flex-wrap gap-2 items-center">
           <!-- Date Range Picker Toggle -->
           <button 
             @click="showDateRangePicker = !showDateRangePicker"
-            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             title="Chọn khoảng thời gian tùy chỉnh"
           >
             <i class="material-icons text-sm">date_range</i>
-            <span>Tùy chỉnh</span>
+            <span class="hidden sm:inline">Tùy chỉnh</span>
           </button>
           
           <!-- Export Button -->
           <button 
             @click="exportReports"
-            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+            class="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
             title="Xuất báo cáo"
           >
             <i class="material-icons text-sm">download</i>
-            <span>Xuất báo cáo</span>
+            <span class="hidden sm:inline">Xuất báo cáo</span>
           </button>
           
           <!-- Period Buttons -->
@@ -270,13 +274,14 @@
             <button 
               v-for="period in ['7d', '30d', '90d']" 
               :key="period"
-              class="px-3 py-1 text-xs font-medium rounded-lg transition-all duration-200"
+              class="px-2 sm:px-3 py-1 text-xs font-medium rounded-lg transition-all duration-200"
               :class="selectedPeriod === period
                 ? 'bg-purple-600 text-white shadow-sm'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
               @click="changePeriod(period)"
             >
-              {{ period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày' }}
+              <span class="hidden sm:inline">{{ period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày' }}</span>
+              <span class="sm:hidden">{{ period === '7d' ? '7d' : period === '30d' ? '30d' : '90d' }}</span>
             </button>
           </div>
         </div>
@@ -401,6 +406,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAdminStore } from '@/stores/admin';
 import { useAuthStore } from '@/stores/auth';
+import AdminService from '@/services/adminService';
 import LineChart from '@/assets/components/charts/LineChart.vue';
 import BarChart from '@/assets/components/charts/BarChart.vue';
 import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue';
@@ -431,30 +437,67 @@ const stats = ref({
   totalUsers: 0
 });
 
-const quickActions = [
-  { path: '/admin/products', title: 'Quản lý sản phẩm', desc: 'Thêm, sửa, xóa sản phẩm', icon: 'M21 16V8C21 7.46957 20.7893 6.96086 20.4142 6.58579C20.0391 6.21071 19.5304 6 19 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V16C3 16.5304 3.21071 17.0391 3.58579 17.4142C3.96086 17.7893 4.46957 18 5 18H19C19.5304 18 20.0391 17.7893 20.4142 17.4142C20.7893 17.0391 21 16.5304 21 16Z', badge: null },
-  { path: '/admin/orders', title: 'Quản lý đơn hàng', desc: 'Theo dõi và xử lý đơn hàng', icon: 'M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L18 21H6L5 9Z', badge: null },
-  { path: '/admin/users', title: 'Quản lý người dùng', desc: 'Xem và quản lý tài khoản', icon: 'M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21', badge: null },
-  { path: '/admin/brands', title: 'Quản lý thương hiệu', desc: 'Thêm và chỉnh sửa thương hiệu', icon: 'M3 3H10V10H3V3ZM14 3H21V10H14V3ZM14 14H21V21H14V14ZM3 14H10V21H3V14Z', badge: '12' },
-  { path: '/admin/categories', title: 'Quản lý danh mục', desc: 'Quản lý danh mục sản phẩm', icon: 'M4 19H20M4 15H20M4 11H20', badge: '8' },
-  { path: '/admin/analytics', title: 'Phân tích', desc: 'Xem báo cáo và thống kê', icon: 'M18 20V10M12 20V4M6 20V14', badge: 'Mới' },
-  { path: '/admin/inventory', title: 'Quản lý kho', desc: 'Theo dõi tồn kho', icon: 'M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z', badge: null },
-  { path: '/admin/flash-sales', title: 'Flash Sale', desc: 'Quản lý khuyến mãi nhanh', icon: 'M13 2L3 14H12L11 22L21 10H12L13 2Z', badge: 'Hot' },
-  { path: '/admin/discounts', title: 'Quản lý giảm giá', desc: 'Tạo và quản lý mã giảm giá', icon: 'M7 7H17M7 17H17M12 2V22M18 6L6 18M18 18L6 6', badge: 'VIP' },
-  { path: '/admin/reviews', title: 'Quản lí đánh giá', desc: 'Xem và phê duyệt đánh giá', icon: 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z', badge: '25' },
-  { path: '/admin/loyalty', title: 'Điểm thưởng', desc: 'Quản lý chương trình tích điểm', icon: 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z', badge: '1K+' },
-  { path: '/admin/sales', title: 'Bán hàng (POS)', desc: 'Hệ thống bán hàng tại quầy', icon: 'M9 11L12 14L22 4M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16', badge: 'Live' },
-  { path: '/admin/notifications', title: 'Quản lý thông báo', desc: 'Gửi và quản lý thông báo', icon: 'M18 8A6 6 0 0 0 6 8C6 11.0909 3.90914 13 2 13H22C20.0909 13 18 11.0909 18 8ZM13.73 21C13.5542 21.3031 13.3018 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21', badge: '12' },
-  { path: '/admin/returns', title: 'Quản lý trả hàng', desc: 'Xử lý yêu cầu trả hàng', icon: 'M3 7V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V7M3 7L12 14L21 7M3 17L12 10L21 17M21 17V5', badge: '5' },
-  { path: '/admin/payments', title: 'Thanh toán', desc: 'Theo dõi giao dịch thanh toán', icon: 'M1 4H23M1 10H23M1 4V20C1 20.5304 1.21071 21.0391 1.58579 21.4142C1.96086 21.7893 2.46957 22 3 22H21C21.5304 22 22.0391 21.7893 22.4142 21.4142C22.7893 21.0391 23 20.5304 23 20V4', badge: '88' }
+const statsTrends = ref({
+  revenue: 0,
+  orders: 0,
+  products: 0,
+  users: 0
+});
+
+const badges = ref({});
+
+// Quick actions template - badges sẽ được load từ API
+const quickActionsTemplate = [
+  { path: '/admin/products', title: 'Quản lý sản phẩm', desc: 'Thêm, sửa, xóa sản phẩm', icon: 'M21 16V8C21 7.46957 20.7893 6.96086 20.4142 6.58579C20.0391 6.21071 19.5304 6 19 6H5C4.46957 6 3.96086 6.21071 3.58579 6.58579C3.21071 6.96086 3 7.46957 3 8V16C3 16.5304 3.21071 17.0391 3.58579 17.4142C3.96086 17.7893 4.46957 18 5 18H19C19.5304 18 20.0391 17.7893 20.4142 17.4142C20.7893 17.0391 21 16.5304 21 16Z', badgeKey: null },
+  { path: '/admin/orders', title: 'Quản lý đơn hàng', desc: 'Theo dõi và xử lý đơn hàng', icon: 'M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L18 21H6L5 9Z', badgeKey: null },
+  { path: '/admin/users', title: 'Quản lý người dùng', desc: 'Xem và quản lý tài khoản', icon: 'M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21', badgeKey: null },
+  { path: '/admin/brands', title: 'Quản lý thương hiệu', desc: 'Thêm và chỉnh sửa thương hiệu', icon: 'M3 3H10V10H3V3ZM14 3H21V10H14V3ZM14 14H21V21H14V14ZM3 14H10V21H3V14Z', badgeKey: 'brands' },
+  { path: '/admin/categories', title: 'Quản lý danh mục', desc: 'Quản lý danh mục sản phẩm', icon: 'M4 19H20M4 15H20M4 11H20', badgeKey: 'categories' },
+  { path: '/admin/analytics', title: 'Phân tích', desc: 'Xem báo cáo và thống kê', icon: 'M18 20V10M12 20V4M6 20V14', badgeKey: 'new' },
+  { path: '/admin/inventory', title: 'Quản lý kho', desc: 'Theo dõi tồn kho', icon: 'M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z', badgeKey: null },
+  { path: '/admin/flash-sales', title: 'Flash Sale', desc: 'Quản lý khuyến mãi nhanh', icon: 'M13 2L3 14H12L11 22L21 10H12L13 2Z', badgeKey: 'hot' },
+  { path: '/admin/discounts', title: 'Quản lý giảm giá', desc: 'Tạo và quản lý mã giảm giá', icon: 'M7 7H17M7 17H17M12 2V22M18 6L6 18M18 18L6 6', badgeKey: 'vip' },
+  { path: '/admin/reviews', title: 'Quản lí đánh giá', desc: 'Xem và phê duyệt đánh giá', icon: 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z', badgeKey: 'reviews' },
+  { path: '/admin/loyalty', title: 'Điểm thưởng', desc: 'Quản lý chương trình tích điểm', icon: 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z', badgeKey: 'loyalty' },
+  { path: '/admin/sales', title: 'Bán hàng (POS)', desc: 'Hệ thống bán hàng tại quầy', icon: 'M9 11L12 14L22 4M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16', badgeKey: 'live' },
+  { path: '/admin/notifications', title: 'Quản lý thông báo', desc: 'Gửi và quản lý thông báo', icon: 'M18 8A6 6 0 0 0 6 8C6 11.0909 3.90914 13 2 13H22C20.0909 13 18 11.0909 18 8ZM13.73 21C13.5542 21.3031 13.3018 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21', badgeKey: 'notifications' },
+  { path: '/admin/returns', title: 'Quản lý trả hàng', desc: 'Xử lý yêu cầu trả hàng', icon: 'M3 7V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V7M3 7L12 14L21 7M3 17L12 10L21 17M21 17V5', badgeKey: 'returns' },
+  { path: '/admin/payments', title: 'Thanh toán', desc: 'Theo dõi giao dịch thanh toán', icon: 'M1 4H23M1 10H23M1 4V20C1 20.5304 1.21071 21.0391 1.58579 21.4142C1.96086 21.7893 2.46957 22 3 22H21C21.5304 22 22.0391 21.7893 22.4142 21.4142C22.7893 21.0391 23 20.5304 23 20V4', badgeKey: 'payments' }
 ];
 
+// Computed quickActions với badges từ API
+const quickActions = computed(() => {
+  return quickActionsTemplate.map(action => {
+    let badge = null;
+    
+    if (action.badgeKey === 'new') {
+      badge = 'Mới';
+    } else if (action.badgeKey === 'hot') {
+      badge = 'Hot';
+    } else if (action.badgeKey === 'vip') {
+      badge = 'VIP';
+    } else if (action.badgeKey === 'live') {
+      badge = 'Live';
+    } else if (action.badgeKey === 'loyalty') {
+      badge = badges.value.loyalty || '1K+';
+    } else if (action.badgeKey && badges.value[action.badgeKey]) {
+      badge = badges.value[action.badgeKey];
+    }
+    
+    return {
+      ...action,
+      badge: badge
+    };
+  });
+});
+
+// Khởi tạo với empty data, sẽ được load từ API
 const revenueChart = ref({
-  labels: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+  labels: [],
   datasets: [
     {
       label: 'Doanh thu',
-      data: [12000000, 19000000, 15000000, 25000000, 22000000, 30000000, 28000000],
+      data: [],
       borderColor: 'rgb(59, 130, 246)',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       fill: true,
@@ -464,35 +507,23 @@ const revenueChart = ref({
 });
 
 const orderStatusChart = ref({
-  labels: ['Chờ xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
+  labels: [],
   datasets: [
     {
-      data: [15, 25, 18, 120, 8],
-      backgroundColor: [
-        'rgba(251, 191, 36, 0.8)',
-        'rgba(59, 130, 246, 0.8)',
-        'rgba(168, 85, 247, 0.8)',
-        'rgba(34, 197, 94, 0.8)',
-        'rgba(239, 68, 68, 0.8)'
-      ],
-      borderColor: [
-        'rgb(251, 191, 36)',
-        'rgb(59, 130, 246)',
-        'rgb(168, 85, 247)',
-        'rgb(34, 197, 94)',
-        'rgb(239, 68, 68)'
-      ],
+      data: [],
+      backgroundColor: [],
+      borderColor: [],
       borderWidth: 2
     }
   ]
 });
 
 const topProductsChart = ref({
-  labels: ['Nike Air Max', 'Adidas Ultra Boost', 'New Balance 574', 'Converse Chuck', 'Vans Old Skool'],
+  labels: [],
   datasets: [
     {
       label: 'Số lượng bán',
-      data: [85, 72, 63, 58, 49],
+      data: [],
       backgroundColor: 'rgba(59, 130, 246, 0.8)',
       borderColor: 'rgb(59, 130, 246)',
       borderWidth: 1
@@ -500,13 +531,7 @@ const topProductsChart = ref({
   ]
 });
 
-const recentActivities = ref([
-  { id: 1, type: 'order', text: 'Đơn hàng mới #ORD-20241021-001 được tạo', timestamp: new Date(Date.now() - 5 * 60 * 1000) },
-  { id: 2, type: 'user', text: 'Người dùng mới đăng ký: nguyenvana@gmail.com', timestamp: new Date(Date.now() - 15 * 60 * 1000) },
-  { id: 3, type: 'product', text: 'Sản phẩm "Nike Air Max 270" đã hết hàng', timestamp: new Date(Date.now() - 30 * 60 * 1000) },
-  { id: 4, type: 'order', text: 'Đơn hàng #ORD-20241020-045 đã được giao', timestamp: new Date(Date.now() - 60 * 60 * 1000) },
-  { id: 5, type: 'user', text: 'Người dùng tranthib@gmail.com đã cập nhật hồ sơ', timestamp: new Date(Date.now() - 120 * 60 * 1000) }
-]);
+const recentActivities = ref([]);
 
 const showNotification = (type, title, message) => {
   const id = ++notificationIdCounter;
@@ -550,8 +575,35 @@ const updateDateTime = () => {
 const loadDashboardData = async (silent = false) => {
   if (!silent) loading.value = true;
   try {
+    // Load stats
     const response = await adminStore.fetchDashboardStats();
+    const previousStats = { ...stats.value };
     stats.value = response || { totalRevenue: 0, totalOrders: 0, totalProducts: 0, totalUsers: 0 };
+    
+    // Calculate trends (so sánh với kỳ trước - ước tính từ 30 ngày trước)
+    // Tạm thời tính trend đơn giản: nếu có data mới thì tính % tăng
+    if (previousStats.totalRevenue > 0) {
+      statsTrends.value.revenue = ((stats.value.totalRevenue - previousStats.totalRevenue) / previousStats.totalRevenue) * 100;
+    }
+    if (previousStats.totalOrders > 0) {
+      statsTrends.value.orders = ((stats.value.totalOrders - previousStats.totalOrders) / previousStats.totalOrders) * 100;
+    }
+    if (previousStats.totalProducts > 0) {
+      statsTrends.value.products = ((stats.value.totalProducts - previousStats.totalProducts) / previousStats.totalProducts) * 100;
+    }
+    if (previousStats.totalUsers > 0) {
+      statsTrends.value.users = ((stats.value.totalUsers - previousStats.totalUsers) / previousStats.totalUsers) * 100;
+    }
+    
+    // Load badges
+    await loadBadges();
+    
+    // Load charts data
+    await loadChartsData();
+    
+    // Load recent activities
+    await loadRecentActivities();
+    
     lastRefreshTime.value = new Date();
     if (!silent) showNotification('success', 'Thành công', 'Đã tải dữ liệu dashboard');
   } catch (error) {
@@ -559,6 +611,190 @@ const loadDashboardData = async (silent = false) => {
     if (!silent) showNotification('error', 'Lỗi', 'Không thể tải dữ liệu dashboard');
   } finally {
     if (!silent) loading.value = false;
+  }
+};
+
+const loadBadges = async () => {
+  try {
+    console.log('🔄 Loading badges...');
+    const badgesData = await AdminService.getDashboardBadges();
+    console.log('📊 Badges data:', badgesData);
+    badges.value = badgesData || {};
+  } catch (error) {
+    console.error('❌ Error loading badges:', error);
+    badges.value = {};
+  }
+};
+
+const loadChartsData = async () => {
+  try {
+    console.log('🔄 Loading charts data for period:', selectedPeriod.value);
+    
+    // Load revenue chart
+    const revenueData = await AdminService.getRevenueAnalytics(selectedPeriod.value);
+    console.log('📊 Revenue data:', revenueData);
+    if (revenueData && revenueData.data && revenueData.data.length > 0) {
+      const labels = revenueData.data.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('vi-VN', { weekday: 'short' });
+      });
+      const data = revenueData.data.map(item => item.revenue || 0);
+      
+      revenueChart.value = {
+        labels: labels,
+        datasets: [{
+          label: 'Doanh thu',
+          data: data,
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      };
+      console.log('✅ Revenue chart loaded:', revenueChart.value);
+    } else {
+      console.warn('⚠️ No revenue data available');
+      // Set empty data
+      revenueChart.value = {
+        labels: [],
+        datasets: [{
+          label: 'Doanh thu',
+          data: [],
+          borderColor: 'rgb(59, 130, 246)',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      };
+    }
+    
+    // Load order status chart
+    const orderStatusData = await AdminService.getOrderStatusAnalytics();
+    console.log('📊 Order status data:', orderStatusData);
+    if (orderStatusData && orderStatusData.data && orderStatusData.data.length > 0) {
+      const labels = orderStatusData.data.map(item => item.label || item.status);
+      const data = orderStatusData.data.map(item => item.count || 0);
+      const colors = [
+        'rgba(251, 191, 36, 0.8)',   // pending - yellow
+        'rgba(59, 130, 246, 0.8)',   // processing - blue
+        'rgba(168, 85, 247, 0.8)',   // shipped - purple
+        'rgba(34, 197, 94, 0.8)',    // delivered - green
+        'rgba(239, 68, 68, 0.8)',    // cancelled - red
+        'rgba(251, 191, 36, 0.8)',   // confirmed - yellow
+        'rgba(59, 130, 246, 0.8)',   // packed - blue
+        'rgba(168, 85, 247, 0.8)'    // refunded - purple
+      ];
+      
+      orderStatusChart.value = {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors.slice(0, data.length),
+          borderColor: colors.slice(0, data.length).map(c => c.replace('0.8', '1')),
+          borderWidth: 2
+        }]
+      };
+      console.log('✅ Order status chart loaded:', orderStatusChart.value);
+    } else {
+      console.warn('⚠️ No order status data available');
+      orderStatusChart.value = {
+        labels: [],
+        datasets: [{
+          data: [],
+          backgroundColor: [],
+          borderColor: [],
+          borderWidth: 2
+        }]
+      };
+    }
+    
+    // Load top products chart
+    const topProductsData = await AdminService.getTopProducts(selectedPeriod.value);
+    console.log('📊 Top products data:', topProductsData);
+    if (topProductsData && topProductsData.topProducts && topProductsData.topProducts.length > 0) {
+      const labels = topProductsData.topProducts.map(p => p.name || 'Unknown').slice(0, 5);
+      const data = topProductsData.topProducts.map(p => p.totalSold || 0).slice(0, 5);
+      
+      topProductsChart.value = {
+        labels: labels,
+        datasets: [{
+          label: 'Số lượng bán',
+          data: data,
+          backgroundColor: 'rgba(59, 130, 246, 0.8)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 1
+        }]
+      };
+      console.log('✅ Top products chart loaded:', topProductsChart.value);
+    } else {
+      console.warn('⚠️ No top products data available');
+      topProductsChart.value = {
+        labels: [],
+        datasets: [{
+          label: 'Số lượng bán',
+          data: [],
+          backgroundColor: 'rgba(59, 130, 246, 0.8)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 1
+        }]
+      };
+    }
+  } catch (error) {
+    console.error('❌ Error loading charts data:', error);
+    // Set empty data on error
+    revenueChart.value = {
+      labels: [],
+      datasets: [{
+        label: 'Doanh thu',
+        data: [],
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        fill: true,
+        tension: 0.4
+      }]
+    };
+    orderStatusChart.value = {
+      labels: [],
+      datasets: [{
+        data: [],
+        backgroundColor: [],
+        borderColor: [],
+        borderWidth: 2
+      }]
+    };
+    topProductsChart.value = {
+      labels: [],
+      datasets: [{
+        label: 'Số lượng bán',
+        data: [],
+        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+        borderColor: 'rgb(59, 130, 246)',
+        borderWidth: 1
+      }]
+    };
+  }
+};
+
+const loadRecentActivities = async () => {
+  try {
+    console.log('🔄 Loading recent activities...');
+    const activitiesData = await AdminService.getRecentActivities(10);
+    console.log('📊 Activities data:', activitiesData);
+    if (activitiesData && activitiesData.activities && activitiesData.activities.length > 0) {
+      recentActivities.value = activitiesData.activities.map(activity => ({
+        id: activity.id,
+        type: activity.type || 'order',
+        text: activity.text || 'Hoạt động mới',
+        timestamp: activity.timestamp ? new Date(activity.timestamp) : new Date()
+      }));
+      console.log('✅ Recent activities loaded:', recentActivities.value);
+    } else {
+      console.warn('⚠️ No activities data available');
+      recentActivities.value = [];
+    }
+  } catch (error) {
+    console.error('❌ Error loading recent activities:', error);
+    recentActivities.value = [];
   }
 };
 
@@ -594,9 +830,18 @@ const manualRefresh = () => {
   showNotification('info', 'Làm mới', 'Đang tải lại dữ liệu...');
 };
 
-const changePeriod = (period) => {
+const changePeriod = async (period) => {
   selectedPeriod.value = period;
-  showNotification('info', 'Thay đổi chu kỳ', `Đang hiển thị dữ liệu ${period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày'}`);
+  loading.value = true;
+  try {
+    await loadChartsData();
+    showNotification('info', 'Thay đổi chu kỳ', `Đang hiển thị dữ liệu ${period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày'}`);
+  } catch (error) {
+    console.error('Error changing period:', error);
+    showNotification('error', 'Lỗi', 'Không thể tải dữ liệu cho chu kỳ này');
+  } finally {
+    loading.value = false;
+  }
 };
 
 const toggleProfileMenu = () => {

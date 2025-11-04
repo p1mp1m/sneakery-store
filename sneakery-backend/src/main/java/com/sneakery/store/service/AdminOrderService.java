@@ -58,25 +58,86 @@ public class AdminOrderService {
     public AdminOrderDetailDto getOrderById(Long orderId) {
         Order order = orderRepository.findByIdWithDetails(orderId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng"));
+        
+        // Load payments và statusHistories riêng để tránh MultipleBagFetchException
+        // Trigger lazy loading trong cùng transaction
+        order.getPayments().size(); // Trigger lazy load
+        order.getStatusHistories().size(); // Trigger lazy load
+        
         return convertToOrderDetailDto(order);
     }
 
     @Transactional
     public AdminOrderDetailDto updateOrderStatus(Long orderId, String newStatus) {
-        Order order = orderRepository.findById(orderId)
+        // Load order với đầy đủ relationships để tránh lỗi khi convert DTO
+        Order order = orderRepository.findByIdWithDetails(orderId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng"));
 
-        order.setStatus(newStatus);
+        // Trigger lazy loading cho payments và statusHistories trong cùng transaction
+        order.getPayments().size(); // Trigger lazy load
+        order.getStatusHistories().size(); // Trigger lazy load
+
+        // Map status từ frontend format sang backend format
+        String normalizedStatus = normalizeOrderStatus(newStatus);
+        log.info("🔄 Updating order #{} status: {} -> {}", orderId, order.getStatus(), normalizedStatus);
+        
+        order.setStatus(normalizedStatus);
         
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(order);
-        history.setStatus(newStatus);
+        history.setStatus(normalizedStatus);
         history.setChangedAt(LocalDateTime.now());
         
-        statusHistoryRepository.save(history); 
-        Order savedOrder = orderRepository.save(order); 
+        // Save history và thêm vào list của order để đảm bảo nó có trong DTO
+        statusHistoryRepository.save(history);
+        order.getStatusHistories().add(history);
         
-        return getOrderById(savedOrder.getId());
+        Order savedOrder = orderRepository.save(order); 
+        log.info("✅ Order #{} status updated successfully to: {}", orderId, normalizedStatus);
+        
+        // Convert trực tiếp order đã save thay vì query lại
+        // Đảm bảo relationships vẫn được giữ trong cùng transaction
+        return convertToOrderDetailDto(savedOrder);
+    }
+    
+    /**
+     * Map order status từ frontend format (PascalCase) sang backend format (lowercase)
+     * Frontend: Pending, Processing, Shipped, Completed, Cancelled
+     * Backend: pending, processing, shipped, delivered, cancelled
+     */
+    private String normalizeOrderStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return status;
+        }
+        
+        String normalized = status.trim();
+        
+        // Map từ PascalCase sang lowercase với các mapping đặc biệt
+        switch (normalized) {
+            case "Pending":
+                return "pending";
+            case "Processing":
+                return "processing";
+            case "Shipped":
+                return "shipped";
+            case "Completed":
+                return "delivered"; // Frontend dùng "Completed" nhưng backend dùng "delivered"
+            case "Cancelled":
+                return "cancelled";
+            case "Confirmed":
+                return "confirmed";
+            case "Packed":
+                return "packed";
+            case "Refunded":
+                return "refunded";
+            default:
+                // Nếu không match, chuyển về lowercase và log warning
+                String lowercased = normalized.toLowerCase();
+                if (!lowercased.matches("pending|confirmed|processing|packed|shipped|delivered|cancelled|refunded")) {
+                    log.warn("⚠️ Unknown order status: {}. Using as-is: {}", normalized, lowercased);
+                }
+                return lowercased;
+        }
     }
 
     private AdminOrderListDto convertToOrderListDto(Order order) {
@@ -93,13 +154,47 @@ public class AdminOrderService {
     private AdminOrderDetailDto convertToOrderDetailDto(Order order) {
         List<CartItemDto> detailDtos = order.getOrderDetails().stream().map(detail -> {
             var v = detail.getVariant();
+            if (v == null) {
+                // Fallback nếu variant null (không nên xảy ra nhưng phòng tránh)
+                return CartItemDto.builder()
+                        .variantId(null)
+                        .productName(detail.getProductName() != null ? detail.getProductName() : "N/A")
+                        .brandName("N/A")
+                        .size(detail.getSize() != null ? detail.getSize() : "")
+                        .color(detail.getColor() != null ? detail.getColor() : "")
+                        .imageUrl("")
+                        .quantity(detail.getQuantity())
+                        .unitPrice(detail.getUnitPrice())
+                        .totalPrice(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
+                        .build();
+            }
+            
+            // Lấy product và brand với null safety
+            String productName = "N/A";
+            String brandName = "N/A";
+            String imageUrl = "";
+            
+            if (v.getProduct() != null) {
+                productName = v.getProduct().getName() != null ? v.getProduct().getName() : "N/A";
+                if (v.getProduct().getBrand() != null) {
+                    brandName = v.getProduct().getBrand().getName() != null ? v.getProduct().getBrand().getName() : "N/A";
+                }
+            } else {
+                // Fallback: dùng denormalized data từ OrderDetail
+                productName = detail.getProductName() != null ? detail.getProductName() : "N/A";
+            }
+            
+            if (v.getImageUrl() != null) {
+                imageUrl = v.getImageUrl();
+            }
+            
             return CartItemDto.builder()
                     .variantId(v.getId())
-                    .productName(v.getProduct().getName())
-                    .brandName(v.getProduct().getBrand().getName())
-                    .size(v.getSize())
-                    .color(v.getColor())
-                    .imageUrl(v.getImageUrl())
+                    .productName(productName)
+                    .brandName(brandName)
+                    .size(v.getSize() != null ? v.getSize() : detail.getSize() != null ? detail.getSize() : "")
+                    .color(v.getColor() != null ? v.getColor() : detail.getColor() != null ? detail.getColor() : "")
+                    .imageUrl(imageUrl)
                     .quantity(detail.getQuantity())
                     .unitPrice(detail.getUnitPrice())
                     .totalPrice(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))

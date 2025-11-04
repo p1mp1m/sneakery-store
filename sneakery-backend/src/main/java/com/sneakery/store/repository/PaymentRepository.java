@@ -54,4 +54,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @EntityGraph(attributePaths = {"order"})
     @Query("SELECT p FROM Payment p")
     Page<Payment> findAllWithOrder(Pageable pageable);
+
+    /**
+     * Tính tổng doanh thu từ payments completed trong khoảng thời gian
+     */
+    @Query("SELECT SUM(p.amount) FROM Payment p WHERE p.status = :status AND p.createdAt BETWEEN :startDate AND :endDate")
+    BigDecimal sumAmountByStatusAndDateRange(
+            @Param("status") String status,
+            @Param("startDate") java.time.LocalDateTime startDate,
+            @Param("endDate") java.time.LocalDateTime endDate
+    );
 }

@@ -19,9 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
-import java.math.BigDecimal;
 
 @Slf4j
 @RestController
@@ -97,30 +95,6 @@ public class AdminPaymentController {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy payment với id: " + id));
         
         return ResponseEntity.ok(mapToDto(payment));
-    }
-
-    @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getPaymentStats() {
-        log.info("📍 GET /api/admin/payments/stats");
-        
-        Map<String, Object> stats = new HashMap<>();
-        
-        BigDecimal totalRevenue = paymentRepository.sumAmountByStatus("completed");
-        if (totalRevenue == null) {
-            totalRevenue = BigDecimal.ZERO;
-        }
-        
-        long completedPayments = paymentRepository.countByStatus("completed");
-        long pendingPayments = paymentRepository.countByStatus("pending");
-        long failedPayments = paymentRepository.countByStatus("failed");
-        
-        stats.put("totalRevenue", totalRevenue);
-        stats.put("completedPayments", completedPayments);
-        stats.put("pendingPayments", pendingPayments);
-        stats.put("failedPayments", failedPayments);
-        stats.put("totalPayments", completedPayments + pendingPayments + failedPayments);
-        
-        return ResponseEntity.ok(stats);
     }
 
     @PutMapping("/{id}/status")

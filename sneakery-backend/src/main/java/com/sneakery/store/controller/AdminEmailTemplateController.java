@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -153,6 +155,66 @@ public class AdminEmailTemplateController {
         log.info("   [MOCK EMAIL SENT]");
         
         return ResponseEntity.ok("Test email sent successfully (mock) to: " + recipientEmail);
+    }
+
+    /**
+     * GET /api/admin/email-templates/stats
+     * Lấy thống kê về email templates (data thật từ database)
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getEmailTemplateStats() {
+        log.info("📊 GET /api/admin/email-templates/stats");
+        
+        Map<String, Object> stats = new HashMap<>();
+        
+        try {
+            // Đếm tổng số templates
+            long totalTemplates = emailTemplateRepository.count();
+            
+            // Đếm số templates đang active
+            long activeTemplates = emailTemplateRepository.countByIsActive(true);
+            
+            // Đếm số templates được tạo trong tháng này
+            LocalDateTime now = LocalDateTime.now();
+            int currentYear = now.getYear();
+            int currentMonth = now.getMonthValue();
+            long newTemplatesThisMonth = emailTemplateRepository.countByCreatedAtYearAndMonth(currentYear, currentMonth);
+            
+            // Tính % active
+            double activeRate = totalTemplates > 0 ? (activeTemplates * 100.0 / totalTemplates) : 0;
+            
+            // Emails sent và open rate - tạm thời trả về 0 vì không có tracking table
+            // Có thể tích hợp với EmailLog table nếu có trong tương lai
+            long emailsSentToday = 0;
+            long emailsSentThisWeek = 0;
+            double openRate = 0.0;
+            double openRateTrend = 0.0;
+            
+            stats.put("totalTemplates", totalTemplates);
+            stats.put("activeTemplates", activeTemplates);
+            stats.put("newTemplatesThisMonth", newTemplatesThisMonth);
+            stats.put("activeRate", activeRate);
+            stats.put("emailsSentToday", emailsSentToday);
+            stats.put("emailsSentThisWeek", emailsSentThisWeek);
+            stats.put("openRate", openRate);
+            stats.put("openRateTrend", openRateTrend);
+            
+            log.debug("Email template stats fetched: total={}, active={}, newThisMonth={}", 
+                    totalTemplates, activeTemplates, newTemplatesThisMonth);
+        } catch (Exception e) {
+            log.error("Error fetching email template stats: {}", e.getMessage(), e);
+            // Return empty stats on error
+            stats.put("totalTemplates", 0);
+            stats.put("activeTemplates", 0);
+            stats.put("newTemplatesThisMonth", 0);
+            stats.put("activeRate", 0.0);
+            stats.put("emailsSentToday", 0);
+            stats.put("emailsSentThisWeek", 0);
+            stats.put("openRate", 0.0);
+            stats.put("openRateTrend", 0.0);
+        }
+        
+        return ResponseEntity.ok(stats);
     }
 }
 

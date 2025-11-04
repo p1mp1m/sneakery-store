@@ -1,17 +1,25 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
-    <div class="max-w-7xl mx-auto px-4">
+    <div class="max-w-7xl mx-auto px-4 space-y-6">
       <!-- Page Header -->
-      <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Thanh toán</h1>
-        <p class="text-gray-600 dark:text-gray-400">Hoàn tất đơn hàng của bạn</p>
+      <div class="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-700 rounded-xl p-6 shadow-lg">
+        <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent"></div>
+        <div class="relative">
+          <h1 class="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <i class="material-icons text-white">payment</i>
+            </div>
+            Thanh toán
+          </h1>
+          <p class="text-purple-100 text-sm md:text-base">Hoàn tất đơn hàng của bạn</p>
+        </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center py-16">
+      <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mb-4"></div>
-          <p class="text-gray-600 dark:text-gray-400">Đang tải thông tin...</p>
+          <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mb-4"></div>
+          <p class="text-gray-600 dark:text-gray-400 font-medium">Đang tải thông tin...</p>
         </div>
       </div>
 
@@ -20,128 +28,139 @@
         <!-- Left: Multi-Step Form -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Step Progress Indicator -->
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <div class="flex items-center justify-between">
+          <div class="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+            <div class="flex items-center justify-between gap-2 sm:gap-4 overflow-x-auto scrollbar-hide pb-2">
               <div
                 v-for="(step, index) in steps"
                 :key="step.id"
                 :class="[
-                  'flex items-center gap-3 cursor-pointer transition-all',
+                  'flex items-center gap-2 sm:gap-3 cursor-pointer transition-all flex-shrink-0',
                   currentStep === index + 1 ? 'text-purple-600 dark:text-purple-400' : currentStep > index + 1 ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'
                 ]"
                 @click="goToStep(index + 1)"
               >
                 <div :class="[
-                  'w-10 h-10 rounded-full flex items-center justify-center font-semibold border-2 transition-all',
+                  'w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold border-2 transition-all shadow-sm',
                   currentStep === index + 1 
-                    ? 'bg-purple-600 text-white border-purple-600' 
+                    ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white border-purple-600 shadow-purple-500/50' 
                     : currentStep > index + 1 
-                    ? 'bg-green-600 text-white border-green-600' 
+                    ? 'bg-gradient-to-br from-green-500 to-green-600 text-white border-green-600 shadow-green-500/50' 
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-400 border-gray-300 dark:border-gray-600'
                 ]">
-                  <span v-if="currentStep > index + 1">✓</span>
-                  <span v-else>{{ index + 1 }}</span>
+                  <i v-if="currentStep > index + 1" class="material-icons text-base sm:text-lg">check</i>
+                  <span v-else class="text-base sm:text-lg">{{ index + 1 }}</span>
                 </div>
-                <div class="hidden md:block">
-                  <div class="font-semibold text-sm">{{ step.title }}</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ step.description }}</div>
+                <div class="hidden sm:block min-w-0">
+                  <div class="font-semibold text-xs sm:text-sm whitespace-nowrap">{{ step.title }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 hidden md:block">{{ step.description }}</div>
                 </div>
+                <div v-if="index < steps.length - 1" :class="[
+                  'hidden lg:block w-6 sm:w-8 h-0.5 mx-1 sm:mx-2 transition-all',
+                  currentStep > index + 1 ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
+                ]"></div>
               </div>
             </div>
           </div>
 
           <!-- Step 1: Shipping Address -->
-          <div v-show="currentStep === 1" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div v-show="currentStep === 1" class="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8">
             <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                <i class="material-icons text-white text-lg">location_on</i>
+              </div>
               Địa chỉ giao hàng
             </h2>
 
             <!-- Guest Address Form -->
-            <div v-if="isGuest" class="space-y-4">
+            <div v-if="isGuest" class="space-y-5">
               <div>
-                <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Họ tên người nhận *</label>
+                <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Họ tên người nhận *</label>
                 <input
                   v-model="newAddress.recipientName"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                   placeholder="Nguyễn Văn A"
+                  required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Số điện thoại *</label>
+                <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Số điện thoại *</label>
                 <input
                   v-model="newAddress.phone"
                   type="tel"
-                  class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                   placeholder="0912345678"
+                  required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Email (không bắt buộc)</label>
+                <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Email (không bắt buộc)</label>
                 <input
                   v-model="newAddress.email"
                   type="email"
-                  class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                   placeholder="email@example.com"
                 />
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Để nhận thông tin đơn hàng qua email</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+                  <i class="material-icons text-xs">info</i>
+                  Để nhận thông tin đơn hàng qua email
+                </p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Địa chỉ *</label>
+                <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Địa chỉ *</label>
                 <input
                   v-model="newAddress.line1"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                   placeholder="123 Đường ABC"
+                  required
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Địa chỉ bổ sung (không bắt buộc)</label>
+                <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Địa chỉ bổ sung (không bắt buộc)</label>
                 <input
                   v-model="newAddress.line2"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                   placeholder="Căn hộ, tòa nhà..."
                 />
               </div>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Quận/Huyện *</label>
+                  <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Quận/Huyện *</label>
                   <input
                     v-model="newAddress.district"
                     type="text"
-                    class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                     placeholder="Quận 1"
+                    required
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Tỉnh/Thành phố *</label>
+                  <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Tỉnh/Thành phố *</label>
                   <input
                     v-model="newAddress.city"
                     type="text"
-                    class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                     placeholder="TP. Hồ Chí Minh"
+                    required
                   />
                 </div>
               </div>
             </div>
 
             <!-- Authenticated User Address Selection -->
-            <div v-else-if="addresses.length === 0" class="text-center py-12">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-4 text-gray-400">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <p class="text-gray-600 dark:text-gray-400 mb-4">Bạn chưa có địa chỉ giao hàng nào</p>
-              <button @click="showAddressForm = true" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+            <div v-else-if="addresses.length === 0" class="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+              <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <i class="material-icons text-4xl text-purple-600 dark:text-purple-400">location_on</i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có địa chỉ giao hàng</h3>
+              <p class="text-gray-600 dark:text-gray-400 mb-6">Thêm địa chỉ để tiếp tục đặt hàng</p>
+              <button 
+                @click="showAddressForm = true" 
+                class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
+              >
+                <i class="material-icons text-lg">add</i>
                 Thêm địa chỉ mới
               </button>
             </div>
@@ -151,50 +170,38 @@
                 v-for="addr in addresses"
                 :key="addr.id"
                 :class="[
-                  'p-4 rounded-xl border-2 cursor-pointer transition-all',
+                  'p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md',
                   selectedAddress === addr.id
-                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20 shadow-md'
                     : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
                 ]"
                 @click="selectedAddress = addr.id"
               >
                 <div class="flex items-start gap-4">
                   <div :class="[
-                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1',
+                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-all',
                     selectedAddress === addr.id
-                      ? 'bg-purple-600 border-purple-600 text-white'
+                      ? 'bg-purple-600 border-purple-600 text-white shadow-sm'
                       : 'border-gray-300 dark:border-gray-600'
                   ]">
-                    <span v-if="selectedAddress === addr.id" class="text-xs">✓</span>
+                    <i v-if="selectedAddress === addr.id" class="material-icons text-xs">check</i>
                   </div>
                   <div class="flex-1">
                     <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ addr.recipientName }}</h4>
-                    <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <div class="space-y-1.5 text-sm text-gray-600 dark:text-gray-400">
                       <div class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                        </svg>
+                        <i class="material-icons text-xs text-gray-400">phone</i>
                         {{ addr.phone }}
                       </div>
                       <div class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                        </svg>
+                        <i class="material-icons text-xs text-gray-400">place</i>
                         {{ addr.line1 }}
                       </div>
-                      <div v-if="addr.line2" class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="12" cy="12" r="10"></circle>
-                        </svg>
+                      <div v-if="addr.line2" class="flex items-center gap-2 pl-6">
                         {{ addr.line2 }}
                       </div>
                       <div class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="2" y1="12" x2="22" y2="12"></line>
-                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                        </svg>
+                        <i class="material-icons text-xs text-gray-400">location_city</i>
                         {{ addr.district }}, {{ addr.city }}
                       </div>
                     </div>
@@ -202,75 +209,74 @@
                 </div>
               </div>
 
-              <button @click="showAddressForm = true" class="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-purple-400 dark:hover:border-purple-600 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+              <button 
+                @click="showAddressForm = true" 
+                class="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-purple-400 dark:hover:border-purple-600 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all"
+              >
+                <i class="material-icons text-lg">add</i>
                 Thêm địa chỉ mới
               </button>
             </div>
 
-            <div class="flex justify-end mt-6">
+            <div class="flex justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <button
                 @click="nextStep"
                 :disabled="isGuest ? (!newAddress.recipientName || !newAddress.phone || !newAddress.line1 || !newAddress.district || !newAddress.city) : !selectedAddress"
-                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
               >
-                Tiếp tục
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
+                <span>Tiếp tục</span>
+                <i class="material-icons text-lg">arrow_forward</i>
               </button>
             </div>
           </div>
 
           <!-- Step 2: Payment Method -->
-          <div v-show="currentStep === 2" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div v-show="currentStep === 2" class="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8">
             <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                <line x1="1" y1="10" x2="23" y2="10"></line>
-              </svg>
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                <i class="material-icons text-white text-lg">payment</i>
+              </div>
               Phương thức thanh toán
             </h2>
 
             <div class="space-y-4 mb-6">
               <div
                 :class="[
-                  'p-4 rounded-xl border-2 cursor-pointer transition-all',
+                  'p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md',
                   paymentMethod === 'cod'
-                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20 shadow-md'
                     : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
                 ]"
                 @click="paymentMethod = 'cod'"
               >
                 <div class="flex items-start gap-4">
                   <div :class="[
-                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1',
+                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-all',
                     paymentMethod === 'cod'
-                      ? 'bg-purple-600 border-purple-600 text-white'
+                      ? 'bg-purple-600 border-purple-600 text-white shadow-sm'
                       : 'border-gray-300 dark:border-gray-600'
                   ]">
-                    <span v-if="paymentMethod === 'cod'" class="text-xs">✓</span>
+                    <i v-if="paymentMethod === 'cod'" class="material-icons text-xs">check</i>
                   </div>
                   <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                      <div class="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-purple-600 dark:text-purple-400">
-                          <line x1="12" y1="1" x2="12" y2="23"></line>
-                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                        </svg>
+                    <div class="flex items-center gap-3 mb-3">
+                      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-sm">
+                        <i class="material-icons text-white text-xl">money</i>
                       </div>
                       <div>
                         <h4 class="font-semibold text-gray-900 dark:text-gray-100">Thanh toán khi nhận hàng (COD)</h4>
                         <p class="text-sm text-gray-600 dark:text-gray-400">Thanh toán bằng tiền mặt khi nhận hàng</p>
                       </div>
                     </div>
-                    <div class="flex gap-2">
-                      <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">✓ Tiện lợi</span>
-                      <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">✓ Không mất phí</span>
+                    <div class="flex flex-wrap gap-2">
+                      <span class="px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium flex items-center gap-1">
+                        <i class="material-icons text-xs">check_circle</i>
+                        Tiện lợi
+                      </span>
+                      <span class="px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-medium flex items-center gap-1">
+                        <i class="material-icons text-xs">check_circle</i>
+                        Không mất phí
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -278,160 +284,217 @@
 
               <div
                 :class="[
-                  'p-4 rounded-xl border-2 cursor-pointer transition-all',
+                  'p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md',
                   paymentMethod === 'online'
-                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20 shadow-md'
                     : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
                 ]"
                 @click="paymentMethod = 'online'"
               >
                 <div class="flex items-start gap-4">
                   <div :class="[
-                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1',
+                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 transition-all',
                     paymentMethod === 'online'
-                      ? 'bg-purple-600 border-purple-600 text-white'
+                      ? 'bg-purple-600 border-purple-600 text-white shadow-sm'
                       : 'border-gray-300 dark:border-gray-600'
                   ]">
-                    <span v-if="paymentMethod === 'online'" class="text-xs">✓</span>
+                    <i v-if="paymentMethod === 'online'" class="material-icons text-xs">check</i>
                   </div>
                   <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                      <div class="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-600 dark:text-blue-400">
-                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                          <line x1="1" y1="10" x2="23" y2="10"></line>
-                        </svg>
+                    <div class="flex items-center gap-3 mb-3">
+                      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-sm">
+                        <i class="material-icons text-white text-xl">credit_card</i>
                       </div>
                       <div>
                         <h4 class="font-semibold text-gray-900 dark:text-gray-100">Thanh toán trực tuyến</h4>
                         <p class="text-sm text-gray-600 dark:text-gray-400">Thanh toán qua VNPay, MoMo, thẻ ATM/Visa...</p>
                       </div>
                     </div>
-                    <div class="flex gap-2">
-                      <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs">✓ Nhanh chóng</span>
-                      <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs">✓ Bảo mật</span>
+                    <div class="flex flex-wrap gap-2">
+                      <span class="px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-medium flex items-center gap-1">
+                        <i class="material-icons text-xs">check_circle</i>
+                        Nhanh chóng
+                      </span>
+                      <span class="px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-xs font-medium flex items-center gap-1">
+                        <i class="material-icons text-xs">check_circle</i>
+                        Bảo mật
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="flex justify-between mt-6">
-              <button @click="prevStep" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="19" y1="12" x2="5" y2="12"></line>
-                  <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
+            <div class="flex justify-between mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <button 
+                @click="prevStep" 
+                class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
+              >
+                <i class="material-icons text-lg">arrow_back</i>
                 Quay lại
               </button>
-              <button @click="nextStep" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">
-                Tiếp tục
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
+              <button 
+                @click="nextStep" 
+                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
+              >
+                <span>Tiếp tục</span>
+                <i class="material-icons text-lg">arrow_forward</i>
               </button>
             </div>
           </div>
 
           <!-- Step 3: Review & Confirm -->
-          <div v-show="currentStep === 3" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <div v-show="currentStep === 3" class="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8">
             <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 11 12 14 22 4"></polyline>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              </svg>
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                <i class="material-icons text-white text-lg">check_circle</i>
+              </div>
               Xác nhận đơn hàng
             </h2>
 
             <div class="space-y-4 mb-6">
-              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50">
                 <div class="flex items-center justify-between mb-3">
-                  <h3 class="font-semibold text-gray-900 dark:text-gray-100">Địa chỉ giao hàng</h3>
-                  <button @click="currentStep = 1" class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium">Sửa</button>
+                  <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <i class="material-icons text-purple-600 dark:text-purple-400 text-base">location_on</i>
+                    Địa chỉ giao hàng
+                  </h3>
+                  <button 
+                    @click="currentStep = 1" 
+                    class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium transition-colors flex items-center gap-1"
+                  >
+                    <i class="material-icons text-sm">edit</i>
+                    Sửa
+                  </button>
                 </div>
-                <div v-if="isGuest" class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <div v-if="isGuest" class="text-sm text-gray-600 dark:text-gray-400 space-y-1.5">
                   <div><strong class="text-gray-900 dark:text-gray-100">{{ newAddress.recipientName }}</strong></div>
-                  <div>{{ newAddress.phone }}</div>
-                  <div v-if="newAddress.email">{{ newAddress.email }}</div>
-                  <div>{{ newAddress.line1 }}</div>
-                  <div v-if="newAddress.line2">{{ newAddress.line2 }}</div>
-                  <div>{{ newAddress.district }}, {{ newAddress.city }}</div>
+                  <div class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">phone</i>
+                    {{ newAddress.phone }}
+                  </div>
+                  <div v-if="newAddress.email" class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">email</i>
+                    {{ newAddress.email }}
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">place</i>
+                    {{ newAddress.line1 }}
+                  </div>
+                  <div v-if="newAddress.line2" class="pl-6">{{ newAddress.line2 }}</div>
+                  <div class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">location_city</i>
+                    {{ newAddress.district }}, {{ newAddress.city }}
+                  </div>
                 </div>
-                <div v-else-if="selectedAddressData" class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <div v-else-if="selectedAddressData" class="text-sm text-gray-600 dark:text-gray-400 space-y-1.5">
                   <div><strong class="text-gray-900 dark:text-gray-100">{{ selectedAddressData.recipientName }}</strong></div>
-                  <div>{{ selectedAddressData.phone }}</div>
-                  <div>{{ selectedAddressData.line1 }}</div>
-                  <div v-if="selectedAddressData.line2">{{ selectedAddressData.line2 }}</div>
-                  <div>{{ selectedAddressData.district }}, {{ selectedAddressData.city }}</div>
+                  <div class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">phone</i>
+                    {{ selectedAddressData.phone }}
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">place</i>
+                    {{ selectedAddressData.line1 }}
+                  </div>
+                  <div v-if="selectedAddressData.line2" class="pl-6">{{ selectedAddressData.line2 }}</div>
+                  <div class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">location_city</i>
+                    {{ selectedAddressData.district }}, {{ selectedAddressData.city }}
+                  </div>
                 </div>
               </div>
 
-              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50">
                 <div class="flex items-center justify-between mb-3">
-                  <h3 class="font-semibold text-gray-900 dark:text-gray-100">Phương thức thanh toán</h3>
-                  <button @click="currentStep = 2" class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium">Sửa</button>
+                  <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <i class="material-icons text-purple-600 dark:text-purple-400 text-base">payment</i>
+                    Phương thức thanh toán
+                  </h3>
+                  <button 
+                    @click="currentStep = 2" 
+                    class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium transition-colors flex items-center gap-1"
+                  >
+                    <i class="material-icons text-sm">edit</i>
+                    Sửa
+                  </button>
                 </div>
                 <div class="text-sm text-gray-600 dark:text-gray-400">
-                  <div><strong class="text-gray-900 dark:text-gray-100" v-if="paymentMethod === 'cod'">Thanh toán khi nhận hàng (COD)</strong><strong class="text-gray-900 dark:text-gray-100" v-else>Thanh toán trực tuyến</strong></div>
-                  <div v-if="paymentMethod === 'cod'">Thanh toán bằng tiền mặt khi nhận hàng</div>
-                  <div v-else>Thanh toán qua VNPay, MoMo, thẻ ATM/Visa...</div>
+                  <div class="mb-1">
+                    <strong class="text-gray-900 dark:text-gray-100" v-if="paymentMethod === 'cod'">Thanh toán khi nhận hàng (COD)</strong>
+                    <strong class="text-gray-900 dark:text-gray-100" v-else>Thanh toán trực tuyến</strong>
+                  </div>
+                  <div v-if="paymentMethod === 'cod'" class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">money</i>
+                    Thanh toán bằng tiền mặt khi nhận hàng
+                  </div>
+                  <div v-else class="flex items-center gap-1">
+                    <i class="material-icons text-xs text-gray-400">credit_card</i>
+                    Thanh toán qua VNPay, MoMo, thẻ ATM/Visa...
+                  </div>
                 </div>
               </div>
 
               <!-- Coupon Code Section -->
-              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-3">Mã giảm giá (không bắt buộc)</h3>
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-white dark:bg-gray-800/50">
+                <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                  <i class="material-icons text-purple-600 dark:text-purple-400 text-base">local_offer</i>
+                  Mã giảm giá (không bắt buộc)
+                </h3>
                 <div class="flex gap-2">
                   <input
                     v-model="couponCode"
                     type="text"
                     placeholder="Nhập mã giảm giá"
-                    class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    class="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                     :disabled="applyingCoupon"
                   />
                   <button
                     @click="applyCoupon"
                     :disabled="applyingCoupon || !couponCode"
-                    class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    class="px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
                   >
-                    {{ applyingCoupon ? 'Đang áp dụng...' : 'Áp dụng' }}
+                    <div v-if="applyingCoupon" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <i v-else class="material-icons text-lg">local_offer</i>
+                    <span>{{ applyingCoupon ? 'Đang áp dụng...' : 'Áp dụng' }}</span>
                   </button>
                 </div>
-                <p v-if="couponDiscount > 0" class="text-sm text-green-600 dark:text-green-400 mt-2">
-                  ✓ Đã áp dụng mã giảm giá: -{{ formatPrice(couponDiscount) }}
+                <p v-if="couponDiscount > 0" class="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-1 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <i class="material-icons text-base">check_circle</i>
+                  Đã áp dụng mã giảm giá: -{{ formatPrice(couponDiscount) }}
                 </p>
               </div>
 
-              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-3">Ghi chú (không bắt buộc)</h3>
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-white dark:bg-gray-800/50">
+                <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                  <i class="material-icons text-purple-600 dark:text-purple-400 text-base">note</i>
+                  Ghi chú (không bắt buộc)
+                </h3>
                 <textarea
                   v-model="notes"
                   placeholder="Nhập ghi chú cho đơn hàng (nếu có)..."
-                  class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all resize-none"
                   rows="4"
                 ></textarea>
               </div>
             </div>
 
-            <div class="flex justify-between">
-              <button @click="prevStep" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="19" y1="12" x2="5" y2="12"></line>
-                  <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
+            <div class="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
+              <button 
+                @click="prevStep" 
+                class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+              >
+                <i class="material-icons text-lg">arrow_back</i>
                 Quay lại
               </button>
               <button
                 @click="handleCheckout"
                 :disabled="processing"
-                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
               >
-                <svg v-if="!processing" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-                <span v-if="processing">Đang xử lý...</span>
-                <span v-else>Xác nhận đặt hàng</span>
+                <div v-if="processing" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <i v-else class="material-icons text-lg">check_circle</i>
+                <span>{{ processing ? 'Đang xử lý...' : 'Xác nhận đặt hàng' }}</span>
               </button>
             </div>
           </div>
@@ -439,44 +502,52 @@
 
         <!-- Right: Order Summary -->
         <div class="lg:col-span-1">
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
-            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
+          <div class="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
+            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+              <i class="material-icons text-purple-600 dark:text-purple-400">receipt_long</i>
               Đơn hàng ({{ cart?.totalItems || 0 }} sản phẩm)
             </h2>
 
             <!-- Cart Items -->
-            <div class="space-y-3 mb-6 max-h-64 overflow-y-auto">
+            <div class="space-y-3 mb-6 max-h-64 overflow-y-auto scrollbar-hide">
               <div
                 v-for="item in cart?.items || []"
                 :key="item.cartItemId"
-                class="flex gap-3"
+                class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <div class="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
                   <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.productName" class="w-full h-full object-cover" />
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{{ item.productName }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.size }} / {{ item.color }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Số lượng: {{ item.quantity }}</p>
+                  <p class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate mb-1">{{ item.productName }}</p>
+                  <div class="flex flex-wrap gap-1 mb-1">
+                    <span class="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs text-gray-700 dark:text-gray-300">{{ item.size }}</span>
+                    <span class="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-600 rounded text-xs text-gray-700 dark:text-gray-300">{{ item.color }}</span>
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Số lượng: x{{ item.quantity }}</p>
                 </div>
-                <p class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ formatPrice(item.totalPrice) }}</p>
+                <p class="font-semibold text-sm text-purple-600 dark:text-purple-400 flex-shrink-0">{{ formatPrice(item.totalPrice) }}</p>
               </div>
             </div>
 
             <!-- Price Breakdown -->
             <div class="space-y-3 mb-6">
               <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span>Tạm tính</span>
-                <span class="text-gray-900 dark:text-gray-100">{{ formatPrice(cart?.subTotal || 0) }}</span>
+                <span class="flex items-center gap-2">
+                  <i class="material-icons text-xs">inventory_2</i>
+                  Tạm tính
+                </span>
+                <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatPrice(cart?.subTotal || 0) }}</span>
               </div>
               <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span>Phí vận chuyển</span>
-                <span :class="shippingFee === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'">
+                <span class="flex items-center gap-2">
+                  <i class="material-icons text-xs">local_shipping</i>
+                  Phí vận chuyển
+                </span>
+                <span :class="[
+                  'font-semibold',
+                  shippingFee === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'
+                ]">
                   {{ shippingFee === 0 ? 'Miễn phí' : formatPrice(shippingFee) }}
                 </span>
               </div>
@@ -531,36 +602,30 @@
                 <span>-{{ formatPrice(couponDiscount) }}</span>
               </div>
 
-              <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">Tổng cộng</span>
+              <div class="border-t-2 border-gray-300 dark:border-gray-600 pt-4 mt-4">
+                <div class="flex justify-between items-center p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg">
+                  <span class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <i class="material-icons text-purple-600 dark:text-purple-400">attach_money</i>
+                    Tổng cộng
+                  </span>
                   <span class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ formatPrice(totalAmount) }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Trust Badges -->
-            <div class="grid grid-cols-1 gap-2 mb-4">
+            <div class="grid grid-cols-1 gap-2 mb-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
               <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                Thanh toán bảo mật
+                <i class="material-icons text-green-500 text-base">lock</i>
+                <span>Thanh toán bảo mật</span>
               </div>
               <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-                Chính hãng 100%
+                <i class="material-icons text-blue-500 text-base">verified</i>
+                <span>Chính hãng 100%</span>
               </div>
               <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <polyline points="1 20 1 14 7 14"></polyline>
-                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-                Đổi trả 30 ngày
+                <i class="material-icons text-purple-500 text-base">swap_horiz</i>
+                <span>Đổi trả 30 ngày</span>
               </div>
             </div>
 
@@ -575,10 +640,19 @@
 
     <!-- Add Address Modal -->
     <div v-if="showAddressForm" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showAddressForm = false">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Thêm địa chỉ mới</h3>
-          <button @click="showAddressForm = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">×</button>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">add_location</i>
+            Thêm địa chỉ mới
+          </h3>
+          <button 
+            @click="showAddressForm = false" 
+            class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Đóng"
+          >
+            <i class="material-icons">close</i>
+          </button>
         </div>
         <div class="p-6 space-y-4">
           <div>
@@ -914,6 +988,15 @@ const handleCheckout = async () => {
 
       await userService.checkout(checkoutData);
       ElMessage.success('Đặt hàng thành công!');
+
+      // Clear user cart sau khi checkout thành công
+      try {
+        await userService.clearCart();
+        console.log('✅ Cart đã được xóa sau khi thanh toán');
+      } catch (error) {
+        console.warn('⚠️ Không thể xóa cart (có thể đã được xóa tự động):', error);
+        // Không hiển thị lỗi cho user vì backend đã xóa cart rồi
+      }
 
       // Redirect to orders
       setTimeout(() => {

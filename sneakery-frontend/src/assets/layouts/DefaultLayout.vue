@@ -2,10 +2,10 @@
   <div id="app-layout" class="min-h-screen flex flex-col bg-white dark:bg-gray-900">
     <!-- Navigation Header -->
     <header class="fixed top-0 left-0 right-0 z-[100] bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 border-b border-purple-500/20 transition-all duration-300" :class="{ 'shadow-xl': isScrolled }">
-      <div class="max-w-[1400px] mx-auto px-6 flex items-center justify-between h-[72px] gap-4">
+      <div class="max-w-[1400px] mx-auto px-3 sm:px-4 md:px-6 flex items-center justify-between h-[72px] gap-2 sm:gap-4">
         <!-- Logo/Brand -->
         <router-link :to="{ name: 'home' }" class="flex items-center no-underline transition-opacity duration-200 flex-shrink-0 hover:opacity-90">
-          <img src="@/assets/images/logo.png" alt="Sneakery Store" class="h-24 w-auto object-contain" />
+          <img src="@/assets/images/logo.png" alt="Sneakery Store" class="h-16 sm:h-20 md:h-24 w-auto object-contain" />
         </router-link>
 
         <!-- Desktop Navigation -->
@@ -21,14 +21,14 @@
         </nav>
 
         <!-- Enhanced Search -->
-        <div class="flex-1 max-w-2xl mx-4">
+        <div class="flex-1 max-w-2xl mx-2 sm:mx-4 hidden sm:block">
           <EnhancedSearch />
         </div>
 
         <!-- Utility Icons -->
-        <div class="flex items-center gap-2 flex-shrink-0">
+        <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <!-- Theme Toggle Button -->
-          <button class="flex items-center justify-center w-10 h-10 rounded-lg text-white/90 bg-transparent border border-transparent cursor-pointer transition-all duration-200 hover:bg-white/10 hover:text-white hover:border-white/20" @click="handleThemeToggle" type="button" :title="isDark ? 'Chuyển sang sáng' : 'Chuyển sang tối'">
+          <button class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-white/90 bg-transparent border border-transparent cursor-pointer transition-all duration-200 hover:bg-white/10 hover:text-white hover:border-white/20" @click="handleThemeToggle" type="button" :title="isDark ? 'Chuyển sang sáng' : 'Chuyển sang tối'">
             <svg v-if="isDark" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"/>
               <line x1="12" y1="1" x2="12" y2="3"/>
@@ -48,7 +48,7 @@
           <!-- Action Icons -->
           <template v-if="authStore.isAuthenticated">
             <!-- Wishlist Icon -->
-            <router-link to="/user/wishlist" class="relative flex items-center justify-center w-10 h-10 rounded-lg text-white/90 bg-transparent transition-all duration-200 cursor-pointer border border-transparent hover:bg-white/10 hover:text-white hover:border-white/20" :class="{ 'bg-white/20 text-white border-white/30': $route.path === '/user/wishlist' }">
+            <router-link to="/user/wishlist" class="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-white/90 bg-transparent transition-all duration-200 cursor-pointer border border-transparent hover:bg-white/10 hover:text-white hover:border-white/20" :class="{ 'bg-white/20 text-white border-white/30': $route.path === '/user/wishlist' }">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z"/>
               </svg>
@@ -59,7 +59,7 @@
             <NotificationDropdown />
 
             <!-- Orders/Cart Icon -->
-            <router-link to="/cart" class="relative flex items-center justify-center w-10 h-10 rounded-lg text-white/90 bg-transparent transition-all duration-200 cursor-pointer border border-transparent hover:bg-white/10 hover:text-white hover:border-white/20" :class="{ 'bg-white/20 text-white border-white/30': $route.path === '/cart' }">
+            <router-link to="/cart" class="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-white/90 bg-transparent transition-all duration-200 cursor-pointer border border-transparent hover:bg-white/10 hover:text-white hover:border-white/20" :class="{ 'bg-white/20 text-white border-white/30': $route.path === '/cart' }">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L18 21H6L5 9Z"/>
               </svg>
@@ -71,7 +71,7 @@
         <nav class="hidden md:flex items-center gap-2">
           <template v-if="authStore.isAuthenticated">
             <!-- Admin Panel Link -->
-            <router-link v-if="isAdmin" to="/admin/dashboard" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold no-underline transition-all duration-200 hover:from-amber-600 hover:to-amber-700 hover:-translate-y-0.5 hover:shadow-lg">
+            <router-link v-if="isAdmin" to="/admin/dashboard" class="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold text-xs sm:text-sm no-underline transition-all duration-200 hover:from-amber-600 hover:to-amber-700 hover:-translate-y-0.5 hover:shadow-lg">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2L2 7L12 12L22 7L12 2Z"/>
                 <path d="M2 17L12 22L22 17"/>
@@ -81,12 +81,13 @@
             </router-link>
             
             <div class="relative user-menu">
-              <button class="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 border border-purple-500 rounded-lg text-white font-medium text-sm cursor-pointer transition-all duration-200" @click.stop="toggleUserMenu" type="button">
+              <button class="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-purple-600 hover:bg-purple-700 border border-purple-500 rounded-lg text-white font-medium text-xs sm:text-sm cursor-pointer transition-all duration-200" @click.stop="toggleUserMenu" type="button">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-                <span>{{ authStore.currentUser?.fullName || 'Tài khoản' }}</span>
+                <span class="hidden lg:inline">{{ authStore.currentUser?.fullName || 'Tài khoản' }}</span>
+                <span class="lg:hidden">Tài khoản</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-150" :class="{ 'rotate-180': showUserMenu }">
                   <path d="M6 9L12 15L18 9"/>
                 </svg>

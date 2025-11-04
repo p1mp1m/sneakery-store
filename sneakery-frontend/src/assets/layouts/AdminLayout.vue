@@ -14,7 +14,12 @@
     </button>
 
     <!-- Admin Sidebar -->
-    <aside class="fixed left-0 top-0 bottom-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 z-[100] flex flex-col" :class="{ 'w-20': sidebarCollapsed, 'w-[280px]': !sidebarCollapsed, 'translate-x-0': !isMobile || !sidebarCollapsed, '-translate-x-full': isMobile && sidebarCollapsed }">
+    <aside class="fixed left-0 top-0 bottom-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 z-[100] flex flex-col" :class="{ 
+      'w-20': sidebarCollapsed && !isMobile, 
+      'w-[280px]': (!sidebarCollapsed && !isMobile) || (!sidebarCollapsed && isMobile), 
+      'translate-x-0': !isMobile || !sidebarCollapsed, 
+      '-translate-x-full': isMobile && sidebarCollapsed 
+    }">
       <!-- Header với Logo và Toggle Button -->
       <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 transition-all duration-300" :class="sidebarCollapsed ? 'p-3 justify-center' : 'p-4'">
         <!-- Logo khi expanded -->
@@ -228,9 +233,9 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 transition-all duration-300" :class="{ 'ml-20': sidebarCollapsed, 'ml-[280px]': !sidebarCollapsed }">
+    <div class="flex-1 transition-all duration-300" :class="{ 'ml-0 md:ml-20': sidebarCollapsed, 'ml-0 md:ml-[280px]': !sidebarCollapsed }">
       <!-- Page Content -->
-      <main class="p-4 min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
+      <main class="p-3 sm:p-4 lg:p-6 min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
         <router-view />
       </main>
     </div>

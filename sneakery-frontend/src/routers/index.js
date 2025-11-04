@@ -3,15 +3,15 @@ import { useAuthStore } from "@/stores/auth";
 import { adminGuard } from "./adminRoutes";
 import { userGuard } from "./userRoutes";
 
-// Import layouts
-import DefaultLayout from "../assets/layouts/DefaultLayout.vue";
+// Import layouts (lazy load)
+const DefaultLayout = () => import("../assets/layouts/DefaultLayout.vue");
 
-// Import các trang của bạn
-import HomePage from "../views/common/HomePage.vue";
-import LoginPage from "../views/common/LoginPage.vue";
-import RegisterPage from "../views/common/RegisterPage.vue";
-import ForgotPassword from "../views/common/ForgotPassword.vue";
-import ResetPassWord from "../views/common/ResetPassWord.vue";
+// Import các trang của bạn (lazy load)
+const HomePage = () => import("../views/common/HomePage.vue");
+const LoginPage = () => import("../views/common/LoginPage.vue");
+const RegisterPage = () => import("../views/common/RegisterPage.vue");
+const ForgotPassword = () => import("../views/common/ForgotPassword.vue");
+const ResetPassWord = () => import("../views/common/ResetPassWord.vue");
 // Import admin & user routes
 import adminRoutes from "./adminRoutes";
 import userRoutes from "./userRoutes";

@@ -652,146 +652,77 @@ const paymentSettings = ref({
   }
 })
 
-// Load settings from localStorage (mock data)
+// Load settings from API (data thật từ database)
 const loadSettings = async () => {
   try {
-    // Mock data cho settings
-    const mockSettings = {
-      store: {
-        storeName: 'Sneakery Store',
-        storeDescription: 'Cửa hàng giày sneaker hàng đầu Việt Nam',
-        storeAddress: '123 Đường ABC, Quận 1, TP.HCM',
-        storePhone: '0123456789',
-        storeEmail: 'info@sneakerystore.com',
-        storeWebsite: 'https://sneakerystore.com',
-        storeLogo: '/logo.png',
-        currency: 'VND',
-        timezone: 'Asia/Ho_Chi_Minh',
-        language: 'vi'
-      },
-      general: {
-        maintenanceMode: false,
-        allowRegistration: true,
-        requireEmailVerification: true,
-        maxLoginAttempts: 5,
-        sessionTimeout: 30,
-        enableNotifications: true,
-        enableAnalytics: true,
-        enableCookies: true,
-        privacyPolicy: 'Chính sách bảo mật của Sneakery Store...',
-        termsOfService: 'Điều khoản sử dụng của Sneakery Store...'
-      },
-      email: {
-        smtpHost: 'smtp.gmail.com',
-        smtpPort: 587,
-        smtpUsername: 'noreply@sneakerystore.com',
-        smtpPassword: '********',
-        smtpEncryption: 'tls',
-        fromName: 'Sneakery Store',
-        fromEmail: 'noreply@sneakerystore.com',
-        enableEmailNotifications: true,
-        enableOrderEmails: true,
-        enableMarketingEmails: false
-      },
-      payment: {
-        enableCashOnDelivery: true,
-        enableBankTransfer: true,
-        enableCreditCard: true,
-        enablePayPal: false,
-        enableVNPay: true,
-        enableMomo: true,
-        enableZaloPay: false,
-        defaultPaymentMethod: 'vnpay',
-        currency: 'VND',
-        taxRate: 10,
-        shippingFee: 30000,
-        freeShippingThreshold: 500000
-      }
-    }
+    // Load từ API thay vì localStorage/mock data
+    const apiSettings = await adminStore.fetchSettings()
     
-    // Load from localStorage hoặc sử dụng mock data
-    const savedSettings = localStorage.getItem('adminSettings')
-    if (savedSettings) {
-      const parsed = JSON.parse(savedSettings)
-      if (parsed.store) {
+    if (apiSettings && Object.keys(apiSettings).length > 0) {
+      // Map settings từ API vào các refs
+      if (apiSettings.store) {
         storeSettings.value = {
-          name: parsed.store.name || parsed.store.storeName || '',
-          slogan: parsed.store.slogan || parsed.store.storeDescription || '',
-          email: parsed.store.email || parsed.store.storeEmail || '',
-          phone: parsed.store.phone || parsed.store.storePhone || '',
-          address: parsed.store.address || parsed.store.storeAddress || ''
+          name: apiSettings.store.name || '',
+          slogan: apiSettings.store.slogan || '',
+          email: apiSettings.store.email || '',
+          phone: apiSettings.store.phone || '',
+          address: apiSettings.store.address || ''
         }
       }
-      if (parsed.general) generalSettings.value = { ...generalSettings.value, ...parsed.general }
-      if (parsed.email) {
+      
+      if (apiSettings.general) {
+        generalSettings.value = {
+          currency: apiSettings.general.currency || 'VND',
+          timezone: apiSettings.general.timezone || 'Asia/Ho_Chi_Minh',
+          language: apiSettings.general.language || 'vi',
+          productsPerPage: apiSettings.general.productsPerPage || 12,
+          maintenanceMode: apiSettings.general.maintenanceMode || false
+        }
+      }
+      
+      if (apiSettings.email) {
         emailSettings.value = {
-          smtpHost: parsed.email.smtpHost || '',
-          smtpPort: parsed.email.smtpPort || 587,
-          fromEmail: parsed.email.fromEmail || parsed.email.fromEmail || '',
-          fromName: parsed.email.fromName || parsed.email.fromName || '',
-          enableNotifications: parsed.email.enableNotifications !== undefined ? parsed.email.enableNotifications : true
+          smtpHost: apiSettings.email.smtpHost || '',
+          smtpPort: apiSettings.email.smtpPort || 587,
+          fromEmail: apiSettings.email.fromEmail || '',
+          fromName: apiSettings.email.fromName || '',
+          enableNotifications: apiSettings.email.enableNotifications !== undefined ? apiSettings.email.enableNotifications : true
         }
       }
-      if (parsed.payment) {
+      
+      if (apiSettings.payment) {
         paymentSettings.value = {
           cod: {
-            enabled: parsed.payment.cod?.enabled !== undefined ? parsed.payment.cod.enabled : (parsed.payment.enableCashOnDelivery !== undefined ? parsed.payment.enableCashOnDelivery : true)
+            enabled: apiSettings.payment.cod?.enabled !== undefined ? apiSettings.payment.cod.enabled : true
           },
           bankTransfer: {
-            enabled: parsed.payment.bankTransfer?.enabled !== undefined ? parsed.payment.bankTransfer.enabled : (parsed.payment.enableBankTransfer !== undefined ? parsed.payment.enableBankTransfer : true),
-            bankName: parsed.payment.bankTransfer?.bankName || 'Vietcombank',
-            accountNumber: parsed.payment.bankTransfer?.accountNumber || '',
-            accountName: parsed.payment.bankTransfer?.accountName || ''
+            enabled: apiSettings.payment.bankTransfer?.enabled !== undefined ? apiSettings.payment.bankTransfer.enabled : true,
+            bankName: apiSettings.payment.bankTransfer?.bankName || '',
+            accountNumber: apiSettings.payment.bankTransfer?.accountNumber || '',
+            accountName: apiSettings.payment.bankTransfer?.accountName || ''
           },
           online: {
-            enabled: parsed.payment.online?.enabled !== undefined ? parsed.payment.online.enabled : false
+            enabled: apiSettings.payment.online?.enabled !== undefined ? apiSettings.payment.online.enabled : false
           }
         }
       }
+      
+      console.log('✅ Settings loaded from API:', apiSettings)
     } else {
-      // Sử dụng mock data lần đầu
-      storeSettings.value = {
-        name: mockSettings.store.storeName || '',
-        slogan: mockSettings.store.storeDescription || '',
-        email: mockSettings.store.storeEmail || '',
-        phone: mockSettings.store.storePhone || '',
-        address: mockSettings.store.storeAddress || ''
-      }
-      generalSettings.value = { ...generalSettings.value, ...mockSettings.general }
-      emailSettings.value = {
-        smtpHost: mockSettings.email.smtpHost || '',
-        smtpPort: mockSettings.email.smtpPort || 587,
-        fromEmail: mockSettings.email.fromEmail || '',
-        fromName: mockSettings.email.fromName || '',
-        enableNotifications: mockSettings.email.enableEmailNotifications !== undefined ? mockSettings.email.enableEmailNotifications : true
-      }
-      paymentSettings.value = {
-        cod: { enabled: mockSettings.payment.enableCashOnDelivery !== undefined ? mockSettings.payment.enableCashOnDelivery : true },
-        bankTransfer: {
-          enabled: mockSettings.payment.enableBankTransfer !== undefined ? mockSettings.payment.enableBankTransfer : true,
-          bankName: 'Vietcombank',
-          accountNumber: '',
-          accountName: ''
-        },
-        online: { enabled: false }
-      }
+      // Nếu không có data từ API, giữ giá trị mặc định (không dùng mock data)
+      console.log('⚠️ No settings found in database, using defaults')
     }
-    
-    console.log('✅ Settings loaded successfully')
   } catch (error) {
     console.error('Error loading settings:', error)
-    ElMessage.error('Không thể tải cài đặt')
+    // Không hiển thị error để tránh làm phiền user, chỉ log
+    // Settings sẽ giữ giá trị mặc định
   }
 }
 
-// Save methods
+// Save methods - lưu vào database qua API
 const saveStoreSettings = async () => {
   try {
-    // Save to localStorage
-    const currentSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
-    currentSettings.store = storeSettings.value
-    localStorage.setItem('adminSettings', JSON.stringify(currentSettings))
-    
+    await adminStore.updateSettings({ store: storeSettings.value })
     ElMessage.success('Đã lưu thông tin cửa hàng thành công!')
   } catch (error) {
     console.error('Error saving store settings:', error)
@@ -801,11 +732,7 @@ const saveStoreSettings = async () => {
 
 const saveGeneralSettings = async () => {
   try {
-    // Save to localStorage
-    const currentSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
-    currentSettings.general = generalSettings.value
-    localStorage.setItem('adminSettings', JSON.stringify(currentSettings))
-    
+    await adminStore.updateSettings({ general: generalSettings.value })
     ElMessage.success('Đã lưu cài đặt chung thành công!')
   } catch (error) {
     console.error('Error saving general settings:', error)
@@ -815,11 +742,7 @@ const saveGeneralSettings = async () => {
 
 const saveEmailSettings = async () => {
   try {
-    // Save to localStorage
-    const currentSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
-    currentSettings.email = emailSettings.value
-    localStorage.setItem('adminSettings', JSON.stringify(currentSettings))
-    
+    await adminStore.updateSettings({ email: emailSettings.value })
     ElMessage.success('Đã lưu cài đặt email thành công!')
   } catch (error) {
     console.error('Error saving email settings:', error)
@@ -829,11 +752,7 @@ const saveEmailSettings = async () => {
 
 const savePaymentSettings = async () => {
   try {
-    // Save to localStorage
-    const currentSettings = JSON.parse(localStorage.getItem('adminSettings') || '{}')
-    currentSettings.payment = paymentSettings.value
-    localStorage.setItem('adminSettings', JSON.stringify(currentSettings))
-    
+    await adminStore.updateSettings({ payment: paymentSettings.value })
     ElMessage.success('Đã lưu cài đặt thanh toán thành công!')
   } catch (error) {
     console.error('Error saving payment settings:', error)
@@ -873,18 +792,22 @@ const goToSetting = (result) => {
 }
 
 // Export/Import Settings
-const exportSettings = () => {
-  const allSettings = {
-    store: storeSettings.value,
-    general: generalSettings.value,
-    email: emailSettings.value,
-    payment: paymentSettings.value,
-    exportedAt: new Date().toISOString(),
-    version: '1.0'
+const exportSettings = async () => {
+  try {
+    // Load settings từ API trước khi export
+    const apiSettings = await adminStore.fetchSettings()
+    const allSettings = {
+      ...apiSettings,
+      exportedAt: new Date().toISOString(),
+      version: '1.0'
+    }
+    
+    downloadJson(allSettings, `sneakery-settings-${new Date().toISOString().split('T')[0]}.json`)
+    ElMessage.success('Đã xuất cấu hình thành công!')
+  } catch (error) {
+    console.error('Error exporting settings:', error)
+    ElMessage.error('Không thể xuất cấu hình')
   }
-  
-  downloadJson(allSettings, `sneakery-settings-${new Date().toISOString().split('T')[0]}.json`)
-  ElMessage.success('Đã xuất cấu hình thành công!')
 }
 
 const importSettings = () => {
@@ -914,20 +837,20 @@ const importSettings = () => {
             cancelButtonText: 'Hủy',
             type: 'warning'
           }
-        ).then(() => {
+        ).then(async () => {
+          // Update local state
           storeSettings.value = { ...storeSettings.value, ...data.store }
           generalSettings.value = { ...generalSettings.value, ...data.general }
           emailSettings.value = { ...emailSettings.value, ...data.email }
           paymentSettings.value = { ...paymentSettings.value, ...data.payment }
           
-          // Save to localStorage
-          const settings = {
+          // Save to database via API
+          await adminStore.updateSettings({
             store: storeSettings.value,
             general: generalSettings.value,
             email: emailSettings.value,
             payment: paymentSettings.value
-          }
-          localStorage.setItem('adminSettings', JSON.stringify(settings))
+          })
           
           ElMessage.success('Đã nhập cấu hình thành công!')
         }).catch(() => {
@@ -945,59 +868,69 @@ const importSettings = () => {
 }
 
 // Reset to defaults
-const resetToDefaults = () => {
-  ElMessageBox.confirm(
-    'Bạn có chắc muốn khôi phục tất cả cài đặt về mặc định? Hành động này không thể hoàn tác.',
-    'Xác nhận khôi phục',
-    {
-      confirmButtonText: 'Khôi phục',
-      cancelButtonText: 'Hủy',
-      type: 'warning'
-    }
-  ).then(() => {
-    // Reset all settings to defaults
-    storeSettings.value = {
-      name: 'Sneakery Store',
-      slogan: 'Your Perfect Sneakers Destination',
-      email: 'contact@sneakerystore.com',
-      phone: '(+84) 123-456-789',
-      address: '123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh'
-    }
+const resetToDefaults = async () => {
+  try {
+    await ElMessageBox.confirm(
+      'Bạn có chắc muốn khôi phục tất cả cài đặt về mặc định? Hành động này không thể hoàn tác.',
+      'Xác nhận khôi phục',
+      {
+        confirmButtonText: 'Khôi phục',
+        cancelButtonText: 'Hủy',
+        type: 'warning'
+      }
+    )
     
-    generalSettings.value = {
-      currency: 'VND',
-      timezone: 'Asia/Ho_Chi_Minh',
-      language: 'vi',
-      productsPerPage: 12,
-      maintenanceMode: false
-    }
-    
-    emailSettings.value = {
-      smtpHost: 'smtp.gmail.com',
-      smtpPort: 587,
-      fromEmail: 'noreply@sneakerystore.com',
-      fromName: 'Sneakery Store',
-      enableNotifications: true
-    }
-    
-    paymentSettings.value = {
-      cod: { enabled: true },
-      bankTransfer: {
-        enabled: true,
-        bankName: 'Vietcombank',
-        accountNumber: '1234567890',
-        accountName: 'SNEAKERY STORE CO., LTD'
+    // Reset all settings to defaults (empty values, not mock data)
+    const defaultSettings = {
+      store: {
+        name: '',
+        slogan: '',
+        email: '',
+        phone: '',
+        address: ''
       },
-      online: { enabled: false }
+      general: {
+        currency: 'VND',
+        timezone: 'Asia/Ho_Chi_Minh',
+        language: 'vi',
+        productsPerPage: 12,
+        maintenanceMode: false
+      },
+      email: {
+        smtpHost: '',
+        smtpPort: 587,
+        fromEmail: '',
+        fromName: '',
+        enableNotifications: true
+      },
+      payment: {
+        cod: { enabled: true },
+        bankTransfer: {
+          enabled: true,
+          bankName: '',
+          accountNumber: '',
+          accountName: ''
+        },
+        online: { enabled: false }
+      }
     }
     
-    // Clear localStorage
-    localStorage.removeItem('adminSettings')
+    // Update local state
+    storeSettings.value = defaultSettings.store
+    generalSettings.value = defaultSettings.general
+    emailSettings.value = defaultSettings.email
+    paymentSettings.value = defaultSettings.payment
+    
+    // Save to database
+    await adminStore.updateSettings(defaultSettings)
     
     ElMessage.success('Đã khôi phục cài đặt mặc định thành công!')
-  }).catch(() => {
-    ElMessage.info('Đã hủy khôi phục')
-  })
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('Error resetting settings:', error)
+      ElMessage.error('Không thể khôi phục cài đặt mặc định')
+    }
+  }
 }
 
 // Theme settings

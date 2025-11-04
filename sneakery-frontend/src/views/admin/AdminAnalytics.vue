@@ -32,9 +32,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatCurrency(totalRevenue) }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng doanh thu</p>
-          <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-            <i class="material-icons text-sm">trending_up</i>
-            +12.5% so với kỳ trước
+          <p class="text-xs flex items-center gap-1" :class="analyticsTrends.revenue > 0 ? 'text-green-600 dark:text-green-400' : analyticsTrends.revenue < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="analyticsTrends.revenue > 0 ? 'trending_up' : analyticsTrends.revenue < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="analyticsTrends.revenue !== 0">{{ analyticsTrends.revenue > 0 ? '+' : '' }}{{ analyticsTrends.revenue.toFixed(1) }}% so với kỳ trước</span>
+            <span v-else>Không đổi so với kỳ trước</span>
           </p>
         </div>
       </div>
@@ -48,9 +49,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ totalOrders.toLocaleString() }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng đơn hàng</p>
-          <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-            <i class="material-icons text-sm">trending_up</i>
-            +8.3% so với kỳ trước
+          <p class="text-xs flex items-center gap-1" :class="analyticsTrends.orders > 0 ? 'text-green-600 dark:text-green-400' : analyticsTrends.orders < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="analyticsTrends.orders > 0 ? 'trending_up' : analyticsTrends.orders < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="analyticsTrends.orders !== 0">{{ analyticsTrends.orders > 0 ? '+' : '' }}{{ analyticsTrends.orders.toFixed(1) }}% so với kỳ trước</span>
+            <span v-else>Không đổi so với kỳ trước</span>
           </p>
         </div>
       </div>
@@ -64,9 +66,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ newCustomers }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Khách hàng mới</p>
-          <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-            <i class="material-icons text-sm">trending_up</i>
-            +15.7% so với kỳ trước
+          <p class="text-xs flex items-center gap-1" :class="analyticsTrends.customers > 0 ? 'text-green-600 dark:text-green-400' : analyticsTrends.customers < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="analyticsTrends.customers > 0 ? 'trending_up' : analyticsTrends.customers < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="analyticsTrends.customers !== 0">{{ analyticsTrends.customers > 0 ? '+' : '' }}{{ analyticsTrends.customers.toFixed(1) }}% so với kỳ trước</span>
+            <span v-else>Không đổi so với kỳ trước</span>
           </p>
         </div>
       </div>
@@ -80,9 +83,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatCurrency(avgOrderValue) }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Đơn hàng TB</p>
-          <p class="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-            <i class="material-icons text-sm">trending_down</i>
-            -2.1% so với kỳ trước
+          <p class="text-xs flex items-center gap-1" :class="analyticsTrends.avgOrderValue > 0 ? 'text-green-600 dark:text-green-400' : analyticsTrends.avgOrderValue < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="analyticsTrends.avgOrderValue > 0 ? 'trending_up' : analyticsTrends.avgOrderValue < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="analyticsTrends.avgOrderValue !== 0">{{ analyticsTrends.avgOrderValue > 0 ? '+' : '' }}{{ analyticsTrends.avgOrderValue.toFixed(1) }}% so với kỳ trước</span>
+            <span v-else>Không đổi so với kỳ trước</span>
           </p>
         </div>
       </div>
@@ -197,26 +201,23 @@
           </h2>
         </div>
         <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-          <div class="space-y-3">
-            <div class="flex items-center gap-3">
-              <div class="w-full h-8 bg-purple-500 rounded-lg flex items-center justify-center text-white text-xs font-medium">100%</div>
-              <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Lượt truy cập: 10,000</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white text-xs font-medium" style="width: 60%">60%</div>
-              <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Xem sản phẩm: 6,000 (60%)</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="h-8 bg-green-500 rounded-lg flex items-center justify-center text-white text-xs font-medium" style="width: 30%">30%</div>
-              <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Thêm vào giỏ: 3,000 (30%)</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="h-8 bg-yellow-500 rounded-lg flex items-center justify-center text-white text-xs font-medium" style="width: 15%">15%</div>
-              <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Thanh toán: 1,500 (15%)</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white text-xs font-medium" style="width: 12%">12%</div>
-              <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Hoàn thành: 1,200 (12%)</span>
+          <div v-if="conversionRateData.length === 0" class="text-center py-8 text-gray-500 dark:text-gray-400">
+            Đang tải dữ liệu...
+          </div>
+          <div v-else class="space-y-3">
+            <div 
+              v-for="(step, index) in conversionRateData" 
+              :key="index"
+              class="flex items-center gap-3"
+            >
+              <div 
+                class="h-8 rounded-lg flex items-center justify-center text-white text-xs font-medium"
+                :class="getConversionStepColor(index)"
+                :style="{ width: `${step.percentage}%` }"
+              >
+                {{ Math.round(step.percentage) }}%
+              </div>
+              <span class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ step.label }}</span>
             </div>
           </div>
         </div>
@@ -278,6 +279,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
+import AdminService from '@/services/adminService'
 import { ElMessage } from 'element-plus'
 import LineChart from '@/assets/components/charts/LineChart.vue'
 import BarChart from '@/assets/components/charts/BarChart.vue'
@@ -296,22 +298,58 @@ const orderData = ref([])
 const productData = ref([])
 const customerData = ref([])
 const topProductsTable = ref([])
+const conversionRateData = ref([])
 
-// Computed
+// Dashboard stats từ API (tổng quan)
+const dashboardStats = ref({
+  totalRevenue: 0,
+  totalOrders: 0,
+  totalProducts: 0,
+  totalUsers: 0
+})
+
+// Stats từ kỳ trước để tính trends
+const previousPeriodStats = ref({
+  revenue: 0,
+  orders: 0,
+  customers: 0,
+  avgOrderValue: 0
+})
+
+// Trends
+const analyticsTrends = ref({
+  revenue: 0,
+  orders: 0,
+  customers: 0,
+  avgOrderValue: 0
+})
+
+// Computed - ưu tiên dùng dashboard stats từ API, nếu không có thì tính từ analytics data
 const totalRevenue = computed(() => {
-  return revenueData.value.reduce((sum, item) => sum + item.revenue, 0)
+  // Nếu có dashboard stats từ API thì dùng, nếu không thì tính từ revenueData
+  if (dashboardStats.value.totalRevenue > 0) {
+    return dashboardStats.value.totalRevenue;
+  }
+  return revenueData.value.reduce((sum, item) => sum + (item.revenue || 0), 0);
 })
 
 const totalOrders = computed(() => {
-  return orderData.value.reduce((sum, item) => sum + item.orders, 0)
+  // Nếu có dashboard stats từ API thì dùng, nếu không thì tính từ orderData
+  if (dashboardStats.value.totalOrders > 0) {
+    return dashboardStats.value.totalOrders;
+  }
+  return orderData.value.reduce((sum, item) => sum + (item.orders || 0), 0);
 })
 
 const newCustomers = computed(() => {
-  return customerData.value.reduce((sum, item) => sum + item.newCustomers, 0)
+  // Tính từ customerData
+  return customerData.value.reduce((sum, item) => sum + (item.newCustomers || 0), 0);
 })
 
 const avgOrderValue = computed(() => {
-  return totalOrders.value > 0 ? totalRevenue.value / totalOrders.value : 0
+  const orders = totalOrders.value;
+  const revenue = totalRevenue.value;
+  return orders > 0 ? revenue / orders : 0;
 })
 
 // Dữ liệu biểu đồ doanh thu
@@ -357,20 +395,15 @@ const revenueChartOptions = {
   }
 }
 
-// Dữ liệu đơn hàng theo trạng thái
-const orderStatusData = computed(() => ({
-  labels: ['Hoàn thành', 'Đang xử lý', 'Đang giao', 'Đã hủy'],
+// Dữ liệu đơn hàng theo trạng thái (load từ API)
+const orderStatusData = ref({
+  labels: [],
   datasets: [{
-    data: [650, 280, 230, 87],
-    backgroundColor: [
-      '#10b981',
-      '#f59e0b',
-      '#3b82f6',
-      '#ef4444'
-    ],
+    data: [],
+    backgroundColor: [],
     borderWidth: 0
   }]
-}))
+})
 
 const doughnutOptions = {
   responsive: true,
@@ -474,15 +507,46 @@ const loadAnalytics = async () => {
   try {
     loading.value = true
     
+    // Load dashboard stats từ API (tổng quan)
+    try {
+      const statsResult = await adminStore.fetchDashboardStats();
+      if (statsResult) {
+        dashboardStats.value = statsResult;
+        console.log('✅ Dashboard stats loaded:', dashboardStats.value);
+      }
+    } catch (error) {
+      console.warn('Dashboard stats API error:', error);
+    }
+    
+    // Load stats compare để tính trends (so sánh với kỳ trước)
+    try {
+      const compareResult = await AdminService.getStatsCompare(selectedPeriod.value);
+      if (compareResult && compareResult.trends) {
+        analyticsTrends.value = {
+          revenue: compareResult.trends.revenue || 0,
+          orders: compareResult.trends.orders || 0,
+          customers: compareResult.trends.customers || 0,
+          avgOrderValue: compareResult.trends.avgOrderValue || 0
+        };
+        console.log('✅ Stats trends loaded:', analyticsTrends.value);
+      } else {
+        console.warn('Stats compare API không trả về trends');
+        analyticsTrends.value = { revenue: 0, orders: 0, customers: 0, avgOrderValue: 0 };
+      }
+    } catch (error) {
+      console.warn('Stats compare API error:', error);
+      analyticsTrends.value = { revenue: 0, orders: 0, customers: 0, avgOrderValue: 0 };
+    }
+    
     // Gọi API thật từ backend
     try {
       // Revenue analytics
       const revenueResult = await adminStore.fetchRevenueAnalytics(selectedPeriod.value)
       if (revenueResult && revenueResult.data) {
         revenueData.value = revenueResult.data
+        console.log('✅ Revenue analytics loaded:', revenueData.value.length, 'days');
       } else {
-        // Fallback: tính từ Payments nếu API chưa sẵn sàng
-        console.warn('Revenue analytics API chưa sẵn sàng, sử dụng dữ liệu từ Payments')
+        console.warn('Revenue analytics API chưa sẵn sàng')
         revenueData.value = []
       }
     } catch (error) {
@@ -546,6 +610,62 @@ const loadAnalytics = async () => {
       customerData.value = []
     }
     
+    // Load order status data
+    try {
+      const orderStatusResult = await AdminService.getOrderStatusAnalytics()
+      if (orderStatusResult && orderStatusResult.data && orderStatusResult.data.length > 0) {
+        const labels = orderStatusResult.data.map(item => item.label || item.status)
+        const data = orderStatusResult.data.map(item => item.count || 0)
+        const colors = [
+          '#10b981',  // delivered - green
+          '#f59e0b',  // processing - orange
+          '#3b82f6',  // shipped - blue
+          '#ef4444',  // cancelled - red
+          '#8b5cf6',  // pending - purple
+          '#f59e0b',  // confirmed - orange
+          '#3b82f6',  // packed - blue
+          '#8b5cf6'   // refunded - purple
+        ]
+        
+        orderStatusData.value = {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors.slice(0, data.length),
+            borderWidth: 0
+          }]
+        }
+        console.log('✅ Order status data loaded:', orderStatusData.value)
+      } else {
+        console.warn('⚠️ No order status data available')
+        orderStatusData.value = {
+          labels: [],
+          datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }]
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error loading order status data:', error)
+      orderStatusData.value = {
+        labels: [],
+        datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }]
+      }
+    }
+    
+    // Load conversion rate data
+    try {
+      const conversionResult = await AdminService.getConversionRate()
+      if (conversionResult && conversionResult.data && conversionResult.data.length > 0) {
+        conversionRateData.value = conversionResult.data
+        console.log('✅ Conversion rate data loaded:', conversionRateData.value)
+      } else {
+        console.warn('⚠️ No conversion rate data available')
+        conversionRateData.value = []
+      }
+    } catch (error) {
+      console.error('❌ Error loading conversion rate data:', error)
+      conversionRateData.value = []
+    }
+    
     // Nếu không có dữ liệu từ API, hiển thị empty state
     if (revenueData.value.length === 0 && orderData.value.length === 0) {
       ElMessage.warning('Chưa có dữ liệu phân tích cho kỳ này. Vui lòng thử lại sau.')
@@ -565,6 +685,17 @@ const formatCurrency = (value) => {
     style: 'currency',
     currency: 'VND'
   }).format(value)
+}
+
+const getConversionStepColor = (index) => {
+  const colors = [
+    'bg-purple-500',   // Lượt truy cập
+    'bg-blue-500',     // Xem sản phẩm
+    'bg-green-500',    // Thêm vào giỏ
+    'bg-yellow-500',   // Thanh toán
+    'bg-emerald-500'   // Hoàn thành
+  ]
+  return colors[index] || 'bg-gray-500'
 }
 
 // Load data on mount

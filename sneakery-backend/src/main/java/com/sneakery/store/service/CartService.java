@@ -98,6 +98,20 @@ public class CartService {
         return convertToCartDto(cart);
     }
 
+    /**
+     * API 3.5: Xóa toàn bộ giỏ hàng (clear all items)
+     */
+    @Transactional
+    public void clearCart(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId).orElse(null);
+        if (cart != null && !cart.getItems().isEmpty()) {
+            // Xóa tất cả items
+            cart.getItems().clear();
+            cart.setUpdatedAt(LocalDateTime.now());
+            cartRepository.save(cart);
+        }
+    }
+
     // =================================================================
     // GUEST CART APIs
     // =================================================================

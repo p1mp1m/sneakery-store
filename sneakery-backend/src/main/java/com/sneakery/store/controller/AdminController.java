@@ -2,7 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.CreateUserRequestDto;
 import com.sneakery.store.dto.UserDto;
-import com.sneakery.store.repository.OrderRepository;
+import com.sneakery.store.repository.*;
 import com.sneakery.store.service.AdminUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,12 @@ public class AdminController {
 
     private final OrderRepository orderRepository;
     private final AdminUserService adminUserService;
+    private final BrandRepository brandRepository;
+    private final CategoryRepository categoryRepository;
+    private final ReviewRepository reviewRepository;
+    private final NotificationRepository notificationRepository;
+    private final ReturnRequestRepository returnRequestRepository;
+    private final PaymentRepository paymentRepository;
 
     /**
      * API Dashboard: Lấy thống kê tổng quan cho Admin
@@ -189,5 +197,136 @@ public class AdminController {
         response.put("message", "Đã xóa người dùng thành công");
         response.put("status", "success");
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * GET /api/admin/dashboard/badges
+     * Lấy số liệu cho badges trên quick actions (data thật từ database)
+     */
+    @GetMapping("/dashboard/badges")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getDashboardBadges() {
+        log.info("📊 GET /api/admin/dashboard/badges");
+        
+        Map<String, Object> badges = new HashMap<>();
+        
+        try {
+            // Count brands
+            long brandsCount = brandRepository.count();
+            badges.put("brands", brandsCount > 0 ? String.valueOf(brandsCount) : null);
+            
+            // Count categories
+            long categoriesCount = categoryRepository.count();
+            badges.put("categories", categoriesCount > 0 ? String.valueOf(categoriesCount) : null);
+            
+            // Count reviews (pending approval - chưa được approve)
+            long reviewsCount = reviewRepository.count();
+            badges.put("reviews", reviewsCount > 0 ? String.valueOf(reviewsCount) : null);
+            
+            // Count unread notifications
+            long unreadNotificationsCount = notificationRepository.countByIsReadFalse();
+            badges.put("notifications", unreadNotificationsCount > 0 ? String.valueOf(unreadNotificationsCount) : null);
+            
+            // Count pending return requests
+            long pendingReturnsCount = returnRequestRepository.countByStatus("pending");
+            badges.put("returns", pendingReturnsCount > 0 ? String.valueOf(pendingReturnsCount) : null);
+            
+            // Count pending payments
+            long pendingPaymentsCount = paymentRepository.countByStatus("pending");
+            badges.put("payments", pendingPaymentsCount > 0 ? String.valueOf(pendingPaymentsCount) : null);
+            
+            // Loyalty points (tổng điểm đã phát hành - có thể tính từ LoyaltyPoints table nếu có)
+            // Tạm thời return null vì có thể không có table này
+            badges.put("loyalty", null);
+            
+            log.debug("Badges fetched: {}", badges);
+        } catch (Exception e) {
+            log.error("Error fetching dashboard badges: {}", e.getMessage(), e);
+            // Return empty badges on error
+            badges.put("brands", null);
+            badges.put("categories", null);
+            badges.put("reviews", null);
+            badges.put("notifications", null);
+            badges.put("returns", null);
+            badges.put("payments", null);
+            badges.put("loyalty", null);
+        }
+        
+        return ResponseEntity.ok(badges);
+    }
+
+    /**
+     * GET /api/admin/payments/stats
+     * Lấy thống kê về payments (data thật từ database)
+     */
+    @GetMapping("/payments/stats")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> getPaymentStats() {
+        log.info("📊 GET /api/admin/payments/stats");
+        
+        Map<String, Object> stats = new HashMap<>();
+        
+        try {
+            // Tính tổng doanh thu từ payments completed
+            BigDecimal totalRevenue = paymentRepository.sumAmountByStatus("completed");
+            if (totalRevenue == null) totalRevenue = BigDecimal.ZERO;
+            
+            // Đếm số lượng payments theo status
+            long completedCount = paymentRepository.countByStatus("completed");
+            long failedCount = paymentRepository.countByStatus("failed");
+            long pendingCount = paymentRepository.countByStatus("pending");
+            long refundedCount = paymentRepository.countByStatus("refunded");
+            long totalCount = paymentRepository.count();
+            
+            // Tính revenue tháng trước để tính trend
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime currentMonthStart = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime previousMonthStart = currentMonthStart.minusMonths(1);
+            LocalDateTime previousMonthEnd = currentMonthStart.minusSeconds(1);
+            
+            BigDecimal currentMonthRevenue = paymentRepository.sumAmountByStatusAndDateRange("completed", currentMonthStart, now);
+            if (currentMonthRevenue == null) currentMonthRevenue = BigDecimal.ZERO;
+            
+            BigDecimal previousMonthRevenue = paymentRepository.sumAmountByStatusAndDateRange("completed", previousMonthStart, previousMonthEnd);
+            if (previousMonthRevenue == null) previousMonthRevenue = BigDecimal.ZERO;
+            
+            // Tính trend (%)
+            double revenueTrend = 0;
+            if (previousMonthRevenue.compareTo(BigDecimal.ZERO) > 0) {
+                revenueTrend = ((currentMonthRevenue.doubleValue() - previousMonthRevenue.doubleValue()) / previousMonthRevenue.doubleValue()) * 100;
+            }
+            
+            // Tính % thành công
+            double successRate = totalCount > 0 ? (completedCount * 100.0 / totalCount) : 0;
+            
+            stats.put("totalRevenue", totalRevenue.doubleValue());
+            stats.put("completedCount", completedCount);
+            stats.put("failedCount", failedCount);
+            stats.put("pendingCount", pendingCount);
+            stats.put("refundedCount", refundedCount);
+            stats.put("totalCount", totalCount);
+            stats.put("successRate", successRate);
+            stats.put("revenueTrend", revenueTrend);
+            stats.put("currentMonthRevenue", currentMonthRevenue.doubleValue());
+            stats.put("previousMonthRevenue", previousMonthRevenue.doubleValue());
+            
+            log.debug("Payment stats fetched: revenue={}, completed={}, failed={}, pending={}, trend={}%", 
+                    totalRevenue, completedCount, failedCount, pendingCount, revenueTrend);
+        } catch (Exception e) {
+            log.error("Error fetching payment stats: {}", e.getMessage(), e);
+            // Return empty stats on error
+            stats.put("totalRevenue", 0.0);
+            stats.put("completedCount", 0);
+            stats.put("failedCount", 0);
+            stats.put("pendingCount", 0);
+            stats.put("refundedCount", 0);
+            stats.put("totalCount", 0);
+            stats.put("successRate", 0.0);
+            stats.put("revenueTrend", 0.0);
+            stats.put("currentMonthRevenue", 0.0);
+            stats.put("previousMonthRevenue", 0.0);
+        }
+        
+        return ResponseEntity.ok(stats);
     }
 }

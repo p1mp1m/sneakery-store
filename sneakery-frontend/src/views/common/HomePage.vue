@@ -2,37 +2,49 @@
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Hero Banner Section -->
     <section class="relative bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
-      <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
-      <div class="max-w-7xl mx-auto px-4 py-12 md:py-20 lg:py-24 relative z-10">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+      <!-- Animated Background Pattern -->
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 50px 50px;"></div>
+      </div>
+      
+      <!-- Floating Orbs -->
+      <div class="absolute top-20 left-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+      <div class="absolute top-40 right-10 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+      <div class="absolute -bottom-8 left-1/2 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-28 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <!-- Hero Content -->
-          <div class="text-center lg:text-left space-y-6">
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm rounded-full text-white text-sm font-medium animate-pulse">
-              <i class="material-icons text-orange-400">local_fire_department</i>
+          <div class="text-center lg:text-left space-y-6 animate-fade-in-up">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 dark:bg-gray-800/40 backdrop-blur-md rounded-full text-white text-sm font-semibold shadow-lg border border-white/20 animate-pulse">
+              <i class="material-icons text-orange-400 animate-pulse">local_fire_department</i>
               <span>Bán chạy nhất 2025</span>
             </div>
             
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+            <h1 class="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-tight">
               Sneakery Store
-              <span class="block bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">Giày Sneaker Chính Hãng</span>
+              <span class="block bg-gradient-to-r from-yellow-300 via-orange-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
+                Giày Sneaker Chính Hãng
+              </span>
             </h1>
             
-            <p class="text-lg text-white/90 dark:text-gray-300 max-w-xl mx-auto lg:mx-0">
+            <p class="text-lg md:text-xl text-white/90 dark:text-gray-300 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               Bộ sưu tập giày sneaker đa dạng từ Nike, Adidas, Jordan và nhiều thương hiệu nổi tiếng khác. 
-              Giá tốt nhất thị trường - Miễn phí vận chuyển - Đổi trả dễ dàng.
+              <span class="font-semibold">Giá tốt nhất thị trường</span> - Miễn phí vận chuyển - Đổi trả dễ dàng.
             </p>
             
-            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
               <router-link 
                 to="/home/products" 
-                class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-purple-700 dark:bg-purple-600 dark:text-white rounded-xl font-semibold hover:bg-gray-100 dark:hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                class="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-purple-700 dark:bg-purple-600 dark:text-white rounded-xl font-bold text-lg hover:bg-gray-50 dark:hover:bg-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 transform"
               >
-                <i class="material-icons">shopping_bag</i>
+                <i class="material-icons group-hover:animate-bounce">shopping_bag</i>
                 Mua Sắm Ngay
+                <i class="material-icons text-sm group-hover:translate-x-1 transition-transform">arrow_forward</i>
               </router-link>
               <router-link 
                 to="/home/products" 
-                class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm text-white border-2 border-white/30 rounded-xl font-semibold hover:bg-white/20 dark:hover:bg-gray-800/70 transition-all duration-200"
+                class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 dark:bg-gray-800/50 backdrop-blur-md text-white border-2 border-white/30 rounded-xl font-bold text-lg hover:bg-white/20 dark:hover:bg-gray-800/70 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <i class="material-icons">explore</i>
                 Khám Phá
@@ -41,19 +53,19 @@
             
             <!-- Trust Badges -->
             <div class="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
-              <div class="flex items-center gap-2 text-white/90 text-sm">
+              <div class="flex items-center gap-2 px-4 py-2 bg-white/10 dark:bg-gray-800/30 backdrop-blur-sm rounded-lg text-white/90 text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
                 <i class="material-icons text-green-400">verified</i>
                 <span>100% Chính Hãng</span>
               </div>
-              <div class="flex items-center gap-2 text-white/90 text-sm">
+              <div class="flex items-center gap-2 px-4 py-2 bg-white/10 dark:bg-gray-800/30 backdrop-blur-sm rounded-lg text-white/90 text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
                 <i class="material-icons text-blue-400">local_shipping</i>
                 <span>Miễn Phí Ship</span>
               </div>
-              <div class="flex items-center gap-2 text-white/90 text-sm">
+              <div class="flex items-center gap-2 px-4 py-2 bg-white/10 dark:bg-gray-800/30 backdrop-blur-sm rounded-lg text-white/90 text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
                 <i class="material-icons text-purple-400">sync</i>
                 <span>Đổi Trả 30 Ngày</span>
               </div>
-              <div class="flex items-center gap-2 text-white/90 text-sm">
+              <div class="flex items-center gap-2 px-4 py-2 bg-white/10 dark:bg-gray-800/30 backdrop-blur-sm rounded-lg text-white/90 text-sm font-medium border border-white/20 hover:bg-white/20 transition-all duration-200">
                 <i class="material-icons text-orange-400">support_agent</i>
                 <span>Hỗ Trợ 24/7</span>
               </div>
@@ -61,31 +73,31 @@
           </div>
           
           <!-- Hero Image -->
-          <div class="relative hidden lg:block">
-            <div class="relative bg-white/10 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-2xl animate-float">
-              <img src="@/assets/images/logo.png" alt="Sneakery Store" class="w-full h-auto rounded-xl" />
+          <div class="relative hidden lg:block animate-fade-in-right">
+            <div class="relative bg-white/10 dark:bg-gray-800/40 backdrop-blur-md rounded-3xl p-8 shadow-2xl border border-white/20 animate-float">
+              <img src="@/assets/images/logo.png" alt="Sneakery Store" class="w-full h-auto rounded-2xl" />
               
-              <!-- Floating Stats -->
-              <div class="absolute -top-4 -right-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border border-gray-200 dark:border-gray-700">
+              <!-- Floating Stats Cards -->
+              <div class="absolute -top-4 -right-4 bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-2xl border border-gray-200 dark:border-gray-700 animate-bounce-slow transform hover:scale-110 transition-transform">
                 <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
-                    <i class="material-icons text-white">trending_up</i>
+                  <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="material-icons text-white text-2xl">trending_up</i>
                   </div>
                   <div>
-                    <div class="text-lg font-bold text-gray-900 dark:text-gray-100">1000+</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">Sản phẩm</div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">1000+</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Sản phẩm</div>
                   </div>
                 </div>
               </div>
               
-              <div class="absolute -bottom-4 -left-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border border-gray-200 dark:border-gray-700">
+              <div class="absolute -bottom-4 -left-4 bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-2xl border border-gray-200 dark:border-gray-700 animate-bounce-slow-delayed transform hover:scale-110 transition-transform">
                 <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-lg flex items-center justify-center">
-                    <i class="material-icons text-white">star</i>
+                  <div class="w-14 h-14 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="material-icons text-white text-2xl">star</i>
                   </div>
                   <div>
-                    <div class="text-lg font-bold text-gray-900 dark:text-gray-100">4.9/5</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">Đánh giá</div>
+                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">4.9/5</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Đánh giá</div>
                   </div>
                 </div>
               </div>
@@ -96,59 +108,84 @@
     </section>
 
     <!-- Categories Section -->
-    <section class="py-12 md:py-16 bg-white dark:bg-gray-800">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="text-center mb-8">
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Danh Mục Sản Phẩm</h2>
-          <p class="text-gray-600 dark:text-gray-400">Khám phá bộ sưu tập theo danh mục</p>
+    <section class="py-16 md:py-20 bg-white dark:bg-gray-800 relative overflow-hidden">
+      <!-- Background Pattern -->
+      <div class="absolute inset-0 opacity-5">
+        <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(147, 51, 234, 0.1) 10px, rgba(147, 51, 234, 0.1) 20px);"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-3">
+            Danh Mục Sản Phẩm
+          </h2>
+          <p class="text-lg text-gray-600 dark:text-gray-400">Khám phá bộ sưu tập theo danh mục yêu thích</p>
         </div>
         
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
           <router-link 
-            v-for="category in categories" 
+            v-for="(category, index) in categories" 
             :key="category.id"
-            :to="`/products?category=${category.slug}`"
-            class="group p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-lg transition-all duration-200 hover:scale-105 text-center"
+            :to="`/home/products?category=${category.slug}`"
+            class="group relative p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-center transform category-card"
+            :style="{ animationDelay: `${index * 100}ms` }"
           >
-            <div class="w-16 h-16 mx-auto mb-3 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600 group-hover:scale-110 transition-transform">
-              <i class="material-icons text-white text-2xl">{{ category.icon }}</i>
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <div class="relative z-10">
+              <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600 group-hover:from-purple-600 group-hover:to-indigo-600 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                <i class="material-icons text-white text-3xl">{{ category.icon }}</i>
+              </div>
+              <h3 class="font-bold text-gray-900 dark:text-gray-100 mb-2 text-base group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                {{ category.name }}
+              </h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ category.count }} sản phẩm</p>
             </div>
-            <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ category.name }}</h3>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ category.count }} sản phẩm</p>
           </router-link>
         </div>
       </div>
     </section>
 
     <!-- Flash Sale / Hot Deals -->
-    <section class="py-12 md:py-16 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 dark:from-orange-600 dark:via-red-600 dark:to-pink-600">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 border-4 border-white/20 shadow-2xl">
+    <section class="py-16 md:py-20 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 dark:from-orange-600 dark:via-red-600 dark:to-pink-600 relative overflow-hidden">
+      <!-- Animated Background -->
+      <div class="absolute inset-0 opacity-20">
+        <div class="absolute inset-0 animate-pulse" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.1) 20px, rgba(255,255,255,0.1) 40px);"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 md:p-10 border-4 border-white/30 shadow-2xl transform hover:scale-[1.02] transition-transform duration-300">
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
-                <i class="material-icons text-white text-2xl">flash_on</i>
+            <div class="flex items-center gap-6">
+              <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-xl animate-pulse">
+                <i class="material-icons text-white text-3xl">flash_on</i>
               </div>
               <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Flash Sale</h2>
-                <div class="flex items-center gap-2 mt-2">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Kết thúc trong:</span>
-                  <div class="flex items-center gap-1">
-                    <div class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm font-bold text-gray-900 dark:text-gray-100">12</div>
-                    <span class="text-gray-600 dark:text-gray-400">:</span>
-                    <div class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm font-bold text-gray-900 dark:text-gray-100">34</div>
-                    <span class="text-gray-600 dark:text-gray-400">:</span>
-                    <div class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm font-bold text-gray-900 dark:text-gray-100">56</div>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-3">Flash Sale</h2>
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Kết thúc trong:</span>
+                  <div class="flex items-center gap-2">
+                    <div class="px-3 py-1.5 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-lg text-sm font-bold text-gray-900 dark:text-gray-100 shadow-md">
+                      {{ countdown.hours }}
+                    </div>
+                    <span class="text-gray-600 dark:text-gray-400 font-bold">:</span>
+                    <div class="px-3 py-1.5 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-lg text-sm font-bold text-gray-900 dark:text-gray-100 shadow-md">
+                      {{ countdown.minutes }}
+                    </div>
+                    <span class="text-gray-600 dark:text-gray-400 font-bold">:</span>
+                    <div class="px-3 py-1.5 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-lg text-sm font-bold text-gray-900 dark:text-gray-100 shadow-md">
+                      {{ countdown.seconds }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             <router-link 
               to="/home/products?sale=true" 
-              class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+              class="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
             >
               Xem tất cả
-              <i class="material-icons">arrow_forward</i>
+              <i class="material-icons group-hover:translate-x-1 transition-transform">arrow_forward</i>
             </router-link>
           </div>
         </div>
@@ -156,31 +193,36 @@
     </section>
 
     <!-- Products Section -->
-    <section class="py-12 md:py-16 bg-gray-50 dark:bg-gray-900">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="text-center mb-8">
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Sản Phẩm Nổi Bật</h2>
-          <p class="text-gray-600 dark:text-gray-400">Những mẫu giày được yêu thích nhất</p>
+    <section class="py-16 md:py-20 bg-gray-50 dark:bg-gray-900">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-3">
+            Sản Phẩm Nổi Bật
+          </h2>
+          <p class="text-lg text-gray-600 dark:text-gray-400">Những mẫu giày được yêu thích nhất</p>
         </div>
 
         <!-- Loading State -->
         <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <div v-for="n in 8" :key="n" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
-            <div class="h-64 bg-gray-200 dark:bg-gray-700"></div>
-            <div class="p-4 space-y-3">
+          <div v-for="n in 8" :key="n" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
+            <div class="h-64 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600"></div>
+            <div class="p-5 space-y-3">
               <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
               <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
             </div>
           </div>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="text-center py-16">
-          <i class="material-icons text-6xl text-red-500 mb-4">error_outline</i>
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ error }}</h3>
+        <div v-else-if="error" class="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
+          <div class="w-20 h-20 mx-auto mb-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+            <i class="material-icons text-5xl text-red-500">error_outline</i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{{ error }}</h3>
           <button 
             @click="fetchProducts(currentPage)" 
-            class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             <i class="material-icons">refresh</i>
             Thử lại
@@ -190,27 +232,30 @@
         <!-- Products Grid -->
         <div v-else-if="products.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <div
-            v-for="product in products"
+            v-for="(product, index) in products"
             :key="product.id"
-            class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-200 overflow-hidden"
+            class="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden transform"
+            :style="{ animationDelay: `${index * 50}ms` }"
           >
             <ProductCard :product="product" />
           </div>
         </div>
 
         <!-- Empty State -->
-        <div v-else class="text-center py-16">
-          <i class="material-icons text-6xl text-gray-400 mb-4">inventory_2</i>
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có sản phẩm nào</h3>
+        <div v-else class="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+          <div class="w-20 h-20 mx-auto mb-6 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <i class="material-icons text-5xl text-gray-400">inventory_2</i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Chưa có sản phẩm nào</h3>
           <p class="text-gray-600 dark:text-gray-400">Vui lòng quay lại sau</p>
         </div>
 
         <!-- Pagination -->
-        <div v-if="!loading && !error && totalPages > 1" class="flex items-center justify-center gap-2 mt-8">
+        <div v-if="!loading && !error && totalPages > 1" class="flex items-center justify-center gap-2 mt-12">
           <button 
             @click="handlePageChange(currentPage - 1)" 
             :disabled="currentPage === 0"
-            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="px-5 py-2.5 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg font-semibold"
           >
             <i class="material-icons">chevron_left</i>
             Trước
@@ -222,10 +267,10 @@
               :key="page"
               @click="handlePageChange(page - 1)"
               :class="[
-                'px-4 py-2 rounded-lg font-medium transition-colors',
+                'px-5 py-2.5 rounded-xl font-bold transition-all duration-200 shadow-md hover:shadow-lg',
                 currentPage === page - 1
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xl scale-110'
+                  : 'bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
               ]"
             >
               {{ page }}
@@ -235,7 +280,7 @@
           <button 
             @click="handlePageChange(currentPage + 1)" 
             :disabled="currentPage >= totalPages - 1"
-            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="px-5 py-2.5 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg font-semibold"
           >
             Sau
             <i class="material-icons">chevron_right</i>
@@ -245,20 +290,29 @@
     </section>
 
     <!-- Brands Section -->
-    <section class="py-12 md:py-16 bg-white dark:bg-gray-800">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="text-center mb-8">
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Thương Hiệu Đối Tác</h2>
-          <p class="text-gray-600 dark:text-gray-400">Chính hãng từ các thương hiệu hàng đầu</p>
+    <section class="py-16 md:py-20 bg-white dark:bg-gray-800 relative overflow-hidden">
+      <!-- Background Pattern -->
+      <div class="absolute inset-0 opacity-5">
+        <div class="absolute inset-0" style="background-image: repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(147, 51, 234, 0.1) 50px, rgba(147, 51, 234, 0.1) 100px);"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-3">
+            Thương Hiệu Đối Tác
+          </h2>
+          <p class="text-lg text-gray-600 dark:text-gray-400">Chính hãng từ các thương hiệu hàng đầu thế giới</p>
         </div>
         
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
           <div 
             v-for="brand in brands" 
             :key="brand.id" 
-            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center"
+            class="group bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-8 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center transform"
           >
-            <img :src="brand.logo || '/placeholder-brand.png'" :alt="brand.name" class="max-h-12 w-auto opacity-60 hover:opacity-100 transition-opacity" />
+            <div class="text-2xl font-bold text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+              {{ brand.name }}
+            </div>
           </div>
         </div>
       </div>
@@ -268,30 +322,35 @@
     <TestimonialsSection />
 
     <!-- Newsletter Section -->
-    <section class="py-12 md:py-16 bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-gray-800 dark:to-gray-900">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 md:p-12 shadow-xl border border-gray-200 dark:border-gray-700">
-          <div class="flex flex-col md:flex-row md:items-center gap-6">
-            <div class="flex items-center gap-4 flex-shrink-0">
-              <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <i class="material-icons text-white text-3xl">email</i>
+    <section class="py-16 md:py-20 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 relative overflow-hidden">
+      <!-- Animated Background -->
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0 animate-pulse" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(255,255,255,0.1) 30px, rgba(255,255,255,0.1) 60px);"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 md:p-12 shadow-2xl border border-gray-200 dark:border-gray-700 transform hover:scale-[1.02] transition-transform duration-300">
+          <div class="flex flex-col md:flex-row md:items-center gap-8">
+            <div class="flex items-center gap-6 flex-shrink-0">
+              <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
+                <i class="material-icons text-white text-4xl">email</i>
               </div>
               <div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Đăng Ký Nhận Tin</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">Nhận thông báo về sản phẩm mới và ưu đãi đặc biệt</p>
+                <h3 class="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-2">Đăng Ký Nhận Tin</h3>
+                <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">Nhận thông báo về sản phẩm mới và ưu đãi đặc biệt</p>
               </div>
             </div>
             <div class="flex-1 flex flex-col sm:flex-row gap-3">
               <div class="flex-1 relative">
-                <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">mail_outline</i>
+                <i class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">mail_outline</i>
                 <input 
                   type="email" 
                   placeholder="Nhập email của bạn..." 
                   v-model="newsletterEmail"
-                  class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  class="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 font-medium"
                 />
               </div>
-              <button class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+              <button class="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105 flex items-center justify-center gap-2">
                 <i class="material-icons">send</i>
                 Đăng Ký
               </button>
@@ -304,7 +363,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import ProductService from '@/services/productService';
 import ProductCard from '@/assets/components/products/ProductCard.vue';
 import TestimonialsSection from '@/assets/components/common/TestimonialsSection.vue';
@@ -339,6 +398,15 @@ const totalProducts = ref(0);
 const totalPages = ref(0);
 const newsletterEmail = ref('');
 
+// Countdown timer for Flash Sale
+const countdown = ref({
+  hours: '12',
+  minutes: '34',
+  seconds: '56'
+});
+
+let countdownInterval = null;
+
 // Computed
 const displayPages = computed(() => {
   const pages = [];
@@ -363,13 +431,45 @@ const fetchProducts = async (page = 0) => {
   error.value = null;
   
   try {
-    const response = await ProductService.getAllProducts(page, pageSize.value);
-    products.value = response.data.content || [];
-    totalProducts.value = response.data.totalElements || 0;
-    totalPages.value = response.data.totalPages || 0;
+    const response = await ProductService.getProducts(page, pageSize.value);
+    
+    // Handle Spring Data Page structure
+    let productData = [];
+    let totalElements = 0;
+    let totalPagesCount = 0;
+    
+    if (response.data) {
+      if (Array.isArray(response.data.content)) {
+        productData = response.data.content;
+        totalElements = response.data.totalElements || 0;
+        totalPagesCount = response.data.totalPages || 0;
+      } else if (Array.isArray(response.data)) {
+        productData = response.data;
+        totalElements = response.data.length;
+        totalPagesCount = Math.ceil(totalElements / pageSize.value);
+      } else {
+        productData = [];
+        totalElements = 0;
+        totalPagesCount = 0;
+      }
+    }
+    
+    products.value = productData;
+    totalProducts.value = totalElements;
+    totalPages.value = totalPagesCount;
+    
   } catch (err) {
-    error.value = err.message || 'Không thể tải sản phẩm. Vui lòng thử lại sau.';
-    console.error('Error fetching products:', err);
+    console.error('❌ HomePage - Error fetching products:', err);
+    
+    if (err.response?.status === 404) {
+      error.value = 'Không tìm thấy sản phẩm nào.';
+    } else if (err.response?.status === 500) {
+      error.value = 'Lỗi server. Vui lòng thử lại sau.';
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message;
+    } else {
+      error.value = `Không thể tải sản phẩm: ${err.message || 'Vui lòng thử lại sau.'}`;
+    }
   } finally {
     loading.value = false;
   }
@@ -383,13 +483,47 @@ const handlePageChange = (newPage) => {
   }
 };
 
+const updateCountdown = () => {
+  // Simple countdown logic - in production, this would use a real end time
+  let seconds = parseInt(countdown.value.seconds);
+  let minutes = parseInt(countdown.value.minutes);
+  let hours = parseInt(countdown.value.hours);
+  
+  seconds--;
+  
+  if (seconds < 0) {
+    seconds = 59;
+    minutes--;
+    if (minutes < 0) {
+      minutes = 59;
+      hours--;
+      if (hours < 0) {
+        hours = 23;
+      }
+    }
+  }
+  
+  countdown.value = {
+    hours: hours.toString().padStart(2, '0'),
+    minutes: minutes.toString().padStart(2, '0'),
+    seconds: seconds.toString().padStart(2, '0')
+  };
+};
+
 // Lifecycle
 onMounted(() => {
   fetchProducts(currentPage.value);
+  countdownInterval = setInterval(updateCountdown, 1000);
+});
+
+onUnmounted(() => {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
 });
 </script>
 
-<style>
+<style scoped>
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -399,7 +533,109 @@ onMounted(() => {
   }
 }
 
+@keyframes blob {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out;
+}
+
+.animate-fade-in-right {
+  animation: fade-in-right 0.8s ease-out 0.2s both;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
+}
+
+.animate-bounce-slow-delayed {
+  animation: bounce-slow 3s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.animate-gradient {
+  background-size: 200% auto;
+  animation: gradient 3s linear infinite;
+}
+
+.category-card {
+  animation: fade-in-up 0.6s ease-out both;
+  opacity: 0;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

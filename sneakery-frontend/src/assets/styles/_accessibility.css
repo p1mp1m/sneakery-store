@@ -1,0 +1,312 @@
+/* ============================================
+   ACCESSIBILITY STYLES
+   ============================================
+   Styles for improving accessibility:
+   - Focus indicators
+   - Screen reader only content
+   - Skip links
+   - High contrast support
+   ============================================ */
+
+/* ============================================
+   FOCUS INDICATORS
+   ============================================ */
+*:focus-visible {
+  outline: 2px solid var(--color-purple-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--color-purple-500);
+  outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Enhanced focus for interactive elements */
+button:focus-visible,
+a:focus-visible {
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.3);
+}
+
+.dark button:focus-visible,
+.dark a:focus-visible {
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.4);
+}
+
+/* ============================================
+   SKIP LINKS
+   ============================================ */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-purple-600);
+  color: white;
+  padding: var(--spacing-md) var(--spacing-lg);
+  text-decoration: none;
+  font-weight: var(--font-semibold);
+  z-index: var(--z-toast);
+  border-radius: 0 0 var(--radius-lg) 0;
+  transition: top var(--transition-base);
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid white;
+  outline-offset: -3px;
+}
+
+/* ============================================
+   SCREEN READER ONLY
+   ============================================ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ============================================
+   ARIA LIVE REGIONS
+   ============================================ */
+[aria-live="polite"],
+[aria-live="assertive"] {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+@media (prefers-contrast: high) {
+  * {
+    border-color: currentColor !important;
+  }
+  
+  button,
+  a {
+    border: 2px solid currentColor;
+  }
+  
+  .user-card,
+  .admin-card {
+    border-width: 2px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   KEYBOARD NAVIGATION HELPERS
+   ============================================ */
+.keyboard-only:focus-visible {
+  outline: 3px solid var(--color-purple-500);
+  outline-offset: 2px;
+}
+
+/* Focus trap indicator */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px dashed var(--color-purple-400);
+  border-radius: var(--radius-md);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+
+.focus-trap:focus-within::before {
+  opacity: 0.3;
+}
+
+/* ============================================
+   FORM ACCESSIBILITY
+   ============================================ */
+.form-error {
+  color: var(--color-error);
+  font-size: var(--text-sm);
+  margin-top: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.form-error::before {
+  content: '⚠';
+  font-size: var(--text-base);
+}
+
+input:invalid:not(:placeholder-shown),
+textarea:invalid:not(:placeholder-shown),
+select:invalid:not(:placeholder-shown) {
+  border-color: var(--color-error);
+}
+
+input:invalid:not(:placeholder-shown):focus,
+textarea:invalid:not(:placeholder-shown):focus,
+select:invalid:not(:placeholder-shown):focus {
+  outline-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+/* Required field indicator */
+.required::after {
+  content: ' *';
+  color: var(--color-error);
+  font-weight: var(--font-bold);
+}
+
+/* ============================================
+   BUTTON ACCESSIBILITY
+   ============================================ */
+button:disabled,
+button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+button[aria-busy="true"] {
+  position: relative;
+  color: transparent;
+}
+
+button[aria-busy="true"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* ============================================
+   MODAL ACCESSIBILITY
+   ============================================ */
+[role="dialog"] {
+  position: relative;
+}
+
+[role="dialog"]::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+[role="dialog"]:focus {
+  outline: none;
+}
+
+/* ============================================
+   LANDMARKS
+   ============================================ */
+nav[aria-label],
+nav[aria-labelledby] {
+  position: relative;
+}
+
+main[role="main"] {
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* ============================================
+   TOOLTIP ACCESSIBILITY
+   ============================================ */
+[role="tooltip"] {
+  position: absolute;
+  z-index: var(--z-tooltip);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary-dark);
+  color: var(--text-primary-dark);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-lg);
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
+[role="tooltip"]::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+}
+
+/* ============================================
+   STATUS INDICATORS
+   ============================================ */
+[role="status"] {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+[role="alert"] {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid;
+  margin-bottom: var(--spacing-md);
+}
+
+[role="alert"][aria-live="polite"] {
+  border-color: var(--color-info);
+  background: var(--color-info-light);
+  color: var(--color-info-dark);
+}
+
+[role="alert"][aria-live="assertive"] {
+  border-color: var(--color-error);
+  background: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+

@@ -242,22 +242,21 @@
               <td class="px-4 py-4 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(order.totalAmount) }}</td>
               <td class="px-4 py-4">
                 <select 
-                  v-model="order.status" 
-                  @change="confirmStatusChange(order, $event)"
-                  class="px-2 py-1 text-xs font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700': order.status === 'Pending',
-                    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-blue-300 dark:border-blue-700': order.status === 'Processing',
-                    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-purple-300 dark:border-purple-700': order.status === 'Shipped',
-                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-700': order.status === 'Completed',
-                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-700': order.status === 'Cancelled'
-                  }"
+                  :value="getNormalizedStatusValue(order.status)"
+                  @change="(e) => confirmStatusChange(order, e)"
+                  @input="(e) => { console.log('Input event:', e.target.value) }"
+                  class="px-2 py-1 text-xs font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors cursor-pointer"
+                  :class="getStatusSelectClass(getNormalizedStatusValue(order.status))"
                 >
                   <option value="Pending">Chờ xử lý</option>
                   <option value="Processing">Đang xử lý</option>
                   <option value="Shipped">Đã gửi hàng</option>
                   <option value="Completed">Hoàn thành</option>
                   <option value="Cancelled">Đã hủy</option>
+                  <!-- Thêm các option khác để đảm bảo match -->
+                  <option value="Confirmed">Đã xác nhận</option>
+                  <option value="Packed">Đã đóng gói</option>
+                  <option value="Refunded">Đã hoàn tiền</option>
                 </select>
               </td>
               <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">{{ formatDate(order.createdAt) }}</td>
@@ -637,7 +636,15 @@ const fetchOrders = async () => {
     }
     
     const result = await adminStore.fetchOrders(currentPage.value, pageSize.value, apiFilters)
-    orders.value = result.content || []
+    const rawOrders = result.content || []
+    
+    // Normalize status từ backend format sang frontend format để hiển thị
+    orders.value = rawOrders.map(order => ({
+      ...order,
+      status: normalizeStatusForDisplay(order.status),
+      _originalStatus: normalizeStatusForDisplay(order.status) // Store normalized status
+    }))
+    
     totalItems.value = result.totalElements || 0
     
     // Calculate stats
@@ -733,42 +740,102 @@ const exportToExcel = () => {
 }
 
 const confirmStatusChange = (order, event) => {
-  // Get the old and new status
-  const select = event.target
-  oldStatus.value = order._originalStatus || order.status
-  newStatus.value = select.value
-  
-  // If no change, do nothing
-  if (oldStatus.value === newStatus.value) {
-    return
+  try {
+    // Get the old and new status
+    const select = event.target
+    if (!select || !select.value) {
+      console.error('❌ Invalid select element or value')
+      return
+    }
+    
+    const currentNormalizedStatus = getNormalizedStatusValue(order.status)
+    const selectedStatus = select.value
+    
+    // Normalize cả hai để so sánh đúng
+    oldStatus.value = currentNormalizedStatus
+    newStatus.value = selectedStatus
+    
+    console.log('🔄 Status change triggered:', {
+      orderId: order.id,
+      currentStatus: order.status,
+      normalizedCurrent: currentNormalizedStatus,
+      selectedStatus: selectedStatus,
+      oldStatus: oldStatus.value,
+      newStatus: newStatus.value,
+      showStatusConfirmBefore: showStatusConfirm.value
+    })
+    
+    // If no change, do nothing
+    if (oldStatus.value === newStatus.value) {
+      console.log('⚠️ No status change, ignoring')
+      return
+    }
+    
+    // Store order reference and original status
+    orderToUpdate.value = { ...order } // Clone để tránh mutation
+    if (!orderToUpdate.value._originalStatus) {
+      orderToUpdate.value._originalStatus = currentNormalizedStatus
+    }
+    
+    // Show confirmation dialog
+    console.log('✅ Setting showStatusConfirm to true')
+    showStatusConfirm.value = true
+    console.log('✅ showStatusConfirm after setting:', showStatusConfirm.value)
+  } catch (error) {
+    console.error('❌ Error in confirmStatusChange:', error)
+    ElMessage.error('Có lỗi xảy ra khi thay đổi trạng thái')
   }
-  
-  // Store order reference and original status
-  orderToUpdate.value = order
-  if (!order._originalStatus) {
-    order._originalStatus = oldStatus.value
-  }
-  
-  // Show confirmation dialog
-  showStatusConfirm.value = true
 }
 
 const handleStatusUpdate = async () => {
+  const orderId = orderToUpdate.value.id
+  const previousStatus = oldStatus.value
+  
   try {
     updating.value = true
-    await adminStore.updateOrderStatus(orderToUpdate.value.id, newStatus.value)
-    ElMessage.success(`Đã cập nhật trạng thái đơn hàng #${orderToUpdate.value.id} thành công!`)
     
-    // Update the original status
+    // Gọi API để cập nhật
+    const updatedOrder = await adminStore.updateOrderStatus(orderId, newStatus.value)
+    
+    console.log('✅ Cập nhật thành công:', updatedOrder)
+    
+    // Update order trong danh sách orders.value
+    const orderIndex = orders.value.findIndex(o => o.id === orderId)
+    if (orderIndex !== -1) {
+      orders.value[orderIndex].status = newStatus.value
+      orders.value[orderIndex]._originalStatus = newStatus.value
+    }
+    
+    // Update orderToUpdate để đảm bảo đồng bộ
+    orderToUpdate.value.status = newStatus.value
     orderToUpdate.value._originalStatus = newStatus.value
+    
+    // Refresh danh sách đơn hàng để đảm bảo dữ liệu đồng bộ với backend
+    await fetchOrders()
+    
+    ElMessage.success({
+      message: `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`,
+      duration: 3000
+    })
     
     showStatusConfirm.value = false
   } catch (error) {
-    console.error('Lỗi khi cập nhật trạng thái:', error)
-    ElMessage.error('Không thể cập nhật trạng thái. Vui lòng thử lại!')
+    console.error('❌ Lỗi khi cập nhật trạng thái:', error)
+    console.error('Error details:', error.response || error.message)
+    
+    // Hiển thị lỗi chi tiết hơn
+    const errorMessage = error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái. Vui lòng thử lại!'
+    ElMessage.error({
+      message: `Lỗi: ${errorMessage}`,
+      duration: 5000
+    })
     
     // Restore old status on error
-    orderToUpdate.value.status = oldStatus.value
+    const orderIndex = orders.value.findIndex(o => o.id === orderId)
+    if (orderIndex !== -1) {
+      orders.value[orderIndex].status = previousStatus
+    }
+    orderToUpdate.value.status = previousStatus
   } finally {
     updating.value = false
   }
@@ -782,15 +849,63 @@ const handleCancelStatusChange = () => {
   showStatusConfirm.value = false
 }
 
+// Map status từ backend format (lowercase) sang frontend format (PascalCase) để hiển thị
+const normalizeStatusForDisplay = (status) => {
+  if (!status) return status
+  
+  const statusMap = {
+    'pending': 'Pending',
+    'processing': 'Processing',
+    'shipped': 'Shipped',
+    'delivered': 'Completed', // Backend dùng "delivered" nhưng frontend hiển thị "Completed"
+    'cancelled': 'Cancelled',
+    'confirmed': 'Confirmed',
+    'packed': 'Packed',
+    'refunded': 'Refunded'
+  }
+  
+  return statusMap[status.toLowerCase()] || status
+}
+
+// Get normalized status value cho select dropdown - đảm bảo luôn có giá trị hợp lệ
+const getNormalizedStatusValue = (status) => {
+  const normalized = normalizeStatusForDisplay(status)
+  // Đảm bảo giá trị match với một trong các option values
+  const validOptions = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled', 'Confirmed', 'Packed', 'Refunded']
+  return validOptions.includes(normalized) ? normalized : 'Pending'
+}
+
+// Get CSS classes cho select dropdown dựa trên status - với màu sắc phân biệt rõ ràng
+const getStatusSelectClass = (status) => {
+  const statusClassMap = {
+    'Pending': 'bg-amber-50 text-black dark:bg-amber-900/40 dark:text-white border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/50',
+    'Processing': 'bg-blue-50 text-black dark:bg-blue-900/40 dark:text-white border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/50',
+    'Confirmed': 'bg-indigo-50 text-black dark:bg-indigo-900/40 dark:text-white border-indigo-300 dark:border-indigo-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50',
+    'Packed': 'bg-purple-50 text-black dark:bg-purple-900/40 dark:text-white border-purple-300 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-900/50',
+    'Shipped': 'bg-cyan-50 text-black dark:bg-cyan-900/40 dark:text-white border-cyan-300 dark:border-cyan-700 hover:bg-cyan-100 dark:hover:bg-cyan-900/50',
+    'Completed': 'bg-emerald-50 text-black dark:bg-emerald-900/40 dark:text-white border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/50',
+    'Cancelled': 'bg-rose-50 text-black dark:bg-rose-900/40 dark:text-white border-rose-300 dark:border-rose-700 hover:bg-rose-100 dark:hover:bg-rose-900/50',
+    'Refunded': 'bg-orange-50 text-black dark:bg-orange-900/40 dark:text-white border-orange-300 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-900/50'
+  }
+  
+  return statusClassMap[status] || 'bg-gray-50 text-black dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600'
+}
+
 const getStatusLabel = (status) => {
+  // Normalize status trước khi map label
+  const normalized = normalizeStatusForDisplay(status)
+  
   const labels = {
     'Pending': 'Chờ xử lý',
     'Processing': 'Đang xử lý',
     'Shipped': 'Đã gửi hàng',
     'Completed': 'Hoàn thành',
-    'Cancelled': 'Đã hủy'
+    'Cancelled': 'Đã hủy',
+    'Confirmed': 'Đã xác nhận',
+    'Packed': 'Đã đóng gói',
+    'Refunded': 'Đã hoàn tiền'
   }
-  return labels[status] || status
+  return labels[normalized] || normalized || status
 }
 
 

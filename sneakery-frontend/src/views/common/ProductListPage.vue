@@ -159,16 +159,62 @@ const fetchProducts = async () => {
     loading.value = true
     error.value = null
     
+    console.log('🔄 Fetching products...')
     const response = await productService.getProducts(0, 50)
-    const productData = response.data?.content || response.data || []
+    console.log('✅ Response received:', response)
+    console.log('📦 Response data:', response.data)
     
+    // Handle Spring Data Page structure
+    let productData = []
+    let totalElements = 0
+    
+    if (response.data) {
+      // Spring Data Page format: { content: [...], totalElements: 100, totalPages: 10, ... }
+      if (Array.isArray(response.data.content)) {
+        productData = response.data.content
+        totalElements = response.data.totalElements || 0
+      } 
+      // If response.data is already an array
+      else if (Array.isArray(response.data)) {
+        productData = response.data
+        totalElements = response.data.length
+      }
+      // If response.data is a single object (shouldn't happen but handle it)
+      else {
+        console.warn('⚠️ Unexpected response format:', response.data)
+        productData = []
+        totalElements = 0
+      }
+    }
+    
+    console.log('📋 Processed products:', productData.length)
     products.value = productData
-    totalItems.value = response.data?.totalElements || productData.length || 0
-    totalPages.value = Math.ceil(totalItems.value / pageSize.value)
+    totalItems.value = totalElements
+    totalPages.value = Math.ceil(totalElements / pageSize.value)
+    
+    if (productData.length === 0) {
+      console.warn('⚠️ No products found')
+    }
     
   } catch (err) {
-    console.error('Error fetching products:', err)
-    error.value = 'Không thể tải danh sách sản phẩm. Vui lòng thử lại.'
+    console.error('❌ Error fetching products:', err)
+    console.error('❌ Error details:', {
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status,
+      statusText: err.response?.statusText
+    })
+    
+    // Better error message
+    if (err.response?.status === 404) {
+      error.value = 'Không tìm thấy sản phẩm nào.'
+    } else if (err.response?.status === 500) {
+      error.value = 'Lỗi server. Vui lòng thử lại sau.'
+    } else if (err.response?.data?.message) {
+      error.value = err.response.data.message
+    } else {
+      error.value = `Không thể tải danh sách sản phẩm: ${err.message || 'Vui lòng thử lại.'}`
+    }
   } finally {
     loading.value = false
   }

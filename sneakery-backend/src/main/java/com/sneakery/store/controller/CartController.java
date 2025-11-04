@@ -12,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/cart")
@@ -59,5 +61,17 @@ public class CartController {
         log.info("📍 DELETE /api/cart/item/{} - User: {}", variantId, userPrincipal.getId());
         CartDto cart = cartService.removeItemFromCart(userPrincipal.getId(), variantId);
         return ResponseEntity.ok(cart);
+    }
+
+    /**
+     * Xóa toàn bộ giỏ hàng (clear all items)
+     */
+    @DeleteMapping
+    public ResponseEntity<Map<String, String>> clearMyCart(
+            @AuthenticationPrincipal User userPrincipal
+    ) {
+        log.info("📍 DELETE /api/cart - User: {}", userPrincipal.getId());
+        cartService.clearCart(userPrincipal.getId());
+        return ResponseEntity.ok(Map.of("message", "Đã xóa toàn bộ giỏ hàng"));
     }
 }

@@ -38,9 +38,10 @@
         <div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatCurrency(totalRevenue) }}</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng doanh thu</p>
-          <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-            <i class="material-icons text-sm">trending_up</i>
-            +12.5% so với tháng trước
+          <p class="text-xs flex items-center gap-1" :class="paymentStats.revenueTrend > 0 ? 'text-green-600 dark:text-green-400' : paymentStats.revenueTrend < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'">
+            <i class="material-icons text-sm" :class="paymentStats.revenueTrend > 0 ? 'trending_up' : paymentStats.revenueTrend < 0 ? 'trending_down' : 'trending_flat'"></i>
+            <span v-if="paymentStats.revenueTrend !== 0">{{ paymentStats.revenueTrend > 0 ? '+' : '' }}{{ paymentStats.revenueTrend.toFixed(1) }}% so với tháng trước</span>
+            <span v-else>Không đổi so với tháng trước</span>
           </p>
         </div>
       </div>
@@ -56,7 +57,7 @@
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Giao dịch thành công</p>
           <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
             <i class="material-icons text-sm">done</i>
-            {{ Math.round((completedPayments / totalPayments) * 100) || 0 }}% tổng số
+            {{ Math.round(paymentStats.successRate || 0) }}% tổng số
           </p>
         </div>
       </div>
@@ -399,14 +400,24 @@ const pageSize = ref(10)
 const showDetailModal = ref(false)
 const selectedPayment = ref(null)
 
-// Payments data - sẽ được load từ API
+// Payment stats từ API (data thật)
+const paymentStats = ref({
+  totalRevenue: 0,
+  completedCount: 0,
+  failedCount: 0,
+  pendingCount: 0,
+  refundedCount: 0,
+  totalCount: 0,
+  successRate: 0,
+  revenueTrend: 0
+})
 
-// Computed
-const totalPayments = computed(() => payments.value.length)
-const completedPayments = computed(() => payments.value.filter(p => p.status === 'completed').length)
-const failedPayments = computed(() => payments.value.filter(p => p.status === 'failed').length)
-const pendingPayments = computed(() => payments.value.filter(p => p.status === 'pending').length)
-const totalRevenue = computed(() => payments.value.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0))
+// Computed - ưu tiên dùng stats từ API
+const totalPayments = computed(() => paymentStats.value.totalCount || payments.value.length)
+const completedPayments = computed(() => paymentStats.value.completedCount || payments.value.filter(p => p.status === 'completed').length)
+const failedPayments = computed(() => paymentStats.value.failedCount || payments.value.filter(p => p.status === 'failed').length)
+const pendingPayments = computed(() => paymentStats.value.pendingCount || payments.value.filter(p => p.status === 'pending').length)
+const totalRevenue = computed(() => paymentStats.value.totalRevenue || payments.value.filter(p => p.status === 'completed').reduce((sum, p) => sum + (p.amount || 0), 0))
 
 const filteredPayments = computed(() => {
   let filtered = payments.value
@@ -441,6 +452,17 @@ const paginatedPayments = computed(() => {
 const fetchPayments = async () => {
   loading.value = true
   try {
+    // Load payment stats từ API (data thật)
+    try {
+      const statsResult = await adminStore.fetchPaymentStats()
+      if (statsResult) {
+        paymentStats.value = statsResult
+        console.log('✅ Payment stats loaded:', paymentStats.value)
+      }
+    } catch (error) {
+      console.warn('Payment stats API error:', error)
+    }
+    
     // Load từ API - chỉ dùng dữ liệu thật từ database
     const apiFilters = {}
     

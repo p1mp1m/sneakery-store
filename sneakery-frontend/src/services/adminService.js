@@ -79,6 +79,60 @@ class AdminService {
     }
   }
 
+  async getOrderStatusAnalytics() {
+    try {
+      const response = await adminApi.get('/analytics/order-status')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getTopProducts(period = '30d') {
+    try {
+      const response = await adminApi.get(`/analytics/products?period=${period}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getRecentActivities(limit = 10) {
+    try {
+      const response = await adminApi.get(`/analytics/recent-activities?limit=${limit}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getConversionRate() {
+    try {
+      const response = await adminApi.get('/analytics/conversion-rate')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getDashboardBadges() {
+    try {
+      const response = await adminApi.get('/dashboard/badges')
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getStatsCompare(period = '30d') {
+    try {
+      const response = await adminApi.get(`/analytics/stats-compare?period=${period}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   // ===== PRODUCT MANAGEMENT =====
   async getProducts(page = 0, size = 10, filters = {}) {
     try {
@@ -994,6 +1048,15 @@ class AdminService {
         ...cleanFilters
       })
       const response = await adminApi.get(`/email-templates?${params}`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getEmailTemplateStats() {
+    try {
+      const response = await adminApi.get('/email-templates/stats')
       return response.data
     } catch (error) {
       throw this.handleError(error)
