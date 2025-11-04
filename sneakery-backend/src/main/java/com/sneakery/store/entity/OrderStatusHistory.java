@@ -24,6 +24,6 @@ public class OrderStatusHistory {
     @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "changed_at")
-    private LocalDateTime changedAt;
+    @Column(name = "created_at")
+    private LocalDateTime changedAt; // Database dùng created_at nhưng tên field vẫn là changedAt để dễ hiểu
 }

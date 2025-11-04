@@ -67,3 +67,10 @@ logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
 # ==========================================
 spring.devtools.restart.enabled=true
 
+# ==========================================
+# Cache Configuration (Caffeine)
+# ==========================================
+spring.cache.type=caffeine
+spring.cache.caffeine.spec=maximumSize=100,expireAfterWrite=5m
+spring.cache.cache-names=dashboardStats,productStats
+

@@ -126,4 +126,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "WHERE order_number LIKE :prefix",
             nativeQuery = true)
     Integer getNextOrderSequence(@Param("prefix") String prefix);
+
+    /**
+     * OPTIMIZED: Lấy tất cả dashboard stats trong một query duy nhất
+     * Sử dụng aggregation queries với subqueries để tính toán trực tiếp trên database
+     * Giảm số lượng queries từ 4 xuống 1, cải thiện performance đáng kể
+     * 
+     * Note: Native query returns List<Object[]>, so we'll get the first row in the controller
+     */
+    @Query(value = "SELECT " +
+            "   (SELECT COUNT(*) FROM Users WHERE deleted_at IS NULL) AS total_users, " +
+            "   (SELECT COUNT(*) FROM Products WHERE deleted_at IS NULL) AS total_products, " +
+            "   (SELECT COUNT(*) FROM Orders) AS total_orders, " +
+            "   (SELECT ISNULL(SUM(CAST(amount AS FLOAT)), 0) FROM Payments WHERE status = 'completed') AS total_revenue",
+            nativeQuery = true)
+    List<Object[]> getDashboardStatsRaw();
 }

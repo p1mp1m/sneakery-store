@@ -47,6 +47,9 @@ public class SecurityConfig {
                         // ✅ Cho phép GET public cho Product
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
 
+                        // ✅ Cho phép Guest APIs (không cần authentication)
+                        .requestMatchers("/api/guest/**").permitAll()
+
                         // ❌ Các request khác yêu cầu xác thực
                         .anyRequest().authenticated()
                 )

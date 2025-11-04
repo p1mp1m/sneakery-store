@@ -8,6 +8,8 @@ import com.sneakery.store.repository.UserRepository;
 import com.sneakery.store.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -36,55 +38,68 @@ public class AdminController {
     /**
      * API Dashboard: Lấy thống kê tổng quan cho Admin
      * Bao gồm: Tổng users, products, orders, và doanh thu
+     * 
+     * OPTIMIZED: 
+     * - Sử dụng single aggregation query thay vì 4 queries riêng lẻ
+     * - Caching với TTL 5 minutes để giảm database load
+     * Performance improvement: Giảm số lượng queries từ 4 xuống 1 + caching
      */
     @GetMapping("/dashboard/stats")
     @PreAuthorize("hasRole('ADMIN')")
+    @Cacheable(value = "dashboardStats", key = "'admin-dashboard-stats'")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
-        log.info("📊 GET /api/admin/dashboard/stats");
+        log.info("📊 GET /api/admin/dashboard/stats (OPTIMIZED + CACHED)");
         Map<String, Object> stats = new HashMap<>();
 
         try {
-            // Lấy dữ liệu thực từ database
-            log.debug("Fetching totalUsers...");
-            long totalUsers = userRepository.count();
-            log.debug("totalUsers: {}", totalUsers);
+            // OPTIMIZED: Lấy tất cả stats trong một query duy nhất
+            log.debug("Fetching dashboard stats with optimized single query...");
+            List<Object[]> results = orderRepository.getDashboardStatsRaw();
             
-            log.debug("Fetching totalProducts...");
-            long totalProducts = productRepository.count();
-            log.debug("totalProducts: {}", totalProducts);
+            if (results == null || results.isEmpty()) {
+                throw new RuntimeException("No stats data returned from database");
+            }
             
-            log.debug("Fetching totalOrders...");
-            long totalOrders = orderRepository.count();
-            log.debug("totalOrders: {}", totalOrders);
+            // Native query returns List<Object[]>, get first row: [total_users, total_products, total_orders, total_revenue]
+            Object[] result = results.get(0);
+            Long totalUsers = result[0] != null ? ((Number) result[0]).longValue() : 0L;
+            Long totalProducts = result[1] != null ? ((Number) result[1]).longValue() : 0L;
+            Long totalOrders = result[2] != null ? ((Number) result[2]).longValue() : 0L;
+            Double totalRevenue = result[3] != null ? ((Number) result[3]).doubleValue() : 0.0;
             
             stats.put("totalUsers", totalUsers);
             stats.put("totalProducts", totalProducts);
             stats.put("totalOrders", totalOrders);
+            stats.put("totalRevenue", totalRevenue);
+            
+            log.debug("Stats fetched: users={}, products={}, orders={}, revenue={}", 
+                    totalUsers, totalProducts, totalOrders, totalRevenue);
         } catch (Exception e) {
-            log.error("Error fetching basic stats: {}", e.getMessage(), e);
+            log.error("Error fetching dashboard stats: {}", e.getMessage(), e);
+            // Fallback values in case of error
             stats.put("totalUsers", 0);
             stats.put("totalProducts", 0);
             stats.put("totalOrders", 0);
-        }
-        
-        // Tính tổng doanh thu từ các payment đã hoàn thành
-        try {
-            log.debug("Fetching totalRevenue...");
-            BigDecimal revenue = paymentRepository.sumAmountByStatus("completed");
-            log.debug("Revenue from query: {}", revenue);
-            if (revenue != null) {
-                stats.put("totalRevenue", revenue.doubleValue());
-            } else {
-                stats.put("totalRevenue", 0.0);
-            }
-        } catch (Exception e) {
-            // Nếu có lỗi khi query revenue, set về 0
-            log.error("Error fetching revenue: {}", e.getMessage(), e);
             stats.put("totalRevenue", 0.0);
         }
 
         log.info("✅ Dashboard stats response: {}", stats);
         return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * API: Clear dashboard stats cache (admin only)
+     * Useful when data changes and cache needs to be refreshed immediately
+     */
+    @PostMapping("/dashboard/stats/clear-cache")
+    @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "dashboardStats", allEntries = true)
+    public ResponseEntity<Map<String, String>> clearDashboardCache() {
+        log.info("🗑️ POST /api/admin/dashboard/stats/clear-cache");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Dashboard cache cleared successfully");
+        response.put("status", "success");
+        return ResponseEntity.ok(response);
     }
 
     /**

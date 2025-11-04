@@ -65,18 +65,16 @@ const routes = [
     name: "reset-password",
     component: ResetPassWord,
   },
-  // Cart and Checkout pages (Protected - Standalone, không dùng user routes)
+  // Cart and Checkout pages (Public - Cho phép cả guest và authenticated users)
   {
     path: '/cart',
     name: 'Cart',
     component: () => import('../views/user/CartPage.vue'),
-    meta: { requiresAuth: true },
   },
   {
     path: '/checkout',
     name: 'Checkout',
     component: () => import('../views/user/CheckoutPage.vue'),
-    meta: { requiresAuth: true },
   },
   // User routes (Protected - chỉ dành cho user đã đăng nhập)
   ...userRoutes,

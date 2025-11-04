@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,6 +35,7 @@ public class AdminOrderService {
     private final CouponRepository couponRepository;
     private final CouponService couponService;
     private final LoyaltyService loyaltyService;
+    private final AddressRepository addressRepository;
 
     @Transactional(readOnly = true)
     public Page<AdminOrderListDto> getAllOrders(Pageable pageable) {
@@ -180,7 +182,7 @@ public class AdminOrderService {
         order.setAddressShipping(posAddress);
         order.setAddressBilling(posAddress);
         order.setCreatedAt(LocalDateTime.now());
-        order.setStatus("Completed"); // POS orders thường completed ngay
+        order.setStatus("delivered"); // POS orders bán tại quầy, trạng thái delivered ngay
         order.setShippingFee(BigDecimal.ZERO); // POS không có phí ship
         order.setSubtotal(BigDecimal.ZERO); // Sẽ tính sau
         
@@ -236,8 +238,18 @@ public class AdminOrderService {
             detail.setQuantity(itemDto.getQuantity());
             detail.setUnitPrice(effectivePrice); // Dùng giá từ database, không tin tưởng frontend
             
+            // Set các trường denormalized (lưu lại thông tin tại thời điểm mua hàng)
+            detail.setProductName(variant.getProduct().getName());
+            detail.setVariantSku(variant.getSku() != null ? variant.getSku() : "");
+            detail.setSize(variant.getSize() != null ? variant.getSize() : "");
+            detail.setColor(variant.getColor() != null ? variant.getColor() : "");
+            
+            // Tính total_price
+            BigDecimal totalPrice = effectivePrice.multiply(BigDecimal.valueOf(itemDto.getQuantity()));
+            detail.setTotalPrice(totalPrice);
+            
             order.getOrderDetails().add(detail);
-            subtotal = subtotal.add(effectivePrice.multiply(BigDecimal.valueOf(itemDto.getQuantity())));
+            subtotal = subtotal.add(totalPrice);
         }
         
         order.setSubtotal(subtotal);
@@ -302,10 +314,13 @@ public class AdminOrderService {
         order.setTotalAmount(totalAmount);
         
         // 8. Tạo Payment với status "completed" (đã thanh toán tại quầy)
+        // Map payment method từ frontend sang giá trị hợp lệ trong database
+        String paymentMethod = mapPaymentMethod(requestDto.getPaymentMethod());
+        
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(totalAmount);
-        payment.setPaymentMethod(requestDto.getPaymentMethod());
+        payment.setPaymentMethod(paymentMethod);
         payment.setStatus("completed");
         payment.setPaidAt(LocalDateTime.now());
         order.getPayments().add(payment);
@@ -313,7 +328,7 @@ public class AdminOrderService {
         // 9. Tạo OrderStatusHistory
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(order);
-        history.setStatus("Completed");
+        history.setStatus("delivered"); // POS orders bán tại quầy, trạng thái delivered ngay
         history.setChangedAt(LocalDateTime.now());
         order.getStatusHistories().add(history);
         
@@ -324,7 +339,7 @@ public class AdminOrderService {
         // 11. Tích điểm loyalty nếu có customerId
         if (user != null) {
             try {
-                // Tích điểm từ đơn hàng POS (status = Completed)
+                // Tích điểm từ đơn hàng POS (status = delivered)
                 loyaltyService.earnPointsFromOrder(savedOrder);
                 log.info("✅ Customer {} earned points from POS order {}", user.getId(), orderNumber);
             } catch (Exception e) {
@@ -355,13 +370,90 @@ public class AdminOrderService {
     }
     
     /**
-     * Tạo địa chỉ mặc định cho POS (hoặc null)
+     * Tạo địa chỉ mặc định cho POS (địa chỉ cửa hàng)
+     * Vì POS order là bán tại cửa hàng, không cần địa chỉ giao hàng thực sự
+     * Nhưng database yêu cầu address_shipping_id không được NULL
+     * Tối ưu: Tái sử dụng địa chỉ POS chung thay vì tạo mới mỗi lần
+     * Lưu ý: address_type chỉ cho phép 'home', 'office', 'other' - dùng 'other' cho POS
      */
     private Address createPOSDefaultAddress(User user) {
-        // Có thể tạo địa chỉ mặc định cho cửa hàng
-        // Hoặc để null nếu không cần
-        // Tạm thời để null vì POS không cần địa chỉ giao hàng
-        return null;
+        // Tìm địa chỉ POS đã tồn tại (dùng chung cho tất cả POS orders)
+        // Địa chỉ POS có line1 cố định "Cửa hàng Sneakery" và address_type = "other"
+        String posLine1 = "Cửa hàng Sneakery";
+        String posAddressType = "other";
+        Optional<Address> existingPosAddress = addressRepository.findByLine1AndAddressType(posLine1, posAddressType);
+        
+        if (existingPosAddress.isPresent()) {
+            // Tái sử dụng địa chỉ POS đã có
+            return existingPosAddress.get();
+        }
+        
+        // Tạo địa chỉ POS mới nếu chưa có
+        // Lưu ý: Database yêu cầu user_id NOT NULL, nhưng có thể là user khác nhau
+        // Với POS, ta có thể tạo địa chỉ với user đầu tiên hoặc user null (nếu có)
+        Address posAddress = new Address();
+        posAddress.setUser(user); // Có thể null nếu là khách vãng lai, nhưng database yêu cầu NOT NULL
+        // Nếu user null, cần tạo user giả hoặc dùng user nào đó
+        if (user == null) {
+            // Tìm user đầu tiên để gán cho POS address (vì user_id NOT NULL)
+            // Hoặc có thể tạo một user đặc biệt cho POS
+            user = userRepository.findAll().stream().findFirst()
+                    .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                            "Không tìm thấy user nào trong hệ thống"));
+            posAddress.setUser(user);
+        }
+        
+        posAddress.setRecipientName(user.getFullName() != null ? user.getFullName() : "Khách hàng");
+        posAddress.setPhone(user.getPhoneNumber() != null ? user.getPhoneNumber() : "0900000000");
+        posAddress.setLine1(posLine1);
+        posAddress.setLine2("Bán tại quầy");
+        posAddress.setCity("Hà Nội");
+        posAddress.setDistrict("Quận Hoàn Kiếm");
+        posAddress.setWard("Phường Tràng Tiền");
+        posAddress.setPostalCode("100000");
+        posAddress.setAddressType("other"); // Dùng 'other' vì CHECK constraint chỉ cho phép 'home', 'office', 'other'
+        posAddress.setIsDefault(false);
+        posAddress.setCreatedAt(LocalDateTime.now());
+        posAddress.setUpdatedAt(LocalDateTime.now());
+        
+        // Lưu địa chỉ vào database
+        return addressRepository.save(posAddress);
+    }
+    
+    /**
+     * Map payment method từ frontend sang giá trị hợp lệ trong database
+     * Database cho phép: 'cod', 'vnpay', 'momo', 'zalopay', 'bank_transfer', 'credit_card'
+     * Frontend có thể gửi: 'cash', 'card', 'bank', 'online'
+     */
+    private String mapPaymentMethod(String paymentMethod) {
+        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
+            return "cod"; // Mặc định là COD (Cash on Delivery)
+        }
+        
+        String method = paymentMethod.toLowerCase().trim();
+        
+        // Map các giá trị từ frontend sang database
+        switch (method) {
+            case "cash":
+                return "cod"; // Cash on Delivery
+            case "card":
+                return "credit_card";
+            case "bank":
+                return "bank_transfer";
+            case "online":
+                return "vnpay"; // Mặc định online là VNPay
+            case "cod":
+            case "vnpay":
+            case "momo":
+            case "zalopay":
+            case "bank_transfer":
+            case "credit_card":
+                // Giá trị đã hợp lệ, trả về trực tiếp
+                return method;
+            default:
+                log.warn("⚠️ Unknown payment method: {}. Defaulting to 'cod'", paymentMethod);
+                return "cod"; // Mặc định là COD nếu không nhận diện được
+        }
     }
     
     /**

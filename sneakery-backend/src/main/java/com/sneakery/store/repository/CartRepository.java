@@ -20,4 +20,16 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
            "LEFT JOIN FETCH p.brand " +
            "WHERE c.user.id = :userId")
     Optional<Cart> findByUserIdWithDetails(Long userId);
+
+    // Tìm giỏ hàng theo Session ID (cho guest)
+    Optional<Cart> findBySessionId(String sessionId);
+
+    // Tối ưu: Tìm guest cart VÀ tải luôn Items + Variant + Product + Brand
+    @Query("SELECT c FROM Cart c " +
+           "LEFT JOIN FETCH c.items ci " +
+           "LEFT JOIN FETCH ci.variant v " +
+           "LEFT JOIN FETCH v.product p " +
+           "LEFT JOIN FETCH p.brand " +
+           "WHERE c.sessionId = :sessionId AND c.user IS NULL")
+    Optional<Cart> findBySessionIdWithDetails(String sessionId);
 }

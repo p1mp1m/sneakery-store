@@ -98,6 +98,78 @@ public class CartService {
         return convertToCartDto(cart);
     }
 
+    // =================================================================
+    // GUEST CART APIs
+    // =================================================================
+
+    /**
+     * API 4: Lấy giỏ hàng của guest (theo session ID)
+     */
+    @Transactional(readOnly = true)
+    public CartDto getCartBySessionId(String sessionId) {
+        Cart cart = getOrCreateGuestCart(sessionId);
+        // Dùng query đã tối ưu
+        cart = cartRepository.findBySessionIdWithDetails(sessionId).orElse(cart);
+        return convertToCartDto(cart);
+    }
+
+    /**
+     * API 5: Thêm/Cập nhật sản phẩm vào guest cart
+     */
+    @Transactional
+    public CartDto addItemToGuestCart(String sessionId, AddToCartRequestDto requestDto) {
+        Cart cart = getOrCreateGuestCart(sessionId);
+        
+        // Tìm biến thể sản phẩm
+        ProductVariant variant = variantRepository.findById(requestDto.getVariantId())
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
+
+        // Kiểm tra số lượng tồn kho
+        if (variant.getStockQuantity() < requestDto.getQuantity()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+        }
+
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        Optional<CartItem> existingItem = cart.getItems().stream()
+                .filter(item -> item.getVariant().getId().equals(requestDto.getVariantId()))
+                .findFirst();
+
+        if (existingItem.isPresent()) {
+            // Nếu đã có -> Cập nhật số lượng
+            CartItem item = existingItem.get();
+            item.setQuantity(requestDto.getQuantity());
+        } else {
+            // Nếu chưa có -> Thêm mới
+            CartItem newItem = new CartItem();
+            newItem.setVariant(variant);
+            newItem.setQuantity(requestDto.getQuantity());
+            cart.addItem(newItem);
+        }
+
+        cartRepository.save(cart);
+        // Tải lại chi tiết để trả về
+        return getCartBySessionId(sessionId);
+    }
+
+    /**
+     * API 6: Xóa sản phẩm khỏi guest cart
+     */
+    @Transactional
+    public CartDto removeItemFromGuestCart(String sessionId, Long variantId) {
+        Cart cart = getOrCreateGuestCart(sessionId);
+
+        // Tìm item trong giỏ
+        CartItem itemToRemove = cart.getItems().stream()
+                .filter(item -> item.getVariant().getId().equals(variantId))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không có trong giỏ hàng"));
+
+        cart.removeItem(itemToRemove);
+
+        cartRepository.save(cart);
+        return convertToCartDto(cart);
+    }
+
 
     // =================================================================
     // HÀM HELPER
@@ -114,6 +186,21 @@ public class CartService {
             Cart newCart = new Cart();
             newCart.setUser(user);
             newCart.setCreatedAt(LocalDateTime.now());
+            return cartRepository.save(newCart);
+        });
+    }
+
+    /**
+     * Lấy giỏ hàng của guest (theo session ID), nếu chưa có thì tạo mới
+     */
+    private Cart getOrCreateGuestCart(String sessionId) {
+        return cartRepository.findBySessionId(sessionId).orElseGet(() -> {
+            Cart newCart = new Cart();
+            newCart.setSessionId(sessionId);
+            newCart.setUser(null); // Guest cart không có user
+            newCart.setCreatedAt(LocalDateTime.now());
+            // Set expiration time: 7 days from now
+            newCart.setExpiresAt(LocalDateTime.now().plusDays(7));
             return cartRepository.save(newCart);
         });
     }

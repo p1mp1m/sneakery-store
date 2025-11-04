@@ -244,21 +244,61 @@
           <i class="material-icons text-purple-600 dark:text-purple-400 text-lg">insights</i>
           Biểu đồ thống kê
         </h2>
-        <div class="flex gap-1">
+        <div class="flex gap-2 items-center">
+          <!-- Date Range Picker Toggle -->
           <button 
-            v-for="period in ['7d', '30d', '90d']" 
-            :key="period"
-            class="px-3 py-1 text-xs font-medium rounded-lg transition-all duration-200"
-            :class="selectedPeriod === period
-              ? 'bg-purple-600 text-white shadow-sm'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
-            @click="changePeriod(period)"
+            @click="showDateRangePicker = !showDateRangePicker"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            title="Chọn khoảng thời gian tùy chỉnh"
           >
-            {{ period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày' }}
+            <i class="material-icons text-sm">date_range</i>
+            <span>Tùy chỉnh</span>
           </button>
+          
+          <!-- Export Button -->
+          <button 
+            @click="exportReports"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+            title="Xuất báo cáo"
+          >
+            <i class="material-icons text-sm">download</i>
+            <span>Xuất báo cáo</span>
+          </button>
+          
+          <!-- Period Buttons -->
+          <div class="flex gap-1">
+            <button 
+              v-for="period in ['7d', '30d', '90d']" 
+              :key="period"
+              class="px-3 py-1 text-xs font-medium rounded-lg transition-all duration-200"
+              :class="selectedPeriod === period
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+              @click="changePeriod(period)"
+            >
+              {{ period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày' }}
+            </button>
+          </div>
         </div>
       </div>
       
+      <!-- Date Range Picker (Collapsible) -->
+      <transition
+        enter-active-class="transition-all duration-300 ease-out"
+        leave-active-class="transition-all duration-300 ease-in"
+        enter-from-class="opacity-0 -translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-4"
+      >
+        <div v-if="showDateRangePicker" class="mb-4">
+          <DateRangePicker 
+            v-model="customDateRange"
+            @apply="applyCustomDateRange"
+          />
+        </div>
+      </transition>
+
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <!-- Revenue Chart -->
         <div class="lg:col-span-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
@@ -364,6 +404,7 @@ import { useAuthStore } from '@/stores/auth';
 import LineChart from '@/assets/components/charts/LineChart.vue';
 import BarChart from '@/assets/components/charts/BarChart.vue';
 import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue';
+import DateRangePicker from '@/assets/components/admin/DateRangePicker.vue';
 
 const router = useRouter();
 const adminStore = useAdminStore();
@@ -378,6 +419,7 @@ const currentDate = ref('');
 const notifications = ref([]);
 const showProfileMenu = ref(false);
 const autoRefreshEnabled = ref(true);
+const autoRefreshIntervalSeconds = ref(60); // OPTIMIZED: Tăng từ 30s lên 60s để giảm server load
 const lastRefreshTime = ref(null);
 let notificationIdCounter = 0;
 let autoRefreshInterval = null;
@@ -522,9 +564,11 @@ const loadDashboardData = async (silent = false) => {
 
 const startAutoRefresh = () => {
   if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+  // OPTIMIZED: Sử dụng configurable interval thay vì hardcoded 30000ms
+  const intervalMs = autoRefreshIntervalSeconds.value * 1000;
   autoRefreshInterval = setInterval(() => {
     if (autoRefreshEnabled.value) loadDashboardData(true);
-  }, 30000);
+  }, intervalMs);
 };
 
 const stopAutoRefresh = () => {
@@ -538,7 +582,7 @@ const toggleAutoRefresh = () => {
   autoRefreshEnabled.value = !autoRefreshEnabled.value;
   if (autoRefreshEnabled.value) {
     startAutoRefresh();
-    showNotification('success', 'Tự động làm mới', 'Đã bật tự động làm mới mỗi 30 giây');
+    showNotification('success', 'Tự động làm mới', `Đã bật tự động làm mới mỗi ${autoRefreshIntervalSeconds.value} giây`);
   } else {
     stopAutoRefresh();
     showNotification('info', 'Tự động làm mới', 'Đã tắt tự động làm mới');
@@ -583,6 +627,60 @@ const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/login';
   }, 1000);
+};
+
+const showDateRangePicker = ref(false);
+const customDateRange = ref({
+  start: null,
+  end: null
+});
+
+const applyCustomDateRange = (range) => {
+  showDateRangePicker.value = false;
+  selectedPeriod.value = 'custom';
+  if (range && range.start && range.end) {
+    customDateRange.value = range;
+    showNotification('info', 'Thay đổi khoảng thời gian', `Đang hiển thị dữ liệu từ ${new Date(range.start).toLocaleDateString('vi-VN')} đến ${new Date(range.end).toLocaleDateString('vi-VN')}`);
+    // Reload data with custom date range
+    loadDashboardData();
+  }
+};
+
+const exportReports = async () => {
+  try {
+    showNotification('info', 'Xuất báo cáo', 'Đang tạo báo cáo...');
+    
+    // Create CSV content
+    const csvContent = [
+      ['Thống kê Dashboard - Sneakery Store'],
+      ['Ngày xuất:', new Date().toLocaleString('vi-VN')],
+      [],
+      ['Chỉ số', 'Giá trị'],
+      ['Tổng người dùng', stats.value.totalUsers],
+      ['Tổng sản phẩm', stats.value.totalProducts],
+      ['Tổng đơn hàng', stats.value.totalOrders],
+      ['Tổng doanh thu', formatCurrency(stats.value.totalRevenue)]
+    ];
+    
+    // Convert to CSV format
+    const csv = csvContent.map(row => row.join(',')).join('\n');
+    
+    // Create and download file
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `dashboard-report-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification('success', 'Xuất báo cáo', 'Đã xuất báo cáo thành công!');
+  } catch (error) {
+    console.error('Error exporting reports:', error);
+    showNotification('error', 'Lỗi', 'Không thể xuất báo cáo');
+  }
 };
 
 let timeInterval;

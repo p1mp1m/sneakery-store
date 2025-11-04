@@ -30,8 +30,7 @@ public class OrderService {
     private final PaymentGatewayService paymentGatewayService;
     private final CouponRepository couponRepository;
     private final CouponService couponService;
-    // Note: LoyaltyService sẽ được dùng khi tích điểm sau khi đơn hàng hoàn thành (delivered)
-    // private final LoyaltyService loyaltyService;
+    private final LoyaltyService loyaltyService;
 
     /**
      * API 1: Xử lý Checkout (Tạo đơn hàng)
@@ -99,8 +98,18 @@ public class OrderService {
             BigDecimal effectivePrice = getEffectivePrice(variant);
             detail.setUnitPrice(effectivePrice);
             
+            // Set các trường denormalized (lưu lại thông tin tại thời điểm mua hàng)
+            detail.setProductName(variant.getProduct().getName());
+            detail.setVariantSku(variant.getSku() != null ? variant.getSku() : "");
+            detail.setSize(variant.getSize() != null ? variant.getSize() : "");
+            detail.setColor(variant.getColor() != null ? variant.getColor() : "");
+            
+            // Tính total_price
+            BigDecimal totalPrice = effectivePrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+            detail.setTotalPrice(totalPrice);
+            
             order.getOrderDetails().add(detail);
-            totalAmount = totalAmount.add(effectivePrice.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+            totalAmount = totalAmount.add(totalPrice);
         }
         
         // Set subtotal
@@ -167,14 +176,56 @@ public class OrderService {
                 .setScale(2, java.math.RoundingMode.HALF_UP);
         order.setTaxAmount(taxAmount);
         
-        // 11. Tính total amount
-        BigDecimal finalTotal = amountAfterDiscount.add(shippingFee).add(taxAmount);
+        // 11. Tính total amount tạm thời (trước khi trừ points)
+        BigDecimal tempTotal = amountAfterDiscount.add(shippingFee).add(taxAmount);
+        
+        // 12. Xử lý loyalty points nếu có (validate và tính discount)
+        Integer pointsUsed = requestDto.getPointsUsed() != null && requestDto.getPointsUsed() > 0 ? requestDto.getPointsUsed() : 0;
+        BigDecimal pointsDiscount = BigDecimal.ZERO;
+        
+        if (pointsUsed > 0) {
+            try {
+                // Validate balance
+                int currentBalance = loyaltyService.getUserPointsBalance(userId);
+                if (pointsUsed > currentBalance) {
+                    throw new ApiException(HttpStatus.BAD_REQUEST, 
+                        String.format("Không đủ điểm. Số dư: %d, yêu cầu: %d", currentBalance, pointsUsed));
+                }
+                
+                // Tính discount từ points (1 point = 1000 VND)
+                pointsDiscount = BigDecimal.valueOf(pointsUsed).multiply(BigDecimal.valueOf(1000));
+                
+                // Đảm bảo không giảm nhiều hơn tempTotal
+                if (pointsDiscount.compareTo(tempTotal) > 0) {
+                    pointsDiscount = tempTotal;
+                    pointsUsed = pointsDiscount.divide(BigDecimal.valueOf(1000), 0, java.math.RoundingMode.DOWN).intValue();
+                }
+                
+                order.setPointsUsed(pointsUsed);
+                tempTotal = tempTotal.subtract(pointsDiscount);
+            } catch (ApiException e) {
+                // Nếu có lỗi, throw lại để user biết
+                throw e;
+            } catch (Exception e) {
+                log.warn("Error validating points: {}", e.getMessage());
+                pointsUsed = 0;
+                order.setPointsUsed(0);
+            }
+        }
+
+        // 13. Tính final total amount (sau khi trừ points discount)
+        BigDecimal finalTotal = tempTotal;
         if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
             finalTotal = BigDecimal.ZERO;
         }
         order.setTotalAmount(finalTotal);
 
-        // 12. Tạo Payment
+        // 14. Set customer note nếu có
+        if (requestDto.getCustomerNote() != null && !requestDto.getCustomerNote().trim().isEmpty()) {
+            order.setCustomerNote(requestDto.getCustomerNote());
+        }
+
+        // 15. Tạo Payment
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(finalTotal);
@@ -182,7 +233,7 @@ public class OrderService {
         payment.setStatus("pending"); // Chờ thanh toán
         order.getPayments().add(payment);
 
-        // 13. Tạo Lịch sử Status
+        // 16. Tạo Lịch sử Status
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(order);
         history.setStatus("Pending");
@@ -190,6 +241,17 @@ public class OrderService {
         order.getStatusHistories().add(history);
 
         Order savedOrder = orderRepository.save(order);
+        
+        // 17. Redeem loyalty points sau khi order được lưu (có ID)
+        if (pointsUsed > 0) {
+            try {
+                loyaltyService.redeemPoints(userId, pointsUsed, savedOrder);
+                log.info("✅ Redeemed {} points for order {}", pointsUsed, savedOrder.getId());
+            } catch (Exception e) {
+                log.error("Failed to redeem points for order {}: {}", savedOrder.getId(), e.getMessage(), e);
+                // Không throw error vì order đã được tạo, chỉ log
+            }
+        }
         
         // Note: Inventory logs được tạo tự động bởi database trigger khi stock_quantity thay đổi
         // Trigger sẽ tự động log mọi thay đổi inventory
@@ -209,6 +271,221 @@ public class OrderService {
         }
         
         return convertToOrderDto(savedOrder, paymentUrl);
+    }
+
+    /**
+     * API 2: Xử lý Guest Checkout (Tạo đơn hàng từ guest cart)
+     */
+    @Transactional
+    public OrderDto createGuestOrderFromCart(String sessionId, GuestCheckoutRequestDto requestDto) {
+        
+        // 1. Lấy guest cart
+        Cart cart = cartRepository.findBySessionIdWithDetails(sessionId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy giỏ hàng"));
+        
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Giỏ hàng trống!");
+        }
+
+        // 2. Lấy hoặc tạo guest user (system account cho guest orders)
+        User guestUser = getOrCreateGuestUser();
+
+        // 3. Tạo Address từ thông tin guest
+        Address shippingAddress = new Address();
+        shippingAddress.setUser(guestUser);
+        shippingAddress.setRecipientName(requestDto.getRecipientName());
+        shippingAddress.setPhone(requestDto.getPhone());
+        shippingAddress.setLine1(requestDto.getLine1());
+        shippingAddress.setLine2(requestDto.getLine2());
+        shippingAddress.setDistrict(requestDto.getDistrict());
+        shippingAddress.setCity(requestDto.getCity());
+        shippingAddress.setWard(requestDto.getWard());
+        shippingAddress.setPostalCode(requestDto.getPostalCode());
+        shippingAddress.setCreatedAt(LocalDateTime.now());
+        shippingAddress = addressRepository.save(shippingAddress);
+
+        // 4. Dùng địa chỉ giao hàng cho billing
+        Address billingAddress = shippingAddress;
+
+        // 5. Generate order number
+        String orderNumber = generateOrderNumber();
+        
+        // 6. Tạo đơn hàng (Order)
+        Order order = new Order();
+        order.setUser(guestUser);
+        order.setOrderNumber(orderNumber);
+        order.setAddressShipping(shippingAddress);
+        order.setAddressBilling(billingAddress);
+        order.setCreatedAt(LocalDateTime.now());
+        order.setStatus("Pending");
+
+        // 7. Tính tổng tiền VÀ chuyển CartItem -> OrderDetail
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (CartItem cartItem : cart.getItems()) {
+            ProductVariant variant = cartItem.getVariant();
+            
+            // 7.1. Kiểm tra tồn kho
+            if (variant.getStockQuantity() < cartItem.getQuantity()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, 
+                    "Sản phẩm " + variant.getProduct().getName() + " không đủ hàng");
+            }
+            
+            // 7.2. Giảm tồn kho
+            int quantityBefore = variant.getStockQuantity();
+            int quantityChange = -cartItem.getQuantity();
+            variant.setStockQuantity(quantityBefore + quantityChange);
+            variantRepository.save(variant);
+
+            // 7.3. Tạo OrderDetail (chốt giá)
+            OrderDetail detail = new OrderDetail();
+            detail.setOrder(order);
+            detail.setVariant(variant);
+            detail.setQuantity(cartItem.getQuantity());
+            BigDecimal effectivePrice = getEffectivePrice(variant);
+            detail.setUnitPrice(effectivePrice);
+            
+            // Set các trường denormalized (lưu lại thông tin tại thời điểm mua hàng)
+            detail.setProductName(variant.getProduct().getName());
+            detail.setVariantSku(variant.getSku() != null ? variant.getSku() : "");
+            detail.setSize(variant.getSize() != null ? variant.getSize() : "");
+            detail.setColor(variant.getColor() != null ? variant.getColor() : "");
+            
+            // Tính total_price
+            BigDecimal totalPrice = effectivePrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+            detail.setTotalPrice(totalPrice);
+            
+            order.getOrderDetails().add(detail);
+            totalAmount = totalAmount.add(totalPrice);
+        }
+        
+        // Set subtotal
+        BigDecimal subtotal = totalAmount;
+        order.setSubtotal(subtotal);
+
+        // 8. Xử lý coupon nếu có
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        Coupon coupon = null;
+        if (requestDto.getCouponCode() != null && !requestDto.getCouponCode().trim().isEmpty()) {
+            try {
+                CouponDto couponDto = couponService.validateCouponCode(requestDto.getCouponCode());
+                coupon = couponRepository.findById(couponDto.getId()).orElse(null);
+                
+                if (coupon != null) {
+                    // Tính discount amount
+                    if ("percent".equalsIgnoreCase(coupon.getDiscountType())) {
+                        BigDecimal discount = subtotal.multiply(coupon.getValue()).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+                        if (coupon.getMaxDiscountAmount() != null && discount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
+                            discount = coupon.getMaxDiscountAmount();
+                        }
+                        discountAmount = discount;
+                    } else if ("fixed".equalsIgnoreCase(coupon.getDiscountType())) {
+                        discountAmount = coupon.getValue();
+                        if (discountAmount.compareTo(subtotal) > 0) {
+                            discountAmount = subtotal;
+                        }
+                    }
+                    
+                    // Kiểm tra minOrderAmount
+                    if (coupon.getMinOrderAmount() != null && subtotal.compareTo(coupon.getMinOrderAmount()) < 0) {
+                        throw new ApiException(HttpStatus.BAD_REQUEST, 
+                                String.format("Đơn hàng tối thiểu %s để áp dụng mã giảm giá", 
+                                        formatCurrency(coupon.getMinOrderAmount())));
+                    }
+                    
+                    // Cập nhật usesCount
+                    if (coupon.getUsesCount() == null) {
+                        coupon.setUsesCount(0);
+                    }
+                    coupon.setUsesCount(coupon.getUsesCount() + 1);
+                    couponRepository.save(coupon);
+                    
+                    order.setCoupon(coupon);
+                }
+            } catch (ApiException e) {
+                throw e;
+            } catch (Exception e) {
+                log.warn("Error applying coupon: {}", e.getMessage());
+            }
+        }
+        
+        order.setDiscountAmount(discountAmount);
+
+        // 9. Tính shipping fee
+        BigDecimal shippingFee = calculateShippingFee(shippingAddress);
+        order.setShippingFee(shippingFee);
+
+        // 10. Tính tax amount (VAT 10% trên subtotal sau discount)
+        BigDecimal amountAfterDiscount = subtotal.subtract(discountAmount);
+        BigDecimal taxAmount = amountAfterDiscount.multiply(BigDecimal.valueOf(0.10))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+        order.setTaxAmount(taxAmount);
+
+        // 11. Tính total amount
+        BigDecimal finalTotal = amountAfterDiscount.add(shippingFee).add(taxAmount);
+        if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
+            finalTotal = BigDecimal.ZERO;
+        }
+        order.setTotalAmount(finalTotal);
+
+        // 12. Set customer note
+        if (requestDto.getCustomerNote() != null && !requestDto.getCustomerNote().trim().isEmpty()) {
+            order.setCustomerNote(requestDto.getCustomerNote());
+        }
+
+        // 13. Tạo Payment
+        Payment payment = new Payment();
+        payment.setOrder(order);
+        payment.setAmount(finalTotal);
+        payment.setPaymentMethod(requestDto.getPaymentMethod());
+        payment.setStatus("pending");
+        order.getPayments().add(payment);
+
+        // 14. Tạo Lịch sử Status
+        OrderStatusHistory history = new OrderStatusHistory();
+        history.setOrder(order);
+        history.setStatus("Pending");
+        history.setChangedAt(LocalDateTime.now());
+        order.getStatusHistories().add(history);
+
+        Order savedOrder = orderRepository.save(order);
+        
+        // 15. Xóa guest cart
+        cartRepository.delete(cart);
+
+        String paymentUrl = null;
+        if ("online".equalsIgnoreCase(requestDto.getPaymentMethod())) {
+            paymentUrl = paymentGatewayService.createVNPayPaymentUrl(savedOrder.getId(), finalTotal, 
+                    "Thanh toan don hang " + savedOrder.getOrderNumber());
+        }
+        
+        // 16. Gửi email xác nhận (nếu có email)
+        if (requestDto.getEmail() != null && !requestDto.getEmail().trim().isEmpty()) {
+            try {
+                // Gửi email cho guest (có thể cần custom email service method)
+                emailService.sendOrderConfirmation(savedOrder);
+            } catch (Exception e) {
+                log.error("Failed to send order confirmation email for guest order {}: {}", 
+                        savedOrder.getOrderNumber(), e.getMessage(), e);
+            }
+        }
+        
+        return convertToOrderDto(savedOrder, paymentUrl);
+    }
+
+    /**
+     * Helper: Lấy hoặc tạo guest user (system account cho guest orders)
+     */
+    private User getOrCreateGuestUser() {
+        // Tìm user với email "guest@system.sneakery" hoặc tạo mới
+        return userRepository.findByEmail("guest@system.sneakery").orElseGet(() -> {
+            User guestUser = new User();
+            guestUser.setEmail("guest@system.sneakery");
+            guestUser.setPasswordHash("$2a$10$GUEST_USER_SYSTEM_ACCOUNT"); // Dummy password, không thể đăng nhập
+            guestUser.setFullName("Khách vãng lai");
+            guestUser.setRole("USER");
+            guestUser.setIsActive(true);
+            return userRepository.save(guestUser);
+        });
     }
 
     /**

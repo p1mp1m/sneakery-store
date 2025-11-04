@@ -18,4 +18,8 @@ public class CheckoutRequestDto {
     private String paymentMethod; // Phải là 'cod' hoặc 'online'
     
     private String couponCode; // Tùy chọn
+    
+    private String customerNote; // Tùy chọn - ghi chú của khách hàng
+    
+    private Integer pointsUsed; // Tùy chọn - số điểm thưởng sử dụng
 }

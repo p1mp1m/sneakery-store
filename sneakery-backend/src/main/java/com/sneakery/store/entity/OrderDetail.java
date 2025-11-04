@@ -33,4 +33,21 @@ public class OrderDetail {
     // Quan trọng: Lưu lại giá tại thời điểm mua hàng
     @Column(name = "unit_price", nullable = false)
     private BigDecimal unitPrice;
+
+    // Denormalized fields - lưu lại thông tin tại thời điểm mua hàng
+    // (để tránh phải join với Product/ProductVariant khi xem order cũ)
+    @Column(name = "product_name", nullable = false)
+    private String productName;
+
+    @Column(name = "variant_sku", nullable = false)
+    private String variantSku;
+
+    @Column(name = "size", nullable = false)
+    private String size;
+
+    @Column(name = "color", nullable = false)
+    private String color;
+
+    @Column(name = "total_price", nullable = false)
+    private BigDecimal totalPrice;
 }
