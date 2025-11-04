@@ -71,7 +71,9 @@ public class AdminProductVariantService {
         variant.setPriceSale(requestDto.getPriceSale());
         variant.setCostPrice(requestDto.getCostPrice());
         variant.setStockQuantity(requestDto.getStockQuantity());
-        variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null ? requestDto.getLowStockThreshold() : 10);
+        variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null 
+            ? requestDto.getLowStockThreshold() 
+            : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
         variant.setWeightGrams(requestDto.getWeightGrams());
         variant.setImageUrl(requestDto.getImageUrl());
         variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
@@ -134,7 +136,9 @@ public class AdminProductVariantService {
                 variant.setPriceSale(requestDto.getPriceSale());
                 variant.setCostPrice(requestDto.getCostPrice());
                 variant.setStockQuantity(requestDto.getStockQuantity());
-                variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null ? requestDto.getLowStockThreshold() : 10);
+                variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null 
+            ? requestDto.getLowStockThreshold() 
+            : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
                 variant.setWeightGrams(requestDto.getWeightGrams());
                 variant.setImageUrl(requestDto.getImageUrl());
                 variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
@@ -217,11 +221,12 @@ public class AdminProductVariantService {
         List<ProductVariant> allVariants = productVariantRepository.findAll();
         
         long totalVariants = allVariants.size();
+        int lowStockThreshold = com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD;
         long inStockVariants = allVariants.stream()
-                .filter(v -> v.getStockQuantity() > 10)
+                .filter(v -> v.getStockQuantity() > lowStockThreshold)
                 .count();
         long lowStockVariants = allVariants.stream()
-                .filter(v -> v.getStockQuantity() > 0 && v.getStockQuantity() <= 10)
+                .filter(v -> v.getStockQuantity() > 0 && v.getStockQuantity() <= lowStockThreshold)
                 .count();
         long outOfStockVariants = allVariants.stream()
                 .filter(v -> v.getStockQuantity() == 0)
@@ -251,7 +256,10 @@ public class AdminProductVariantService {
     private AdminProductVariantDto convertToDto(ProductVariant variant) {
         BigDecimal currentPrice = variant.getPriceSale() != null ? variant.getPriceSale() : variant.getPriceBase();
         String stockStatus = getStockStatus(variant.getStockQuantity());
-        boolean isLowStock = variant.getStockQuantity() > 0 && variant.getStockQuantity() <= 10;
+        int threshold = variant.getLowStockThreshold() != null 
+            ? variant.getLowStockThreshold() 
+            : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD;
+        boolean isLowStock = variant.getStockQuantity() > 0 && variant.getStockQuantity() <= threshold;
         boolean isOutOfStock = variant.getStockQuantity() == 0;
 
         // Safely get product and brand info
@@ -299,7 +307,7 @@ public class AdminProductVariantService {
 
     private String getStockStatus(Integer quantity) {
         if (quantity == 0) return "out_of_stock";
-        if (quantity <= 10) return "low_stock";
+        if (quantity <= com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD) return "low_stock";
         return "in_stock";
     }
 }

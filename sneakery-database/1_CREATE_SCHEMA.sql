@@ -199,6 +199,11 @@ CREATE INDEX idx_products_deleted ON Products(deleted_at);
 CREATE INDEX idx_products_material ON Products(material_id);
 CREATE INDEX idx_products_shoe_sole ON Products(shoe_sole_id);
 
+-- Performance indexes for common queries
+CREATE INDEX idx_products_name ON Products(name); -- For search by name
+CREATE INDEX idx_products_created_at ON Products(created_at); -- For sorting by date
+CREATE INDEX idx_products_name_search ON Products(name) INCLUDE (slug, brand_id); -- Covering index for search
+
 -- Unique index for product_code (ignores NULL values)
 CREATE UNIQUE INDEX UQ_Products_ProductCode
 ON Products(product_code)
@@ -255,6 +260,12 @@ CREATE INDEX idx_variants_product ON Product_Variants(product_id);
 CREATE INDEX idx_variants_sku ON Product_Variants(sku);
 CREATE INDEX idx_variants_stock ON Product_Variants(stock_quantity);
 CREATE INDEX idx_variants_active ON Product_Variants(is_active);
+
+-- Composite index for product_id + stock_quantity (for filtering by stock level)
+CREATE INDEX idx_variants_product_stock ON Product_Variants(product_id, stock_quantity);
+-- Index for price filtering
+CREATE INDEX idx_variants_price_base ON Product_Variants(price_base);
+CREATE INDEX idx_variants_price_sale ON Product_Variants(price_sale);
 GO
 
 -- =====================================================

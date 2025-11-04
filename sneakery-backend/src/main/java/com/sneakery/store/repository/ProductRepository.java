@@ -64,4 +64,21 @@ List<Product> findByIdInWithBrandAndCategories(@Param("ids") List<Long> ids);
             "LEFT JOIN FETCH p.variants " +
             "WHERE p.id = :productId")
     Optional<Product> findByIdWithDetails(@Param("productId") Long productId);
+
+    /**
+     * Find product by slug (for validation)
+     */
+    Optional<Product> findBySlug(String slug);
+
+    /**
+     * Count active products (optimized with aggregation)
+     */
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = true")
+    Long countActiveProducts();
+
+    /**
+     * Count inactive products (optimized with aggregation)
+     */
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.isActive = false OR p.isActive IS NULL")
+    Long countInactiveProducts();
 }

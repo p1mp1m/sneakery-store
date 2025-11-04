@@ -52,4 +52,43 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     // ✅ Có thể thêm nếu chưa có
     boolean existsBySku(String sku);
+
+    /**
+     * Sum total stock quantity (optimized aggregation query)
+     */
+    @Query("SELECT COALESCE(SUM(v.stockQuantity), 0) FROM ProductVariant v WHERE v.stockQuantity IS NOT NULL")
+    Long sumTotalStockQuantity();
+
+    /**
+     * Count variants with low stock (quantity > 0 and <= threshold)
+     */
+    @Query("SELECT COUNT(v) FROM ProductVariant v WHERE v.stockQuantity > 0 AND v.stockQuantity <= :threshold")
+    Long countLowStockVariants(@Param("threshold") Integer threshold);
+
+    /**
+     * Count variants with out of stock (quantity = 0)
+     */
+    @Query("SELECT COUNT(v) FROM ProductVariant v WHERE v.stockQuantity = 0 OR v.stockQuantity IS NULL")
+    Long countOutOfStockVariants();
+
+    /**
+     * Calculate average price (using priceSale if available, else priceBase)
+     */
+    @Query("SELECT COALESCE(AVG(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
+           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL")
+    java.math.BigDecimal calculateAveragePrice();
+
+    /**
+     * Get maximum price (using priceSale if available, else priceBase)
+     */
+    @Query("SELECT COALESCE(MAX(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
+           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL")
+    java.math.BigDecimal getMaxPrice();
+
+    /**
+     * Get minimum price (using priceSale if available, else priceBase)
+     */
+    @Query("SELECT COALESCE(MIN(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
+           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL")
+    java.math.BigDecimal getMinPrice();
 }

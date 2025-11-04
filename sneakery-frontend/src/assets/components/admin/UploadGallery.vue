@@ -68,7 +68,7 @@
 
       <!-- Placeholder (+) -->
       <div
-        v-if="mode === 'local' && images.length < 10"
+        v-if="mode === 'local' && images.length < maxImages"
         class="aspect-square bg-gray-50 dark:bg-gray-900/50 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
         @click.stop="$refs.fileInput.click()"
       >
@@ -165,9 +165,9 @@ const emitChange = () => {
 const handleFileSelect = (e) => {
   const files = e.target.files;
   if (!files || files.length === 0) return;
-  if (images.value.length + files.length > 10)
+  if (images.value.length + files.length > props.maxImages)
     return ElMessage.warning({
-      message: "Chỉ được chọn tối đa 10 ảnh",
+      message: `Chỉ được chọn tối đa ${props.maxImages} ảnh`,
       duration: 3000,
     });
   for (const file of files) {
@@ -198,9 +198,9 @@ const handleUrlAdd = () => {
       duration: 3000,
     });
   }
-  if (images.value.length >= 10)
+  if (images.value.length >= props.maxImages)
     return ElMessage.warning({
-      message: "Chỉ được chọn tối đa 10 ảnh",
+      message: `Chỉ được chọn tối đa ${props.maxImages} ảnh`,
       duration: 3000,
     });
 
@@ -247,6 +247,10 @@ const drop = (i) => {
 };
 
 const props = defineProps({
+  maxImages: {
+    type: Number,
+    default: 10
+  },
   resetKey: { type: Number, default: 0 },
   // ⬇️ danh sách ảnh ban đầu: [{ previewUrl, isPrimary, type: 'url'|'local' }]
   initialImages: { type: Array, default: () => [] },

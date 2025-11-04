@@ -2,6 +2,7 @@ package com.sneakery.store.exception;
 
 import com.sneakery.store.dto.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -20,9 +21,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Lớp này "bắt" tất cả các Exception trong ứng dụng
- * và chuyển đổi chúng thành JSON Response thân thiện.
+ * Global Exception Handler - Xử lý tất cả các exception trong ứng dụng
+ * và chuyển đổi chúng thành JSON Response thân thiện với user.
+ * 
+ * Security: Không expose internal error details ra ngoài production.
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -80,22 +84,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * 3. Bắt tất cả các lỗi 500 (lỗi server) khác
      * (Ví dụ: NullPointerException, lỗi CSDL...)
+     * 
+     * Security: Không expose internal error details ra ngoài.
+     * Chỉ log chi tiết lỗi, user chỉ nhận message chung.
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleGlobalException(
             Exception ex,
             HttpServletRequest request
     ) {
+        // Log chi tiết lỗi để debug (không expose ra user)
+        log.error("Internal server error occurred at {}: {}", 
+                request.getRequestURI(), 
+                ex.getMessage(), 
+                ex);
+
+        // User chỉ nhận message chung, không có chi tiết internal
         ErrorResponseDto errorDto = ErrorResponseDto.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .message("Có lỗi xảy ra ở máy chủ: " + ex.getMessage())
+                .message("Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau hoặc liên hệ quản trị viên.")
                 .path(request.getRequestURI())
                 .build();
-
-        // Rất quan trọng: In log lỗi ra console để debug
-        ex.printStackTrace();
 
         return new ResponseEntity<>(errorDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }

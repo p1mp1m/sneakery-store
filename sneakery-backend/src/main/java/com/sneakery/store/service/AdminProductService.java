@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,6 +35,7 @@ public class AdminProductService {
     private final CodeGenerator codeGenerator;
     private final MaterialRepository materialRepository;
     private final ShoeSoleRepository shoeSoleRepository;
+    private final com.sneakery.store.util.ProductValidationUtil productValidationUtil;
 
 
 
@@ -44,6 +44,12 @@ public class AdminProductService {
  */
     @Transactional
     public AdminProductDetailDto createProduct(AdminProductRequestDto requestDto) {
+        // ✅ VALIDATION: Business rules
+        productValidationUtil.validateSlugUniqueness(requestDto.getSlug(), null);
+        productValidationUtil.validateProductNameUniqueness(requestDto.getName(), requestDto.getBrandId(), null);
+        productValidationUtil.validateSkuUniqueness(requestDto.getVariants(), null);
+        productValidationUtil.validateVariantPrices(requestDto.getVariants());
+        
         // 1️⃣ Lấy Brand
         Brand brand = brandRepository.findById(requestDto.getBrandId())
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
@@ -106,6 +112,12 @@ public class AdminProductService {
         // 1️⃣ Tìm Product
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
+
+        // ✅ VALIDATION: Business rules
+        productValidationUtil.validateSlugUniqueness(requestDto.getSlug(), productId);
+        productValidationUtil.validateProductNameUniqueness(requestDto.getName(), requestDto.getBrandId(), productId);
+        productValidationUtil.validateSkuUniqueness(requestDto.getVariants(), productId);
+        productValidationUtil.validateVariantPrices(requestDto.getVariants());
 
         // 2️⃣ Lấy Brand
         Brand brand = brandRepository.findById(requestDto.getBrandId())
@@ -577,7 +589,7 @@ private AdminProductListDto convertToListDto(Product product) {
 
         // 2. Tạo product mới (copy)
         Product duplicate = new Product();
-        duplicate.setName(original.getName() + " (Copy)");
+        duplicate.setName(original.getName() + com.sneakery.store.constants.ProductConstants.DUPLICATE_NAME_SUFFIX);
         duplicate.setSlug(original.getSlug() + "-copy-" + System.currentTimeMillis());
         duplicate.setDescription(original.getDescription());
         duplicate.setIsActive(false); // Mặc định tắt để admin kiểm tra trước
@@ -589,7 +601,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 .map(v -> {
                     ProductVariant newVariant = new ProductVariant();
                     newVariant.setProduct(duplicate);
-                    newVariant.setSku(v.getSku() + "-COPY");
+                    newVariant.setSku(v.getSku() + com.sneakery.store.constants.ProductConstants.DUPLICATE_SKU_SUFFIX);
                     newVariant.setSize(v.getSize());
                     newVariant.setColor(v.getColor());
                     newVariant.setPriceBase(v.getPriceBase());
@@ -608,65 +620,52 @@ private AdminProductListDto convertToListDto(Product product) {
     }
 
     /**
-     * API 10: Lấy thống kê sản phẩm
+     * API 10: Lấy thống kê sản phẩm (OPTIMIZED - sử dụng aggregation queries)
+     * 
+     * Performance improvement: Thay vì load tất cả data vào memory,
+     * sử dụng aggregation queries để tính toán trực tiếp trên database.
      */
     @Transactional(readOnly = true)
     public ProductStatsDto getProductStatistics() {
+        // Count queries - không load data
         Long totalProducts = productRepository.count();
         Long totalVariants = variantRepository.count();
         
-        // Đếm active/inactive
-        long activeProducts = productRepository.findAll().stream()
-                .filter(p -> p.getIsActive() != null && p.getIsActive())
-                .count();
-        long inactiveProducts = totalProducts - activeProducts;
+        // Đếm active/inactive với aggregation queries
+        Long activeProducts = productRepository.countActiveProducts();
+        Long inactiveProducts = productRepository.countInactiveProducts();
 
-        // Tồn kho
-        List<ProductVariant> allVariants = variantRepository.findAll();
-        Long totalStock = allVariants.stream()
-                .mapToLong(v -> v.getStockQuantity() != null ? v.getStockQuantity() : 0)
-                .sum();
+        // Tồn kho - sử dụng aggregation queries
+        Long totalStock = variantRepository.sumTotalStockQuantity();
         
-        Long lowStockCount = allVariants.stream()
-                .filter(v -> v.getStockQuantity() != null && v.getStockQuantity() > 0 && v.getStockQuantity() <= 10)
-                .count();
+        // Low stock threshold - sử dụng constant
+        Long lowStockCount = variantRepository.countLowStockVariants(
+            com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
         
-        Long outOfStockCount = allVariants.stream()
-                .filter(v -> v.getStockQuantity() != null && v.getStockQuantity() == 0)
-                .count();
+        Long outOfStockCount = variantRepository.countOutOfStockVariants();
 
-        // Giá
-        BigDecimal avgPrice = allVariants.stream()
-                .map(v -> v.getPriceSale() != null ? v.getPriceSale() : v.getPriceBase())
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(allVariants.size()), RoundingMode.HALF_UP);
+        // Giá - sử dụng aggregation queries
+        BigDecimal avgPrice = variantRepository.calculateAveragePrice();
+        BigDecimal maxPrice = variantRepository.getMaxPrice();
+        BigDecimal minPrice = variantRepository.getMinPrice();
 
-        BigDecimal maxPrice = allVariants.stream()
-                .map(v -> v.getPriceSale() != null ? v.getPriceSale() : v.getPriceBase())
-                .filter(Objects::nonNull)
-                .max(BigDecimal::compareTo)
-                .orElse(BigDecimal.ZERO);
-
-        BigDecimal minPrice = allVariants.stream()
-                .map(v -> v.getPriceSale() != null ? v.getPriceSale() : v.getPriceBase())
-                .filter(Objects::nonNull)
-                .min(BigDecimal::compareTo)
-                .orElse(BigDecimal.ZERO);
+        // Count brands và categories với aggregation queries
+        Long totalBrands = brandRepository.countTotalBrands();
+        Long totalCategories = categoryRepository.countTotalCategories();
 
         return ProductStatsDto.builder()
                 .totalProducts(totalProducts)
                 .totalVariants(totalVariants)
-                .activeProducts(activeProducts)
-                .inactiveProducts(inactiveProducts)
-                .totalStock(totalStock)
-                .lowStockCount(lowStockCount)
-                .outOfStockCount(outOfStockCount)
-                .avgPrice(avgPrice)
-                .maxPrice(maxPrice)
-                .minPrice(minPrice)
-                .totalBrands(brandRepository.findAll().size())
-                .totalCategories(categoryRepository.findAll().size())
+                .activeProducts(activeProducts != null ? activeProducts : 0L)
+                .inactiveProducts(inactiveProducts != null ? inactiveProducts : 0L)
+                .totalStock(totalStock != null ? totalStock : 0L)
+                .lowStockCount(lowStockCount != null ? lowStockCount : 0L)
+                .outOfStockCount(outOfStockCount != null ? outOfStockCount : 0L)
+                .avgPrice(avgPrice != null ? avgPrice : BigDecimal.ZERO)
+                .maxPrice(maxPrice != null ? maxPrice : BigDecimal.ZERO)
+                .minPrice(minPrice != null ? minPrice : BigDecimal.ZERO)
+                .totalBrands(totalBrands != null ? totalBrands.intValue() : 0)
+                .totalCategories(totalCategories != null ? totalCategories.intValue() : 0)
                 .build();
     }
 
@@ -775,7 +774,9 @@ private AdminProductListDto convertToListDto(Product product) {
 
         // Stock level
         if (filter.getStockLevel() != null && !filter.getStockLevel().equals("all")) {
-            int threshold = filter.getLowStockThreshold() != null ? filter.getLowStockThreshold() : 10;
+            int threshold = filter.getLowStockThreshold() != null 
+                ? filter.getLowStockThreshold() 
+                : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD;
             
             switch (filter.getStockLevel()) {
                 case "in_stock":

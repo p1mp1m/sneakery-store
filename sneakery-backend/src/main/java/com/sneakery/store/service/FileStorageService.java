@@ -3,16 +3,27 @@ package com.sneakery.store.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.sneakery.store.constants.ProductConstants;
+import com.sneakery.store.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
- * Upload/Xoá ảnh với Cloudinary.
+ * Service xử lý upload và quản lý file với Cloudinary.
+ * 
+ * <p>Bao gồm validation đầy đủ cho file upload:
+ * <ul>
+ *   <li>File type validation (chỉ cho phép image)</li>
+ *   <li>File size validation (giới hạn kích thước)</li>
+ *   <li>File extension validation</li>
+ * </ul>
  */
 @Slf4j
 @Service
@@ -27,13 +38,55 @@ public class FileStorageService {
     public record CloudinaryUploadResult(String url, String publicId) {}
 
     /**
-     * Upload ảnh vào folder uploads/sanpham/{productId} và trả về URL + publicId
+     * Upload ảnh sản phẩm vào Cloudinary với validation đầy đủ
+     * 
+     * <p>Validation bao gồm:
+     * <ul>
+     *   <li>Kiểm tra file không null/empty</li>
+     *   <li>Kiểm tra file type (chỉ cho phép image/jpeg, image/png, image/webp)</li>
+     *   <li>Kiểm tra file size (tối đa 5MB)</li>
+     *   <li>Kiểm tra file extension</li>
+     * </ul>
+     * 
+     * @param productId ID sản phẩm
+     * @param file MultipartFile cần upload
+     * @return CloudinaryUploadResult chứa URL và publicId
+     * @throws ApiException nếu validation fails
      */
     public CloudinaryUploadResult storeProductImage(Long productId, MultipartFile file) {
+        // 1. Validate file không null/empty
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File upload rỗng hoặc null!");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "File upload rỗng hoặc null!");
         }
 
+        // 2. Validate file type
+        String contentType = file.getContentType();
+        if (contentType == null || !Arrays.asList(ProductConstants.ALLOWED_IMAGE_TYPES).contains(contentType.toLowerCase())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                "File type không được hỗ trợ. Chỉ chấp nhận: JPG, PNG, WEBP");
+        }
+
+        // 3. Validate file size
+        if (file.getSize() > ProductConstants.MAX_IMAGE_FILE_SIZE) {
+            long maxSizeMB = ProductConstants.MAX_IMAGE_FILE_SIZE / (1024 * 1024);
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                String.format("Kích thước file vượt quá %dMB. Kích thước hiện tại: %.2fMB", 
+                    maxSizeMB, file.getSize() / (1024.0 * 1024.0)));
+        }
+
+        // 4. Validate file extension
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename != null) {
+            String extension = originalFilename.toLowerCase();
+            boolean hasValidExtension = Arrays.stream(ProductConstants.ALLOWED_IMAGE_EXTENSIONS)
+                    .anyMatch(extension::endsWith);
+            if (!hasValidExtension) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, 
+                    "File extension không hợp lệ. Chỉ chấp nhận: .jpg, .jpeg, .png, .webp");
+            }
+        }
+
+        // 5. Upload lên Cloudinary
         try {
             Map<?, ?> res = cloudinary.uploader().upload(
                     file.getBytes(),
@@ -49,8 +102,9 @@ public class FileStorageService {
             log.info("✅ Uploaded Cloudinary: url={}, publicId={}", url, publicId);
             return new CloudinaryUploadResult(url, publicId);
         } catch (IOException e) {
-            log.error("❌ Upload Cloudinary lỗi: {}", e.getMessage());
-            throw new RuntimeException("Không thể upload file: " + e.getMessage());
+            log.error("❌ Upload Cloudinary lỗi: {}", e.getMessage(), e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Không thể upload file: " + e.getMessage());
         }
     }
 
