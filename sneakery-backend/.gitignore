@@ -1,10 +1,172 @@
-/target
-/.idea
-*.iml
-*.log
+# =====================================================
+# Sneakery Backend - .gitignore
+# =====================================================
+# Java/Spring Boot/Maven specific ignores
+# =====================================================
 
-# Application properties (chứa thông tin nhạy cảm)
+# =====================================================
+# Maven
+# =====================================================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Maven release files
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# =====================================================
+# Java compiled files
+# =====================================================
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# =====================================================
+# IDE - IntelliJ IDEA
+# =====================================================
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# =====================================================
+# IDE - Eclipse
+# =====================================================
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# =====================================================
+# IDE - NetBeans
+# =====================================================
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# =====================================================
+# IDE - VS Code
+# =====================================================
+.vscode/
+*.code-workspace
+
+# =====================================================
+# Application properties & configuration
+# =====================================================
+# Ignore actual properties file (contains secrets)
 src/main/resources/application.properties
 src/main/resources/application-*.properties
-!src/main/resources/application.properties.example
+src/main/resources/application-*.yml
+src/main/resources/application-*.yaml
 
+# Keep example files
+!src/main/resources/application.properties.example
+!src/main/resources/application-*.properties.example
+!src/main/resources/application-*.yml.example
+!src/main/resources/application-*.yaml.example
+
+# =====================================================
+# Logs
+# =====================================================
+logs/
+*.log
+log/
+*.log.*
+*.log.[0-9]*
+spring.log
+application.log
+
+# =====================================================
+# Spring Boot
+# =====================================================
+spring-boot-*.log
+application-*.log
+*.gz
+*.log.gz
+
+# =====================================================
+# H2 Database (if used for testing)
+# =====================================================
+*.h2.db
+*.trace.db
+*.mv.db
+*.lock.db
+
+# =====================================================
+# Test coverage
+# =====================================================
+coverage/
+.nyc_output/
+*.lcov
+.coverage/
+htmlcov/
+test-results/
+test-results.xml
+junit.xml
+*.trx
+
+# =====================================================
+# Build artifacts
+# =====================================================
+build/
+out/
+lib/
+libs/
+
+# =====================================================
+# OS files
+# =====================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# =====================================================
+# Temporary files
+# =====================================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache/
+.temp/
+
+# =====================================================
+# Environment variables
+# =====================================================
+.env
+.env.local
+.env.*.local
+*.env
