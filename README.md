@@ -178,29 +178,9 @@ mvn install
 
 ---
 
-## ✅ Checklist hoàn thành
-
-- [ ] Đã cài Java JDK 17
-- [ ] Đã cài Node.js 18+
-- [ ] Đã cài SQL Server + SSMS
-- [ ] Đã tải code về máy
-- [ ] Đã chạy file SQL tạo database
-- [ ] Đã sửa password trong application.properties
-- [ ] Đã chạy `mvn clean install` thành công
-- [ ] Đã chạy `npm install` thành công
-- [ ] Backend chạy được (http://localhost:8080)
-- [ ] Frontend chạy được (http://localhost:5173)
-- [ ] Đăng nhập thành công
-
----
-
 ## 📚 Tài liệu cho Developers
 
 Nếu bạn là developer trong team, xem thêm:
-
-- 📖 [Quy trình Git Workflow](./sneakery-docs/Hướng%20dẫn%20push%20code.md)
-- 🎓 [Lệnh Git & Tips](./sneakery-docs/Lệnh%20Github.md)
-- 📋 [Phân tích nghiệp vụ](./sneakery-docs/Phân%20tích%20nghiệp%20vụ%20và%20chức%20năng.md)
 
 > ⚠️ **Quy tắc:** KHÔNG BAO GIỜ commit trực tiếp vào `main`. Luôn tạo branch mới!
 
