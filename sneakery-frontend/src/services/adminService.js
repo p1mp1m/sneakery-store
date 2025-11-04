@@ -1119,6 +1119,15 @@ class AdminService {
     }
   }
 
+  async getUserLoyaltyBalance(userId) {
+    try {
+      const response = await adminApi.get(`/loyalty/users/${userId}/balance`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   // ===== PAYMENTS =====
   async getPayments(page = 0, size = 10, filters = {}) {
     try {
@@ -1210,6 +1219,17 @@ class AdminService {
   async createPOSOrder(orderData) {
     try {
       const response = await adminApi.post('/pos/orders', orderData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async getPOSOrders(page = 0, size = 20) {
+    try {
+      const response = await adminApi.get('/pos/orders', {
+        params: { page, size }
+      })
       return response.data
     } catch (error) {
       throw this.handleError(error)

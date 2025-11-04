@@ -91,4 +91,29 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("userId") Long userId,
             @Param("productId") Long productId
     );
+
+    /**
+     * Lấy POS orders (orders có orderNumber bắt đầu bằng "POS-")
+     * Với pagination và filter theo date range
+     */
+    @Query(value = "SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.user u " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.variant v " +
+            "LEFT JOIN FETCH v.product p " +
+            "LEFT JOIN FETCH p.brand " +
+            "LEFT JOIN FETCH o.payments " +
+            "WHERE o.orderNumber LIKE 'POS-%' " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate) " +
+            "ORDER BY o.createdAt DESC",
+            countQuery = "SELECT count(DISTINCT o) FROM Order o " +
+            "WHERE o.orderNumber LIKE 'POS-%' " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate)")
+    Page<Order> findPOSOrders(
+            @Param("startDate") java.time.LocalDateTime startDate,
+            @Param("endDate") java.time.LocalDateTime endDate,
+            Pageable pageable
+    );
 }

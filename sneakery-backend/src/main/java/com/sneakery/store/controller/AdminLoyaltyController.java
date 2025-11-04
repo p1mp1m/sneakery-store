@@ -33,6 +33,7 @@ public class AdminLoyaltyController {
 
     private final LoyaltyPointRepository loyaltyPointRepository;
     private final UserRepository userRepository;
+    private final com.sneakery.store.service.LoyaltyService loyaltyService;
     
     /**
      * Map LoyaltyPoint entity to LoyaltyDto to avoid Hibernate proxy issues
@@ -88,6 +89,24 @@ public class AdminLoyaltyController {
         stats.put("totalPointsIssued", totalPointsIssued);
         
         return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * GET /api/admin/loyalty/users/{userId}/balance
+     * Lấy loyalty points balance của user
+     */
+    @GetMapping("/users/{userId}/balance")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Map<String, Object>> getUserBalance(@PathVariable Long userId) {
+        log.info("⭐ Fetching loyalty balance for user {}", userId);
+        
+        int balance = loyaltyService.getUserPointsBalance(userId);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("userId", userId);
+        response.put("balance", balance);
+        
+        return ResponseEntity.ok(response);
     }
 
     /**

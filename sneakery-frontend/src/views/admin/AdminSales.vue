@@ -151,7 +151,7 @@
               <div
                 v-for="product in displayedProducts"
                 :key="product.id"
-                @click="addToCart(product)"
+                @click="selectProductForCart(product)"
                 class="group relative p-3 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg cursor-pointer transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-lg hover:scale-[1.02] active:scale-95"
               >
               <!-- Stock Badge -->
@@ -241,6 +241,50 @@
             </button>
           </div>
 
+          <!-- Customer Selection Section -->
+          <div class="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Khách hàng</label>
+            <div v-if="!selectedCustomer" class="space-y-2">
+              <button
+                @click="showCustomerModal = true"
+                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700/50 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-400 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-300 text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                <i class="material-icons text-base">person_add</i>
+                Chọn khách hàng (Tùy chọn)
+              </button>
+              <p class="text-xs text-gray-500 dark:text-gray-400 text-center">Khách vãng lai - Không tích điểm</p>
+            </div>
+            <div v-else class="p-3 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                    <i class="material-icons text-white text-sm">person</i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ selectedCustomer.fullName || selectedCustomer.email }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ selectedCustomer.email }}</p>
+                  </div>
+                </div>
+                <button
+                  @click="selectedCustomer = null"
+                  class="w-7 h-7 flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-all duration-200 hover:scale-110"
+                >
+                  <i class="material-icons text-sm">close</i>
+                </button>
+              </div>
+              <div v-if="selectedCustomerLoyaltyPoints !== null" class="flex items-center gap-2 text-xs">
+                <span class="text-gray-600 dark:text-gray-400">Điểm hiện tại:</span>
+                <span class="font-bold text-purple-600 dark:text-purple-400">{{ selectedCustomerLoyaltyPoints }} điểm</span>
+              </div>
+              <div v-if="totalAmount > 0" class="mt-2 pt-2 border-t border-purple-200 dark:border-purple-800">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  Sẽ tích thêm: <span class="font-bold text-green-600 dark:text-green-400">{{ Math.floor(totalAmount / 1000) }} điểm</span>
+                  <span class="text-gray-500">(1 điểm = 1,000₫)</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- Cart Items with Premium Design -->
           <div class="mb-3 space-y-2" :class="cartItems.length === 0 ? 'py-2' : 'max-h-[250px] overflow-y-auto custom-scrollbar pr-2'">
             <div v-if="cartItems.length === 0" class="flex flex-col items-center justify-center py-3 text-center w-full">
@@ -263,6 +307,14 @@
                   <div class="flex-1 min-w-0">
                     <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ item.name }}</h4>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ item.sku }}</p>
+                    <div v-if="item.size || item.color" class="flex items-center gap-2 mt-1">
+                      <span v-if="item.size" class="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
+                        Size: {{ item.size }}
+                      </span>
+                      <span v-if="item.color" class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs font-medium">
+                        Color: {{ item.color }}
+                      </span>
+                    </div>
                     <p class="text-base font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mt-2">
                       {{ formatCurrency(item.unitPrice * item.quantity) }}
                     </p>
@@ -395,30 +447,94 @@
     <!-- Premium Receipt Modal -->
     <transition name="modal">
       <div v-if="showReceipt" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click="showReceipt = false">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-700 transform transition-all" @click.stop>
-          <div class="p-6 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700 transform transition-all flex flex-col" @click.stop>
+          <!-- Receipt Header -->
+          <div class="p-6 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 text-center flex-shrink-0">
             <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
               <i class="material-icons text-white text-3xl">receipt</i>
             </div>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Hóa đơn</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ currentReceipt?.orderNumber }}</p>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">HÓA ĐƠN BÁN HÀNG</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-mono">{{ currentReceipt?.orderNumber || `#${currentReceipt?.id}` }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ formatDate(currentReceipt?.createdAt) }}</p>
           </div>
-          <div class="p-6 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
-            <div v-for="item in currentReceipt?.items" :key="item.id" class="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-              <div class="flex-1">
-                <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.name }}</span>
-                <p class="text-xs text-gray-500 dark:text-gray-400">x{{ item.quantity }}</p>
+          
+          <!-- Receipt Content -->
+          <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+            <!-- Store Info -->
+            <div class="text-center pb-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">SNEAKERY STORE</h3>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Premium Sneakers & Footwear</p>
+              <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Hotline: 1900-xxxx | Email: support@sneakery.com</p>
+            </div>
+
+            <!-- Customer Info -->
+            <div v-if="currentReceipt?.customerName || currentReceipt?.customerEmail" class="pb-4 border-b border-gray-200 dark:border-gray-700">
+              <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">KHÁCH HÀNG</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ currentReceipt?.customerName || 'Khách vãng lai' }}</p>
+              <p v-if="currentReceipt?.customerEmail" class="text-xs text-gray-500 dark:text-gray-400">{{ currentReceipt?.customerEmail }}</p>
+            </div>
+
+            <!-- Items -->
+            <div>
+              <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-3">CHI TIẾT SẢN PHẨM</p>
+              <div class="space-y-3">
+                <div 
+                  v-for="item in (currentReceipt?.orderDetails || currentReceipt?.items || [])" 
+                  :key="item.id || item.variantId" 
+                  class="py-2 border-b border-gray-100 dark:border-gray-700"
+                >
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ item.productName || item.name }}</p>
+                      <div v-if="item.size || item.color" class="flex items-center gap-2 mt-1">
+                        <span v-if="item.size" class="text-xs text-gray-500 dark:text-gray-400">Size: {{ item.size }}</span>
+                        <span v-if="item.color" class="text-xs text-gray-500 dark:text-gray-400">Color: {{ item.color }}</span>
+                      </div>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ formatCurrency(item.unitPrice || item.price || 0) }} x {{ item.quantity }}
+                      </p>
+                    </div>
+                    <span class="text-sm font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                      {{ formatCurrency((item.unitPrice || item.price || 0) * item.quantity) }}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ formatCurrency(item.unitPrice * item.quantity) }}</span>
+            </div>
+
+            <!-- Summary -->
+            <div class="pt-4 border-t-2 border-gray-300 dark:border-gray-600 space-y-2">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-400">Tạm tính:</span>
+                <span class="font-semibold text-gray-900 dark:text-gray-100">
+                  {{ formatCurrency(currentReceipt?.subtotal || (currentReceipt?.totalAmount + (currentReceipt?.discountAmount || 0))) }}
+                </span>
+              </div>
+              <div v-if="currentReceipt?.discountAmount && currentReceipt.discountAmount > 0" class="flex items-center justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-400">Giảm giá:</span>
+                <span class="font-semibold text-red-600 dark:text-red-400">-{{ formatCurrency(currentReceipt.discountAmount) }}</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-400">Phương thức:</span>
+                <span class="font-semibold text-gray-900 dark:text-gray-100">{{ getPaymentMethodLabel(currentReceipt?.paymentMethod || currentReceipt?.payment?.paymentMethod) }}</span>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t-2 border-gray-300 dark:border-gray-600">
+                <span class="text-lg font-bold text-gray-900 dark:text-gray-100">TỔNG CỘNG:</span>
+                <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  {{ formatCurrency(currentReceipt?.totalAmount) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+              <p class="text-xs text-gray-500 dark:text-gray-400">Cảm ơn quý khách đã mua hàng!</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hẹn gặp lại quý khách lần sau</p>
             </div>
           </div>
-          <div class="p-6 border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50">
-            <div class="flex items-center justify-between mb-6">
-              <span class="text-lg font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
-              <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                {{ formatCurrency(currentReceipt?.totalAmount) }}
-              </span>
-            </div>
+
+          <!-- Receipt Actions -->
+          <div class="p-6 border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 flex-shrink-0">
             <div class="flex items-center gap-3">
               <button 
                 @click="printReceipt" 
@@ -492,6 +608,169 @@
       </div>
     </transition>
 
+    <!-- Premium Customer Selection Modal -->
+    <transition name="modal">
+      <div v-if="showCustomerModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click="showCustomerModal = false">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full border border-gray-200 dark:border-gray-700 transform transition-all" @click.stop>
+          <div class="flex items-center justify-between p-6 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <i class="material-icons text-white">person_search</i>
+              </div>
+              Chọn khách hàng
+            </h2>
+            <button 
+              @click="showCustomerModal = false" 
+              class="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 hover:scale-110"
+            >
+              <i class="material-icons text-xl">close</i>
+            </button>
+          </div>
+          <div class="p-6">
+            <div class="relative mb-4">
+              <i class="material-icons absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500">search</i>
+              <input
+                v-model="customerSearchQuery"
+                @input="searchCustomers"
+                class="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+              />
+            </div>
+            <div v-if="loadingCustomers" class="flex flex-col items-center justify-center p-8">
+              <div class="relative">
+                <div class="w-12 h-12 border-4 border-purple-200 dark:border-purple-800 rounded-full"></div>
+                <div class="w-12 h-12 border-4 border-transparent border-t-purple-600 rounded-full animate-spin absolute top-0 left-0"></div>
+              </div>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-3 font-medium">Đang tìm kiếm...</p>
+            </div>
+            <div v-else-if="searchCustomersList.length === 0" class="text-center py-8">
+              <p class="text-gray-500 dark:text-gray-400">Không tìm thấy khách hàng</p>
+            </div>
+            <div v-else class="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
+              <div
+                v-for="customer in searchCustomersList"
+                :key="customer.id"
+                @click="selectCustomer(customer)"
+                class="p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700/50 hover:border-purple-400 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-300 cursor-pointer"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                      <i class="material-icons text-white text-sm">person</i>
+                    </div>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ customer.fullName || 'Khách hàng' }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ customer.email }}</p>
+                      <p v-if="customer.phoneNumber" class="text-xs text-gray-500 dark:text-gray-400">{{ customer.phoneNumber }}</p>
+                    </div>
+                  </div>
+                  <i class="material-icons text-purple-600 dark:text-purple-400">chevron_right</i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-3 p-6 border-t-2 border-gray-200 dark:border-gray-700">
+            <button 
+              @click="showCustomerModal = false" 
+              class="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm font-semibold hover:scale-105"
+            >
+              <i class="material-icons text-xl">close</i>
+              Đóng
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Premium Variant Selection Modal -->
+    <transition name="modal">
+      <div v-if="showVariantModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click="closeVariantModal">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full border border-gray-200 dark:border-gray-700 transform transition-all" @click.stop>
+          <div class="flex items-center justify-between p-6 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <i class="material-icons text-white">shopping_cart</i>
+              </div>
+              Chọn biến thể - {{ selectedProduct?.name }}
+            </h2>
+            <button 
+              @click="closeVariantModal" 
+              class="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 hover:scale-110"
+            >
+              <i class="material-icons text-xl">close</i>
+            </button>
+          </div>
+          <div class="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+            <div v-if="!selectedProduct || !selectedProduct.variants || selectedProduct.variants.length === 0" class="text-center py-8">
+              <p class="text-gray-500 dark:text-gray-400">Sản phẩm này chưa có biến thể</p>
+            </div>
+            <div v-else class="space-y-3">
+              <div
+                v-for="variant in selectedProduct.variants"
+                :key="variant.id"
+                @click="selectVariant(variant)"
+                class="group p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer"
+                :class="
+                  selectedVariant?.id === variant.id
+                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-md'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700/50 hover:border-purple-300 dark:hover:border-purple-600'
+                "
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-semibold">
+                        Size: {{ variant.size }}
+                      </span>
+                      <span class="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-semibold">
+                        Color: {{ variant.color }}
+                      </span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">SKU: {{ variant.sku }}</p>
+                    <p class="text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                      {{ formatCurrency(variant.priceSale || variant.priceBase) }}
+                    </p>
+                  </div>
+                  <div class="flex flex-col items-end gap-2">
+                    <span 
+                      class="px-2 py-1 rounded-full text-xs font-semibold"
+                      :class="{
+                        'bg-red-500/90 text-white': (variant.stockQuantity || 0) === 0,
+                        'bg-yellow-500/90 text-white': (variant.stockQuantity || 0) > 0 && (variant.stockQuantity || 0) < 10,
+                        'bg-green-500/90 text-white': (variant.stockQuantity || 0) >= 10
+                      }"
+                    >
+                      Tồn: {{ variant.stockQuantity || 0 }}
+                    </span>
+                    <div v-if="selectedVariant?.id === variant.id" class="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                      <i class="material-icons text-white text-sm">check</i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-3 p-6 border-t-2 border-gray-200 dark:border-gray-700">
+            <button 
+              @click="closeVariantModal" 
+              class="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm font-semibold hover:scale-105"
+            >
+              <i class="material-icons text-xl">close</i>
+              Hủy
+            </button>
+            <button 
+              @click="addSelectedVariantToCart" 
+              :disabled="!selectedVariant || (selectedVariant.stockQuantity || 0) === 0"
+              class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i class="material-icons text-xl">add_shopping_cart</i>
+              Thêm vào giỏ
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- Premium History Modal -->
     <transition name="modal">
       <div v-if="showHistory" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click="showHistory = false">
@@ -545,22 +824,35 @@
                         {{ formatCurrency(order.totalAmount) }}
                       </span>
                       <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 rounded-full text-xs font-semibold">
-                        {{ getPaymentMethodLabel(order.paymentMethod) }}
+                        {{ getPaymentMethodLabel(order.paymentMethod || order.payment?.paymentMethod) }}
                       </span>
                     </div>
-                    <div v-if="order.items" class="flex flex-wrap gap-2">
+                    <div v-if="order.orderDetails || order.items" class="flex flex-wrap gap-2">
                       <span 
-                        v-for="(item, idx) in order.items.slice(0, 3)" 
+                        v-for="(item, idx) in (order.orderDetails || order.items || []).slice(0, 3)" 
                         :key="idx" 
                         class="px-2.5 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium"
                       >
-                        {{ item.name }} x{{ item.quantity }}
+                        {{ item.productName || item.name }} x{{ item.quantity }}
                       </span>
                       <span 
-                        v-if="order.items.length > 3" 
+                        v-if="(order.orderDetails || order.items || []).length > 3" 
                         class="px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-semibold"
                       >
-                        +{{ order.items.length - 3 }} sản phẩm
+                        +{{ (order.orderDetails || order.items || []).length - 3 }} sản phẩm
+                      </span>
+                    </div>
+                    <div v-if="order.status" class="mt-2">
+                      <span 
+                        class="px-2 py-1 rounded-full text-xs font-semibold"
+                        :class="{
+                          'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300': order.status === 'Completed',
+                          'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300': order.status === 'Pending' || order.status === 'Processing',
+                          'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300': order.status === 'Cancelled',
+                          'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300': order.status === 'Confirmed'
+                        }"
+                      >
+                        {{ order.status }}
                       </span>
                     </div>
                   </div>
@@ -613,6 +905,16 @@ const barcodeInput = ref(null)
 const searchTimeout = ref(null)
 const displayLimit = ref(12) // Số lượng sản phẩm hiển thị ban đầu
 const showingAll = ref(false) // Trạng thái có đang hiển thị tất cả không
+const showVariantModal = ref(false)
+const selectedProduct = ref(null)
+const selectedVariant = ref(null)
+const showCustomerModal = ref(false)
+const selectedCustomer = ref(null)
+const selectedCustomerLoyaltyPoints = ref(null)
+const customerSearchQuery = ref('')
+const searchCustomersList = ref([])
+const loadingCustomers = ref(false)
+const customerSearchTimeout = ref(null)
 
 // Shortcuts data
 const shortcuts = [
@@ -808,7 +1110,7 @@ const processOrder = async () => {
         quantity: item.quantity,
         unitPrice: item.unitPrice
       })),
-      customerId: null,
+      customerId: selectedCustomer.value?.id || null,
       discountCode: discountCode.value || null,
       discountAmount: discountAmount.value,
       paymentMethod: paymentMethod.value,
@@ -826,12 +1128,36 @@ const processOrder = async () => {
     cartItems.value = []
     discountCode.value = ''
     discountAmount.value = 0
+    // Xóa localStorage sau khi thanh toán thành công
+    localStorage.removeItem('pos_cart')
     
     ElMessage.success('Đơn hàng đã được tạo thành công')
     
   } catch (error) {
     console.error('Error processing order:', error)
-    ElMessage.error('Không thể tạo đơn hàng')
+    
+    // Extract error message from different error formats
+    let errorMessage = 'Không thể tạo đơn hàng'
+    
+    if (error?.message) {
+      // Error from handleError() returns { message, status, data }
+      errorMessage = error.message
+    } else if (error?.response?.data?.message) {
+      // Direct axios error response
+      errorMessage = error.response.data.message
+    } else if (error?.response?.data?.validationErrors) {
+      // Validation errors
+      const validationErrors = error.response.data.validationErrors
+      const errorList = Object.entries(validationErrors)
+        .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+        .join('\n')
+      errorMessage = `Dữ liệu không hợp lệ:\n${errorList}`
+    } else if (typeof error === 'string') {
+      errorMessage = error
+    }
+    
+    // Show detailed error message
+    ElMessage.error(errorMessage)
   } finally {
     processing.value = false
   }
@@ -841,7 +1167,58 @@ const resetCart = () => {
   cartItems.value = []
   discountCode.value = ''
   discountAmount.value = 0
+  selectedCustomer.value = null
+  selectedCustomerLoyaltyPoints.value = null
+  // Xóa localStorage
+  localStorage.removeItem('pos_cart')
   ElMessage.info('Đã làm mới giỏ hàng')
+}
+
+// Tìm kiếm khách hàng
+const searchCustomers = async () => {
+  if (customerSearchTimeout.value) {
+    clearTimeout(customerSearchTimeout.value)
+  }
+  
+  customerSearchTimeout.value = setTimeout(async () => {
+    if (!customerSearchQuery.value.trim()) {
+      searchCustomersList.value = []
+      return
+    }
+    
+    try {
+      loadingCustomers.value = true
+      const result = await adminStore.fetchUsers(0, 20, {
+        search: customerSearchQuery.value.trim()
+      })
+      searchCustomersList.value = result.content || result || []
+    } catch (error) {
+      console.error('Error searching customers:', error)
+      ElMessage.error('Không thể tìm kiếm khách hàng')
+      searchCustomersList.value = []
+    } finally {
+      loadingCustomers.value = false
+    }
+  }, 300) // 300ms debounce
+}
+
+// Chọn khách hàng
+const selectCustomer = async (customer) => {
+  selectedCustomer.value = customer
+  showCustomerModal.value = false
+  customerSearchQuery.value = ''
+  searchCustomersList.value = []
+  
+  // Load loyalty points
+  try {
+    const balanceData = await adminStore.getUserLoyaltyBalance(customer.id)
+    selectedCustomerLoyaltyPoints.value = balanceData.balance || 0
+    ElMessage.success(`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
+  } catch (error) {
+    console.error('Error loading loyalty points:', error)
+    selectedCustomerLoyaltyPoints.value = 0
+    ElMessage.success(`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
+  }
 }
 
 const showAllProducts = () => {
@@ -868,34 +1245,108 @@ const loadMoreProducts = async () => {
   }
 }
 
-const addToCart = (product) => {
-  const productPrice = getProductPrice(product)
+// Chọn sản phẩm để thêm vào giỏ (mở modal chọn variant nếu có)
+const selectProductForCart = (product) => {
+  // Kiểm tra tồn kho tổng
+  const availableStock = getProductStock(product)
+  if (availableStock === 0) {
+    ElMessage.error('Sản phẩm này đã hết hàng')
+    return
+  }
+  
+  // Nếu sản phẩm có variants, mở modal để chọn
+  if (product.variants && product.variants.length > 0) {
+    selectedProduct.value = product
+    selectedVariant.value = null
+    showVariantModal.value = true
+  } else {
+    // Nếu không có variant, thêm trực tiếp
+    addToCartWithVariant(product, null)
+  }
+}
+
+// Chọn variant trong modal
+const selectVariant = (variant) => {
+  if ((variant.stockQuantity || 0) === 0) {
+    ElMessage.warning('Biến thể này đã hết hàng')
+    return
+  }
+  selectedVariant.value = variant
+}
+
+// Đóng modal chọn variant
+const closeVariantModal = () => {
+  showVariantModal.value = false
+  selectedProduct.value = null
+  selectedVariant.value = null
+}
+
+// Thêm variant đã chọn vào giỏ
+const addSelectedVariantToCart = () => {
+  if (!selectedVariant.value) {
+    ElMessage.warning('Vui lòng chọn biến thể')
+    return
+  }
+  addToCartWithVariant(selectedProduct.value, selectedVariant.value)
+  closeVariantModal()
+}
+
+// Thêm vào giỏ với variant cụ thể
+const addToCartWithVariant = (product, variant) => {
+  // Lấy giá từ variant nếu có, nếu không thì từ product
+  let productPrice = 0
+  let variantStock = 0
+  
+  if (variant) {
+    productPrice = variant.priceSale || variant.priceBase || 0
+    variantStock = variant.stockQuantity || 0
+  } else {
+    productPrice = getProductPrice(product)
+    variantStock = getProductStock(product)
+  }
+  
   if (productPrice === 0) {
     ElMessage.warning('Sản phẩm này chưa có giá. Vui lòng kiểm tra lại.')
     return
   }
   
-  // Lấy variant đầu tiên nếu có
-  const firstVariant = product.variants && product.variants.length > 0 ? product.variants[0] : null
+  if (variantStock === 0) {
+    ElMessage.error('Sản phẩm này đã hết hàng')
+    return
+  }
   
   const existingItem = cartItems.value.find(item => 
     item.id === product.id && 
-    (item.variantId === (firstVariant?.id || null))
+    (item.variantId === (variant?.id || null))
   )
+  
+  // Tính số lượng sẽ có trong giỏ sau khi thêm
+  const quantityAfterAdd = existingItem ? existingItem.quantity + 1 : 1
+  
+  // Kiểm tra số lượng không vượt quá tồn kho
+  if (quantityAfterAdd > variantStock) {
+    ElMessage.warning(
+      `Không đủ hàng. Tồn kho: ${variantStock}, Đã có trong giỏ: ${existingItem?.quantity || 0}, Yêu cầu: ${quantityAfterAdd}`
+    )
+    return
+  }
   
   if (existingItem) {
     existingItem.quantity += 1
-    ElMessage.success(`Đã thêm ${product.name} vào giỏ hàng`)
+    ElMessage.success(`Đã thêm ${product.name} vào giỏ hàng (${existingItem.quantity}/${variantStock})`)
   } else {
     cartItems.value.push({
       id: product.id,
       name: product.name,
-      sku: firstVariant?.sku || product.sku || product.code || `SP-${product.id}`,
+      sku: variant?.sku || product.sku || product.code || `SP-${product.id}`,
       unitPrice: productPrice,
       quantity: 1,
-      variantId: firstVariant?.id || null
+      variantId: variant?.id || null,
+      stockQuantity: variantStock,
+      size: variant?.size || null,
+      color: variant?.color || null
     })
-    ElMessage.success(`Đã thêm ${product.name} vào giỏ hàng`)
+    ElMessage.success(`Đã thêm ${product.name} vào giỏ hàng (1/${variantStock})`)
   }
 }
 
@@ -907,25 +1358,148 @@ const removeFromCart = (index) => {
 const updateQuantity = (index, quantity) => {
   if (quantity <= 0) {
     removeFromCart(index)
-  } else {
-    cartItems.value[index].quantity = quantity
+    return
   }
+  
+  const item = cartItems.value[index]
+  
+  // Kiểm tra stock nếu tăng số lượng
+  if (quantity > item.quantity && item.stockQuantity !== undefined) {
+    if (quantity > item.stockQuantity) {
+      ElMessage.warning(
+        `Không đủ hàng. Tồn kho: ${item.stockQuantity}, Yêu cầu: ${quantity}`
+      )
+      // Giữ nguyên số lượng cũ
+      return
+    }
+  }
+  
+  cartItems.value[index].quantity = quantity
 }
 
-const applyDiscount = () => {
-  // Mock discount logic - replace with actual API call
-  if (discountCode.value) {
-    discountAmount.value = subtotal.value * 0.1 // 10% discount
-    ElMessage.success('Đã áp dụng mã giảm giá')
-  } else {
+const applyDiscount = async () => {
+  if (!discountCode.value || !discountCode.value.trim()) {
     ElMessage.warning('Vui lòng nhập mã giảm giá')
+    return
+  }
+  
+  try {
+    // Validate coupon code
+    const coupon = await adminStore.validateCoupon(discountCode.value.trim())
+    
+    if (!coupon || !coupon.isActive) {
+      ElMessage.error('Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa')
+      discountAmount.value = 0
+      return
+    }
+    
+    // Kiểm tra minOrderAmount
+    if (coupon.minOrderAmount && subtotal.value < coupon.minOrderAmount) {
+      ElMessage.warning(`Đơn hàng tối thiểu ${formatCurrency(coupon.minOrderAmount)} để áp dụng mã giảm giá`)
+      discountAmount.value = 0
+      return
+    }
+    
+    // Tính discount amount
+    let calculatedDiscount = 0
+    
+    if (coupon.discountType === 'percent') {
+      // Giảm theo phần trăm
+      calculatedDiscount = subtotal.value * (coupon.value / 100)
+      
+      // Áp dụng maxDiscountAmount nếu có
+      if (coupon.maxDiscountAmount && calculatedDiscount > coupon.maxDiscountAmount) {
+        calculatedDiscount = coupon.maxDiscountAmount
+      }
+    } else if (coupon.discountType === 'fixed') {
+      // Giảm cố định
+      calculatedDiscount = coupon.value
+      
+      // Đảm bảo không giảm nhiều hơn subtotal
+      if (calculatedDiscount > subtotal.value) {
+        calculatedDiscount = subtotal.value
+      }
+    }
+    
+    discountAmount.value = calculatedDiscount
+    ElMessage.success(`Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${formatCurrency(calculatedDiscount)}`)
+    
+  } catch (error) {
+    console.error('Error applying discount:', error)
+    
+    // Extract detailed error message
+    let errorMessage = 'Không thể áp dụng mã giảm giá'
+    
+    if (error?.message) {
+      errorMessage = error.message
+    } else if (error?.response?.data?.message) {
+      errorMessage = error.response.data.message
+    } else if (typeof error === 'string') {
+      errorMessage = error
+    }
+    
+    ElMessage.error(errorMessage)
+    discountAmount.value = 0
   }
 }
 
 const printReceipt = () => {
-  if (currentReceipt.value) {
+  if (!currentReceipt.value) return
+  
+  // Chuẩn bị dữ liệu cho PDF generator
+  const receiptData = {
+    id: currentReceipt.value.id,
+    orderNumber: currentReceipt.value.orderNumber || `POS-${currentReceipt.value.id}`,
+    createdAt: currentReceipt.value.createdAt,
+    status: currentReceipt.value.status || 'Completed',
+    customerName: currentReceipt.value.customerName || selectedCustomer.value?.fullName || 'Khách vãng lai',
+    customerEmail: currentReceipt.value.customerEmail || selectedCustomer.value?.email || '',
+    customerPhone: selectedCustomer.value?.phoneNumber || '',
+    shippingAddress: 'Bán tại quầy - Không vận chuyển',
+    paymentMethod: currentReceipt.value.paymentMethod || currentReceipt.value.payment?.paymentMethod || paymentMethod.value,
+    subtotal: currentReceipt.value.subtotal || (currentReceipt.value.totalAmount + (currentReceipt.value.discountAmount || 0)),
+    discountAmount: currentReceipt.value.discountAmount || 0,
+    totalAmount: currentReceipt.value.totalAmount,
+    items: (currentReceipt.value.orderDetails || currentReceipt.value.items || []).map(item => ({
+      id: item.id || item.variantId,
+      productName: item.productName || item.name,
+      variantName: item.size || item.color ? `${item.size || ''} ${item.color || ''}`.trim() : null,
+      quantity: item.quantity,
+      price: item.unitPrice || item.price || 0
+    }))
+  }
+  
+  // Sử dụng PDF generator để in
+  try {
+    printInvoice(receiptData)
+  } catch (error) {
+    console.error('Error printing receipt:', error)
+    // Fallback: window.print() nếu có lỗi
     window.print()
   }
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const getPaymentMethodLabel = (method) => {
+  if (!method) return 'Chưa xác định'
+  const labels = {
+    cash: 'Tiền mặt',
+    card: 'Thẻ',
+    bank_transfer: 'Chuyển khoản',
+    e_wallet: 'Ví điện tử'
+  }
+  return labels[method] || method
 }
 
 const formatCurrency = (value) => {
@@ -991,40 +1565,27 @@ const getProductStock = (product) => {
   return 0
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
-}
-
-const getPaymentMethodLabel = (method) => {
-  const labels = {
-    cash: 'Tiền mặt',
-    card: 'Thẻ',
-    bank: 'Chuyển khoản',
-    online: 'Online'
-  }
-  return labels[method] || method
-}
-
 const loadSalesHistory = async () => {
   try {
     loadingHistory.value = true
-    const result = await adminStore.fetchOrders(0, 50, { 
-      status: 'completed',
-      sortBy: 'createdAt',
-      sortDirection: 'desc'
-    })
+    // Sử dụng endpoint tối ưu cho POS orders
+    const result = await adminStore.fetchPOSOrders(0, 50)
+    
+    // Backend đã filter và trả về POS orders, không cần filter lại
     salesHistory.value = result.content || result || []
+    
   } catch (error) {
     console.error('Error loading sales history:', error)
-    ElMessage.error('Không thể tải lịch sử bán hàng')
+    
+    // Extract error message
+    let errorMessage = 'Không thể tải lịch sử bán hàng'
+    if (error?.message) {
+      errorMessage = error.message
+    } else if (error?.response?.data?.message) {
+      errorMessage = error.response.data.message
+    }
+    
+    ElMessage.error(errorMessage)
     salesHistory.value = []
   } finally {
     loadingHistory.value = false
@@ -1083,6 +1644,12 @@ const handleKeydown = (event) => {
   
   // Esc: Close modals
   if (event.key === 'Escape') {
+    if (showCustomerModal.value) {
+      showCustomerModal.value = false
+    }
+    if (showVariantModal.value) {
+      closeVariantModal()
+    }
     if (showReceipt.value) {
       showReceipt.value = false
     }
@@ -1098,8 +1665,66 @@ const handleKeydown = (event) => {
   }
 }
 
+// Save cart to localStorage
+const saveCartToLocalStorage = () => {
+  try {
+    const cartData = {
+      cartItems: cartItems.value,
+      discountCode: discountCode.value,
+      discountAmount: discountAmount.value,
+      selectedCustomer: selectedCustomer.value,
+      selectedCustomerLoyaltyPoints: selectedCustomerLoyaltyPoints.value,
+      paymentMethod: paymentMethod.value,
+      timestamp: Date.now()
+    }
+    localStorage.setItem('pos_cart', JSON.stringify(cartData))
+  } catch (error) {
+    console.error('Error saving cart to localStorage:', error)
+  }
+}
+
+// Load cart from localStorage
+const loadCartFromLocalStorage = () => {
+  try {
+    const savedCart = localStorage.getItem('pos_cart')
+    if (savedCart) {
+      const cartData = JSON.parse(savedCart)
+      
+      // Chỉ load nếu cart được lưu trong vòng 24 giờ
+      const ONE_DAY = 24 * 60 * 60 * 1000
+      if (cartData.timestamp && (Date.now() - cartData.timestamp) < ONE_DAY) {
+        cartItems.value = cartData.cartItems || []
+        discountCode.value = cartData.discountCode || ''
+        discountAmount.value = cartData.discountAmount || 0
+        selectedCustomer.value = cartData.selectedCustomer || null
+        selectedCustomerLoyaltyPoints.value = cartData.selectedCustomerLoyaltyPoints || null
+        paymentMethod.value = cartData.paymentMethod || 'cash'
+        
+        ElMessage.info('Đã khôi phục giỏ hàng từ phiên trước')
+      } else {
+        // Xóa cart cũ
+        localStorage.removeItem('pos_cart')
+      }
+    }
+  } catch (error) {
+    console.error('Error loading cart from localStorage:', error)
+    localStorage.removeItem('pos_cart')
+  }
+}
+
+// Watch cartItems để tự động lưu vào localStorage
+watch(cartItems, () => {
+  saveCartToLocalStorage()
+}, { deep: true })
+
+// Watch các state khác để lưu
+watch([discountCode, discountAmount, selectedCustomer, paymentMethod], () => {
+  saveCartToLocalStorage()
+}, { deep: true })
+
 // Load data on mount
 onMounted(() => {
+  loadCartFromLocalStorage() // Load cart trước
   loadData()
   window.addEventListener('keydown', handleKeydown)
 })
@@ -1108,6 +1733,9 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value)
+  }
+  if (customerSearchTimeout.value) {
+    clearTimeout(customerSearchTimeout.value)
   }
 })
 </script>

@@ -903,6 +903,19 @@ const createMultipleProductVariants = async (variantList) => {
     }
   }
 
+  const getUserLoyaltyBalance = async (userId) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getUserLoyaltyBalance(userId)
+      return result
+    } catch (error) {
+      console.error('Error fetching user loyalty balance:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   // ===== PAYMENTS =====
   const fetchPayments = async (page = 0, size = 10, filters = {}) => {
     try {
@@ -1005,6 +1018,21 @@ const createMultipleProductVariants = async (variantList) => {
       return result
     } catch (error) {
       console.error('Error creating POS order:', error)
+      // Re-throw error để component có thể handle
+      // Error từ AdminService.handleError() đã được format thành { message, status, data }
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchPOSOrders = async (page = 0, size = 20) => {
+    try {
+      loading.value = true
+      const result = await AdminService.getPOSOrders(page, size)
+      return result
+    } catch (error) {
+      console.error('Error fetching POS orders:', error)
       throw error
     } finally {
       loading.value = false
@@ -1317,6 +1345,19 @@ const createMultipleProductVariants = async (variantList) => {
     }
   }
 
+  const validateCoupon = async (code) => {
+    try {
+      loading.value = true
+      const result = await AdminService.validateCoupon(code)
+      return result
+    } catch (error) {
+      console.error('Error validating coupon:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   const toggleCouponStatus = async (id) => {
     try {
       loading.value = true
@@ -1427,6 +1468,7 @@ const createMultipleProductVariants = async (variantList) => {
     fetchLoyaltyUsers,
     adjustLoyaltyPoints,
     fetchLoyaltyStats,
+    getUserLoyaltyBalance,
     fetchPayments,
     refundPayment,
     fetchPaymentStats,
@@ -1435,6 +1477,7 @@ const createMultipleProductVariants = async (variantList) => {
     fetchSettings,
     updateSettings,
     createPOSOrder,
+    fetchPOSOrders,
     
     // New Actions - Reviews
     fetchReviews,
@@ -1471,6 +1514,7 @@ const createMultipleProductVariants = async (variantList) => {
     updateCoupon,
     deleteCoupon,
     toggleCouponStatus,
+    validateCoupon,
     
     clearError,
     reset

@@ -11,6 +11,7 @@ import java.util.List;
 @Builder
 public class OrderDto {
     private Long id;
+    private String orderNumber; // Mã đơn hàng
     private String status;
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
