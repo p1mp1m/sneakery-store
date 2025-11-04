@@ -116,4 +116,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("endDate") java.time.LocalDateTime endDate,
             Pageable pageable
     );
+    
+    /**
+     * Tối ưu: Tìm sequence number tiếp theo cho order number trong ngày
+     * Chỉ query max sequence thay vì load tất cả orders
+     */
+    @Query(value = "SELECT ISNULL(MAX(CAST(RIGHT(order_number, 4) AS INT)), 0) + 1 " +
+            "FROM Orders " +
+            "WHERE order_number LIKE :prefix",
+            nativeQuery = true)
+    Integer getNextOrderSequence(@Param("prefix") String prefix);
 }

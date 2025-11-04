@@ -279,10 +279,11 @@ public class AdminOrderService {
                     order.setCoupon(coupon);
                 }
             } catch (ApiException e) {
+                // Re-throw ApiException để frontend xử lý
                 throw e;
             } catch (Exception e) {
+                // Log các exception khác và tiếp tục mà không áp dụng coupon
                 log.warn("Error applying coupon: {}", e.getMessage());
-                // Nếu có lỗi với coupon, tiếp tục mà không áp dụng coupon
             }
         }
         
@@ -338,29 +339,19 @@ public class AdminOrderService {
     
     /**
      * Generate POS order number: POS-YYYYMMDD-XXXX
+     * Tối ưu: Sử dụng native query để tìm max sequence thay vì load tất cả orders
      */
     private String generatePOSOrderNumber() {
         String datePrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String prefix = "POS-" + datePrefix + "-%";
         
-        // Tìm order cuối cùng trong ngày có prefix POS-datePrefix
-        String prefix = "POS-" + datePrefix + "-";
-        List<Order> todayOrders = orderRepository.findAll().stream()
-                .filter(o -> o.getOrderNumber() != null && o.getOrderNumber().startsWith(prefix))
-                .sorted((o1, o2) -> o2.getOrderNumber().compareTo(o1.getOrderNumber()))
-                .collect(Collectors.toList());
-        
-        int sequence = 1;
-        if (!todayOrders.isEmpty()) {
-            String lastOrderNumber = todayOrders.get(0).getOrderNumber();
-            String lastSequence = lastOrderNumber.substring(prefix.length());
-            try {
-                sequence = Integer.parseInt(lastSequence) + 1;
-            } catch (NumberFormatException e) {
-                sequence = 1;
-            }
+        // Tối ưu: Query trực tiếp max sequence từ database
+        Integer nextSequence = orderRepository.getNextOrderSequence(prefix);
+        if (nextSequence == null) {
+            nextSequence = 1;
         }
         
-        return prefix + String.format("%04d", sequence);
+        return "POS-" + datePrefix + "-" + String.format("%04d", nextSequence);
     }
     
     /**

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,10 @@ public class OrderService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final PaymentGatewayService paymentGatewayService;
+    private final CouponRepository couponRepository;
+    private final CouponService couponService;
+    // Note: LoyaltyService sẽ được dùng khi tích điểm sau khi đơn hàng hoàn thành (delivered)
+    // private final LoyaltyService loyaltyService;
 
     /**
      * API 1: Xử lý Checkout (Tạo đơn hàng)
@@ -55,25 +60,29 @@ public class OrderService {
                         .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Địa chỉ thanh toán không hợp lệ"))
                 : shippingAddress;
 
-        // 5. Tạo đơn hàng (Order)
+        // 5. Generate order number
+        String orderNumber = generateOrderNumber();
+        
+        // 6. Tạo đơn hàng (Order)
         Order order = new Order();
         order.setUser(user);
+        order.setOrderNumber(orderNumber);
         order.setAddressShipping(shippingAddress);
         order.setAddressBilling(billingAddress);
         order.setCreatedAt(LocalDateTime.now());
         order.setStatus("Pending"); // Trạng thái ban đầu
 
-        // 6. Tính tổng tiền VÀ chuyển CartItem -> OrderDetail
+        // 7. Tính tổng tiền VÀ chuyển CartItem -> OrderDetail
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (CartItem cartItem : cart.getItems()) {
             ProductVariant variant = cartItem.getVariant();
             
-            // 6.1. Kiểm tra tồn kho (quan trọng)
+            // 7.1. Kiểm tra tồn kho (quan trọng)
             if (variant.getStockQuantity() < cartItem.getQuantity()) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Sản phẩm " + variant.getProduct().getName() + " không đủ hàng");
             }
             
-            // 6.2. Giảm tồn kho
+            // 7.2. Giảm tồn kho
             int quantityBefore = variant.getStockQuantity();
             int quantityChange = -cartItem.getQuantity();
             variant.setStockQuantity(quantityBefore + quantityChange);
@@ -82,7 +91,7 @@ public class OrderService {
             // Note: Inventory log sẽ được tạo tự động bởi trigger trg_ProductVariants_InventoryLog
             // khi stock_quantity thay đổi. Chúng ta chỉ cần đảm bảo stock được cập nhật đúng.
 
-            // 6.3. Tạo OrderDetail (chốt giá)
+            // 7.3. Tạo OrderDetail (chốt giá)
             OrderDetail detail = new OrderDetail();
             detail.setOrder(order);
             detail.setVariant(variant);
@@ -94,19 +103,86 @@ public class OrderService {
             totalAmount = totalAmount.add(effectivePrice.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         }
         
-        // ... (logic trừ tiền vào totalAmount)
+        // Set subtotal
+        BigDecimal subtotal = totalAmount;
+        order.setSubtotal(subtotal);
+        
+        // 8. Xử lý coupon nếu có
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        Coupon coupon = null;
+        if (requestDto.getCouponCode() != null && !requestDto.getCouponCode().trim().isEmpty()) {
+            try {
+                CouponDto couponDto = couponService.validateCouponCode(requestDto.getCouponCode());
+                coupon = couponRepository.findById(couponDto.getId()).orElse(null);
+                
+                if (coupon != null) {
+                    // Tính discount amount
+                    if ("percent".equalsIgnoreCase(coupon.getDiscountType())) {
+                        BigDecimal discount = subtotal.multiply(coupon.getValue()).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+                        if (coupon.getMaxDiscountAmount() != null && discount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
+                            discount = coupon.getMaxDiscountAmount();
+                        }
+                        discountAmount = discount;
+                    } else if ("fixed".equalsIgnoreCase(coupon.getDiscountType())) {
+                        discountAmount = coupon.getValue();
+                        // Đảm bảo không giảm nhiều hơn subtotal
+                        if (discountAmount.compareTo(subtotal) > 0) {
+                            discountAmount = subtotal;
+                        }
+                    }
+                    
+                    // Kiểm tra minOrderAmount
+                    if (coupon.getMinOrderAmount() != null && subtotal.compareTo(coupon.getMinOrderAmount()) < 0) {
+                        throw new ApiException(HttpStatus.BAD_REQUEST, 
+                                String.format("Đơn hàng tối thiểu %s để áp dụng mã giảm giá", 
+                                        formatCurrency(coupon.getMinOrderAmount())));
+                    }
+                    
+                    // Cập nhật usesCount
+                    if (coupon.getUsesCount() == null) {
+                        coupon.setUsesCount(0);
+                    }
+                    coupon.setUsesCount(coupon.getUsesCount() + 1);
+                    couponRepository.save(coupon);
+                    
+                    order.setCoupon(coupon);
+                }
+            } catch (ApiException e) {
+                throw e;
+            } catch (Exception e) {
+                log.warn("Error applying coupon: {}", e.getMessage());
+                // Nếu có lỗi với coupon, tiếp tục mà không áp dụng coupon
+            }
+        }
+        
+        order.setDiscountAmount(discountAmount);
+        
+        // 9. Tính shipping fee dựa trên địa chỉ giao hàng
+        BigDecimal shippingFee = calculateShippingFee(shippingAddress);
+        order.setShippingFee(shippingFee);
+        
+        // 10. Tính tax amount (VAT 10% trên subtotal sau discount)
+        BigDecimal amountAfterDiscount = subtotal.subtract(discountAmount);
+        BigDecimal taxAmount = amountAfterDiscount.multiply(BigDecimal.valueOf(0.10))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+        order.setTaxAmount(taxAmount);
+        
+        // 11. Tính total amount
+        BigDecimal finalTotal = amountAfterDiscount.add(shippingFee).add(taxAmount);
+        if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
+            finalTotal = BigDecimal.ZERO;
+        }
+        order.setTotalAmount(finalTotal);
 
-        order.setTotalAmount(totalAmount);
-
-        // 8. Tạo Payment
+        // 12. Tạo Payment
         Payment payment = new Payment();
         payment.setOrder(order);
-        payment.setAmount(totalAmount);
+        payment.setAmount(finalTotal);
         payment.setPaymentMethod(requestDto.getPaymentMethod());
         payment.setStatus("pending"); // Chờ thanh toán
         order.getPayments().add(payment);
 
-        // 9. Tạo Lịch sử Status
+        // 13. Tạo Lịch sử Status
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(order);
         history.setStatus("Pending");
@@ -122,13 +198,14 @@ public class OrderService {
 
         String paymentUrl = null;
         if ("online".equalsIgnoreCase(requestDto.getPaymentMethod())) {
-            paymentUrl = paymentGatewayService.createVNPayPaymentUrl(savedOrder.getId(), totalAmount, "Thanh toan don hang " + savedOrder.getId());
+            paymentUrl = paymentGatewayService.createVNPayPaymentUrl(savedOrder.getId(), finalTotal, "Thanh toan don hang " + savedOrder.getOrderNumber());
         }
         
         try {
             emailService.sendOrderConfirmation(savedOrder);
         } catch (Exception e) {
-            // Log error but don't fail the order creation
+            log.error("Failed to send order confirmation email for order {}: {}", 
+                    savedOrder.getOrderNumber(), e.getMessage(), e);
         }
         
         return convertToOrderDto(savedOrder, paymentUrl);
@@ -157,7 +234,21 @@ public class OrderService {
         String paymentUrl = null;
         Payment payment = order.getPayments().stream().findFirst().orElse(null);
         if (payment != null && "pending".equals(payment.getStatus()) && "online".equals(payment.getPaymentMethod())) {
-            paymentUrl = "https://sandbox.vnpayment.vn/pay.html?token=example_token_" + order.getId(); // Ví dụ
+            // Generate payment URL với orderNumber (nếu có) hoặc orderId
+            if (order.getOrderNumber() != null) {
+                paymentUrl = paymentGatewayService.createVNPayPaymentUrl(
+                    order.getId(), 
+                    payment.getAmount(), 
+                    "Thanh toan don hang " + order.getOrderNumber()
+                );
+            } else {
+                // Fallback nếu không có orderNumber
+                paymentUrl = paymentGatewayService.createVNPayPaymentUrl(
+                    order.getId(), 
+                    payment.getAmount(), 
+                    "Thanh toan don hang " + order.getId()
+                );
+            }
         }
 
         return convertToOrderDto(order, paymentUrl);
@@ -224,6 +315,7 @@ public class OrderService {
 
         return OrderDto.builder()
                 .id(order.getId())
+                .orderNumber(order.getOrderNumber())
                 .status(order.getStatus())
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
@@ -253,5 +345,65 @@ public class OrderService {
         return (variant.getPriceSale() != null && variant.getPriceSale().compareTo(BigDecimal.ZERO) > 0)
                 ? variant.getPriceSale()
                 : variant.getPriceBase();
+    }
+    
+    /**
+     * Generate order number: ORD-YYYYMMDD-XXXX
+     * Format: ORD-20250122-0001
+     * Tối ưu: Sử dụng native query để tìm max sequence thay vì load tất cả orders
+     */
+    private String generateOrderNumber() {
+        String datePrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String prefix = "ORD-" + datePrefix + "-%";
+        
+        // Tối ưu: Query trực tiếp max sequence từ database
+        Integer nextSequence = orderRepository.getNextOrderSequence(prefix);
+        if (nextSequence == null) {
+            nextSequence = 1;
+        }
+        
+        return "ORD-" + datePrefix + "-" + String.format("%04d", nextSequence);
+    }
+    
+    /**
+     * Helper: Format currency
+     */
+    private String formatCurrency(BigDecimal amount) {
+        return new java.text.DecimalFormat("#,###").format(amount) + " ₫";
+    }
+    
+    /**
+     * Tính shipping fee dựa trên địa chỉ giao hàng
+     * Logic:
+     * - Thành phố lớn (Hà Nội, TP.HCM, Đà Nẵng, Cần Thơ): 30,000 VND
+     * - Tỉnh/thành phố khác: 50,000 VND
+     * - Vùng xa (nếu có): 80,000 VND
+     */
+    private BigDecimal calculateShippingFee(Address address) {
+        if (address == null || address.getCity() == null) {
+            // Default shipping fee nếu không có địa chỉ
+            return BigDecimal.valueOf(50000);
+        }
+        
+        String city = address.getCity().toLowerCase().trim();
+        
+        // Danh sách thành phố lớn (nội thành - phí ship thấp hơn)
+        String[] majorCities = {
+            "hà nội", "hanoi", "ha noi",
+            "tp. hồ chí minh", "tp hcm", "hồ chí minh", "ho chi minh", "hochiminh",
+            "đà nẵng", "da nang", "danang",
+            "cần thơ", "can tho", "cantho",
+            "hải phòng", "hai phong", "haiphong"
+        };
+        
+        // Kiểm tra xem có phải thành phố lớn không
+        for (String majorCity : majorCities) {
+            if (city.contains(majorCity) || majorCity.contains(city)) {
+                return BigDecimal.valueOf(30000); // Phí ship nội thành
+            }
+        }
+        
+        // Các tỉnh/thành phố khác
+        return BigDecimal.valueOf(50000); // Phí ship ngoại thành
     }
 }

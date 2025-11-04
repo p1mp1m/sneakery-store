@@ -6,7 +6,6 @@ import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.Review;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.exception.ApiException;
-import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ReviewRepository;
 import com.sneakery.store.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
