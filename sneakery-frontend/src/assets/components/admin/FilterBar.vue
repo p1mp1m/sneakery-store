@@ -1,37 +1,45 @@
 <template>
-  <div class="filter-bar">
-    <!-- Search Box -->
-    <div v-if="showSearch" class="search-box">
-      <span class="material-icons search-icon">search</span>
-      <input 
-        type="text" 
-        class="search-input"
-        v-model="searchQuery"
-        :placeholder="searchPlaceholder"
-        @input="handleSearch"
-      />
-      <button 
-        v-if="searchQuery" 
-        @click="clearSearch" 
-        class="search-clear"
-      >
-        <span class="material-icons">close</span>
-      </button>
-    </div>
+  <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div class="flex flex-col md:flex-row gap-4">
+      <!-- Search Box -->
+      <div v-if="showSearch" class="flex-1">
+        <div class="relative">
+          <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
+          <input 
+            type="text" 
+            class="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            v-model="searchQuery"
+            :placeholder="searchPlaceholder"
+            @input="handleSearch"
+          />
+          <button 
+            v-if="searchQuery" 
+            @click="clearSearch" 
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
+            <i class="material-icons text-base">close</i>
+          </button>
+        </div>
+      </div>
 
-    <!-- Filter Slots -->
-    <div class="filters-group">
-      <slot name="filters"></slot>
-    </div>
+      <!-- Filter Slots -->
+      <div class="flex items-center gap-2">
+        <slot name="filters"></slot>
+      </div>
 
-    <!-- Action Buttons -->
-    <div class="filter-actions">
-      <slot name="actions">
-        <button v-if="showReset" @click="handleReset" class="btn btn-secondary btn-sm">
-          <span class="material-icons">refresh</span>
-          {{ resetText }}
-        </button>
-      </slot>
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <slot name="actions">
+          <button 
+            v-if="showReset" 
+            @click="handleReset" 
+            class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+          >
+            <i class="material-icons text-base">refresh</i>
+            {{ resetText }}
+          </button>
+        </slot>
+      </div>
     </div>
   </div>
 </template>
@@ -88,121 +96,6 @@ defineExpose({
 })
 </script>
 
-<style scoped>
-.filter-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background: var(--gradient-purple-soft);
-  border-bottom: 1px solid var(--border-primary);
-  flex-wrap: wrap;
-}
 
-/* Search Box */
-.search-box {
-  position: relative;
-  flex: 1;
-  min-width: 280px;
-  max-width: 400px;
-}
 
-.search-icon {
-  position: absolute;
-  left: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-tertiary);
-  font-size: 1.25rem;
-  pointer-events: none;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-12) var(--space-3) var(--space-12);
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-base);
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.search-input:hover {
-  border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.9);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-}
-
-.search-input::placeholder {
-  color: var(--text-quaternary);
-}
-
-.search-clear {
-  position: absolute;
-  right: var(--space-2);
-  top: 50%;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.search-clear:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Filters Group */
-.filters-group {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-/* Filter Actions */
-.filter-actions {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .search-box {
-    max-width: none;
-  }
-  
-  .filters-group {
-    width: 100%;
-  }
-  
-  .filter-actions {
-    width: 100%;
-  }
-}
-</style>
 

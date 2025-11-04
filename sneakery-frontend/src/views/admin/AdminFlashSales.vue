@@ -1,18 +1,18 @@
 <template>
-  <div class="admin-flash-sales">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- ===== PAGE HEADER ===== -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">flash_on</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">flash_on</i>
             Quản lí Flash Sale
           </h1>
-          <p class="page-subtitle">Quản lý chương trình Flash Sale giảm giá sốc</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quản lý chương trình Flash Sale giảm giá sốc</p>
         </div>
-        <div class="header-actions">
-          <button class="btn btn-primary" @click="openCreateModal">
-            <span class="material-icons">add</span>
+        <div class="flex items-center gap-2">
+          <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm" @click="openCreateModal">
+            <i class="material-icons text-base">add</i>
             Tạo Flash Sale
           </button>
         </div>
@@ -20,70 +20,78 @@
     </div>
 
     <!-- ===== STATS GRID ===== -->
-    <div class="stats-grid">
-      <div class="stats-card success">
-        <div class="stats-icon">
-          <span class="material-icons">bolt</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">bolt</i>
+          </div>
         </div>
-        <div class="stats-content">
-          <div class="stats-value">{{ activeFlashSalesCount }}</div>
-          <div class="stats-label">ĐANG DIỄN RA</div>
-        </div>
-      </div>
-      
-      <div class="stats-card warning">
-        <div class="stats-icon">
-          <span class="material-icons">schedule</span>
-        </div>
-        <div class="stats-content">
-          <div class="stats-value">{{ upcomingFlashSalesCount }}</div>
-          <div class="stats-label">SẮP DIỄN RA</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ activeFlashSalesCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">ĐANG DIỄN RA</p>
         </div>
       </div>
       
-      <div class="stats-card danger">
-        <div class="stats-icon">
-          <span class="material-icons">event_busy</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">schedule</i>
+          </div>
         </div>
-        <div class="stats-content">
-          <div class="stats-value">{{ expiredFlashSalesCount }}</div>
-          <div class="stats-label">ĐÃ KẾT THÚC</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ upcomingFlashSalesCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">SẮP DIỄN RA</p>
         </div>
       </div>
       
-      <div class="stats-card info">
-        <div class="stats-icon">
-          <span class="material-icons">shopping_cart</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">event_busy</i>
+          </div>
         </div>
-        <div class="stats-content">
-          <div class="stats-value">{{ totalProductsInSale }}</div>
-          <div class="stats-label">SẢN PHẨM THAM GIA</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ expiredFlashSalesCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">ĐÃ KẾT THÚC</p>
+        </div>
+      </div>
+      
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">shopping_cart</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ totalProductsInSale }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">SẢN PHẨM THAM GIA</p>
         </div>
       </div>
     </div>
 
     <!-- ===== FILTERS ===== -->
-    <div class="filters-section">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">search</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">search</i>
             Tìm kiếm
           </label>
           <input 
             type="text" 
-            class="filter-input" 
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             v-model="searchKeyword"
             placeholder="Tìm theo tên sản phẩm..."
           />
         </div>
         
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">filter_list</span>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">filter_list</i>
             Trạng thái
           </label>
-          <select class="filter-select" v-model="filterStatus">
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterStatus">
             <option value="all">Tất cả</option>
             <option value="active">Đang diễn ra</option>
             <option value="upcoming">Sắp diễn ra</option>
@@ -91,9 +99,9 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <button class="btn btn-outline" @click="resetFilters">
-            <span class="material-icons">refresh</span>
+        <div class="flex items-end">
+          <button class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium w-full" @click="resetFilters">
+            <i class="material-icons text-base">refresh</i>
             Làm mới
           </button>
         </div>
@@ -101,157 +109,167 @@
     </div>
 
     <!-- ===== LOADING STATE ===== -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">Đang tải dữ liệu...</p>
+    <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
     </div>
 
     <!-- ===== EMPTY STATE ===== -->
-    <div v-else-if="filteredFlashSales.length === 0" class="empty-state">
-      <span class="material-icons empty-icon">flash_on</span>
-      <h3 class="empty-title">Chưa có Flash Sale nào</h3>
-      <p class="empty-description">Tạo chương trình Flash Sale đầu tiên để thu hút khách hàng</p>
-      <button class="btn btn-primary" @click="openCreateModal">
-        <span class="material-icons">add</span>
+    <div v-else-if="filteredFlashSales.length === 0" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">flash_on</i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có Flash Sale nào</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">Tạo chương trình Flash Sale đầu tiên để thu hút khách hàng</p>
+      <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm" @click="openCreateModal">
+        <i class="material-icons text-base">add</i>
         Tạo Flash Sale
       </button>
     </div>
 
     <!-- ===== FLASH SALES TABLE ===== -->
-    <div v-else class="table-container">
-      <table class="flash-sales-table">
-        <thead>
-          <tr>
-            <th style="width: 80px;">ID</th>
-            <th>Sản phẩm</th>
-            <th style="width: 120px;">Giá gốc</th>
-            <th style="width: 100px;">Giảm giá</th>
-            <th style="width: 120px;">Giá Flash Sale</th>
-            <th style="width: 100px;">Số lượng</th>
-            <th style="width: 180px;">Thời gian</th>
-            <th style="width: 130px;">Trạng thái</th>
-            <th style="width: 150px;">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="sale in paginatedFlashSales" :key="sale.id">
-            <td>{{ sale.id }}</td>
-            <td>
-              <div class="product-cell">
-                <img 
-                  :src="sale.productImage" 
-                  :alt="sale.productName"
-                  class="product-thumb"
-                  @error="handleImageError"
-                />
-                <div class="product-info">
-                  <div class="product-name">{{ sale.productName }}</div>
-                  <div class="product-brand">{{ sale.brandName }}</div>
+    <div v-else class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-900/50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-20">ID</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Sản phẩm</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-32">Giá gốc</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-28">Giảm giá</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-32">Giá Flash Sale</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-28">Số lượng</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-48">Thời gian</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-36">Trạng thái</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider w-40">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="sale in paginatedFlashSales" :key="sale.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ sale.id }}</td>
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-3">
+                  <img 
+                    :src="sale.productImage" 
+                    :alt="sale.productName"
+                    class="w-12 h-12 rounded-lg object-cover bg-gray-100 dark:bg-gray-700"
+                    @error="handleImageError"
+                  />
+                  <div class="min-w-0">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ sale.productName }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ sale.brandName }}</div>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="price original-price">{{ formatCurrency(sale.originalPrice) }}</div>
-            </td>
-            <td>
-              <div class="discount-badge">-{{ sale.discountPercentage }}%</div>
-            </td>
-            <td>
-              <div class="price flash-price">{{ formatCurrency(sale.flashSalePrice) }}</div>
-            </td>
-            <td>
-              <div class="quantity-info">
-                <span class="quantity-value">{{ sale.quantity }}</span>
-                <span class="quantity-label">sản phẩm</span>
-              </div>
-            </td>
-            <td>
-              <div class="time-info">
-                <div class="time-row">
-                  <span class="material-icons time-icon">play_arrow</span>
-                  {{ formatDateTime(sale.startTime) }}
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-600 dark:text-gray-400 line-through">{{ formatCurrency(sale.originalPrice) }}</div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                  -{{ sale.discountPercentage }}%
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-purple-600 dark:text-purple-400">{{ formatCurrency(sale.flashSalePrice) }}</div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                  <span class="font-medium">{{ sale.quantity }}</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">sản phẩm</span>
                 </div>
-                <div class="time-row">
-                  <span class="material-icons time-icon">stop</span>
-                  {{ formatDateTime(sale.endTime) }}
+              </td>
+              <td class="px-4 py-4">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                    <i class="material-icons text-sm">play_arrow</i>
+                    <span>{{ formatDateTime(sale.startTime) }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                    <i class="material-icons text-sm">stop</i>
+                    <span>{{ formatDateTime(sale.endTime) }}</span>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <span 
-                class="status-badge" 
-                :class="getStatusClass(sale)"
-              >
-                <span class="material-icons">{{ getStatusIcon(sale) }}</span>
-                {{ getStatusText(sale) }}
-              </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button 
-                  class="btn-icon btn-edit" 
-                  @click="openEditModal(sale)"
-                  title="Chỉnh sửa"
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span 
+                  class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getStatusClass(sale) === 'status-active',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': getStatusClass(sale) === 'status-upcoming',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getStatusClass(sale) === 'status-expired'
+                  }"
                 >
-                  <span class="material-icons">edit</span>
-                </button>
-                <button 
-                  class="btn-icon btn-delete" 
-                  @click="confirmDelete(sale)"
-                  title="Xóa"
-                >
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                  <i class="material-icons text-sm">{{ getStatusIcon(sale) }}</i>
+                  {{ getStatusText(sale) }}
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-1">
+                  <button 
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
+                    @click="openEditModal(sale)"
+                    title="Chỉnh sửa"
+                  >
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+                  <button 
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
+                    @click="confirmDelete(sale)"
+                    title="Xóa"
+                  >
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ===== PAGINATION ===== -->
-    <div v-if="totalPages > 1" class="pagination-container">
+    <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <button 
-        class="pagination-btn" 
+        class="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="currentPage === 1"
         @click="currentPage--"
       >
-        <span class="material-icons">chevron_left</span>
+        <i class="material-icons text-base">chevron_left</i>
         Trước
       </button>
       
-      <div class="pagination-info">
+      <span class="text-sm text-gray-700 dark:text-gray-300">
         Trang {{ currentPage }} / {{ totalPages }}
-      </div>
+      </span>
       
       <button 
-        class="pagination-btn" 
+        class="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="currentPage === totalPages"
         @click="currentPage++"
       >
         Sau
-        <span class="material-icons">chevron_right</span>
+        <i class="material-icons text-base">chevron_right</i>
       </button>
     </div>
 
     <!-- ===== CREATE/EDIT MODAL ===== -->
-    <div v-if="showModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons">{{ isEditMode ? 'edit' : 'add' }}</span>
+    <div v-if="showModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">{{ isEditMode ? 'edit' : 'add' }}</i>
             {{ isEditMode ? 'Chỉnh sửa Flash Sale' : 'Tạo Flash Sale mới' }}
           </h2>
-          <button class="modal-close" @click="closeModal">
-            <span class="material-icons">close</span>
+          <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" @click="closeModal">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
         
-        <div class="modal-body">
-          <form @submit.prevent="saveFlashSale">
-            <div class="form-group">
-              <label class="form-label required">Sản phẩm</label>
-              <select class="form-input" v-model="formData.productId" required>
+        <div class="p-4">
+          <form @submit.prevent="saveFlashSale" class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Sản phẩm *</label>
+              <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="formData.productId" required>
                 <option value="">-- Chọn sản phẩm --</option>
                 <option v-for="product in availableProducts" :key="product.id" :value="product.id">
                   {{ product.name }} - {{ product.brandName }} ({{ formatCurrency(product.price) }})
@@ -259,12 +277,12 @@
               </select>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">Giảm giá (%)</label>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giảm giá (%) *</label>
                 <input 
                   type="number" 
-                  class="form-input" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   v-model.number="formData.discountPercentage"
                   placeholder="VD: 50"
                   min="1"
@@ -273,11 +291,11 @@
                 />
               </div>
               
-              <div class="form-group">
-                <label class="form-label required">Số lượng</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số lượng *</label>
                 <input 
                   type="number" 
-                  class="form-input" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   v-model.number="formData.quantity"
                   placeholder="VD: 100"
                   min="1"
@@ -286,50 +304,50 @@
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">Thời gian bắt đầu</label>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Thời gian bắt đầu *</label>
                 <input 
                   type="datetime-local" 
-                  class="form-input" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   v-model="formData.startTime"
                   required
                 />
               </div>
               
-              <div class="form-group">
-                <label class="form-label required">Thời gian kết thúc</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Thời gian kết thúc *</label>
                 <input 
                   type="datetime-local" 
-                  class="form-input" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   v-model="formData.endTime"
                   required
                 />
               </div>
             </div>
 
-            <div v-if="formData.productId && formData.discountPercentage" class="price-preview">
-              <div class="preview-row">
-                <span>Giá gốc:</span>
-                <strong>{{ formatCurrency(selectedProduct?.price || 0) }}</strong>
+            <div v-if="formData.productId && formData.discountPercentage" class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 space-y-2">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-400">Giá gốc:</span>
+                <strong class="text-gray-900 dark:text-gray-100">{{ formatCurrency(selectedProduct?.price || 0) }}</strong>
               </div>
-              <div class="preview-row discount-row">
-                <span>Giảm {{ formData.discountPercentage }}%:</span>
-                <strong class="discount-amount">-{{ formatCurrency(discountAmount) }}</strong>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-400">Giảm {{ formData.discountPercentage }}%:</span>
+                <strong class="text-red-600 dark:text-red-400">-{{ formatCurrency(discountAmount) }}</strong>
               </div>
-              <div class="preview-row total-row">
-                <span>Giá Flash Sale:</span>
-                <strong class="flash-sale-price">{{ formatCurrency(flashSalePrice) }}</strong>
+              <div class="flex items-center justify-between text-sm pt-2 border-t border-gray-200 dark:border-gray-700">
+                <span class="font-medium text-gray-700 dark:text-gray-300">Giá Flash Sale:</span>
+                <strong class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ formatCurrency(flashSalePrice) }}</strong>
               </div>
             </div>
 
-            <div class="modal-actions">
-              <button type="button" class="btn btn-outline" @click="closeModal">
-                <span class="material-icons">close</span>
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" @click="closeModal">
+                <i class="material-icons text-base">close</i>
                 Hủy
               </button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">
-                <span class="material-icons">{{ saving ? 'hourglass_empty' : 'save' }}</span>
+              <button type="submit" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" :disabled="saving">
+                <i class="material-icons text-base" :class="{ 'animate-spin': saving }">{{ saving ? 'hourglass_empty' : 'save' }}</i>
                 {{ saving ? 'Đang lưu...' : 'Lưu' }}
               </button>
             </div>
@@ -339,29 +357,29 @@
     </div>
 
     <!-- ===== DELETE CONFIRMATION MODAL ===== -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
-      <div class="modal-content modal-sm" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons text-danger">warning</span>
+    <div v-if="showDeleteModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="showDeleteModal = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-red-600 dark:text-red-400">warning</i>
             Xác nhận xóa
           </h2>
-          <button class="modal-close" @click="showDeleteModal = false">
-            <span class="material-icons">close</span>
+          <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" @click="showDeleteModal = false">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
         
-        <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa Flash Sale này?</p>
-          <p class="text-muted">Hành động này không thể hoàn tác.</p>
+        <div class="p-4 space-y-4">
+          <p class="text-sm text-gray-700 dark:text-gray-300">Bạn có chắc chắn muốn xóa Flash Sale này?</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Hành động này không thể hoàn tác.</p>
           
-          <div class="modal-actions">
-            <button class="btn btn-outline" @click="showDeleteModal = false">
-              <span class="material-icons">close</span>
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" @click="showDeleteModal = false">
+              <i class="material-icons text-base">close</i>
               Hủy
             </button>
-            <button class="btn btn-danger" @click="deleteFlashSale" :disabled="deleting">
-              <span class="material-icons">{{ deleting ? 'hourglass_empty' : 'delete' }}</span>
+            <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" @click="deleteFlashSale" :disabled="deleting">
+              <i class="material-icons text-base" :class="{ 'animate-spin': deleting }">{{ deleting ? 'hourglass_empty' : 'delete' }}</i>
               {{ deleting ? 'Đang xóa...' : 'Xóa' }}
             </button>
           </div>
@@ -680,831 +698,6 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* ═══ PAGE LAYOUT ═══ */
-.admin-flash-sales {
-  padding: var(--space-8);
-  max-width: 1800px;
-  margin: 0 auto;
-  min-height: calc(100vh - 4rem);
-}
 
-/* ═══ PAGE HEADER ═══ */
-.page-header {
-  background: var(--bg-card);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-8);
-  margin-bottom: var(--space-8);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-6);
-}
-
-.title-section {
-  flex: 1;
-}
-
-.page-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.page-title .material-icons {
-  font-size: 2rem;
-  color: #fbbf24;
-  animation: flashPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes flashPulse {
-  0%, 100% { 
-    transform: scale(1);
-    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6));
-  }
-  50% { 
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.9));
-  }
-}
-
-.page-subtitle {
-  color: var(--text-tertiary);
-  margin: 0;
-  font-size: var(--text-base);
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-3);
-}
-
-/* ═══ STATS GRID ═══ */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
-}
-
-.stats-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display: flex;
-  gap: var(--space-4);
-  position: relative;
-  overflow: hidden;
-  transition: all var(--transition-smooth);
-}
-
-.stats-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--gradient-primary);
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform var(--transition-smooth);
-}
-
-.stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.stats-card:hover::before {
-  transform: scaleY(1);
-}
-
-.stats-card.success::before {
-  background: var(--gradient-success);
-}
-
-.stats-card.warning::before {
-  background: var(--gradient-warning);
-}
-
-.stats-card.danger::before {
-  background: var(--gradient-danger);
-}
-
-.stats-card.info::before {
-  background: var(--gradient-info);
-}
-
-.stats-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all var(--transition-smooth);
-}
-
-.stats-card.success .stats-icon {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-
-.stats-card.warning .stats-icon {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-.stats-card.danger .stats-icon {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.stats-card.info .stats-icon {
-  background: var(--info-bg);
-  color: var(--info-text);
-}
-
-.stats-card:hover .stats-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.stats-icon .material-icons {
-  font-size: 28px;
-}
-
-.stats-content {
-  flex: 1;
-}
-
-.stats-value {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  line-height: 1;
-  margin-bottom: var(--space-2);
-}
-
-.stats-label {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* ═══ FILTERS ═══ */
-.filters-section {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr auto;
-  gap: var(--space-4);
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.filter-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.filter-label .material-icons {
-  font-size: 1rem;
-  color: var(--accent-primary);
-}
-
-.filter-input,
-.filter-select {
-  padding: var(--space-3) var(--space-4);
-  border: 1.5px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  background: rgba(15, 23, 42, 0.4);
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-}
-
-.filter-input:hover,
-.filter-select:hover {
-  border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.6);
-}
-
-.filter-input:focus,
-.filter-select:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.8);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-}
-
-/* ═══ LOADING & EMPTY STATES ═══ */
-.loading-container {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-16) var(--space-8);
-  text-align: center;
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid rgba(251, 191, 36, 0.2);
-  border-top-color: #fbbf24;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto var(--space-4);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-text {
-  color: var(--text-tertiary);
-  margin: 0;
-}
-
-.empty-state {
-  background: var(--bg-card);
-  border: 2px dashed var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-16) var(--space-8);
-  text-align: center;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.empty-icon {
-  font-size: 80px;
-  color: #fbbf24;
-  opacity: 0.5;
-  margin-bottom: var(--space-4);
-}
-
-.empty-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.empty-description {
-  color: var(--text-tertiary);
-  margin: 0 0 var(--space-6) 0;
-}
-
-/* ═══ TABLE ═══ */
-.table-container {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  margin-bottom: var(--space-6);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.flash-sales-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.flash-sales-table thead {
-  background: var(--table-header-bg);
-}
-
-.flash-sales-table th {
-  padding: var(--space-4);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--color-white);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.flash-sales-table tbody tr {
-  border-bottom: 1px solid var(--border-primary);
-  transition: all var(--transition-fast);
-}
-
-.flash-sales-table tbody tr:hover {
-  background: rgba(251, 191, 36, 0.1);
-  transform: translateX(2px);
-}
-
-.flash-sales-table td {
-  padding: var(--space-4);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-/* ═══ TABLE CONTENT ═══ */
-.product-cell {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.product-thumb {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-md);
-  object-fit: cover;
-  border: 1px solid var(--border-primary);
-}
-
-.product-info {
-  flex: 1;
-}
-
-.product-name {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-1);
-}
-
-.product-brand {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-}
-
-.price {
-  font-weight: var(--font-bold);
-  font-size: var(--text-base);
-}
-
-.original-price {
-  color: var(--text-tertiary);
-  text-decoration: line-through;
-}
-
-.flash-price {
-  color: #fbbf24;
-  font-size: var(--text-lg);
-}
-
-.discount-badge {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: var(--color-white);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full);
-  font-weight: var(--font-bold);
-  font-size: var(--text-sm);
-  display: inline-block;
-}
-
-.quantity-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.quantity-value {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-}
-
-.quantity-label {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-}
-
-.time-info {
-  font-size: var(--text-xs);
-}
-
-.time-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin-bottom: var(--space-1);
-}
-
-.time-icon {
-  font-size: 14px;
-  color: var(--text-tertiary);
-}
-
-/* ═══ STATUS BADGES ═══ */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.status-badge .material-icons {
-  font-size: 16px;
-}
-
-.status-badge.status-active {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.status-badge.status-upcoming {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border: 1px solid var(--warning-border);
-}
-
-.status-badge.status-expired {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* ═══ ACTION BUTTONS ═══ */
-.action-buttons {
-  display: flex;
-  gap: var(--space-2);
-}
-
-/* Action buttons use global admin-tables.css styles */
-
-/* ═══ PAGINATION ═══ */
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-primary);
-}
-
-.pagination-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-5);
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.pagination-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-}
-
-.pagination-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination-info {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-/* ═══ BUTTONS ═══ */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  text-decoration: none;
-}
-
-.btn-primary {
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  box-shadow: var(--shadow-btn);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.btn-outline {
-  background: transparent;
-  color: var(--text-primary);
-  border: 2px solid var(--border-primary);
-}
-
-.btn-outline:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--accent-primary);
-}
-
-.btn-danger {
-  background: var(--gradient-danger);
-  color: var(--color-white);
-}
-
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* ═══ MODAL ═══ */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: var(--space-4);
-}
-
-.modal-content {
-  background: var(--bg-card);
-  border-radius: var(--radius-2xl);
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-xl);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-.modal-content.modal-sm {
-  max-width: 400px;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-title .material-icons {
-  font-size: 24px;
-  color: var(--accent-primary);
-}
-
-.modal-title .text-danger {
-  color: var(--error-text);
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.modal-actions {
-  display: flex;
-  gap: var(--space-3);
-  justify-content: flex-end;
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--border-primary);
-}
-
-/* ═══ FORM ═══ */
-.form-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-4);
-}
-
-.form-group {
-  margin-bottom: var(--space-4);
-}
-
-.form-label {
-  display: block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.form-label.required::after {
-  content: ' *';
-  color: var(--error-text);
-}
-
-.form-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  border: 1.5px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  background: rgba(15, 23, 42, 0.4);
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  font-family: inherit;
-}
-
-.form-input:hover {
-  border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.6);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.8);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-}
-
-.price-preview {
-  margin-top: var(--space-6);
-  padding: var(--space-4);
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: var(--radius-lg);
-}
-
-.preview-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-2) 0;
-  color: var(--text-secondary);
-}
-
-.discount-row {
-  color: #f59e0b;
-}
-
-.total-row {
-  padding-top: var(--space-3);
-  border-top: 1px solid rgba(251, 191, 36, 0.3);
-  margin-top: var(--space-2);
-}
-
-.flash-sale-price {
-  color: #fbbf24;
-  font-size: var(--text-2xl);
-}
-
-.discount-amount {
-  color: #f59e0b;
-}
-
-.text-muted {
-  color: var(--text-quaternary);
-  font-size: var(--text-sm);
-}
-
-/* ═══ RESPONSIVE ═══ */
-@media (max-width: 768px) {
-  .admin-flash-sales {
-    padding: var(--space-4);
-  }
-
-  .page-header {
-    padding: var(--space-6);
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .filter-row {
-    grid-template-columns: 1fr;
-  }
-
-  .flash-sales-table {
-    font-size: var(--text-xs);
-  }
-
-  .flash-sales-table th,
-  .flash-sales-table td {
-    padding: var(--space-2);
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
 

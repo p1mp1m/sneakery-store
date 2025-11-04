@@ -1,25 +1,27 @@
 <template>
-  <div v-show="isOpen" class="modal-overlay" @click="handleOverlayClose">
-    <div class="modal" @click.stop>
-      <div class="modal-header">
-        <h3 class="modal-title">
-          <i class="material-icons">{{ isEdit ? "edit" : "add" }}</i>
+  <div v-show="isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="handleOverlayClose">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <i class="material-icons text-purple-600 dark:text-purple-400">{{ isEdit ? "edit" : "add" }}</i>
           {{ isEdit ? "Chỉnh sửa Biến Thể" : "Thêm Biến Thể Mới" }}
         </h3>
-        <button type="button" class="modal-close" @click="handleCancel">
-          <i class="material-icons">close</i>
+        <button type="button" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" @click="handleCancel">
+          <i class="material-icons text-base">close</i>
         </button>
       </div>
 
-      <div class="modal-body">
-        <form @submit.prevent="handleSubmit" novalidate>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label required">Sản phẩm</label>
+      <div class="p-6">
+        <form @submit.prevent="handleSubmit" novalidate class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Sản phẩm <span class="text-red-500">*</span>
+              </label>
               <template v-if="!isEdit">
                 <select
                   v-model="formData.productId"
-                  class="form-control"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   required
                 >
                   <option value="">Chọn sản phẩm</option>
@@ -33,27 +35,36 @@
                 </select>
               </template>
               <template v-else>
-                <div class="readonly-field">
-                  <span class="readonly-text">
+                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                  <span class="text-sm text-gray-700 dark:text-gray-300">
                     {{ getProductName(formData.productId) }}
                   </span>
                 </div>
               </template>
             </div>
 
-            <div class="form-group">
-              <label class="form-label required">SKU</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                SKU <span class="text-red-500">*</span>
+              </label>
               <input
                 v-model="formData.sku"
                 type="text"
-                class="form-control"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Ví dụ: ADIDA-ULTRA22-WHI-42"
                 required
                 @focus="isSkuFocused = true"
                 @blur="isSkuFocused = false"
               />
-              <transition name="fade">
-                <small v-if="isSkuFocused" class="sku-hint">
+              <transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+              >
+                <small v-if="isSkuFocused" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   SKU được <strong>tạo tự động</strong> dựa trên thông tin sản
                   phẩm, màu và size — bạn có thể chỉnh
                   <strong>thủ công</strong> nếu muốn.
@@ -62,50 +73,56 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label required">Màu sắc</label>
-              <div class="select-box" @click="showColorPopup = true">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Màu sắc <span class="text-red-500">*</span>
+              </label>
+              <div class="relative" @click="showColorPopup = true">
                 <input
                   v-model="formData.color"
                   type="text"
-                  class="form-control"
+                  class="px-3 py-2 pr-10 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent cursor-pointer"
                   readonly
                   placeholder="Chọn màu sắc"
                 />
-                <span class="select-icon material-icons">palette</span>
+                <i class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">palette</i>
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label required">Kích thước</label>
-              <div class="select-box" @click="showSizePopup = true">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Kích thước <span class="text-red-500">*</span>
+              </label>
+              <div class="relative" @click="showSizePopup = true">
                 <input
                   v-model="formData.size"
                   type="text"
-                  class="form-control"
+                  class="px-3 py-2 pr-10 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent cursor-pointer"
                   readonly
                   placeholder="Chọn kích thước"
                 />
-                <span class="select-icon material-icons">straighten</span>
+                <i class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">straighten</i>
               </div>
             </div>
             <!-- Popup chọn màu -->
             <div
               v-if="showColorPopup"
-              class="popup-overlay"
+              class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
               @click.self="showColorPopup = false"
             >
-              <div class="popup-panel">
-                <h4>Chọn màu sắc</h4>
-                <div class="color-grid">
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">Chọn màu sắc</h4>
+                </div>
+                <div class="p-4 grid grid-cols-4 gap-3">
                   <div
                     v-for="(c, idx) in availableColors"
                     :key="idx"
-                    class="color-circle"
+                    class="w-12 h-12 rounded-full cursor-pointer border-2 transition-all"
                     :style="{ backgroundColor: c.hex }"
                     @click="selectColor(c)"
-                    :class="{ active: formData.color === c.name }"
+                    :class="formData.color === c.name ? 'border-purple-500 ring-2 ring-purple-300 dark:ring-purple-700 scale-110' : 'border-gray-300 dark:border-gray-600 hover:scale-105'"
                   ></div>
                 </div>
               </div>
@@ -114,27 +131,31 @@
             <!-- Popup chọn kích thước -->
             <div
               v-if="showSizePopup"
-              class="popup-overlay"
+              class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
               @click.self="showSizePopup = false"
             >
-              <div class="popup-panel">
-                <h4>Chọn kích thước</h4>
-                <div class="size-grid">
+              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                  <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">Chọn kích thước</h4>
+                </div>
+                <div class="p-4 grid grid-cols-5 gap-2">
                   <button
                     type="button"
                     v-for="(s, idx) in availableSizes"
                     :key="idx"
-                    class="size-btn"
+                    class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+                    :class="selectedSizes.includes(s) 
+                      ? 'bg-purple-500 text-white ring-2 ring-purple-300 dark:ring-purple-700' 
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
                     @click="toggleSize(s)"
-                    :class="{ active: selectedSizes.includes(s) }"
                   >
                     {{ s }}
                   </button>
                 </div>
-                <div class="popup-actions">
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
                   <button
                     type="button"
-                    class="btn btn-primary"
+                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
                     @click="confirmSizes"
                   >
                     Xác nhận
@@ -144,58 +165,62 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label required">Giá gốc (VNĐ)</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Giá gốc (VNĐ) <span class="text-red-500">*</span>
+              </label>
               <input
                 v-model.number="formData.priceBase"
                 type="number"
-                class="form-control"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="3500000"
                 min="0"
                 required
               />
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Giá khuyến mãi (VNĐ)</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá khuyến mãi (VNĐ)</label>
               <input
                 v-model.number="formData.priceSale"
                 type="number"
-                class="form-control"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="3000000"
                 min="0"
               />
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label required">Số lượng tồn kho</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Số lượng tồn kho <span class="text-red-500">*</span>
+              </label>
               <input
                 v-model.number="formData.stockQuantity"
                 type="number"
-                class="form-control"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="15"
                 min="0"
                 required
               />
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Ngưỡng cảnh báo</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Ngưỡng cảnh báo</label>
               <input
                 v-model.number="formData.lowStockThreshold"
                 type="number"
-                class="form-control"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="10"
                 min="0"
               />
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Ảnh biến thể</label>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Ảnh biến thể</label>
             <UploadGallery
               :resetKey="resetKey"
               :initialImages="galleryInitial"
@@ -204,27 +229,33 @@
             />
           </div>
 
-          <div class="form-group">
-            <label class="form-checkbox">
-              <input v-model="formData.isActive" type="checkbox" />
-              <span class="checkbox-label">Kích hoạt biến thể</span>
-            </label>
+          <div class="flex items-center gap-3">
+            <input 
+              v-model="formData.isActive" 
+              type="checkbox" 
+              class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+            />
+            <label class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">Kích hoạt biến thể</label>
           </div>
         </form>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" @click="handleCancel">
+      <div class="flex items-center justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
+        <button 
+          type="button" 
+          class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+          @click="handleCancel"
+        >
           Hủy
         </button>
         <button
           type="button"
-          class="btn btn-primary"
+          class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           @click="handleSubmit"
           :disabled="isSubmitting"
         >
-          <i class="material-icons" v-if="isSubmitting">hourglass_empty</i>
-          <i class="material-icons" v-else>{{ isEdit ? "save" : "add" }}</i>
+          <i class="material-icons text-base" v-if="isSubmitting">hourglass_empty</i>
+          <i class="material-icons text-base" v-else>{{ isEdit ? "save" : "add" }}</i>
           {{ isSubmitting ? "Đang xử lý..." : isEdit ? "Cập nhật" : "Tạo mới" }}
         </button>
       </div>
@@ -704,321 +735,5 @@ onErrorCaptured((err) => {
 });
 </script>
 
-<style scoped>
-/* Modal styles are inherited from global admin styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-}
 
-.modal {
-  background: var(--card-bg);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-2xl);
-  border: 1px solid var(--border-primary);
-  max-width: 600px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Edge cũ */
-}
 
-.modal::-webkit-scrollbar {
-  display: none; /* Chrome, Edge mới, Safari */
-  scroll-behavior: smooth;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin: 0;
-  color: var(--text-primary);
-  font-size: var(--text-xl);
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  padding: var(--space-2);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-6);
-  border-top: 1px solid var(--border-primary);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-  margin-bottom: var(--space-4);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.form-label {
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.form-label.required::after {
-  content: " *";
-  color: var(--error-text);
-}
-
-.form-control {
-  padding: var(--space-3);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  transition: all var(--transition-fast);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-}
-
-.form-checkbox {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer;
-}
-
-.checkbox-label {
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-@media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .modal {
-    width: 95%;
-    margin: var(--space-4);
-  }
-}
-
-.sku-hint {
-  display: block;
-  margin-top: 4px;
-  font-size: 0.85rem;
-  color: var(--text-tertiary, #aaa);
-  font-style: italic;
-  line-height: 1.3;
-  transition: all 0.25s ease;
-}
-
-.sku-hint strong {
-  color: var(--accent-primary, #b07bff);
-  font-weight: 500;
-}
-
-/* Hiệu ứng mờ dần */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.25s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* ====== Ô chọn (màu/size) ====== */
-.select-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.select-icon {
-  position: absolute;
-  right: 12px;
-  color: var(--accent-primary);
-  cursor: pointer;
-}
-
-/* ====== Popup overlay ====== */
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(6px);
-}
-
-.popup-panel {
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 1.75rem 2rem;
-  width: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  animation: fadeIn 0.25s ease-in-out;
-}
-
-.popup-panel h4 {
-  color: #fff;
-  margin-bottom: 1.2rem;
-  font-size: 1.1rem;
-  text-align: center;
-  font-weight: 600;
-}
-
-/* ====== Bảng màu ====== */
-.color-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.color-circle {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid var(--border-primary);
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-.color-circle:hover {
-  transform: scale(1.15);
-  box-shadow: 0 0 8px var(--accent-primary);
-}
-.color-circle.active {
-  border: 2px solid var(--accent-primary);
-  box-shadow: 0 0 12px var(--accent-primary);
-}
-
-/* ====== Kích thước ====== */
-.size-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-}
-
-.size-btn {
-  width: 48px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-.size-btn:hover {
-  background: var(--accent-primary);
-  color: #fff;
-}
-.size-btn.active {
-  background: var(--gradient-primary);
-  color: #fff;
-  box-shadow: 0 0 8px var(--accent-primary);
-}
-
-/* ✅ Cách phần grid với nút xác nhận */
-.popup-actions {
-  margin-top: 1.5rem; /* 👈 tạo khoảng cách rõ ràng */
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.btn.btn-primary {
-  background: var(
-    --primary-gradient,
-    linear-gradient(135deg, #7b5cff, #9f7aea)
-  );
-  border: none;
-  color: #fff;
-  padding: 0.6rem 1.25rem;
-  font-weight: 600;
-  border-radius: 8px;
-  transition: all 0.25s ease;
-  cursor: pointer;
-}
-
-.btn.btn-primary:hover {
-  box-shadow: 0 0 15px rgba(167, 139, 250, 0.6);
-  transform: translateY(-2px);
-}
-
-@keyframes popup-fade {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.readonly-field {
-  padding: var(--space-3);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  transition: all var(--transition-fast);
-}
-</style>

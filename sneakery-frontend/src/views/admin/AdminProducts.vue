@@ -1,31 +1,29 @@
 <template>
-  <div class="admin-page admin-products">
-    <!-- =================================================================
-         HEADER & STATS
-         ================================================================= -->
-    <div class="page-header animate-fade-in">
-      <div class="header-content">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
+    <!-- Page Header -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 class="page-title">
-            <i class="material-icons">inventory_2</i>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">inventory_2</i>
             Quản lý sản phẩm
           </h1>
-          <p class="page-subtitle">
-            <i class="material-icons">info</i>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+            <i class="material-icons text-xs">info</i>
             Quản lý sản phẩm và các biến thể (variants) - Nâng cao
           </p>
         </div>
-        <div class="header-actions">
-          <button @click="openImportModal" class="btn btn-success">
-            <i class="material-icons">file_upload</i>
+        <div class="flex items-center gap-2">
+          <button @click="openImportModal" class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium">
+            <i class="material-icons text-base">file_upload</i>
             Import Excel
           </button>
-          <button @click="exportToExcel" class="btn btn-secondary btn-export">
-            <i class="material-icons">download</i>
+          <button @click="exportToExcel" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">download</i>
             Export Excel
           </button>
-          <button @click="openCreateModal" class="btn btn-primary">
-            <i class="material-icons">add</i>
+          <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">add</i>
             Thêm sản phẩm
           </button>
         </div>
@@ -33,75 +31,73 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div v-if="stats" class="stats-grid animate-fade-up">
-      <div class="stats-card success">
-        <div class="stats-header">
-          <div class="stats-info">
-            <p class="stats-label">Tổng sản phẩm</p>
-            <h3 class="stats-value">{{ stats.totalProducts }}</h3>
-          </div>
-          <div class="stats-icon success">
-            <i class="material-icons">inventory</i>
+    <div v-if="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">inventory</i>
           </div>
         </div>
-      </div>
-      <div class="stats-card info">
-        <div class="stats-header">
-          <div class="stats-info">
-            <p class="stats-label">Tổng biến thể</p>
-            <h3 class="stats-value">{{ stats.totalVariants }}</h3>
-          </div>
-          <div class="stats-icon info">
-            <i class="material-icons">style</i>
-          </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.totalProducts }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Tổng sản phẩm</p>
         </div>
       </div>
-      <div class="stats-card warning">
-        <div class="stats-header">
-          <div class="stats-info">
-            <p class="stats-label">Sắp hết hàng</p>
-            <h3 class="stats-value">{{ stats.lowStockCount }}</h3>
-          </div>
-          <div class="stats-icon warning">
-            <i class="material-icons">warning</i>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">style</i>
           </div>
         </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.totalVariants }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Tổng biến thể</p>
+        </div>
       </div>
-      <div class="stats-card danger">
-        <div class="stats-header">
-          <div class="stats-info">
-            <p class="stats-label">Hết hàng</p>
-            <h3 class="stats-value">{{ stats.outOfStockCount }}</h3>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">warning</i>
           </div>
-          <div class="stats-icon danger">
-            <i class="material-icons">remove_shopping_cart</i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.lowStockCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Sắp hết hàng</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">remove_shopping_cart</i>
           </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.outOfStockCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Hết hàng</p>
         </div>
       </div>
     </div>
 
-    <!-- =================================================================
-         ADVANCED FILTERS
-         ================================================================= -->
-    <div class="filters-section animate-fade-up">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label>Tìm kiếm:</label>
+    <!-- Advanced Filters -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tìm kiếm</label>
           <input
             v-model="filters.search"
             @input="debounceSearch"
             type="text"
             placeholder="Tìm theo tên hoặc slug..."
-            class="form-control"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
 
-        <div class="filter-group">
-          <label>Thương hiệu:</label>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Thương hiệu</label>
           <select
             v-model="filters.brandId"
             @change="applyFilters"
-            class="form-control"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option :value="null">Tất cả thương hiệu</option>
             <option v-for="brand in brands" :key="brand.id" :value="brand.id">
@@ -110,12 +106,12 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <label>Danh mục:</label>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Danh mục</label>
           <select
             v-model="filters.categoryId"
             @change="applyFilters"
-            class="form-control"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option :value="null">Tất cả danh mục</option>
             <option
@@ -128,12 +124,12 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <label>Trạng thái:</label>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Trạng thái</label>
           <select
             v-model="filters.status"
             @change="applyFilters"
-            class="form-control"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option value="all">Tất cả</option>
             <option value="active">Đang bán</option>
@@ -142,35 +138,35 @@
         </div>
       </div>
 
-      <div class="filter-row">
-        <div class="filter-group">
-          <label>Giá từ (VNĐ):</label>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá từ (VNĐ)</label>
           <input
             v-model.number="filters.minPrice"
             @change="applyFilters"
             type="number"
             placeholder="0"
-            class="form-control"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
 
-        <div class="filter-group">
-          <label>Giá đến (VNĐ):</label>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá đến (VNĐ)</label>
           <input
             v-model.number="filters.maxPrice"
             @change="applyFilters"
             type="number"
             placeholder="10,000,000"
-            class="form-control"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
 
-        <div class="filter-group">
-          <label>Tồn kho:</label>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tồn kho</label>
           <select
             v-model="filters.stockLevel"
             @change="applyFilters"
-            class="form-control"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option value="all">Tất cả</option>
             <option value="in_stock">Còn hàng</option>
@@ -179,12 +175,12 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <label>Sắp xếp:</label>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Sắp xếp</label>
           <select
             v-model="filters.sortBy"
             @change="applyFilters"
-            class="form-control"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option value="">Mặc định</option>
             <option value="name">Tên A-Z</option>
@@ -193,9 +189,9 @@
           </select>
         </div>
 
-        <div class="filter-actions">
-          <button @click="resetFilters" class="btn btn-secondary btn-sm">
-            <i class="material-icons">clear</i>
+        <div class="flex items-end">
+          <button @click="resetFilters" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium w-full">
+            <i class="material-icons text-base">clear</i>
             Xóa bộ lọc
           </button>
         </div>
@@ -205,15 +201,23 @@
     <!-- =================================================================
          LOADING & EMPTY STATES
          ================================================================= -->
-    <div v-if="loading" class="loading-container animate-fade-in">
-      <div class="loading-spinner"></div>
-      <p>Đang tải danh sách sản phẩm...</p>
+    <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải danh sách sản phẩm...</p>
     </div>
 
-    <div v-else-if="products.length === 0" class="empty-state animate-fade-up">
-      <i class="material-icons">inventory</i>
-      <h3>Chưa có sản phẩm nào</h3>
-      <p>Nhấn "Thêm sản phẩm" hoặc "Import Excel" để tạo sản phẩm đầu tiên</p>
+    <div v-else-if="products.length === 0" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">inventory_2</i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có sản phẩm nào</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+        Nhấn "Thêm sản phẩm" hoặc "Import Excel" để tạo sản phẩm đầu tiên
+      </p>
+      <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+        <i class="material-icons text-base">add</i>
+        Thêm sản phẩm
+      </button>
     </div>
 
     <!-- =================================================================
@@ -223,220 +227,218 @@
       <!-- Bulk Action Bar -->
       <div
         v-if="selectedProducts.length > 0"
-        class="bulk-action-bar animate-slide-in"
+        class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800 mb-4"
       >
-        <div class="bulk-info">
-          <i class="material-icons">check_circle</i>
-          Đã chọn <strong>{{ selectedProducts.length }}</strong> sản phẩm
+        <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+          <i class="material-icons text-purple-600 dark:text-purple-400">check_circle</i>
+          <span>Đã chọn <strong class="font-semibold">{{ selectedProducts.length }}</strong> sản phẩm</span>
         </div>
-        <div class="bulk-actions">
-          <button @click="openBulkUpdateModal" class="btn btn-primary btn-sm">
-            <i class="material-icons">edit</i>
+        <div class="flex items-center gap-2">
+          <button 
+            @click="openBulkUpdateModal" 
+            class="flex items-center gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="material-icons text-base">edit</i>
             Cập nhật hàng loạt
           </button>
-          <button @click="bulkDelete" class="btn btn-danger btn-sm">
-            <i class="material-icons">delete</i>
+          <button 
+            @click="bulkDelete" 
+            class="flex items-center gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="material-icons text-base">delete</i>
             Xóa {{ selectedProducts.length }} sản phẩm
           </button>
-          <button @click="clearSelection" class="btn btn-secondary btn-sm">
-            <i class="material-icons">clear</i>
+          <button 
+            @click="clearSelection" 
+            class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+          >
+            <i class="material-icons text-base">clear</i>
             Bỏ chọn
           </button>
         </div>
       </div>
 
       <!-- Products Table -->
-      <div class="table-container animate-fade-up">
-        <table class="products-table">
-          <thead>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
             <tr>
-              <th style="width: 40px">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10">
                 <input
                   type="checkbox"
                   :checked="isAllSelected"
                   @change="toggleSelectAll"
-                  class="checkbox-input"
+                  class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
               </th>
               <!-- 🆕 Mã sản phẩm -->
-              <th class="sortable" @click="sortColumn('code')">
-                <div class="th-content">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('code')">
+                <div class="flex items-center gap-1">
                   <span>Mã SP</span>
-                  <i class="material-icons sort-icon">{{
-                    getSortIcon("code")
-                  }}</i>
+                  <i class="material-icons text-sm">{{ getSortIcon("code") }}</i>
                 </div>
               </th>
 
-              <th class="sortable" @click="sortColumn('name')">
-                <div class="th-content">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('name')">
+                <div class="flex items-center gap-1">
                   <span>Tên sản phẩm</span>
-                  <i class="material-icons sort-icon">{{
-                    getSortIcon("name")
-                  }}</i>
+                  <i class="material-icons text-sm">{{ getSortIcon("name") }}</i>
                 </div>
               </th>
 
-              <th class="sortable" @click="sortColumn('brandName')">
-                <div class="th-content">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('brandName')">
+                <div class="flex items-center gap-1">
                   <span>Brands</span>
-                  <i class="material-icons sort-icon">{{
-                    getSortIcon("brandName")
-                  }}</i>
+                  <i class="material-icons text-sm">{{ getSortIcon("brandName") }}</i>
                 </div>
               </th>
 
               <!-- 🆕 Danh mục -->
-              <th class="sortable" @click="sortColumn('categoryNames')">
-                <div class="th-content">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('categoryNames')">
+                <div class="flex items-center gap-1">
                   <span>Danh mục</span>
-                  <i class="material-icons sort-icon">{{
-                    getSortIcon("categoryNames")
-                  }}</i>
+                  <i class="material-icons text-sm">{{ getSortIcon("categoryNames") }}</i>
                 </div>
               </th>
 
-              <th class="sortable" @click="sortColumn('variantCount')">
-                <div class="th-content">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('variantCount')">
+                <div class="flex items-center gap-1">
                   <span>Số SPCT</span>
-                  <i class="material-icons sort-icon">{{
-                    getSortIcon("variantCount")
-                  }}</i>
+                  <i class="material-icons text-sm">{{ getSortIcon("variantCount") }}</i>
                 </div>
               </th>
-              <th class="sortable" @click="sortColumn('stockQuantity')">
-                <div class="th-content">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('stockQuantity')">
+                <div class="flex items-center gap-1">
                   <span>Kho</span>
-                  <i class="material-icons sort-icon">{{
-                    getSortIcon("stockQuantity")
-                  }}</i>
+                  <i class="material-icons text-sm">{{ getSortIcon("stockQuantity") }}</i>
                 </div>
               </th>
-              <th class="sortable" @click="sortColumn('isActive')">
-                <div class="th-content">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('isActive')">
+                <div class="flex items-center gap-1">
                   <span>Trạng thái</span>
-                  <i class="material-icons sort-icon">{{
-                    getSortIcon("isActive")
-                  }}</i>
+                  <i class="material-icons text-sm">{{ getSortIcon("isActive") }}</i>
                 </div>
               </th>
-              <th class="text-center">Thao tác</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
             </tr>
           </thead>
 
-          <tbody>
-            <tr v-for="product in products" :key="product.id">
-              <td>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+              <td class="px-4 py-4">
                 <input
                   type="checkbox"
                   :checked="selectedProducts.includes(product.id)"
                   @change="toggleSelect(product.id)"
-                  class="checkbox-input"
+                  class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
               </td>
 
               <!-- 🆕 Cột mã sản phẩm -->
-              <td>
-                <span class="product-code">{{ product.code || "—" }}</span>
+              <td class="px-4 py-4">
+                <code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100">{{ product.code || "—" }}</code>
               </td>
 
-              <td>
-                <div class="product-name">{{ product.name }}</div>
-                <div class="product-slug">{{ product.slug }}</div>
+              <td class="px-4 py-4">
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ product.name }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ product.slug }}</div>
               </td>
 
-              <td>{{ product.brandName || "N/A" }}</td>
+              <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">{{ product.brandName || "N/A" }}</td>
 
               <!-- 🆕 Cột danh mục -->
-              <td>
-                <span
-                  v-if="product.categories && product.categories.length > 0"
-                >
+              <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
+                <span v-if="product.categories && product.categories.length > 0">
                   {{ product.categories.map((c) => c.name).join(", ") }}
                 </span>
-                <span v-else>—</span>
+                <span v-else class="text-gray-400 dark:text-gray-500">—</span>
               </td>
 
-              <td>
-                <span class="badge badge-info">
+              <td class="px-4 py-4">
+                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                   {{ product.variantCount || 0 }} variants
                 </span>
               </td>
 
-              <td>
-                <span class="stock-badge" :class="getStockClass(product)">
-                  <i class="material-icons">{{ getStockIcon(product) }}</i>
+              <td class="px-4 py-4">
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getStockClass(product) === 'in-stock',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': getStockClass(product) === 'low-stock',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getStockClass(product) === 'out-of-stock'
+                  }"
+                >
+                  <i class="material-icons text-sm">{{ getStockIcon(product) }}</i>
                   {{ getStockText(product) }}
                 </span>
               </td>
 
-              <td>
+              <td class="px-4 py-4">
                 <span
-                  :class="[
-                    'status-badge',
-                    product.isActive ? 'active' : 'inactive',
-                  ]"
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="product.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'"
                 >
                   {{ product.isActive ? "Đang bán" : "Ngừng bán" }}
                 </span>
               </td>
 
-              <td class="text-center">
-                <div class="action-buttons">
+              <td class="px-4 py-4 text-center">
+                <div class="flex items-center justify-center gap-2">
                   <button
                     @click="duplicateProduct(product.id)"
-                    class="btn-icon"
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                     title="Nhân bản"
                   >
-                    <i class="material-icons">content_copy</i>
+                    <i class="material-icons text-base">content_copy</i>
                   </button>
                   <button
                     @click="openEditModal(product)"
-                    class="btn-icon"
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                     title="Chỉnh sửa"
                   >
-                    <i class="material-icons">edit</i>
+                    <i class="material-icons text-base">edit</i>
                   </button>
                   <button
                     @click="confirmDelete(product)"
-                    class="btn-icon danger"
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     title="Xóa"
                   >
-                    <i class="material-icons">delete</i>
+                    <i class="material-icons text-base">delete</i>
                   </button>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-container">
-        <div class="pagination-info">
-          Hiển thị {{ currentPage * pageSize + 1 }} -
-          {{ Math.min((currentPage + 1) * pageSize, totalItems) }} trong tổng số
-          {{ totalItems }} sản phẩm
+      <div class="flex items-center justify-between gap-4 px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          Hiển thị {{ currentPage * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} trong tổng số {{ totalItems }} sản phẩm
         </div>
-        <div class="pagination">
+        <div class="flex items-center gap-2">
           <button
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="currentPage === 0"
             @click="changePage(currentPage - 1)"
-            class="page-btn"
           >
-            <i class="material-icons">chevron_left</i>
+            <i class="material-icons text-base">chevron_left</i>
             Trước
           </button>
-          <span class="page-info">
+          <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">
             Trang {{ currentPage + 1 }} / {{ totalPages }}
           </span>
           <button
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="currentPage >= totalPages - 1"
             @click="changePage(currentPage + 1)"
-            class="page-btn"
           >
             Sau
-            <i class="material-icons">chevron_right</i>
+            <i class="material-icons text-base">chevron_right</i>
           </button>
         </div>
       </div>
@@ -2805,1501 +2807,5 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
-/* =================================================================
-   ADMIN PRODUCTS - OPTIMIZED STYLES
-   ================================================================= */
 
-/* =================================================================
-   LAYOUT
-   ================================================================= */
-.admin-products {
-  padding: var(--space-8);
-  max-width: 1600px;
-  margin: 0 auto;
-  min-height: calc(100vh - 4rem);
-}
 
-/* Smooth scrolling cho toàn bộ trang */
-* {
-  scroll-behavior: smooth;
-}
-
-/* =================================================================
-   HEADER & STATS
-   ================================================================= */
-.page-header {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8);
-  margin-bottom: var(--space-8);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-8);
-}
-
-.page-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.page-title .material-icons {
-  font-size: 2rem;
-  color: var(--accent-primary);
-}
-
-.page-subtitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-.page-subtitle .material-icons {
-  font-size: 1rem;
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-3);
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
-}
-
-.stats-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  transition: var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-}
-
-.stats-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  transition: var(--transition-smooth);
-}
-
-.stats-card.success::before {
-  background: var(--success-solid);
-}
-
-.stats-card.info::before {
-  background: var(--info-solid);
-}
-
-.stats-card.warning::before {
-  background: var(--warning-solid);
-}
-
-.stats-card.danger::before {
-  background: var(--error-solid);
-}
-
-.stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-elevated);
-  border-color: var(--accent-primary);
-}
-
-.stats-card:hover::before {
-  width: 100%;
-  opacity: 0.05;
-}
-
-.stats-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stats-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-white);
-}
-
-.stats-icon.success {
-  background: var(--success-solid);
-}
-
-.stats-icon.info {
-  background: var(--info-solid);
-}
-
-.stats-icon.warning {
-  background: var(--warning-solid);
-}
-
-.stats-icon.danger {
-  background: var(--error-solid);
-}
-
-.stats-icon .material-icons {
-  font-size: var(--text-2xl);
-}
-
-.stats-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.stats-value {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-/* =================================================================
-   FILTERS SECTION
-   ================================================================= */
-.filters-section {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  margin-bottom: var(--space-8);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
-  margin-bottom: var(--space-4);
-  align-items: end;
-}
-
-.filter-row:last-child {
-  margin-bottom: 0;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.filter-group label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--text-secondary);
-}
-
-.filter-actions {
-  display: flex;
-  align-items: flex-end;
-}
-
-/* =================================================================
-   BULK ACTION BAR
-   ================================================================= */
-.bulk-action-bar {
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-6);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: var(--shadow-glow-purple);
-  animation: slideInFromBottom 0.3s ease-out;
-}
-
-@keyframes slideInFromBottom {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.bulk-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-sm);
-}
-
-.bulk-info .material-icons {
-  font-size: 1.25rem;
-}
-
-.bulk-actions {
-  display: flex;
-  gap: var(--space-3);
-}
-
-/* =================================================================
-   TABLE
-   ================================================================= */
-.table-container {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  margin-bottom: 0;
-}
-
-.products-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: auto;
-}
-
-.products-table thead {
-  background: var(--table-header-bg);
-}
-
-/* Sortable table headers */
-.products-table th.sortable {
-  cursor: pointer;
-  user-select: none;
-  transition: var(--transition-fast);
-}
-
-.products-table th.sortable:hover {
-  background: rgba(167, 139, 250, 0.15);
-}
-
-.products-table th.sortable .th-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.products-table th.sortable .sort-icon {
-  font-size: 18px;
-  color: var(--text-tertiary);
-  transition: var(--transition-fast);
-}
-
-.products-table th.sortable:hover .sort-icon {
-  color: var(--accent-primary);
-}
-
-/* Table headers use global admin-tables.css styles */
-
-/* Table cells use global admin-tables.css styles */
-
-.products-table tbody tr {
-  transition: var(--transition-fast);
-  cursor: pointer;
-}
-
-.products-table tbody tr:hover {
-  background: var(--gradient-purple-soft);
-  transform: translateX(2px);
-}
-
-.products-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.product-name {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-1);
-}
-
-.product-slug {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  font-family: "Courier New", monospace;
-}
-
-.checkbox-input {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--accent-primary);
-}
-
-/* Stock Badge */
-.stock-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.025em;
-}
-
-.stock-badge.in-stock {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
-.stock-badge.low-stock {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border: 1px solid var(--warning-border);
-}
-
-.stock-badge.out-of-stock {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
-}
-
-.stock-badge .material-icons {
-  font-size: 1rem;
-}
-
-/* Status Badge */
-.status-badge {
-  display: inline-block;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.025em;
-}
-
-.status-badge.active {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
-.status-badge.inactive {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
-}
-
-/* Badge */
-.badge {
-  display: inline-block;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-}
-
-.badge-info {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid var(--info-border);
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: var(--space-2);
-  justify-content: center;
-}
-
-/* Action buttons use global admin-tables.css styles */
-
-/* =================================================================
-   PAGINATION
-   ================================================================= */
-.pagination-container {
-  background: var(--bg-card);
-  padding: var(--space-6);
-  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid var(--border-primary);
-}
-
-.pagination-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.pagination {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.page-btn {
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--border-primary);
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  transition: var(--transition-fast);
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--accent-primary);
-  color: var(--color-white);
-  border-color: var(--accent-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-btn .material-icons {
-  font-size: 1.125rem;
-}
-
-.page-info {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--text-secondary);
-}
-
-/* =================================================================
-   MODALS
-   ================================================================= */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: var(--space-4);
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal {
-  background: var(--bg-card);
-  border-radius: var(--radius-2xl);
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-elevated);
-  border: 1px solid var(--border-primary);
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-@keyframes modalSlideIn {
-  from {
-    transform: translateY(-20px) scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.modal-md {
-  max-width: 600px;
-  width: 100%;
-}
-
-.modal-lg {
-  max-width: 900px;
-  width: 100%;
-}
-
-.modal-header {
-  padding: var(--space-6) var(--space-8);
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--gradient-purple-soft);
-}
-
-.modal-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.modal-title .material-icons {
-  color: var(--accent-primary);
-}
-
-.modal-close {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  border: none;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-  transform: rotate(90deg);
-}
-
-.modal-body {
-  padding: var(--space-8);
-  overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Edge cũ */
-  flex: 1;
-}
-
-.modal-body::-webkit-scrollbar {
-  display: none; /* Chrome, Edge mới, Safari */
-  scroll-behavior: smooth;
-}
-
-.modal-footer {
-  padding: var(--space-6) var(--space-8);
-  border-top: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  background: var(--bg-secondary);
-}
-
-/* =================================================================
-   FORMS
-   ================================================================= */
-.section-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-6) 0;
-  padding-bottom: var(--space-3);
-  border-bottom: 2px solid var(--border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.section-title .btn-sm {
-  display: inline-flex;
-  align-items: center; /* Căn giữa icon và text theo chiều dọc */
-  gap: 6px; /* Khoảng cách giữa icon và text */
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.6;
-}
-
-.section-title .btn-sm i {
-  font-size: 18px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Icon luôn giữa tuyệt đối */
-}
-
-.form-row.two-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 cột bằng nhau */
-  gap: 16px; /* Khoảng cách giữa hai ô */
-  margin-bottom: var(--space-1);
-}
-
-@media (max-width: 768px) {
-  .form-row.two-cols {
-    grid-template-columns: 1fr; /* Tự xuống hàng trên mobile */
-  }
-}
-
-.form-group {
-  margin-bottom: var(--space-3);
-}
-
-.form-label {
-  display: block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-}
-
-.form-label.required::after {
-  content: " *";
-  color: var(--error-text);
-}
-
-.form-control {
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  background-color: var(--bg-card);
-  transition: var(--transition-fast);
-  box-sizing: border-box;
-  margin-bottom: var(--space-2);
-}
-
-.form-control:hover {
-  border-color: var(--border-dark);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px var(--shadow-focus-purple);
-  background-color: var(--bg-card);
-}
-
-.form-control::placeholder {
-  color: var(--text-tertiary);
-}
-
-.form-control-sm {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
-}
-
-.form-error {
-  display: block;
-  color: var(--error-text);
-  font-size: var(--text-xs);
-  margin-top: var(--space-2);
-}
-
-.form-help {
-  display: block;
-  color: var(--text-secondary);
-  font-size: var(--text-xs);
-  margin-top: var(--space-2);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-2);
-}
-
-/* Checkbox Group */
-/* =============================
-   🟣 DANH MỤC (CHECKBOX GRID)
-   ============================= */
-.checkbox-group {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 👉 5 cột đều nhau */
-  gap: 10px 16px; /* khoảng cách giữa các ô */
-  margin-top: 8px;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* 🧩 Mỗi ô danh mục */
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #e8e8e8;
-  cursor: pointer;
-  padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.btn-add-category {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(
-    135deg,
-    #059669 0%,
-    #047857 100% 100%
-  ); /* 💚 gradient xanh lá */
-  color: #fff;
-  font-size: 22px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 8px rgba(52, 199, 89, 0.4);
-}
-
-.btn-add-category:hover {
-  transform: scale(1.07);
-  background: linear-gradient(135deg, #28a745, #20c063);
-  box-shadow: 0 0 12px rgba(52, 199, 89, 0.5);
-}
-
-.btn-add-category i {
-  font-size: 20px;
-}
-
-/* Hiệu ứng hover */
-.checkbox-label:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-
-/* Ô tickbox */
-.checkbox-label input[type="checkbox"] {
-  accent-color: var(--aurora-primary, #7b61ff);
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  flex-shrink: 0;
-}
-
-/* Nếu có cấp con (sublevel) */
-.category-sublevel {
-  color: #aaa;
-  font-size: 12px;
-  margin-left: 2px;
-}
-
-/* Đảm bảo text không lệch */
-.checkbox-label span {
-  line-height: 1.3;
-}
-
-/* Responsive - giảm số cột khi hẹp */
-@media (max-width: 992px) {
-  .checkbox-group {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .checkbox-group {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* =================================================================
-   VARIANTS
-   ================================================================= */
-.empty-variants {
-  text-align: center;
-  padding: var(--space-8);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-}
-
-.variants-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.variant-card {
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  background: var(--bg-secondary);
-  transition: var(--transition-fast);
-}
-
-.variant-card:hover {
-  border-color: var(--accent-light);
-  box-shadow: var(--shadow-card);
-}
-
-.variant-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-4);
-}
-
-.variant-number {
-  font-weight: var(--font-semibold);
-  color: var(--accent-primary);
-  font-size: var(--text-sm);
-}
-
-/* Unused button styles removed - using global admin-tables.css */
-
-/* =================================================================
-   IMPORT MODAL
-   ================================================================= */
-.import-instructions {
-  background: var(--gradient-purple-soft);
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-6);
-  border-left: 4px solid var(--accent-primary);
-}
-
-.import-instructions h4 {
-  margin: 0 0 var(--space-4) 0;
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-}
-
-.import-instructions ol {
-  margin: 0 0 var(--space-4) var(--space-6);
-  padding: 0;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.import-instructions li {
-  margin-bottom: var(--space-2);
-}
-
-.import-preview {
-  margin-top: var(--space-6);
-}
-
-.import-preview h4 {
-  margin: 0 0 var(--space-4) 0;
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-}
-
-.preview-table-container {
-  max-height: 400px;
-  overflow: auto;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-}
-
-.preview-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--text-sm);
-}
-
-.preview-table thead {
-  background: var(--table-header-bg);
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.preview-table th {
-  padding: var(--space-3);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  border-bottom: 2px solid var(--border-primary);
-  white-space: nowrap;
-}
-
-.preview-table td {
-  padding: var(--space-3);
-  border-bottom: 1px solid var(--border-light);
-}
-
-.preview-table tbody tr:hover {
-  background: var(--bg-secondary);
-}
-
-/* =================================================================
-   BUTTONS
-   ================================================================= */
-.btn {
-  padding: var(--space-3) var(--space-6);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  transition: var(--transition-smooth);
-  text-decoration: none;
-  white-space: nowrap;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.3s ease, height 0.3s ease;
-}
-
-.btn:active::before {
-  width: 200px;
-  height: 200px;
-}
-
-.btn .material-icons {
-  font-size: 1.125rem;
-  transition: var(--transition-fast);
-}
-
-.btn:hover .material-icons {
-  transform: scale(1.1);
-}
-
-.btn-primary {
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  box-shadow: var(--shadow-btn);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-btn-hover);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: var(--shadow-btn);
-}
-
-.btn-secondary {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-primary);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-  border-color: var(--border-dark);
-}
-
-.btn-success {
-  background: var(--gradient-success);
-  color: var(--color-white);
-  box-shadow: var(--shadow-btn);
-}
-
-.btn-success:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-btn-hover);
-}
-
-.btn-danger {
-  background: var(--gradient-danger);
-  color: var(--color-white);
-  box-shadow: var(--shadow-btn);
-}
-
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-btn-hover);
-}
-
-.btn-sm {
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-.btn-loading {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: var(--color-white);
-  border-radius: var(--radius-full);
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* =================================================================
-   LOADING & EMPTY STATES
-   ================================================================= */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-16) var(--space-8);
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-primary);
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border-primary);
-  border-top-color: var(--accent-primary);
-  border-radius: var(--radius-full);
-  animation: spin 0.8s linear infinite;
-  margin-bottom: var(--space-4);
-}
-
-.loading-container p {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.empty-state {
-  text-align: center;
-  padding: var(--space-16) var(--space-8);
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-primary);
-}
-
-.empty-state .material-icons {
-  font-size: 4rem;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-4);
-}
-
-.empty-state h3 {
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.empty-state p {
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-/* =================================================================
-   ANIMATIONS & TRANSITIONS
-   ================================================================= */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInFromBottom {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes modalSlideIn {
-  from {
-    transform: translateY(-20px) scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animate-fade-up {
-  animation: fadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  animation-fill-mode: both;
-}
-
-.animate-slide-in {
-  animation: slideInFromBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation-fill-mode: both;
-}
-
-/* Stagger animations cho các items */
-.stats-card {
-  animation-delay: calc(var(--index, 0) * 0.1s);
-}
-
-/* Performance optimization */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* =================================================================
-   RESPONSIVE DESIGN
-   ================================================================= */
-
-/* Tablet Landscape (≤1200px) */
-@media (max-width: 1200px) {
-  .admin-products {
-    padding: var(--space-6);
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .filter-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .form-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Tablet Portrait (≤768px) */
-@media (max-width: 768px) {
-  .admin-products {
-    padding: var(--space-4);
-  }
-
-  .page-header {
-    padding: var(--space-6);
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-4);
-  }
-
-  .header-actions {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .header-actions button {
-    flex: 1;
-    min-width: 140px;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-  }
-
-  .filter-row {
-    grid-template-columns: 1fr;
-  }
-
-  .bulk-action-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-4);
-  }
-
-  .bulk-actions {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .bulk-actions button {
-    flex: 1;
-  }
-
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .products-table {
-    min-width: 900px;
-  }
-
-  .pagination-container {
-    flex-direction: column;
-    gap: var(--space-4);
-    text-align: center;
-  }
-
-  .pagination {
-    justify-content: center;
-  }
-
-  .modal {
-    margin: var(--space-4);
-    max-height: calc(100vh - var(--space-8));
-  }
-
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    padding: var(--space-5);
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Mobile (≤480px) */
-@media (max-width: 480px) {
-  .admin-products {
-    padding: var(--space-3);
-  }
-
-  .page-header {
-    padding: var(--space-4);
-    border-radius: var(--radius-md);
-  }
-
-  .page-title {
-    font-size: var(--text-xl);
-  }
-
-  .page-title .material-icons {
-    font-size: var(--text-2xl);
-  }
-
-  .page-subtitle {
-    font-size: var(--text-xs);
-  }
-
-  .header-actions {
-    flex-direction: column;
-  }
-
-  .header-actions button {
-    width: 100%;
-    min-width: unset;
-  }
-
-  .stats-card {
-    padding: var(--space-4);
-  }
-
-  .stats-value {
-    font-size: var(--text-2xl);
-  }
-
-  .stats-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .stats-icon .material-icons {
-    font-size: var(--text-xl);
-  }
-
-  .filters-section {
-    padding: var(--space-4);
-  }
-
-  .bulk-action-bar {
-    padding: var(--space-3) var(--space-4);
-  }
-
-  .bulk-actions {
-    flex-direction: column;
-  }
-
-  .products-table th,
-  .products-table td {
-    padding: var(--space-3) var(--space-4);
-    font-size: var(--text-xs);
-  }
-
-  .pagination-container {
-    padding: var(--space-4);
-  }
-
-  .page-btn {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--text-xs);
-  }
-
-  .page-btn span:not(.material-icons) {
-    display: none;
-  }
-
-  .modal {
-    margin: var(--space-2);
-    max-height: calc(100vh - var(--space-4));
-    border-radius: var(--radius-lg);
-  }
-
-  .modal-header {
-    padding: var(--space-4);
-  }
-
-  .modal-title {
-    font-size: var(--text-lg);
-  }
-
-  .modal-body {
-    padding: var(--space-4);
-  }
-
-  .modal-footer {
-    padding: var(--space-4);
-    flex-direction: column-reverse;
-  }
-
-  .modal-footer button {
-    width: 100%;
-  }
-
-  .btn {
-    padding: var(--space-2) var(--space-4);
-    font-size: var(--text-xs);
-  }
-
-  .btn .material-icons {
-    font-size: 1rem;
-  }
-}
-.product-code {
-  font-weight: 600;
-  color: var(--aurora-primary, #0a84ff);
-  font-family: monospace;
-}
-
-.checkbox-label {
-  display: block;
-  margin: 4px 0;
-}
-
-.checkbox-label .category-sublevel {
-  color: #888;
-  font-size: 0.85em;
-}
-
-.checkbox-group label {
-  padding-left: 8px;
-}
-
-.checkbox-group label:nth-child(n + 2) {
-  margin-top: 4px;
-}
-
-/* Tùy chọn: thụt lề theo cấp độ */
-.checkbox-label {
-  padding-left: calc(var(--level, 1) * 8px);
-}
-
-.input-with-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.input-with-button select {
-  flex: 1;
-}
-
-.btn-icon-sm {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  margin-top: -0.45rem;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(
-    135deg,
-    #059669 0%,
-    #047857 100% 100%
-  ); /* 💚 gradient xanh lá */
-  color: #fff;
-  font-size: 22px;
-  cursor: pointer;
-  vertical-align: middle;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 8px rgba(52, 199, 89, 0.4);
-}
-
-.btn-icon-sm:hover {
-  transform: scale(1.07);
-  background: linear-gradient(135deg, #28a745, #20c063);
-  box-shadow: 0 0 12px rgba(52, 199, 89, 0.5);
-}
-
-.btn-icon-sm i {
-  font-size: 20px;
-}
-</style>

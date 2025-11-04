@@ -1,8 +1,35 @@
 <template>
-  <div class="loading-skeleton" :class="[type, { 'animate': animate }]" :style="customStyle">
-    <div class="skeleton-shimmer"></div>
+  <div 
+    class="bg-gray-200 dark:bg-gray-700 rounded"
+    :class="{
+      'h-4': type === 'text',
+      'h-6': type === 'title',
+      'w-12 h-12': type === 'avatar' && !width && !height,
+      'w-full h-48': type === 'card' && !width && !height,
+      'h-10 w-24': type === 'button' && !width && !height,
+      'w-full h-64': type === 'image' && !width && !height,
+      'animate-pulse': animate
+    }"
+    :style="customStyle"
+  >
+    <div 
+      v-if="animate"
+      class="h-full bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 rounded animate-shimmer"
+      style="background-size: 200% 100%; animation: shimmer 2s infinite;"
+    ></div>
   </div>
 </template>
+
+<style scoped>
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+</style>
 
 <script setup>
 import { computed } from 'vue'
@@ -40,72 +67,6 @@ const customStyle = computed(() => {
 })
 </script>
 
-<style scoped>
-.loading-skeleton {
-  background: var(--dark-bg-tertiary, rgba(30, 41, 59, 0.4));
-  border-radius: var(--radius-md);
-  position: relative;
-  overflow: hidden;
-}
 
-.loading-skeleton.animate .skeleton-shimmer {
-  animation: skeleton-loading 1.5s ease-in-out infinite;
-}
 
-.skeleton-shimmer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(167, 139, 250, 0.1),
-    transparent
-  );
-  transform: translateX(-100%);
-}
-
-@keyframes skeleton-loading {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-/* Type Variants */
-.loading-skeleton.text {
-  height: 16px;
-  width: 100%;
-  margin-bottom: var(--space-2);
-}
-
-.loading-skeleton.title {
-  height: 24px;
-  width: 60%;
-  margin-bottom: var(--space-3);
-}
-
-.loading-skeleton.avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-}
-
-.loading-skeleton.card {
-  height: 200px;
-  width: 100%;
-}
-
-.loading-skeleton.button {
-  height: 40px;
-  width: 120px;
-  border-radius: var(--radius-lg);
-}
-
-.loading-skeleton.image {
-  height: 150px;
-  width: 100%;
-  border-radius: var(--radius-lg);
-}
-</style>
 

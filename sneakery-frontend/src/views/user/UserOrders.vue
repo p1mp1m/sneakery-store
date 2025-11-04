@@ -1,66 +1,71 @@
 <template>
-  <div class="user-page orders-page">
-    <div class="orders-container">
-      <h1 class="page-title">Đơn hàng của tôi</h1>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+    <div class="max-w-6xl mx-auto px-4">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Đơn hàng của tôi</h1>
 
       <!-- Loading State -->
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải danh sách đơn hàng...</p>
+      <div v-if="loading" class="flex items-center justify-center py-16">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mb-4"></div>
+          <p class="text-gray-600 dark:text-gray-400">Đang tải danh sách đơn hàng...</p>
+        </div>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="orders.length === 0" class="empty-orders">
-        <div class="empty-icon">📦</div>
-        <h2>Chưa có đơn hàng nào</h2>
-        <p>Hãy mua sắm ngay để trải nghiệm dịch vụ của chúng tôi!</p>
-        <router-link to="/home/products" class="btn btn-primary">
+      <div v-else-if="orders.length === 0" class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="text-6xl mb-4">📦</div>
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Chưa có đơn hàng nào</h2>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">Hãy mua sắm ngay để trải nghiệm dịch vụ của chúng tôi!</p>
+        <router-link to="/home/products" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">
           Khám phá sản phẩm
         </router-link>
       </div>
 
       <!-- Orders List -->
-      <div v-else class="orders-list">
+      <div v-else class="space-y-4">
         <div
           v-for="order in orders"
           :key="order.id"
-          class="order-card"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
         >
           <!-- Order Header -->
-          <div class="order-header">
-            <div class="order-info">
-              <h3 class="order-id">Đơn hàng #{{ order.id }}</h3>
-              <p class="order-date">{{ formatDate(order.createdAt) }}</p>
+          <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Đơn hàng #{{ order.id }}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ formatDate(order.createdAt) }}</p>
             </div>
-            <div class="order-status">
-              <span :class="['status-badge', getStatusClass(order.status)]">
+            <div>
+              <span :class="[
+                'px-3 py-1 rounded-full text-sm font-semibold',
+                getStatusClass(order.status)
+              ]">
                 {{ getStatusText(order.status) }}
               </span>
             </div>
           </div>
 
           <!-- Order Items Summary -->
-          <div class="order-summary">
-            <p class="items-count">{{ order.totalItems }} sản phẩm</p>
-            <p class="total-amount">{{ formatPrice(order.totalAmount) }}</p>
+          <div class="flex items-center justify-between mb-4">
+            <p class="text-gray-600 dark:text-gray-400">{{ order.totalItems }} sản phẩm</p>
+            <p class="text-xl font-bold text-purple-600 dark:text-purple-400">{{ formatPrice(order.totalAmount) }}</p>
           </div>
 
           <!-- Order Actions -->
-          <div class="order-actions">
-            <button @click="viewOrderDetail(order.id)" class="btn btn-outline btn-sm">
+          <div class="flex gap-3">
+            <button @click="viewOrderDetail(order.id)" class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium">
               Xem chi tiết
             </button>
             <button
               v-if="canReorder(order.status)"
               @click="reorder(order.id)"
-              class="btn btn-primary btn-sm"
+              class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all text-sm"
             >
               Đặt lại
             </button>
             <button
               v-if="canCancel(order.status)"
               @click="cancelOrder(order.id)"
-              class="btn btn-outline btn-sm btn-danger"
+              class="flex-1 px-4 py-2 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-sm font-medium"
             >
               Hủy đơn
             </button>
@@ -70,89 +75,99 @@
     </div>
 
     <!-- Order Detail Modal -->
-    <div v-if="showDetail && selectedOrder" class="modal-overlay" @click.self="showDetail = false">
-      <div class="modal modal-large">
-        <div class="modal-header">
-          <h3>Chi tiết đơn hàng #{{ selectedOrder.id }}</h3>
-          <button @click="showDetail = false" class="modal-close">×</button>
+    <div v-if="showDetail && selectedOrder" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showDetail = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Chi tiết đơn hàng #{{ selectedOrder.id }}</h3>
+          <button @click="showDetail = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">×</button>
         </div>
         
-        <div class="modal-body">
+        <div class="p-6 space-y-6">
           <!-- Order Status Timeline -->
-          <div class="status-timeline">
-            <h4>Trạng thái đơn hàng</h4>
-            <div class="timeline">
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Trạng thái đơn hàng</h4>
+            <div class="space-y-4">
               <div
-                v-for="history in selectedOrder.statusHistories || []"
+                v-for="(history, index) in selectedOrder.statusHistories || []"
                 :key="history.id"
-                class="timeline-item"
+                class="flex items-start gap-4"
               >
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                  <p class="timeline-status">{{ getStatusText(history.status) }}</p>
-                  <p class="timeline-date">{{ formatDateTime(history.changedAt) }}</p>
+                <div class="flex flex-col items-center">
+                  <div class="w-3 h-3 rounded-full bg-purple-600 dark:bg-purple-400"></div>
+                  <div v-if="index < (selectedOrder.statusHistories?.length || 0) - 1" class="w-0.5 h-full bg-gray-200 dark:bg-gray-700 mt-2 min-h-[40px]"></div>
+                </div>
+                <div class="flex-1 pb-4">
+                  <p class="font-semibold text-gray-900 dark:text-gray-100">{{ getStatusText(history.status) }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ formatDateTime(history.changedAt) }}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Order Items -->
-          <div class="order-items">
-            <h4>Sản phẩm</h4>
-            <div
-              v-for="item in selectedOrder.orderDetails || []"
-              :key="item.variantId"
-              class="order-item"
-            >
-              <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.productName" />
-              <div class="item-info">
-                <h5>{{ item.productName }}</h5>
-                <p class="item-brand">{{ item.brandName }}</p>
-                <p class="item-variant">{{ item.size }} / {{ item.color }}</p>
-              </div>
-              <div class="item-price">
-                <p class="quantity">x{{ item.quantity }}</p>
-                <p class="price">{{ formatPrice(item.totalPrice) }}</p>
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Sản phẩm</h4>
+            <div class="space-y-4">
+              <div
+                v-for="item in selectedOrder.orderDetails || []"
+                :key="item.variantId"
+                class="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-xl"
+              >
+                <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.productName" class="w-20 h-20 rounded-lg object-cover" />
+                <div class="flex-1">
+                  <h5 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ item.productName }}</h5>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ item.brandName }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ item.size }} / {{ item.color }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">x{{ item.quantity }}</p>
+                  <p class="font-semibold text-gray-900 dark:text-gray-100">{{ formatPrice(item.totalPrice) }}</p>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Shipping Address -->
-          <div class="shipping-info">
-            <h4>Địa chỉ giao hàng</h4>
-            <div v-if="selectedOrder.addressShipping" class="address-box">
-              <p><strong>{{ selectedOrder.addressShipping.recipientName }}</strong></p>
-              <p>{{ selectedOrder.addressShipping.phone }}</p>
-              <p>{{ selectedOrder.addressShipping.line1 }}</p>
-              <p v-if="selectedOrder.addressShipping.line2">{{ selectedOrder.addressShipping.line2 }}</p>
-              <p>{{ selectedOrder.addressShipping.district }}, {{ selectedOrder.addressShipping.city }}</p>
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Địa chỉ giao hàng</h4>
+            <div v-if="selectedOrder.addressShipping" class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+              <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ selectedOrder.addressShipping.recipientName }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedOrder.addressShipping.phone }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedOrder.addressShipping.line1 }}</p>
+              <p v-if="selectedOrder.addressShipping.line2" class="text-sm text-gray-600 dark:text-gray-400">{{ selectedOrder.addressShipping.line2 }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedOrder.addressShipping.district }}, {{ selectedOrder.addressShipping.city }}</p>
             </div>
           </div>
 
           <!-- Payment Info -->
-          <div class="payment-info">
-            <h4>Thanh toán</h4>
-            <div v-if="selectedOrder.payment" class="payment-box">
-              <div class="payment-row">
-                <span>Phương thức</span>
-                <span>{{ getPaymentMethodText(selectedOrder.payment.method) }}</span>
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Thanh toán</h4>
+            <div v-if="selectedOrder.payment" class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600 dark:text-gray-400">Phương thức</span>
+                <span class="font-medium text-gray-900 dark:text-gray-100">{{ getPaymentMethodText(selectedOrder.payment.method) }}</span>
               </div>
-              <div class="payment-row">
-                <span>Trạng thái</span>
-                <span :class="['payment-status', selectedOrder.payment.status]">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600 dark:text-gray-400">Trạng thái</span>
+                <span :class="[
+                  'px-2 py-1 rounded text-sm font-medium',
+                  selectedOrder.payment.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                  selectedOrder.payment.status === 'pending' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                  'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                ]">
                   {{ getPaymentStatusText(selectedOrder.payment.status) }}
                 </span>
               </div>
-              <div class="payment-row total">
-                <span>Tổng cộng</span>
-                <span class="total-price">{{ formatPrice(selectedOrder.totalAmount) }}</span>
+              <div class="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+                <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">Tổng cộng</span>
+                <span class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ formatPrice(selectedOrder.totalAmount) }}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button @click="showDetail = false" class="btn btn-primary">Đóng</button>
+        <div class="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+          <button @click="showDetail = false" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">Đóng</button>
         </div>
       </div>
     </div>
@@ -252,14 +267,14 @@ const canReorder = (status) => {
 
 const getStatusClass = (status) => {
   const statusMap = {
-    'Pending': 'status-pending',
-    'Processing': 'status-processing',
-    'Paid': 'status-paid',
-    'Shipped': 'status-shipped',
-    'Completed': 'status-completed',
-    'Cancelled': 'status-cancelled',
+    'Pending': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+    'Processing': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+    'Paid': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+    'Shipped': 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400',
+    'Completed': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+    'Cancelled': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
   };
-  return statusMap[status] || 'status-default';
+  return statusMap[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400';
 };
 
 const getStatusText = (status) => {
@@ -323,426 +338,3 @@ onMounted(() => {
   fetchOrders();
 });
 </script>
-
-<style scoped>
-.orders-page {
-  background: transparent;
-}
-
-.orders-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 100px var(--space-6);
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: var(--space-10);
-}
-
-/* Loading */
-.loading-container {
-  text-align: center;
-  padding: var(--space-8);
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid var(--border-color);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto var(--space-4);
-}
-
-/* Empty State */
-.empty-orders {
-  text-align: center;
-  padding: var(--space-8);
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-}
-
-.empty-icon {
-  font-size: 80px;
-  margin-bottom: var(--space-4);
-}
-
-.empty-orders h2 {
-  font-size: var(--text-2xl);
-  margin-bottom: var(--space-2);
-}
-
-.empty-orders p {
-  color: var(--text-secondary);
-  margin-bottom: var(--space-6);
-}
-
-/* Orders List */
-.orders-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.order-card {
-  background: rgba(30, 41, 59, 0.6);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
-}
-
-.order-card:hover {
-  border-color: rgba(167, 139, 250, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-.order-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--space-6);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid rgba(167, 139, 250, 0.15);
-}
-
-.order-id {
-  font-size: 18px;
-  font-weight: 600;
-  color: #f1f5f9;
-  margin-bottom: var(--space-2);
-}
-
-.order-date {
-  color: #94a3b8;
-  font-size: 14px;
-}
-
-.status-badge {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-}
-
-.status-pending {
-  background: #FEF3C7;
-  color: #92400E;
-}
-
-.status-processing {
-  background: #DBEAFE;
-  color: #1E40AF;
-}
-
-.status-paid {
-  background: #D1FAE5;
-  color: #065F46;
-}
-
-.status-shipped {
-  background: #E0E7FF;
-  color: #3730A3;
-}
-
-.status-completed {
-  background: #D1FAE5;
-  color: #065F46;
-}
-
-.status-cancelled {
-  background: #FEE2E2;
-  color: #991B1B;
-}
-
-.order-summary {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--space-4);
-}
-
-.items-count {
-  color: var(--text-secondary);
-}
-
-.total-amount {
-  font-size: 20px;
-  font-weight: 700;
-  color: #a78bfa;
-}
-
-.order-actions {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.btn-danger {
-  color: var(--error-color);
-  border-color: var(--error-color);
-}
-
-.btn-danger:hover {
-  background: var(--error-color);
-  color: white;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: var(--space-4);
-}
-
-.modal {
-  background: rgba(15, 23, 42, 0.98);
-  border-radius: var(--radius-xl);
-  max-width: 700px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(20px);
-}
-
-.modal-large {
-  max-width: 900px;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-5);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: var(--text-xl);
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: none;
-  font-size: var(--text-2xl);
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-
-.modal-close:hover {
-  color: var(--error-color);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.modal-body h4 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-3);
-  padding-bottom: var(--space-2);
-  border-bottom: 2px solid var(--border-color);
-}
-
-.modal-body > div:not(:last-child) {
-  margin-bottom: var(--space-6);
-}
-
-/* Timeline */
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
-.timeline-item {
-  display: flex;
-  gap: var(--space-3);
-}
-
-.timeline-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  margin-top: 4px;
-}
-
-.timeline-content {
-  flex: 1;
-}
-
-.timeline-status {
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-1);
-}
-
-.timeline-date {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-/* Order Items */
-.order-items {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.order-item {
-  display: flex;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-}
-
-.order-item img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-}
-
-.item-info {
-  flex: 1;
-}
-
-.item-info h5 {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-1);
-}
-
-.item-brand,
-.item-variant {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin: 2px 0;
-}
-
-.item-price {
-  text-align: right;
-}
-
-.quantity {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-1);
-}
-
-.price {
-  font-weight: var(--font-bold);
-  font-size: var(--text-lg);
-}
-
-/* Address & Payment Box */
-.address-box,
-.payment-box {
-  padding: var(--space-4);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-}
-
-.address-box p {
-  margin: var(--space-1) 0;
-  color: var(--text-secondary);
-}
-
-.address-box p:first-child {
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.payment-row {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--space-2) 0;
-}
-
-.payment-row.total {
-  border-top: 2px solid var(--border-color);
-  padding-top: var(--space-3);
-  margin-top: var(--space-2);
-  font-weight: var(--font-bold);
-}
-
-.total-price {
-  color: var(--primary-color);
-  font-size: var(--text-xl);
-}
-
-.payment-status {
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-.payment-status.pending {
-  background: #FEF3C7;
-  color: #92400E;
-}
-
-.payment-status.completed {
-  background: #D1FAE5;
-  color: #065F46;
-}
-
-.payment-status.failed {
-  background: #FEE2E2;
-  color: #991B1B;
-}
-
-.modal-footer {
-  padding: var(--space-4);
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .order-header {
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .order-summary {
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .order-item {
-    flex-wrap: wrap;
-  }
-
-  .item-price {
-    width: 100%;
-    text-align: left;
-    display: flex;
-    justify-content: space-between;
-  }
-}
-</style>

@@ -91,9 +91,6 @@ watch(() => [props.labels, props.datasets], () => {
 }, { deep: true })
 </script>
 
-<style scoped>
-canvas {
-  max-height: 100%;
-}
-</style>
+
+
 

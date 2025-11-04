@@ -1,53 +1,76 @@
 <template>
-  <div class="column-toggle-wrapper">
+  <div class="relative">
     <button
       @click="toggleDropdown"
-      class="btn btn-secondary btn-column-toggle"
-      :class="{ 'active': isOpen }"
+      class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+      :class="{ 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300': isOpen }"
       title="Hiển thị/ẩn cột"
     >
-      <i class="material-icons">view_column</i>
+      <i class="material-icons text-base">view_column</i>
       <span>Cột hiển thị</span>
-      <i class="material-icons">{{ isOpen ? 'expand_less' : 'expand_more' }}</i>
+      <i class="material-icons text-base">{{ isOpen ? 'expand_less' : 'expand_more' }}</i>
     </button>
 
-    <transition name="dropdown">
-      <div v-if="isOpen" class="column-dropdown" v-click-outside="closeDropdown">
-        <div class="dropdown-header">
-          <span class="dropdown-title">Chọn cột hiển thị</span>
-          <button @click="selectAll" class="btn-link">
+    <transition
+      enter-active-class="transition-all duration-200 ease-out"
+      enter-from-class="opacity-0 scale-95 -translate-y-2"
+      enter-to-class="opacity-100 scale-100 translate-y-0"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-from-class="opacity-100 scale-100 translate-y-0"
+      leave-to-class="opacity-0 scale-95 -translate-y-2"
+    >
+      <div 
+        v-if="isOpen" 
+        class="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
+        v-click-outside="closeDropdown"
+      >
+        <div class="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+          <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Chọn cột hiển thị</span>
+          <button 
+            @click="selectAll" 
+            class="text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors font-medium"
+          >
             {{ allSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
           </button>
         </div>
 
-        <div class="column-list">
+        <div class="max-h-64 overflow-y-auto p-2">
           <label
             v-for="column in columns"
             :key="column.key"
-            class="column-item"
-            :class="{ 'disabled': column.required }"
+            class="flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors"
+            :class="{ 
+              'opacity-50 cursor-not-allowed': column.required,
+              'hover:bg-gray-50 dark:hover:bg-gray-700/50': !column.required
+            }"
           >
             <input
               type="checkbox"
               :checked="isColumnVisible(column.key)"
               @change="toggleColumn(column.key)"
               :disabled="column.required"
-              class="checkbox-input"
+              class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 disabled:opacity-50"
             />
-            <span class="column-label">
+            <span class="flex-1 text-sm text-gray-700 dark:text-gray-300">
               {{ column.label }}
-              <span v-if="column.required" class="required-badge">Bắt buộc</span>
+              <span v-if="column.required" class="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">Bắt buộc</span>
             </span>
           </label>
         </div>
 
-        <div class="dropdown-footer">
-          <button @click="resetToDefault" class="btn btn-sm btn-secondary">
-            <i class="material-icons">refresh</i>
+        <div class="flex items-center justify-end gap-2 p-3 border-t border-gray-200 dark:border-gray-700">
+          <button 
+            @click="resetToDefault" 
+            class="flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+          >
+            <i class="material-icons text-base">refresh</i>
             Mặc định
           </button>
-          <button @click="closeDropdown" class="btn btn-sm btn-primary">
-            <i class="material-icons">check</i>
+          <button 
+            @click="closeDropdown" 
+            class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+          >
+            <i class="material-icons text-base">check</i>
             Áp dụng
           </button>
         </div>
@@ -142,156 +165,6 @@ const vClickOutside = {
 }
 </script>
 
-<style scoped>
-.column-toggle-wrapper {
-  position: relative;
-}
 
-.btn-column-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
 
-.btn-column-toggle.active {
-  background: var(--gradient-primary);
-  color: white;
-}
-
-.column-dropdown {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  right: 0;
-  min-width: 280px;
-  background: var(--dark-bg-card, rgba(30, 41, 59, 0.95));
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-  backdrop-filter: blur(10px);
-  z-index: var(--z-dropdown);
-  animation: slideDown 0.2s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdown-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-4);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.dropdown-title {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-.btn-link {
-  background: none;
-  border: none;
-  color: var(--accent-primary);
-  font-size: var(--text-xs);
-  cursor: pointer;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-md);
-  transition: var(--transition-fast);
-}
-
-.btn-link:hover {
-  background: var(--gradient-purple-soft);
-}
-
-.column-list {
-  max-height: 300px;
-  overflow-y: auto;
-  padding: var(--space-2);
-}
-
-.column-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.column-item:hover:not(.disabled) {
-  background: var(--gradient-purple-soft);
-}
-
-.column-item.disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.column-label {
-  flex: 1;
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.required-badge {
-  display: inline-block;
-  padding: 2px var(--space-2);
-  background: var(--accent-primary);
-  color: white;
-  font-size: 10px;
-  border-radius: var(--radius-full);
-  font-weight: var(--font-semibold);
-}
-
-.dropdown-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border-top: 1px solid var(--border-primary);
-}
-
-/* Scrollbar */
-.column-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.column-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.column-list::-webkit-scrollbar-thumb {
-  background: var(--border-primary);
-  border-radius: 3px;
-}
-
-.column-list::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover);
-}
-
-/* Transition */
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-</style>
 

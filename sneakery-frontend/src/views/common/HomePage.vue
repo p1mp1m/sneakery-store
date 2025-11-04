@@ -1,75 +1,93 @@
 <template>
-  <div class="user-page ecommerce-home">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Hero Banner Section -->
-    <section class="hero-banner">
-      <div class="hero-container">
-        <div class="hero-content">
-          <div class="hero-badge badge-enhanced badge-pulse">
-            <i class="material-icons">local_fire_department</i>
-            <span>Bán chạy nhất 2025</span>
-                </div>
-          <h1 class="hero-title">
-            Sneakery Store
-            <span class="gradient-text">Giày Sneaker Chính Hãng</span>
-          </h1>
-          <p class="hero-description">
-            Bộ sưu tập giày sneaker đa dạng từ Nike, Adidas, Jordan và nhiều thương hiệu nổi tiếng khác. 
-            Giá tốt nhất thị trường - Miễn phí vận chuyển - Đổi trả dễ dàng.
-          </p>
-          <div class="hero-actions">
-            <router-link to="/home/products" class="btn-gradient btn-enhanced btn-hero-primary">
-              <i class="material-icons">shopping_bag</i>
-              Mua Sắm Ngay
-            </router-link>
-            <router-link to="/home/products" class="btn-enhanced btn-hero-secondary">
-              <i class="material-icons">explore</i>
-              Khám Phá
-                  </router-link>
-                </div>
-          
-          <!-- Trust Badges -->
-          <div class="trust-badges">
-            <div class="trust-item">
-              <i class="material-icons">verified</i>
-              <span>100% Chính Hãng</span>
+    <section class="relative bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
+      <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+      <div class="max-w-7xl mx-auto px-4 py-12 md:py-20 lg:py-24 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <!-- Hero Content -->
+          <div class="text-center lg:text-left space-y-6">
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm rounded-full text-white text-sm font-medium animate-pulse">
+              <i class="material-icons text-orange-400">local_fire_department</i>
+              <span>Bán chạy nhất 2025</span>
             </div>
-            <div class="trust-item">
-              <i class="material-icons">local_shipping</i>
-              <span>Miễn Phí Ship</span>
+            
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+              Sneakery Store
+              <span class="block bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">Giày Sneaker Chính Hãng</span>
+            </h1>
+            
+            <p class="text-lg text-white/90 dark:text-gray-300 max-w-xl mx-auto lg:mx-0">
+              Bộ sưu tập giày sneaker đa dạng từ Nike, Adidas, Jordan và nhiều thương hiệu nổi tiếng khác. 
+              Giá tốt nhất thị trường - Miễn phí vận chuyển - Đổi trả dễ dàng.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <router-link 
+                to="/home/products" 
+                class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-purple-700 dark:bg-purple-600 dark:text-white rounded-xl font-semibold hover:bg-gray-100 dark:hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                <i class="material-icons">shopping_bag</i>
+                Mua Sắm Ngay
+              </router-link>
+              <router-link 
+                to="/home/products" 
+                class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/10 dark:bg-gray-800/50 backdrop-blur-sm text-white border-2 border-white/30 rounded-xl font-semibold hover:bg-white/20 dark:hover:bg-gray-800/70 transition-all duration-200"
+              >
+                <i class="material-icons">explore</i>
+                Khám Phá
+              </router-link>
             </div>
-            <div class="trust-item">
-              <i class="material-icons">sync</i>
-              <span>Đổi Trả 30 Ngày</span>
-            </div>
-            <div class="trust-item">
-              <i class="material-icons">support_agent</i>
-              <span>Hỗ Trợ 24/7</span>
+            
+            <!-- Trust Badges -->
+            <div class="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
+              <div class="flex items-center gap-2 text-white/90 text-sm">
+                <i class="material-icons text-green-400">verified</i>
+                <span>100% Chính Hãng</span>
+              </div>
+              <div class="flex items-center gap-2 text-white/90 text-sm">
+                <i class="material-icons text-blue-400">local_shipping</i>
+                <span>Miễn Phí Ship</span>
+              </div>
+              <div class="flex items-center gap-2 text-white/90 text-sm">
+                <i class="material-icons text-purple-400">sync</i>
+                <span>Đổi Trả 30 Ngày</span>
+              </div>
+              <div class="flex items-center gap-2 text-white/90 text-sm">
+                <i class="material-icons text-orange-400">support_agent</i>
+                <span>Hỗ Trợ 24/7</span>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div class="hero-image">
-          <div class="hero-image-wrapper card-enhanced animate-float">
-            <img src="@/assets/images/logo.png" alt="Sneakery Store" />
-            
-            <!-- Floating Stats -->
-            <div class="floating-stat floating-stat-1 card-enhanced">
-              <div class="stat-icon" style="background: var(--gradient-green);">
-                <i class="material-icons">trending_up</i>
-              </div>
-              <div>
-                <div class="stat-value">1000+</div>
-                <div class="stat-label">Sản phẩm</div>
+          
+          <!-- Hero Image -->
+          <div class="relative hidden lg:block">
+            <div class="relative bg-white/10 dark:bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 shadow-2xl animate-float">
+              <img src="@/assets/images/logo.png" alt="Sneakery Store" class="w-full h-auto rounded-xl" />
+              
+              <!-- Floating Stats -->
+              <div class="absolute -top-4 -right-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-white">trending_up</i>
+                  </div>
+                  <div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-gray-100">1000+</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Sản phẩm</div>
                   </div>
                 </div>
-            
-            <div class="floating-stat floating-stat-2 card-enhanced">
-              <div class="stat-icon" style="background: var(--gradient-pink);">
-                <i class="material-icons">star</i>
               </div>
-              <div>
-                <div class="stat-value">4.9/5</div>
-                <div class="stat-label">Đánh giá</div>
+              
+              <div class="absolute -bottom-4 -left-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-lg flex items-center justify-center">
+                    <i class="material-icons text-white">star</i>
+                  </div>
+                  <div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-gray-100">4.9/5</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Đánh giá</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -78,59 +96,57 @@
     </section>
 
     <!-- Categories Section -->
-    <section class="categories-section">
-      <div class="container">
-        <div class="section-header-simple">
-          <h2>Danh Mục Sản Phẩm</h2>
-          <p>Khám phá bộ sưu tập theo danh mục</p>
+    <section class="py-12 md:py-16 bg-white dark:bg-gray-800">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Danh Mục Sản Phẩm</h2>
+          <p class="text-gray-600 dark:text-gray-400">Khám phá bộ sưu tập theo danh mục</p>
         </div>
         
-        <div class="categories-grid">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           <router-link 
             v-for="category in categories" 
             :key="category.id"
             :to="`/products?category=${category.slug}`"
-            class="category-card card-enhanced hover-lift hover-glow"
+            class="group p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-lg transition-all duration-200 hover:scale-105 text-center"
           >
-            <div class="category-icon" :style="{ background: category.gradient }">
-              <i class="material-icons">{{ category.icon }}</i>
+            <div class="w-16 h-16 mx-auto mb-3 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600 group-hover:scale-110 transition-transform">
+              <i class="material-icons text-white text-2xl">{{ category.icon }}</i>
             </div>
-            <h3 class="category-name">{{ category.name }}</h3>
-            <p class="category-count">{{ category.count }} sản phẩm</p>
+            <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ category.name }}</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ category.count }} sản phẩm</p>
           </router-link>
         </div>
       </div>
     </section>
 
     <!-- Flash Sale / Hot Deals -->
-    <section class="flash-sale-section">
-      <div class="container">
-        <div class="flash-sale-header card-gradient-border">
-          <div class="card-gradient-border-inner">
-            <div class="flash-sale-title">
-              <i class="material-icons">flash_on</i>
-              <h2>Flash Sale</h2>
-              <div class="sale-timer">
-                <span class="timer-label">Kết thúc trong:</span>
-                <div class="timer-digits">
-                  <div class="timer-digit">
-                    <span>12</span>
-                    <small>Giờ</small>
-                  </div>
-                  <span class="timer-separator">:</span>
-                  <div class="timer-digit">
-                    <span>34</span>
-                    <small>Phút</small>
-                  </div>
-                  <span class="timer-separator">:</span>
-                  <div class="timer-digit">
-                    <span>56</span>
-                    <small>Giây</small>
+    <section class="py-12 md:py-16 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 dark:from-orange-600 dark:via-red-600 dark:to-pink-600">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 border-4 border-white/20 shadow-2xl">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                <i class="material-icons text-white text-2xl">flash_on</i>
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Flash Sale</h2>
+                <div class="flex items-center gap-2 mt-2">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Kết thúc trong:</span>
+                  <div class="flex items-center gap-1">
+                    <div class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm font-bold text-gray-900 dark:text-gray-100">12</div>
+                    <span class="text-gray-600 dark:text-gray-400">:</span>
+                    <div class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm font-bold text-gray-900 dark:text-gray-100">34</div>
+                    <span class="text-gray-600 dark:text-gray-400">:</span>
+                    <div class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm font-bold text-gray-900 dark:text-gray-100">56</div>
                   </div>
                 </div>
               </div>
             </div>
-            <router-link to="/home/products?sale=true" class="view-all-link">
+            <router-link 
+              to="/home/products?sale=true" 
+              class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
               Xem tất cả
               <i class="material-icons">arrow_forward</i>
             </router-link>
@@ -140,69 +156,77 @@
     </section>
 
     <!-- Products Section -->
-    <section class="products-section">
-      <div class="container">
-        <div class="section-header-simple">
-          <h2>Sản Phẩm Nổi Bật</h2>
-          <p>Những mẫu giày được yêu thích nhất</p>
-      </div>
+    <section class="py-12 md:py-16 bg-gray-50 dark:bg-gray-900">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Sản Phẩm Nổi Bật</h2>
+          <p class="text-gray-600 dark:text-gray-400">Những mẫu giày được yêu thích nhất</p>
+        </div>
 
-        <!-- Loading State - Dark -->
-        <div v-if="loading" class="products-grid">
-          <div v-for="n in 8" :key="n" class="skeleton-card-dark">
-            <div class="skeleton-image-dark"></div>
-            <div class="skeleton-content-dark">
-              <div class="skeleton-line-dark"></div>
-              <div class="skeleton-line-dark"></div>
+        <!-- Loading State -->
+        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-for="n in 8" :key="n" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
+            <div class="h-64 bg-gray-200 dark:bg-gray-700"></div>
+            <div class="p-4 space-y-3">
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
             </div>
           </div>
         </div>
 
-        <!-- Error State - Dark -->
-        <div v-else-if="error" class="empty-state-dark">
-          <i class="material-icons" style="font-size: 4rem; color: #ef4444;">error_outline</i>
-          <h3>{{ error }}</h3>
-          <button @click="fetchProducts(currentPage)" class="btn-retry-dark">
+        <!-- Error State -->
+        <div v-else-if="error" class="text-center py-16">
+          <i class="material-icons text-6xl text-red-500 mb-4">error_outline</i>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ error }}</h3>
+          <button 
+            @click="fetchProducts(currentPage)" 
+            class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors"
+          >
             <i class="material-icons">refresh</i>
             Thử lại
           </button>
-    </div>
+        </div>
 
         <!-- Products Grid -->
-        <div v-else-if="products.length > 0" class="products-grid">
-        <div
-          v-for="product in products"
-          :key="product.id"
-            class="product-item card-enhanced hover-lift hover-glow"
-        >
-          <ProductCard :product="product" />
+        <div v-else-if="products.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div
+            v-for="product in products"
+            :key="product.id"
+            class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:scale-105 transition-all duration-200 overflow-hidden"
+          >
+            <ProductCard :product="product" />
+          </div>
         </div>
-      </div>
 
-        <!-- Empty State - Dark -->
-        <div v-else class="empty-state-dark">
-          <i class="material-icons" style="font-size: 4rem; color: #64748b;">inventory_2</i>
-          <h3>Chưa có sản phẩm nào</h3>
-          <p>Vui lòng quay lại sau</p>
+        <!-- Empty State -->
+        <div v-else class="text-center py-16">
+          <i class="material-icons text-6xl text-gray-400 mb-4">inventory_2</i>
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có sản phẩm nào</h3>
+          <p class="text-gray-600 dark:text-gray-400">Vui lòng quay lại sau</p>
         </div>
 
         <!-- Pagination -->
-        <div v-if="!loading && !error && totalPages > 1" class="pagination-container">
+        <div v-if="!loading && !error && totalPages > 1" class="flex items-center justify-center gap-2 mt-8">
           <button 
             @click="handlePageChange(currentPage - 1)" 
             :disabled="currentPage === 0"
-            class="btn-pagination"
+            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <i class="material-icons">chevron_left</i>
             Trước
           </button>
           
-          <div class="pagination-pages">
+          <div class="flex gap-2">
             <button 
               v-for="page in displayPages" 
               :key="page"
               @click="handlePageChange(page - 1)"
-              :class="['pagination-page', { 'active': currentPage === page - 1 }]"
+              :class="[
+                'px-4 py-2 rounded-lg font-medium transition-colors',
+                currentPage === page - 1
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              ]"
             >
               {{ page }}
             </button>
@@ -211,7 +235,7 @@
           <button 
             @click="handlePageChange(currentPage + 1)" 
             :disabled="currentPage >= totalPages - 1"
-            class="btn-pagination"
+            class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Sau
             <i class="material-icons">chevron_right</i>
@@ -221,16 +245,20 @@
     </section>
 
     <!-- Brands Section -->
-    <section class="brands-section">
-      <div class="container">
-        <div class="section-header-simple">
-          <h2>Thương Hiệu Đối Tác</h2>
-          <p>Chính hãng từ các thương hiệu hàng đầu</p>
+    <section class="py-12 md:py-16 bg-white dark:bg-gray-800">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Thương Hiệu Đối Tác</h2>
+          <p class="text-gray-600 dark:text-gray-400">Chính hãng từ các thương hiệu hàng đầu</p>
         </div>
         
-        <div class="brands-grid">
-          <div v-for="brand in brands" :key="brand.id" class="brand-item card-enhanced hover-scale">
-            <img :src="brand.logo || '/placeholder-brand.png'" :alt="brand.name" />
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div 
+            v-for="brand in brands" 
+            :key="brand.id" 
+            class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center"
+          >
+            <img :src="brand.logo || '/placeholder-brand.png'" :alt="brand.name" class="max-h-12 w-auto opacity-60 hover:opacity-100 transition-opacity" />
           </div>
         </div>
       </div>
@@ -240,28 +268,30 @@
     <TestimonialsSection />
 
     <!-- Newsletter Section -->
-    <section class="newsletter-section">
-      <div class="container">
-        <div class="newsletter-card card-enhanced">
-          <div class="newsletter-content">
-            <div class="newsletter-icon">
-              <i class="material-icons">email</i>
+    <section class="py-12 md:py-16 bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-gray-800 dark:to-gray-900">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 md:p-12 shadow-xl border border-gray-200 dark:border-gray-700">
+          <div class="flex flex-col md:flex-row md:items-center gap-6">
+            <div class="flex items-center gap-4 flex-shrink-0">
+              <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <i class="material-icons text-white text-3xl">email</i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Đăng Ký Nhận Tin</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Nhận thông báo về sản phẩm mới và ưu đãi đặc biệt</p>
+              </div>
             </div>
-            <div class="newsletter-text">
-              <h3>Đăng Ký Nhận Tin</h3>
-              <p>Nhận thông báo về sản phẩm mới và ưu đãi đặc biệt</p>
-            </div>
-            <div class="newsletter-form">
-              <div class="input-wrapper">
-                <i class="material-icons input-icon">mail_outline</i>
+            <div class="flex-1 flex flex-col sm:flex-row gap-3">
+              <div class="flex-1 relative">
+                <i class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">mail_outline</i>
                 <input 
                   type="email" 
                   placeholder="Nhập email của bạn..." 
-                  class="input-enhanced input-with-icon"
                   v-model="newsletterEmail"
+                  class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
-              <button class="btn-gradient btn-enhanced">
+              <button class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
                 <i class="material-icons">send</i>
                 Đăng Ký
               </button>
@@ -347,8 +377,8 @@ const fetchProducts = async (page = 0) => {
 
 const handlePageChange = (newPage) => {
   if (newPage >= 0 && newPage < totalPages.value) {
-  currentPage.value = newPage;
-  fetchProducts(newPage);
+    currentPage.value = newPage;
+    fetchProducts(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 };
@@ -359,896 +389,17 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-/* ===== E-COMMERCE HOME - Áp dụng triệt để style.css ===== */
-
-/* Page Background - Dark Theme - Dễ nhìn không lóa mắt */
-.ecommerce-home {
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-  min-height: 100vh;
-  color: #e2e8f0;
-}
-
-/* Container */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--space-4);
-}
-
-/* ===== HERO BANNER - Dark Theme ===== */
-.hero-banner {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e293b 100%);
-  padding: var(--space-20) 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-banner::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.12) 50%, transparent 70%);
-  border-radius: 50%;
-  filter: blur(100px);
-  pointer-events: none;
-}
-
-.hero-banner::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -10%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(79, 172, 254, 0.15) 0%, transparent 70%);
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-}
-
-.hero-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--space-4);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-12);
-  align-items: center;
-}
-
-.hero-badge {
-  display: inline-flex;
-  margin-bottom: var(--space-4);
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: var(--font-bold);
-  line-height: 1.2;
-  margin-bottom: var(--space-6);
-  color: #f1f5f9;
-}
-
-.hero-title .gradient-text {
-  display: block;
-  margin-top: var(--space-2);
-}
-
-.hero-description {
-  font-size: var(--text-lg);
-  color: #cbd5e1;
-  line-height: 1.8;
-  margin-bottom: var(--space-8);
-  max-width: 600px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: var(--space-4);
-  margin-bottom: var(--space-12);
-  flex-wrap: wrap;
-}
-
-.btn-hero-primary,
-.btn-hero-secondary {
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-  font-weight: var(--font-semibold);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  text-decoration: none;
-  border-radius: var(--radius-xl);
-  transition: var(--transition-smooth);
-  border: 2px solid transparent;
-}
-
-.btn-hero-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: var(--white);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-hero-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.btn-hero-primary:hover::before {
-  left: 100%;
-}
-
-.btn-hero-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-}
-
-.btn-hero-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: #f1f5f9;
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-}
-
-.btn-hero-secondary:hover {
-  border-color: #a78bfa;
-  color: #c4b5fd;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(167, 139, 250, 0.3);
-  background: rgba(167, 139, 250, 0.15);
-}
-
-.trust-badges {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
-}
-
-.trust-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: #94a3b8;
-}
-
-.trust-item .material-icons {
-  color: #a78bfa;
-  font-size: 1.25rem;
-}
-
-/* Hero Image - Dark */
-.hero-image-wrapper {
-  position: relative;
-  padding: var(--space-12);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.6) 100%);
-  backdrop-filter: blur(30px);
-  border-radius: var(--radius-3xl);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.hero-image-wrapper img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.floating-stat {
-  position: absolute;
-  padding: var(--space-3) var(--space-4);
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(167, 139, 250, 0.3);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
-  animation: float-gentle 3s ease-in-out infinite;
-}
-
-.floating-stat-1 {
-  top: 10%;
-  left: -5%;
-}
-
-.floating-stat-2 {
-  bottom: 15%;
-  right: -5%;
-  animation-delay: 0.5s;
-}
-
-.floating-stat .stat-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white);
-}
-
-.stat-value {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: #f1f5f9;
-}
-
-.stat-label {
-  font-size: var(--text-sm);
-  color: #94a3b8;
-}
-
-/* ===== SECTIONS - Dark Theme ===== */
-.categories-section {
-  padding: var(--space-16) 0;
-  background: transparent;
-}
-
-.products-section {
-  padding: var(--space-16) 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 100%);
-}
-
-.flash-sale-section {
-  padding: var(--space-16) 0;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.4) 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  position: relative;
-}
-
-.flash-sale-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.5), transparent);
-}
-
-.brands-section {
-  padding: var(--space-16) 0;
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.3) 0%, transparent 100%);
-}
-
-.newsletter-section {
-  padding: var(--space-16) 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.6) 100%);
-}
-
-.section-header-simple {
-  text-align: center;
-  margin-bottom: var(--space-12);
-}
-
-.section-header-simple h2 {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-bold);
-  color: #f1f5f9;
-  margin-bottom: var(--space-2);
-}
-
-.section-header-simple p {
-  font-size: var(--text-lg);
-  color: #94a3b8;
-}
-
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-6);
-}
-
-.category-card {
-  padding: var(--space-6);
-  text-align: center;
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-}
-
-.category-card:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(167, 139, 250, 0.4);
-}
-
-.category-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: var(--radius-2xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--space-4);
-  color: var(--white);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  transition: var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-}
-
-.category-icon::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transform: rotate(45deg);
-  transition: all 0.6s;
-}
-
-.category-card:hover .category-icon::after {
-  left: 100%;
-}
-
-.category-card:hover .category-icon {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-}
-
-.category-icon .material-icons {
-  font-size: 2.5rem;
-}
-
-.category-name {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-1);
-  color: #f1f5f9;
-}
-
-.category-count {
-  font-size: var(--text-sm);
-  color: #94a3b8;
-}
-
-/* ===== FLASH SALE - Dark ===== */
-.flash-sale-header {
-  padding: 0 !important;
-  margin-bottom: var(--space-8);
-  background: transparent !important;
-  backdrop-filter: none !important;
-  border: none !important;
-}
-
-.flash-sale-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  flex: 1;
-}
-
-.flash-sale-title h2 {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: #f1f5f9;
-}
-
-.flash-sale-title .material-icons {
-  font-size: 2.5rem;
-  color: #ffa500;
-}
-
-.sale-timer {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.timer-digits {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.timer-digit {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: var(--white);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  text-align: center;
-  min-width: 50px;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.timer-digit span {
-  display: block;
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-}
-
-.timer-digit small {
-  display: block;
-  font-size: var(--text-xs);
-  opacity: 0.9;
-}
-
-.timer-separator {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: #e2e8f0;
-}
-
-.view-all-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: #c4b5fd;
-  text-decoration: none;
-  font-weight: var(--font-semibold);
-}
-
-.view-all-link:hover {
-  color: #a78bfa;
-}
-
-/* ===== PRODUCTS GRID ===== */
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-6);
-  margin-bottom: var(--space-12);
-}
-
-.product-item {
-  transition: var(--transition-smooth);
-}
-
-/* ===== BRANDS SECTION - Dark ===== */
-.brands-section {
-  background: transparent;
-}
-
-.brands-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: var(--space-6);
-}
-
-.brand-item {
-  padding: var(--space-8);
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100px;
-  transition: var(--transition-smooth);
-}
-
-.brand-item:hover {
-  background: rgba(30, 41, 59, 0.8);
-  border-color: rgba(167, 139, 250, 0.3);
-  box-shadow: 0 8px 20px rgba(167, 139, 250, 0.2);
-}
-
-.brand-item img {
-  max-width: 100%;
-  height: auto;
-  filter: grayscale(100%);
-  opacity: 0.6;
-  transition: var(--transition-smooth);
-}
-
-.brand-item:hover img {
-  filter: grayscale(0%);
-  opacity: 1;
-}
-
-/* ===== NEWSLETTER - Dark ===== */
-.newsletter-section {
-  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.8) 100%);
-  position: relative;
-}
-
-.newsletter-card {
-  padding: var(--space-12);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: var(--white);
-  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.newsletter-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  animation: rotate-slow 20s linear infinite;
-}
-
-@keyframes rotate-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.newsletter-content {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-    gap: var(--space-8);
-  align-items: center;
-}
-
-.newsletter-icon {
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-2xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.newsletter-icon .material-icons {
-  font-size: 3rem;
-}
-
-.newsletter-text h3 {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-2);
-}
-
-.newsletter-form {
-  display: flex;
-  gap: var(--space-4);
-  max-width: 500px;
-}
-
-.newsletter-form .input-enhanced {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: transparent;
-}
-
-.newsletter-form .btn-gradient {
-  background: var(--white);
-  color: var(--primary-color);
-  border: none;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  position: relative;
-  z-index: 1;
-}
-
-.newsletter-form .btn-gradient:hover {
-  background: #fafbfd;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* ===== PAGINATION ===== */
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.pagination-pages {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.pagination-page {
-  min-width: 40px;
-  height: 40px;
-  border: 2px solid rgba(148, 163, 184, 0.3);
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(10px);
-  border-radius: var(--radius-md);
-  color: #e2e8f0;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-  font-weight: var(--font-medium);
-}
-
-.pagination-page:hover {
-  border-color: #a78bfa;
-  color: #c4b5fd;
-  background: rgba(30, 41, 59, 0.9);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
-}
-
-.pagination-page.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: transparent;
-  color: var(--white);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
-}
-
-/* ===== EMPTY STATE - Dark ===== */
-.empty-state,
-.empty-state-dark {
-  text-align: center;
-  padding: var(--space-20) var(--space-8);
-  background: transparent;
-}
-
-.empty-state h3,
-.empty-state-dark h3 {
-  font-size: var(--text-2xl);
-  color: #f1f5f9;
-  margin: var(--space-4) 0 var(--space-2);
-}
-
-.empty-state p,
-.empty-state-dark p {
-  color: #94a3b8;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .hero-container {
-    grid-template-columns: 1fr;
-    text-align: center;
-    gap: var(--space-8);
+<style>
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
   }
-  
-  .hero-title {
-    font-size: 2.25rem;
-  }
-  
-  .hero-actions {
-    justify-content: center;
-  }
-  
-  .btn-hero-primary,
-  .btn-hero-secondary {
-    flex: 1;
-    min-width: 140px;
-    justify-content: center;
-  }
-  
-  .trust-badges {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-3);
-  }
-  
-  .floating-stat {
-    display: none;
-  }
-  
-  .newsletter-content {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  
-  .newsletter-icon {
-    margin: 0 auto;
-  }
-  
-  .newsletter-form {
-    flex-direction: column;
-    max-width: 100%;
-  }
-  
-  .flash-sale-title {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .sale-timer {
-    margin: 0;
-  }
-  
-  .categories-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-4);
+  50% {
+    transform: translateY(-20px);
   }
 }
 
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: 1.875rem;
-  }
-  
-  .hero-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .btn-hero-primary,
-  .btn-hero-secondary {
-    width: 100%;
-  }
-  
-  .categories-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ===== SKELETON LOADING - Dark Theme ===== */
-.skeleton-card-dark {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-}
-
-.skeleton-image-dark {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background: linear-gradient(
-    90deg,
-    rgba(15, 23, 42, 0.6) 0%,
-    rgba(30, 41, 59, 0.8) 50%,
-    rgba(15, 23, 42, 0.6) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer-dark 1.5s infinite;
-}
-
-.skeleton-content-dark {
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.skeleton-line-dark {
-  height: 16px;
-  background: linear-gradient(
-    90deg,
-    rgba(15, 23, 42, 0.6) 0%,
-    rgba(30, 41, 59, 0.8) 50%,
-    rgba(15, 23, 42, 0.6) 100%
-  );
-  background-size: 200% 100%;
-  border-radius: var(--radius-md);
-  animation: shimmer-dark 1.5s infinite;
-}
-
-.skeleton-line-dark:first-child {
-  width: 60%;
-}
-
-.skeleton-line-dark:last-child {
-  width: 80%;
-}
-
-@keyframes shimmer-dark {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* ===== PAGINATION BUTTONS - Dark ===== */
-.btn-pagination {
-  padding: var(--space-3) var(--space-5);
-  background: rgba(30, 41, 59, 0.6);
-  border: 2px solid rgba(148, 163, 184, 0.3);
-  border-radius: var(--radius-md);
-  color: #e2e8f0;
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  transition: var(--transition-smooth);
-  backdrop-filter: blur(10px);
-}
-
-.btn-pagination:hover:not(:disabled) {
-  background: rgba(30, 41, 59, 0.9);
-  border-color: #a78bfa;
-  color: #c4b5fd;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
-}
-
-.btn-pagination:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-pagination .material-icons {
-  font-size: 1.25rem;
-}
-
-/* ===== ERROR/RETRY BUTTON - Dark ===== */
-.btn-retry-dark {
-  padding: var(--space-3) var(--space-6);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: var(--radius-xl);
-  color: var(--white);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  transition: var(--transition-smooth);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  margin-top: var(--space-4);
-}
-
-.btn-retry-dark:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-.btn-retry-dark .material-icons {
-  font-size: 1.25rem;
-}
-
-/* ===== OVERRIDE GLOBAL CLASSES TO DARK ===== */
-.ecommerce-home .card-enhanced {
-  background: rgba(30, 41, 59, 0.6) !important;
-  border: 1px solid rgba(167, 139, 250, 0.15) !important;
-  backdrop-filter: blur(10px);
-}
-
-.ecommerce-home .card-enhanced:hover {
-  background: rgba(30, 41, 59, 0.8) !important;
-  border-color: rgba(167, 139, 250, 0.3) !important;
-}
-
-.ecommerce-home .card-gradient-border {
-  background: transparent !important;
-}
-
-.ecommerce-home .card-gradient-border-inner {
-  background: rgba(30, 41, 59, 0.6) !important;
-  border: 1px solid rgba(167, 139, 250, 0.2) !important;
-  backdrop-filter: blur(10px);
-  padding: var(--space-6);
-  border-radius: var(--radius-xl);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-}
-
-/* ===== ENSURE ALL SECTIONS DARK ===== */
-.ecommerce-home section {
-  background: transparent;
-}
-
-.ecommerce-home .container {
-  background: transparent;
-}
-
-.ecommerce-home .product-item {
-  background: transparent;
-}
-
-/* Override any white/light backgrounds from global CSS */
-.ecommerce-home * {
-  box-sizing: border-box;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
 </style>

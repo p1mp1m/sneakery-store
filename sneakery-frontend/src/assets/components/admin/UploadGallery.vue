@@ -1,19 +1,23 @@
 <template>
-  <div class="upload-gallery">
+  <div class="space-y-4">
     <!-- ====== MODE SWITCH ====== -->
-    <div class="mode-switch">
+    <div class="flex gap-2 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
       <button
         type="button"
-        class="mode-btn"
-        :class="{ active: mode === 'local' }"
+        class="flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all"
+        :class="mode === 'local' 
+          ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400 shadow-sm' 
+          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
         @click.prevent.stop="switchMode('local')"
       >
         📁 Upload từ máy
       </button>
       <button
         type="button"
-        class="mode-btn"
-        :class="{ active: mode === 'url' }"
+        class="flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all"
+        :class="mode === 'url' 
+          ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400 shadow-sm' 
+          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'"
         @click.prevent.stop="switchMode('url')"
       >
         🌐 Upload từ URL
@@ -21,10 +25,10 @@
     </div>
 
     <!-- ====== GALLERY LIST ====== -->
-    <div class="preview-list">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
       <!-- Danh sách ảnh -->
       <div
-        class="preview-item"
+        class="relative group aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-600 cursor-move"
         v-for="(img, idx) in images"
         :key="idx"
         draggable="true"
@@ -32,61 +36,73 @@
         @dragover.prevent
         @drop="drop(idx)"
       >
-        <img :src="img.previewUrl" alt="preview" />
-        <div class="preview-actions-top">
+        <img :src="img.previewUrl" alt="preview" class="w-full h-full object-cover" />
+        <div class="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
             form="none"
-            class="btn-star"
-            :class="{ active: img.isPrimary }"
+            class="p-1.5 rounded-lg transition-colors"
+            :class="img.isPrimary 
+              ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+              : 'bg-white/90 dark:bg-gray-800/90 text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800'"
             title="Đặt làm ảnh bìa"
             @click.prevent.stop="setPrimary(idx)"
           >
-            <i class="material-icons">star</i>
+            <i class="material-icons text-base">star</i>
           </button>
 
           <button
             type="button"
             form="none"
-            class="btn-delete"
+            class="p-1.5 bg-white/90 dark:bg-gray-800/90 text-red-600 dark:text-red-400 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors"
             title="Xóa ảnh này"
             @click.prevent.stop="removeImage(idx)"
           >
-            <i class="material-icons">delete</i>
+            <i class="material-icons text-base">delete</i>
           </button>
+        </div>
+        <div v-if="img.isPrimary" class="absolute top-2 left-2 px-2 py-1 bg-yellow-500 text-white text-xs font-medium rounded">
+          Ảnh bìa
         </div>
       </div>
 
       <!-- Placeholder (+) -->
       <div
         v-if="mode === 'local' && images.length < 10"
-        class="upload-placeholder"
+        class="aspect-square bg-gray-50 dark:bg-gray-900/50 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
         @click.stop="$refs.fileInput.click()"
       >
-        <span class="plus">+</span>
-        <p>Thêm ảnh</p>
+        <i class="material-icons text-3xl text-gray-400 dark:text-gray-500 mb-2">add_photo_alternate</i>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Thêm ảnh</p>
         <input
           type="file"
           multiple
           accept="image/*"
           ref="fileInput"
           @change="handleFileSelect"
-          hidden
+          class="hidden"
         />
       </div>
 
       <!-- Input URL khi chọn chế độ URL -->
-      <div v-if="mode === 'url'" class="upload-url-box">
-        <input
-          v-model="imageUrlInput"
-          type="text"
-          placeholder="Dán hoặc nhập URL ảnh (https://...)"
-          class="input-url"
-          @keyup.enter="handleUrlAdd"
-        />
-        <button type="button" class="btn-upload" @click="handleUrlAdd">
-          ➕ Thêm
-        </button>
+      <div v-if="mode === 'url'" class="col-span-full">
+        <div class="flex gap-2">
+          <input
+            v-model="imageUrlInput"
+            type="text"
+            placeholder="Dán hoặc nhập URL ảnh (https://...)"
+            class="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            @keyup.enter="handleUrlAdd"
+          />
+          <button 
+            type="button" 
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+            @click="handleUrlAdd"
+          >
+            <i class="material-icons text-base">add</i>
+            Thêm
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -278,267 +294,5 @@ watch(
 );
 </script>
 
-<style scoped>
-.upload-gallery {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
 
-/* ===== Mode Switch ===== */
-.mode-switch {
-  display: flex;
-  gap: 8px;
-}
-.mode-btn {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  cursor: pointer;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  transition: 0.25s;
-  font-weight: 500;
-}
-.mode-btn.active {
-  background: var(--gradient-primary);
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
-}
-.mode-btn:hover:not(.active) {
-  background: var(--bg-hover);
-}
 
-/* ===== Preview Grid ===== */
-.preview-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.preview-item {
-  width: 120px;
-  height: 120px;
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
-  transition: 0.2s;
-}
-.preview-item:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-.preview-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.preview-actions {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  display: flex;
-  gap: 4px;
-}
-.preview-actions button {
-  background: rgba(0, 0, 0, 0.65);
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 2px 5px;
-  transition: 0.2s;
-}
-.preview-actions button:hover {
-  background: rgba(0, 0, 0, 0.85);
-}
-.preview-actions button.active {
-  background: gold;
-  color: black;
-}
-
-/* ===== Action buttons (⭐ & 🗑) ===== */
-.preview-actions-top {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  right: 6px;
-  display: flex;
-  justify-content: space-between;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* ====== BASE BUTTON ====== */
-.preview-actions-top button {
-  pointer-events: all;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 0.95;
-
-  /* nền tím neon sẫm */
-  background: radial-gradient(
-    circle at center,
-    rgba(100, 60, 200, 0.35),
-    rgba(50, 20, 120, 0.25)
-  );
-  box-shadow: 0 0 6px rgba(140, 80, 255, 0.4),
-    inset 0 0 4px rgba(100, 50, 200, 0.4);
-}
-
-/* Hover chung: tím neon sáng lên */
-.preview-actions-top button:hover {
-  background: radial-gradient(
-    circle at center,
-    rgba(160, 100, 255, 0.55),
-    rgba(80, 40, 180, 0.35)
-  );
-  box-shadow: 0 0 10px rgba(160, 90, 255, 0.7), 0 0 18px rgba(150, 80, 255, 0.5);
-  transform: scale(1.1);
-}
-
-/* ====== ICON SAO ====== */
-.btn-star {
-  color: #bbb;
-  text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
-}
-
-/* Hover: sao vàng neon nhẹ */
-.btn-star:hover {
-  color: #ffde59;
-  text-shadow: 0 0 6px rgba(255, 220, 90, 0.9);
-}
-
-/* Active: sao vàng neon rực, nền tím phát sáng mạnh */
-.btn-star.active {
-  background: radial-gradient(
-    circle at center,
-    rgba(160, 100, 255, 0.65),
-    rgba(100, 50, 200, 0.35)
-  );
-  box-shadow: 0 0 12px rgba(180, 100, 255, 0.8),
-    0 0 24px rgba(160, 80, 255, 0.6), 0 0 36px rgba(120, 50, 255, 0.3);
-  transform: scale(1.15);
-}
-
-/* Ngôi sao vàng neon rực khi active */
-.btn-star.active i {
-  color: #ffeb70; /* vàng neon tươi */
-  text-shadow: 0 0 8px rgba(255, 240, 100, 1), 0 0 16px rgba(255, 220, 70, 0.9),
-    0 0 32px rgba(255, 210, 60, 0.8);
-}
-
-/* ====== ICON DELETE ====== */
-.btn-delete {
-  color: #fff;
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 60, 60, 0.8),
-    rgba(180, 0, 80, 0.4)
-  );
-  box-shadow: 0 0 6px rgba(255, 60, 60, 0.4),
-    inset 0 0 4px rgba(255, 100, 100, 0.4);
-}
-
-/* Hover: đỏ neon phát sáng */
-.btn-delete:hover {
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 80, 80, 0.9),
-    rgba(200, 40, 120, 0.5)
-  );
-  box-shadow: 0 0 12px rgba(255, 80, 80, 0.8), 0 0 22px rgba(180, 60, 255, 0.6);
-  transform: scale(1.15);
-}
-
-.btn-delete:hover i {
-  color: #ff6666;
-  text-shadow: 0 0 6px rgba(255, 100, 100, 0.9), 0 0 12px rgba(255, 80, 80, 0.8),
-    0 0 20px rgba(255, 60, 60, 0.6);
-}
-
-/* Fade-in khi hover ảnh
-.preview-item .preview-actions-top {
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.preview-item:hover .preview-actions-top {
-  opacity: 1;
-} */
-
-/* ===== Placeholder Box ===== */
-.upload-placeholder {
-  width: 120px;
-  height: 120px;
-  border: 2px dashed var(--border-primary);
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: var(--text-muted);
-  cursor: pointer;
-  background: var(--bg-secondary);
-  transition: 0.25s;
-}
-.upload-placeholder:hover {
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-  transform: scale(1.02);
-}
-.plus {
-  font-size: 28px;
-  font-weight: bold;
-}
-
-/* ===== URL Input ===== */
-.upload-url-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-.input-url {
-  flex: 1;
-  min-width: 250px;
-  padding: 8px 10px;
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  outline: none;
-  transition: 0.25s;
-}
-.input-url:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-}
-.btn-upload {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 8px;
-  background: var(--gradient-primary);
-  color: #fff;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.25s;
-}
-.btn-upload:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-</style>

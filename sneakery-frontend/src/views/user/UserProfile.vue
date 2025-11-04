@@ -1,59 +1,92 @@
 <template>
-  <div class="user-page profile-page">
-    <div class="profile-container">
-      <h1 class="page-title">Thông tin cá nhân</h1>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+    <div class="max-w-6xl mx-auto px-4">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Thông tin cá nhân</h1>
 
       <!-- Profile Tabs -->
-      <div class="profile-tabs">
-        <button
-          :class="['tab-btn', { active: activeTab === 'info' }]"
-          @click="activeTab = 'info'"
-        >
-          Thông tin tài khoản
-        </button>
-        <button
-          :class="['tab-btn', { active: activeTab === 'address' }]"
-          @click="activeTab = 'address'"
-        >
-          Địa chỉ
-        </button>
-        <button
-          :class="['tab-btn', { active: activeTab === 'password' }]"
-          @click="activeTab = 'password'"
-        >
-          Đổi mật khẩu
-        </button>
-        <button
-          :class="['tab-btn', { active: activeTab === 'loyalty' }]"
-          @click="activeTab = 'loyalty'"
-        >
-          Điểm thưởng
-        </button>
-          </div>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="flex overflow-x-auto border-b border-gray-200 dark:border-gray-700">
+          <button
+            :class="[
+              'px-6 py-4 font-medium text-sm transition-all whitespace-nowrap border-b-2',
+              activeTab === 'info'
+                ? 'text-purple-600 dark:text-purple-400 border-purple-600 dark:border-purple-400'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-purple-600 dark:hover:text-purple-400'
+            ]"
+            @click="activeTab = 'info'"
+          >
+            Thông tin tài khoản
+          </button>
+          <button
+            :class="[
+              'px-6 py-4 font-medium text-sm transition-all whitespace-nowrap border-b-2',
+              activeTab === 'address'
+                ? 'text-purple-600 dark:text-purple-400 border-purple-600 dark:border-purple-400'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-purple-600 dark:hover:text-purple-400'
+            ]"
+            @click="activeTab = 'address'"
+          >
+            Địa chỉ
+          </button>
+          <button
+            :class="[
+              'px-6 py-4 font-medium text-sm transition-all whitespace-nowrap border-b-2',
+              activeTab === 'password'
+                ? 'text-purple-600 dark:text-purple-400 border-purple-600 dark:border-purple-400'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-purple-600 dark:hover:text-purple-400'
+            ]"
+            @click="activeTab = 'password'"
+          >
+            Đổi mật khẩu
+          </button>
+          <button
+            :class="[
+              'px-6 py-4 font-medium text-sm transition-all whitespace-nowrap border-b-2',
+              activeTab === 'loyalty'
+                ? 'text-purple-600 dark:text-purple-400 border-purple-600 dark:border-purple-400'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-purple-600 dark:hover:text-purple-400'
+            ]"
+            @click="activeTab = 'loyalty'"
+          >
+            Điểm thưởng
+          </button>
+          <button
+            :class="[
+              'px-6 py-4 font-medium text-sm transition-all whitespace-nowrap border-b-2',
+              activeTab === 'theme'
+                ? 'text-purple-600 dark:text-purple-400 border-purple-600 dark:border-purple-400'
+                : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-purple-600 dark:hover:text-purple-400'
+            ]"
+            @click="activeTab = 'theme'"
+          >
+            Giao diện
+          </button>
+        </div>
+      </div>
 
       <!-- Tab Content -->
-          <div class="tab-content">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <!-- Account Info Tab -->
-        <div v-if="activeTab === 'info'" class="info-section">
-          <form @submit.prevent="updateProfile" class="profile-form">
-            <div class="form-group">
-              <label>Họ và tên *</label>
-              <input v-model="profile.fullName" type="text" class="form-control" required />
+        <div v-if="activeTab === 'info'" class="space-y-6">
+          <form @submit.prevent="updateProfile" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Họ và tên *</label>
+              <input v-model="profile.fullName" type="text" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
             </div>
 
-            <div class="form-group">
-              <label>Email</label>
-              <input v-model="profile.email" type="email" class="form-control" disabled />
-              <small class="form-help">Email không thể thay đổi</small>
+            <div>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Email</label>
+              <input v-model="profile.email" type="email" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed" disabled />
+              <small class="text-xs text-gray-500 dark:text-gray-400 mt-1">Email không thể thay đổi</small>
             </div>
 
-            <div class="form-group">
-              <label>Số điện thoại</label>
-              <input v-model="profile.phoneNumber" type="tel" class="form-control" />
+            <div>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Số điện thoại</label>
+              <input v-model="profile.phoneNumber" type="tel" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" />
             </div>
 
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary" :disabled="updating">
+            <div class="flex justify-end">
+              <button type="submit" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all" :disabled="updating">
                 <span v-if="updating">Đang lưu...</span>
                 <span v-else>Cập nhật thông tin</span>
               </button>
@@ -62,106 +95,123 @@
         </div>
 
         <!-- Address Tab -->
-        <div v-if="activeTab === 'address'" class="address-section">
-          <div class="section-header">
-            <h2>Danh sách địa chỉ</h2>
-            <button @click="showAddressForm = true" class="btn btn-primary btn-sm">
+        <div v-if="activeTab === 'address'" class="space-y-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Danh sách địa chỉ</h2>
+            <button @click="showAddressForm = true" class="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">
               + Thêm địa chỉ mới
             </button>
-            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div v-if="loadingAddresses" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent mb-3"></div>
+            <p class="text-gray-600 dark:text-gray-400">Đang tải...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else-if="addresses.length === 0" class="text-center py-12">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-4 text-gray-400">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <p class="text-gray-600 dark:text-gray-400">Bạn chưa có địa chỉ nào</p>
+          </div>
 
           <!-- Address List -->
-          <div v-if="loadingAddresses" class="loading">Đang tải...</div>
-          <div v-else-if="addresses.length === 0" class="empty-state">
-            <p>Bạn chưa có địa chỉ nào</p>
-          </div>
-          <div v-else class="address-list">
+          <div v-else class="space-y-4">
             <div
               v-for="addr in addresses"
               :key="addr.id"
-              class="address-item"
+              class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
             >
-              <div class="address-content">
-                <h4>{{ addr.recipientName }}</h4>
-                <p>{{ addr.phone }}</p>
-                <p>{{ addr.line1 }}</p>
-                <p v-if="addr.line2">{{ addr.line2 }}</p>
-                <p>{{ addr.district }}, {{ addr.city }}</p>
-              </div>
-              <div class="address-actions">
-                <button @click="editAddress(addr)" class="btn btn-outline btn-sm">
-                  Sửa
-                </button>
-                <button @click="deleteAddress(addr.id)" class="btn btn-outline btn-sm">
-                  Xóa
-                </button>
-              </div>
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ addr.recipientName }}</h4>
+                  <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                    <p>{{ addr.phone }}</p>
+                    <p>{{ addr.line1 }}</p>
+                    <p v-if="addr.line2">{{ addr.line2 }}</p>
+                    <p>{{ addr.district }}, {{ addr.city }}</p>
+                  </div>
+                </div>
+                <div class="flex gap-2 ml-4">
+                  <button @click="editAddress(addr)" class="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium">
+                    Sửa
+                  </button>
+                  <button @click="deleteAddress(addr.id)" class="px-4 py-2 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-sm font-medium">
+                    Xóa
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
         <!-- Change Password Tab -->
-        <div v-if="activeTab === 'password'" class="password-section">
-          <form @submit.prevent="changePassword" class="profile-form">
-            <div class="form-group">
-              <label>Mật khẩu hiện tại *</label>
-              <input v-model="passwordForm.currentPassword" type="password" class="form-control" required />
-                </div>
+        <div v-if="activeTab === 'password'" class="space-y-6">
+          <form @submit.prevent="changePassword" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Mật khẩu hiện tại *</label>
+              <input v-model="passwordForm.currentPassword" type="password" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+            </div>
 
-            <div class="form-group">
-              <label>Mật khẩu mới *</label>
-              <input v-model="passwordForm.newPassword" type="password" class="form-control" required />
-              <small class="form-help">Mật khẩu phải có ít nhất 6 ký tự</small>
-              </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Mật khẩu mới *</label>
+              <input v-model="passwordForm.newPassword" type="password" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+              <small class="text-xs text-gray-500 dark:text-gray-400 mt-1">Mật khẩu phải có ít nhất 6 ký tự</small>
+            </div>
 
-            <div class="form-group">
-              <label>Xác nhận mật khẩu mới *</label>
-              <input v-model="passwordForm.confirmPassword" type="password" class="form-control" required />
-              </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Xác nhận mật khẩu mới *</label>
+              <input v-model="passwordForm.confirmPassword" type="password" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" required />
+            </div>
 
-            <div class="form-actions">
-              <button type="submit" class="btn btn-primary" :disabled="changingPassword">
+            <div class="flex justify-end">
+              <button type="submit" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all" :disabled="changingPassword">
                 <span v-if="changingPassword">Đang đổi mật khẩu...</span>
-                <span v-else">Đổi mật khẩu</span>
+                <span v-else>Đổi mật khẩu</span>
               </button>
             </div>
           </form>
-                </div>
+        </div>
 
         <!-- Loyalty Points Tab -->
-        <div v-if="activeTab === 'loyalty'" class="loyalty-section">
+        <div v-if="activeTab === 'loyalty'" class="space-y-6">
           <!-- Loyalty Balance Card -->
-          <div class="loyalty-balance-card">
-            <div class="balance-header">
-              <span class="material-icons loyalty-icon">stars</span>
-              <h2>Điểm thưởng của bạn</h2>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-6 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <i class="material-icons text-purple-600 dark:text-purple-400">stars</i>
+              </div>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">Điểm thưởng của bạn</h2>
             </div>
             
-            <div v-if="loyaltyLoading" class="loading">
-              <div class="loading-spinner"></div>
-              <p>Đang tải...</p>
+            <div v-if="loyaltyLoading" class="text-center py-8">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent mb-3"></div>
+              <p class="text-gray-600 dark:text-gray-400">Đang tải...</p>
             </div>
 
-            <div v-else class="balance-content">
-              <div class="points-display">
-                <div class="points-value">
+            <div v-else class="space-y-4">
+              <div class="text-center">
+                <div class="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
                   {{ loyaltyStore.currentBalance.toLocaleString() }}
                 </div>
-                <div class="points-label">Điểm</div>
+                <div class="text-lg text-gray-600 dark:text-gray-400">Điểm</div>
               </div>
 
-              <div class="points-equivalent">
-                <span class="material-icons">monetization_on</span>
+              <div class="flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300">
+                <i class="material-icons text-yellow-500">monetization_on</i>
                 <span>≈ {{ formatCurrency(loyaltyStore.calculateVndFromPoints(loyaltyStore.currentBalance)) }}</span>
               </div>
 
-              <div class="loyalty-info">
-                <div class="info-item">
-                  <span class="material-icons">info</span>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
+                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <i class="material-icons text-blue-500">info</i>
                   <span>1 điểm = 1.000 VNĐ</span>
                 </div>
-                <div class="info-item">
-                  <span class="material-icons">shopping_cart</span>
+                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <i class="material-icons text-green-500">shopping_cart</i>
                   <span>Dùng điểm khi thanh toán</span>
                 </div>
               </div>
@@ -169,85 +219,165 @@
           </div>
 
           <!-- Points History -->
-          <div class="loyalty-history">
-            <h3>Lịch sử điểm thưởng</h3>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Lịch sử điểm thưởng</h3>
             
-            <div v-if="loyaltyHistory.length === 0" class="empty-state">
-              <span class="material-icons">history</span>
-              <p>Chưa có lịch sử điểm thưởng</p>
+            <div v-if="loyaltyHistory.length === 0" class="text-center py-12 border border-gray-200 dark:border-gray-700 rounded-xl">
+              <i class="material-icons text-6xl text-gray-400 mb-3">history</i>
+              <p class="text-gray-600 dark:text-gray-400">Chưa có lịch sử điểm thưởng</p>
             </div>
 
-            <div v-else class="history-list">
+            <div v-else class="space-y-3">
               <div 
                 v-for="item in loyaltyHistory" 
                 :key="item.id"
-                class="history-item"
+                class="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
-                <div class="history-icon" :class="`type-${item.transactionType}`">
-                  <span class="material-icons">
+                <div :class="[
+                  'w-12 h-12 rounded-full flex items-center justify-center',
+                  item.transactionType === 'earn' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+                  item.transactionType === 'redeem' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                  'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                ]">
+                  <i class="material-icons">
                     {{ item.transactionType === 'earn' ? 'add_circle' : item.transactionType === 'redeem' ? 'remove_circle' : 'access_time' }}
-                  </span>
+                  </i>
                 </div>
 
-                <div class="history-content">
-                  <div class="history-description">
-                    {{ item.description }}
-                  </div>
-                  <div class="history-date">
-                    {{ formatDate(item.createdAt) }}
-                  </div>
+                <div class="flex-1">
+                  <div class="font-medium text-gray-900 dark:text-gray-100">{{ item.description }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ formatDate(item.createdAt) }}</div>
                 </div>
 
-                <div class="history-points" :class="`points-${item.transactionType}`">
+                <div :class="[
+                  'font-bold text-lg',
+                  item.transactionType === 'earn' ? 'text-green-600 dark:text-green-400' :
+                  item.transactionType === 'redeem' ? 'text-red-600 dark:text-red-400' :
+                  'text-gray-600 dark:text-gray-400'
+                ]">
                   {{ item.transactionType === 'earn' ? '+' : '-' }}{{ Math.abs(item.points) }}
                 </div>
               </div>
             </div>
           </div>
         </div>
-              </div>
+
+        <!-- Theme Settings Tab -->
+        <div v-if="activeTab === 'theme'" class="space-y-6">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Cài đặt Giao diện</h2>
+            <p class="text-gray-600 dark:text-gray-400">Chọn chế độ giao diện sáng hoặc tối</p>
+          </div>
+
+          <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-6" :class="isDark ? 'bg-gray-900' : 'bg-white'">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-3 h-3 rounded-full bg-red-500"></div>
+              <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <div class="w-3 h-3 rounded-full bg-green-500"></div>
             </div>
+            <div>
+              <div class="font-semibold mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">Xem trước</div>
+              <div class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Chế độ hiện tại: {{ isDark ? 'Tối' : 'Sáng' }}</div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">Chế độ giao diện</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label :class="[
+                'p-4 border-2 rounded-xl cursor-pointer transition-all',
+                theme === 'light' ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
+              ]">
+                <input type="radio" :value="'light'" :checked="theme === 'light'" @change="handleThemeChange('light')" name="theme" class="hidden" />
+                <div class="flex items-center gap-3">
+                  <i class="material-icons text-yellow-500">light_mode</i>
+                  <div>
+                    <div class="font-semibold text-gray-900 dark:text-gray-100">Sáng</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Giao diện sáng với màu nền trắng</div>
+                  </div>
+                </div>
+              </label>
+
+              <label :class="[
+                'p-4 border-2 rounded-xl cursor-pointer transition-all',
+                theme === 'dark' ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
+              ]">
+                <input type="radio" :value="'dark'" :checked="theme === 'dark'" @change="handleThemeChange('dark')" name="theme" class="hidden" />
+                <div class="flex items-center gap-3">
+                  <i class="material-icons text-indigo-500">dark_mode</i>
+                  <div>
+                    <div class="font-semibold text-gray-900 dark:text-gray-100">Tối</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Giao diện tối với màu nền đen</div>
+                  </div>
+                </div>
+              </label>
+
+              <label :class="[
+                'p-4 border-2 rounded-xl cursor-pointer transition-all',
+                theme === 'system' ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
+              ]">
+                <input type="radio" :value="'system'" :checked="theme === 'system'" @change="handleThemeChange('system')" name="theme" class="hidden" />
+                <div class="flex items-center gap-3">
+                  <i class="material-icons text-gray-500">brightness_auto</i>
+                  <div>
+                    <div class="font-semibold text-gray-900 dark:text-gray-100">Theo hệ thống</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Tự động theo cài đặt hệ thống</div>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button @click="saveThemeSettings" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center gap-2">
+              <i class="material-icons">save</i>
+              Lưu cài đặt
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Add/Edit Address Modal -->
-    <div v-if="showAddressForm" class="modal-overlay" @click.self="showAddressForm = false">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>{{ editingAddress ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ mới' }}</h3>
-          <button @click="closeAddressForm" class="modal-close">×</button>
+    <div v-if="showAddressForm" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showAddressForm = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ editingAddress ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ mới' }}</h3>
+          <button @click="closeAddressForm" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">×</button>
         </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>Họ tên người nhận *</label>
-            <input v-model="addressForm.recipientName" type="text" class="form-control" />
+        <div class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Họ tên người nhận *</label>
+            <input v-model="addressForm.recipientName" type="text" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
-          <div class="form-group">
-            <label>Số điện thoại *</label>
-            <input v-model="addressForm.phone" type="tel" class="form-control" />
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Số điện thoại *</label>
+            <input v-model="addressForm.phone" type="tel" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
-          <div class="form-group">
-            <label>Địa chỉ *</label>
-            <input v-model="addressForm.line1" type="text" class="form-control" />
-                </div>
-          <div class="form-group">
-            <label>Địa chỉ 2 (tùy chọn)</label>
-            <input v-model="addressForm.line2" type="text" class="form-control" />
-              </div>
-          <div class="form-group">
-            <label>Quận/Huyện *</label>
-            <input v-model="addressForm.district" type="text" class="form-control" />
-                </div>
-          <div class="form-group">
-            <label>Tỉnh/Thành phố *</label>
-            <input v-model="addressForm.city" type="text" class="form-control" />
-              </div>
-            </div>
-        <div class="modal-footer">
-          <button @click="saveAddress" class="btn btn-primary">
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Địa chỉ *</label>
+            <input v-model="addressForm.line1" type="text" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Địa chỉ 2 (tùy chọn)</label>
+            <input v-model="addressForm.line2" type="text" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Quận/Huyện *</label>
+            <input v-model="addressForm.district" type="text" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Tỉnh/Thành phố *</label>
+            <input v-model="addressForm.city" type="text" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500" />
+          </div>
+        </div>
+        <div class="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+          <button @click="saveAddress" class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">
             {{ editingAddress ? 'Cập nhật' : 'Lưu địa chỉ' }}
           </button>
-          <button @click="closeAddressForm" class="btn btn-outline">Hủy</button>
+          <button @click="closeAddressForm" class="flex-1 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">Hủy</button>
         </div>
-          </div>
+      </div>
     </div>
   </div>
 </template>
@@ -256,6 +386,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
+import { useTheme } from '@/composables/useTheme';
 import { storeToRefs } from 'pinia';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import axios from 'axios';
@@ -263,6 +394,7 @@ import axios from 'axios';
 const authStore = useAuthStore();
 const loyaltyStore = useLoyaltyStore();
 const { loading: loyaltyLoading } = storeToRefs(loyaltyStore);
+const { theme, setTheme, isDark } = useTheme();
 
 // State
 const activeTab = ref('info');
@@ -317,10 +449,10 @@ const updateProfile = async () => {
     // });
 
     ElMessage.success('Cập nhật thông tin thành công');
-      } catch (error) {
+  } catch (error) {
     console.error('Error updating profile:', error);
     ElMessage.error('Không thể cập nhật thông tin');
-      } finally {
+  } finally {
     updating.value = false;
   }
 };
@@ -337,7 +469,7 @@ const changePassword = async () => {
   }
 
   try {
-      changingPassword.value = true;
+    changingPassword.value = true;
 
     // Note: Backend needs to support password change endpoint
     // await axios.post('http://localhost:8080/api/auth/change-password', {
@@ -349,16 +481,16 @@ const changePassword = async () => {
 
     ElMessage.success('Đổi mật khẩu thành công');
         
-        // Reset form
+    // Reset form
     passwordForm.currentPassword = '';
     passwordForm.newPassword = '';
     passwordForm.confirmPassword = '';
-      } catch (error) {
+  } catch (error) {
     console.error('Error changing password:', error);
     ElMessage.error('Không thể đổi mật khẩu');
-      } finally {
-        changingPassword.value = false;
-      }
+  } finally {
+    changingPassword.value = false;
+  }
 };
 
 const loadAddresses = async () => {
@@ -503,457 +635,18 @@ watch(activeTab, (newTab) => {
   }
 });
 
-// Lifecycle
+// Theme settings
+const handleThemeChange = (newTheme) => {
+  setTheme(newTheme);
+};
+
+const saveThemeSettings = () => {
+  // Theme is already saved when changed via handleThemeChange
+  ElMessage.success('Đã lưu cài đặt giao diện thành công!');
+};
+
 onMounted(() => {
   loadProfile();
   loadAddresses();
 });
 </script>
-
-<style scoped>
-.profile-page {
-  background: transparent;
-}
-
-.profile-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 100px var(--space-6);
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: var(--space-10);
-}
-
-/* Tabs */
-.profile-tabs {
-  display: flex;
-  gap: var(--space-2);
-  border-bottom: 1px solid rgba(167, 139, 250, 0.2);
-  margin-bottom: var(--space-8);
-}
-
-.tab-btn {
-  padding: var(--space-4) var(--space-6);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 15px;
-  color: #94a3b8;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.tab-btn:hover {
-  color: #a78bfa;
-}
-
-.tab-btn.active {
-  color: #a78bfa;
-  border-bottom-color: #a78bfa;
-}
-
-/* Tab Content */
-.tab-content {
-  background: rgba(30, 41, 59, 0.6);
-  padding: var(--space-8);
-  border-radius: var(--radius-xl);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-}
-
-/* Forms */
-.profile-form {
-  max-width: 500px;
-}
-
-.form-group {
-  margin-bottom: var(--space-4);
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-semibold);
-}
-
-.form-control {
-  width: 100%;
-  padding: var(--space-3);
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-.form-control:disabled {
-  background: var(--bg-secondary);
-  cursor: not-allowed;
-}
-
-.form-help {
-  display: block;
-  margin-top: var(--space-1);
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-}
-
-.form-actions {
-  margin-top: var(--space-6);
-}
-
-/* Address Section */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-4);
-}
-
-.section-header h2 {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  margin: 0;
-}
-
-.address-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.address-item {
-  display: flex;
-  justify-content: space-between;
-  padding: var(--space-4);
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-}
-
-.address-content h4 {
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-2);
-}
-
-.address-content p {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  margin: var(--space-1) 0;
-}
-
-.address-actions {
-  display: flex;
-  gap: var(--space-2);
-  align-items: flex-start;
-}
-
-.empty-state {
-  text-align: center;
-  padding: var(--space-8);
-  color: var(--text-secondary);
-}
-
-.loading {
-  text-align: center;
-  padding: var(--space-6);
-  color: var(--text-secondary);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-4);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: var(--text-xl);
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: none;
-  font-size: var(--text-2xl);
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-
-.modal-close:hover {
-  color: var(--error-color);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.modal-footer {
-  padding: var(--space-4);
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  gap: var(--space-3);
-  justify-content: flex-end;
-}
-
-/* Loyalty Section */
-.loyalty-balance-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: var(--space-8);
-  border-radius: var(--radius-xl);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
-
-.balance-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-6);
-}
-
-.loyalty-icon {
-  font-size: 32px;
-  color: #ffd700;
-}
-
-.balance-header h2 {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  margin: 0;
-}
-
-.balance-content {
-  text-align: center;
-}
-
-.points-display {
-  margin-bottom: var(--space-6);
-}
-
-.points-value {
-  font-size: 64px;
-  font-weight: var(--font-bold);
-  line-height: 1;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.points-label {
-  font-size: var(--text-lg);
-  font-weight: var(--font-medium);
-  opacity: 0.9;
-  margin-top: var(--space-2);
-}
-
-.points-equivalent {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-6);
-  padding: var(--space-3) var(--space-6);
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(10px);
-}
-
-.loyalty-info {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-8);
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  opacity: 0.95;
-}
-
-.info-item .material-icons {
-  font-size: 20px;
-}
-
-/* Loyalty History */
-.loyalty-history h3 {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-4);
-}
-
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.history-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  background: var(--bg-primary);
-  border: 2px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  transition: var(--transition-fast);
-}
-
-.history-item:hover {
-  border-color: rgba(102, 126, 234, 0.3);
-  box-shadow: var(--shadow-md);
-}
-
-.history-icon {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.history-icon.type-earn {
-  background: rgba(72, 187, 120, 0.1);
-  color: var(--color-success);
-}
-
-.history-icon.type-redeem {
-  background: rgba(237, 137, 54, 0.1);
-  color: var(--color-warning);
-}
-
-.history-icon.type-expire {
-  background: rgba(245, 101, 101, 0.1);
-  color: var(--color-error);
-}
-
-.history-icon .material-icons {
-  font-size: 24px;
-}
-
-.history-content {
-  flex: 1;
-}
-
-.history-description {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-1);
-}
-
-.history-date {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-}
-
-.history-points {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-}
-
-.history-points.points-earn {
-  color: var(--color-success);
-}
-
-.history-points.points-redeem {
-  color: var(--color-warning);
-}
-
-.history-points.points-expire {
-  color: var(--color-error);
-}
-
-.loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: var(--radius-full);
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto var(--space-3);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .profile-tabs {
-    overflow-x: auto;
-  }
-
-  .tab-btn {
-    white-space: nowrap;
-  }
-
-  .address-item {
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .address-actions {
-    width: 100%;
-  }
-
-  .address-actions button {
-    flex: 1;
-  }
-
-  .loyalty-balance-card {
-    padding: var(--space-6);
-  }
-
-  .points-value {
-    font-size: 48px;
-  }
-
-  .loyalty-info {
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-}
-</style>

@@ -1,26 +1,26 @@
 <template>
-  <div class="admin-page admin-email-templates">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header animate-fade-in">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">email</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">email</i>
             Quản lý Email Templates
           </h1>
-          <p class="page-subtitle">Tạo và quản lý các mẫu email tự động</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Tạo và quản lý các mẫu email tự động</p>
         </div>
-        <div class="header-actions">
-          <button @click="exportTemplates('csv')" class="btn btn-secondary">
-            <span class="material-icons">file_download</span>
+        <div class="flex items-center gap-2">
+          <button @click="exportTemplates('csv')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">file_download</i>
             CSV
           </button>
-          <button @click="exportTemplates('json')" class="btn btn-secondary">
-            <span class="material-icons">code</span>
+          <button @click="exportTemplates('json')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">code</i>
             JSON
           </button>
-          <button @click="openCreateModal" class="btn btn-primary">
-            <span class="material-icons">add</span>
+          <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">add</i>
             Tạo mới
           </button>
         </div>
@@ -28,92 +28,100 @@
     </div>
 
     <!-- Enhanced Stats Grid -->
-    <div class="stats-grid animate-fade-up">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
-          <span class="material-icons">email</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">email</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Tổng templates</div>
-          <div class="stat-value">{{ formatNumber(totalTemplates) }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">trending_up</span>
-            +{{ formatNumber(newTemplatesThisMonth) }} tháng này
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(totalTemplates) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng templates</p>
+          <div class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+            <i class="material-icons text-sm">trending_up</i>
+            <span>+{{ formatNumber(newTemplatesThisMonth) }} tháng này</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-          <span class="material-icons">check_circle</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">check_circle</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Đang hoạt động</div>
-          <div class="stat-value">{{ formatNumber(activeTemplates) }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">done</span>
-            {{ Math.round((activeTemplates / totalTemplates) * 100) || 0 }}% tổng số
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(activeTemplates) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Đang hoạt động</p>
+          <div class="flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400">
+            <i class="material-icons text-sm">done</i>
+            <span>{{ Math.round((activeTemplates / totalTemplates) * 100) || 0 }}% tổng số</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-          <span class="material-icons">schedule</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">schedule</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Đã gửi hôm nay</div>
-          <div class="stat-value">{{ formatNumber(emailsSentToday) }}</div>
-          <div class="stat-change neutral">
-            <span class="material-icons">info</span>
-            {{ formatNumber(emailsSentThisWeek) }} tuần này
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(emailsSentToday) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Đã gửi hôm nay</p>
+          <div class="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+            <i class="material-icons text-sm">info</i>
+            <span>{{ formatNumber(emailsSentThisWeek) }} tuần này</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-          <span class="material-icons">rate_review</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">rate_review</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Tỷ lệ mở</div>
-          <div class="stat-value">{{ openRate }}%</div>
-          <div class="stat-change positive">
-            <span class="material-icons">trending_up</span>
-            +2.3% so với tuần trước
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ openRate }}%</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tỷ lệ mở</p>
+          <div class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+            <i class="material-icons text-sm">trending_up</i>
+            <span>+2.3% so với tuần trước</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="filters-section animate-fade-up">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">search</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">search</i>
             Tìm kiếm
           </label>
-          <div class="search-box">
-            <span class="material-icons search-icon">search</span>
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
             <input 
               type="text" 
-              class="search-input" 
+              class="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               v-model="searchKeyword"
               placeholder="Tìm theo tên template, chủ đề..."
             />
-            <button v-if="searchKeyword" @click="clearSearch" class="search-clear">
-              <span class="material-icons">close</span>
+            <button v-if="searchKeyword" @click="clearSearch" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <i class="material-icons text-base">close</i>
             </button>
           </div>
         </div>
         
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">category</span>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">category</i>
             Loại template
           </label>
-          <select class="filter-select" v-model="filterType">
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterType">
             <option value="all">Tất cả</option>
             <option value="welcome">Chào mừng</option>
             <option value="order">Đơn hàng</option>
@@ -123,12 +131,12 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">toggle_on</span>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">toggle_on</i>
             Trạng thái
           </label>
-          <select class="filter-select" v-model="filterStatus">
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterStatus">
             <option value="all">Tất cả</option>
             <option value="active">Hoạt động</option>
             <option value="inactive">Tạm dừng</option>
@@ -136,9 +144,9 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <button class="btn btn-outline" @click="resetFilters">
-            <span class="material-icons">refresh</span>
+        <div class="flex items-end">
+          <button class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium w-full" @click="resetFilters">
+            <i class="material-icons text-base">refresh</i>
             Làm mới
           </button>
         </div>
@@ -146,86 +154,111 @@
     </div>
 
     <!-- Templates Grid -->
-    <div class="templates-container animate-fade-up">
-      <div class="templates-header">
-        <h3 class="templates-title">Danh sách Email Templates</h3>
-        <div class="templates-actions">
-          <span class="templates-info">{{ filteredTemplates.length }} templates</span>
-          <div class="view-toggle">
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Danh sách Email Templates</h3>
+        <div class="flex items-center gap-4">
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ filteredTemplates.length }} templates</span>
+          <div class="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
             <button 
               @click="viewMode = 'grid'" 
-              :class="['view-btn', { active: viewMode === 'grid' }]"
+              class="p-1.5 rounded transition-colors"
+              :class="viewMode === 'grid' ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
             >
-              <span class="material-icons">grid_view</span>
+              <i class="material-icons text-base">grid_view</i>
             </button>
             <button 
               @click="viewMode = 'list'" 
-              :class="['view-btn', { active: viewMode === 'list' }]"
+              class="p-1.5 rounded transition-colors"
+              :class="viewMode === 'list' ? 'bg-white dark:bg-gray-600 text-purple-600 dark:text-purple-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
             >
-              <span class="material-icons">list</span>
+              <i class="material-icons text-base">list</i>
             </button>
           </div>
         </div>
       </div>
 
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
+      <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
       </div>
 
-      <div v-else-if="filteredTemplates.length === 0" class="empty-state">
-        <span class="material-icons">email</span>
-        <h3>Không có template nào</h3>
-        <p>Chưa có email template nào được tạo</p>
+      <div v-else-if="filteredTemplates.length === 0" class="flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">email</i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Không có template nào</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">Chưa có email template nào được tạo</p>
+        <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+          <i class="material-icons text-base">add</i>
+          Tạo mới
+        </button>
       </div>
 
       <!-- Grid View -->
-      <div v-else-if="viewMode === 'grid'" class="templates-grid">
+      <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div 
           v-for="template in paginatedTemplates" 
           :key="template.id" 
-          class="template-card"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer"
           @click="viewTemplate(template)"
         >
-          <div class="template-header">
-            <div class="template-icon">
-              <span class="material-icons">{{ getTemplateIcon(template.type) }}</span>
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <i class="material-icons text-purple-600 dark:text-purple-400">{{ getTemplateIcon(template.type) }}</i>
             </div>
-            <div class="template-status">
-              <span :class="['status-badge', template.isActive ? 'active' : 'inactive']">
-                {{ template.isActive ? 'Hoạt động' : 'Tạm dừng' }}
+            <span 
+              class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+              :class="template.isActive 
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'"
+            >
+              {{ template.isActive ? 'Hoạt động' : 'Tạm dừng' }}
+            </span>
+          </div>
+          
+          <div class="p-4">
+            <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ template.name }}</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{{ template.subject }}</p>
+            <div class="mb-3">
+              <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                {{ getTemplateTypeText(template.type) }}
               </span>
             </div>
           </div>
           
-          <div class="template-content">
-            <h4 class="template-name">{{ template.name }}</h4>
-            <p class="template-subject">{{ template.subject }}</p>
-            <div class="template-type">
-              <span class="type-badge">{{ getTemplateTypeText(template.type) }}</span>
-            </div>
-          </div>
-          
-          <div class="template-footer">
-            <div class="template-stats">
-              <div class="stat">
-                <span class="material-icons">send</span>
+          <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+              <div class="flex items-center gap-1">
+                <i class="material-icons text-sm">send</i>
                 <span>{{ formatNumber(template.sentCount) }}</span>
               </div>
-              <div class="stat">
-                <span class="material-icons">visibility</span>
+              <div class="flex items-center gap-1">
+                <i class="material-icons text-sm">visibility</i>
                 <span>{{ template.openRate }}%</span>
               </div>
             </div>
-            <div class="template-actions">
-              <button @click.stop="editTemplate(template)" class="btn-icon btn-edit" title="Chỉnh sửa">
-                <span class="material-icons">edit</span>
+            <div class="flex items-center gap-1" @click.stop>
+              <button 
+                @click="editTemplate(template)" 
+                class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                title="Chỉnh sửa"
+              >
+                <i class="material-icons text-base">edit</i>
               </button>
-              <button @click.stop="duplicateTemplate(template)" class="btn-icon btn-duplicate" title="Sao chép">
-                <span class="material-icons">content_copy</span>
+              <button 
+                @click="duplicateTemplate(template)" 
+                class="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                title="Sao chép"
+              >
+                <i class="material-icons text-base">content_copy</i>
               </button>
-              <button @click.stop="deleteTemplate(template)" class="btn-icon btn-delete" title="Xóa">
-                <span class="material-icons">delete</span>
+              <button 
+                @click="deleteTemplate(template)" 
+                class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                title="Xóa"
+              >
+                <i class="material-icons text-base">delete</i>
               </button>
             </div>
           </div>
@@ -233,247 +266,308 @@
       </div>
 
       <!-- List View -->
-      <div v-else class="templates-list">
-        <div class="list-header">
-          <div class="list-column">Template</div>
-          <div class="list-column">Loại</div>
-          <div class="list-column">Trạng thái</div>
-          <div class="list-column">Đã gửi</div>
-          <div class="list-column">Tỷ lệ mở</div>
-          <div class="list-column">Cập nhật</div>
-          <div class="list-column">Thao tác</div>
-        </div>
-        
-        <div 
-          v-for="template in paginatedTemplates" 
-          :key="template.id" 
-          class="list-item"
-        >
-          <div class="list-cell template-cell">
-            <div class="template-info">
-              <div class="template-icon">
-                <span class="material-icons">{{ getTemplateIcon(template.type) }}</span>
-              </div>
-              <div class="template-details">
-                <div class="template-name">{{ template.name }}</div>
-                <div class="template-subject">{{ template.subject }}</div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="list-cell">
-            <span class="type-badge">{{ getTemplateTypeText(template.type) }}</span>
-          </div>
-          
-          <div class="list-cell">
-            <span :class="['status-badge', template.isActive ? 'active' : 'inactive']">
-              {{ template.isActive ? 'Hoạt động' : 'Tạm dừng' }}
-            </span>
-          </div>
-          
-          <div class="list-cell">
-            <span class="sent-count">{{ formatNumber(template.sentCount) }}</span>
-          </div>
-          
-          <div class="list-cell">
-            <span class="open-rate">{{ template.openRate }}%</span>
-          </div>
-          
-          <div class="list-cell">
-            <span class="update-time">{{ formatDate(template.updatedAt) }}</span>
-          </div>
-          
-          <div class="list-cell">
-            <div class="action-buttons">
-              <button @click="viewTemplate(template)" class="btn-icon btn-view" title="Xem">
-                <span class="material-icons">visibility</span>
-              </button>
-              <button @click="editTemplate(template)" class="btn-icon btn-edit" title="Chỉnh sửa">
-                <span class="material-icons">edit</span>
-              </button>
-              <button @click="duplicateTemplate(template)" class="btn-icon btn-duplicate" title="Sao chép">
-                <span class="material-icons">content_copy</span>
-              </button>
-              <button @click="deleteTemplate(template)" class="btn-icon btn-delete" title="Xóa">
-                <span class="material-icons">delete</span>
-              </button>
-            </div>
-          </div>
-        </div>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Template</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Loại</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Đã gửi</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Tỷ lệ mở</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Cập nhật</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr 
+              v-for="template in paginatedTemplates" 
+              :key="template.id" 
+              class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+            >
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                    <i class="material-icons text-purple-600 dark:text-purple-400">{{ getTemplateIcon(template.type) }}</i>
+                  </div>
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ template.name }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ template.subject }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-4">
+                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                  {{ getTemplateTypeText(template.type) }}
+                </span>
+              </td>
+              <td class="px-4 py-4">
+                <span 
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="template.isActive 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'"
+                >
+                  {{ template.isActive ? 'Hoạt động' : 'Tạm dừng' }}
+                </span>
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">{{ formatNumber(template.sentCount) }}</td>
+              <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">{{ template.openRate }}%</td>
+              <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">{{ formatDate(template.updatedAt) }}</td>
+              <td class="px-4 py-4 text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <button 
+                    @click="viewTemplate(template)" 
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Xem"
+                  >
+                    <i class="material-icons text-base">visibility</i>
+                  </button>
+                  <button 
+                    @click="editTemplate(template)" 
+                    class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                    title="Chỉnh sửa"
+                  >
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+                  <button 
+                    @click="duplicateTemplate(template)" 
+                    class="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                    title="Sao chép"
+                  >
+                    <i class="material-icons text-base">content_copy</i>
+                  </button>
+                  <button 
+                    @click="deleteTemplate(template)" 
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    title="Xóa"
+                  >
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="pagination-container">
-        <button 
-          @click="goToPage(currentPage - 1)" 
-          :disabled="currentPage === 0"
-          class="page-btn"
-        >
-          <span class="material-icons">chevron_left</span>
-        </button>
-        
-        <span class="page-info">
-          Trang {{ currentPage + 1 }} / {{ totalPages }}
-        </span>
-        
-        <button 
-          @click="goToPage(currentPage + 1)" 
-          :disabled="currentPage === totalPages - 1"
-          class="page-btn"
-        >
-          <span class="material-icons">chevron_right</span>
-        </button>
+      <div v-if="!loading && filteredTemplates.length > 0 && totalPages > 1" class="flex items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          Hiển thị {{ currentPage * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, filteredTemplates.length) }} trong tổng số {{ filteredTemplates.length }} templates
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="currentPage === 0"
+            @click="goToPage(currentPage - 1)"
+          >
+            <i class="material-icons text-base">chevron_left</i>
+            Trước
+          </button>
+          <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">
+            Trang {{ currentPage + 1 }} / {{ totalPages }}
+          </span>
+          <button
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="currentPage >= totalPages - 1"
+            @click="goToPage(currentPage + 1)"
+          >
+            Sau
+            <i class="material-icons text-base">chevron_right</i>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Template Editor Modal -->
-    <div v-if="showEditorModal" class="modal-overlay" @click="closeEditorModal">
-      <div class="modal-content modal-xl" @click.stop>
-        <div class="modal-header">
-          <h3 class="modal-title">
-            <span class="material-icons">edit</span>
+    <div 
+      v-if="showEditorModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-opacity-70 p-4"
+      @click="closeEditorModal"
+    >
+      <div 
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">edit</i>
             {{ isEditing ? 'Chỉnh sửa' : 'Tạo mới' }} Email Template
           </h3>
-          <button @click="closeEditorModal" class="modal-close">
-            <span class="material-icons">close</span>
+          <button 
+            @click="closeEditorModal" 
+            class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            <i class="material-icons text-base">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div class="template-editor">
-            <div class="editor-tabs">
+        <div class="p-4">
+          <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex gap-2">
               <button 
                 @click="activeTab = 'basic'" 
-                :class="['tab-btn', { active: activeTab === 'basic' }]"
+                class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors"
+                :class="activeTab === 'basic' 
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
               >
-                <span class="material-icons">info</span>
+                <i class="material-icons text-base">info</i>
                 Thông tin cơ bản
               </button>
               <button 
                 @click="activeTab = 'content'" 
-                :class="['tab-btn', { active: activeTab === 'content' }]"
+                class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors"
+                :class="activeTab === 'content' 
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
               >
-                <span class="material-icons">article</span>
+                <i class="material-icons text-base">article</i>
                 Nội dung
               </button>
               <button 
                 @click="activeTab = 'preview'" 
-                :class="['tab-btn', { active: activeTab === 'preview' }]"
+                class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors"
+                :class="activeTab === 'preview' 
+                  ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
               >
-                <span class="material-icons">preview</span>
+                <i class="material-icons text-base">preview</i>
                 Xem trước
               </button>
             </div>
+          </div>
 
-            <div class="editor-content">
-              <!-- Basic Info Tab -->
-              <div v-if="activeTab === 'basic'" class="tab-content">
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label class="form-label">Tên template</label>
-                    <input 
-                      type="text" 
-                      v-model="templateForm.name" 
-                      class="form-input"
-                      placeholder="Nhập tên template..."
-                    >
-                  </div>
-                  
-                  <div class="form-group">
-                    <label class="form-label">Loại template</label>
-                    <select v-model="templateForm.type" class="form-input">
-                      <option value="welcome">Chào mừng</option>
-                      <option value="order">Đơn hàng</option>
-                      <option value="promotion">Khuyến mãi</option>
-                      <option value="notification">Thông báo</option>
-                      <option value="reminder">Nhắc nhở</option>
-                    </select>
-                  </div>
-                  
-                  <div class="form-group">
-                    <label class="form-label">Chủ đề email</label>
-                    <input 
-                      type="text" 
-                      v-model="templateForm.subject" 
-                      class="form-input"
-                      placeholder="Nhập chủ đề email..."
-                    >
-                  </div>
-                  
-                  <div class="form-group">
-                    <label class="form-label">Trạng thái</label>
-                    <div class="toggle-switch">
-                      <input 
-                        type="checkbox" 
-                        v-model="templateForm.isActive" 
-                        id="template-active"
-                      >
-                      <label for="template-active" class="toggle-slider"></label>
-                      <span class="toggle-label">{{ templateForm.isActive ? 'Hoạt động' : 'Tạm dừng' }}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="form-group">
-                  <label class="form-label">Mô tả</label>
-                  <textarea 
-                    v-model="templateForm.description" 
-                    class="form-input"
-                    rows="3"
-                    placeholder="Nhập mô tả template..."
-                  ></textarea>
+          <!-- Basic Info Tab -->
+          <div v-if="activeTab === 'basic'" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tên template</label>
+                <input 
+                  type="text" 
+                  v-model="templateForm.name" 
+                  class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Nhập tên template..."
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Loại template</label>
+                <select 
+                  v-model="templateForm.type" 
+                  class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="welcome">Chào mừng</option>
+                  <option value="order">Đơn hàng</option>
+                  <option value="promotion">Khuyến mãi</option>
+                  <option value="notification">Thông báo</option>
+                  <option value="reminder">Nhắc nhở</option>
+                </select>
+              </div>
+              
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chủ đề email</label>
+                <input 
+                  type="text" 
+                  v-model="templateForm.subject" 
+                  class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Nhập chủ đề email..."
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trạng thái</label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    v-model="templateForm.isActive" 
+                    class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  >
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ templateForm.isActive ? 'Hoạt động' : 'Tạm dừng' }}</span>
+                </label>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mô tả</label>
+              <textarea 
+                v-model="templateForm.description" 
+                class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                rows="3"
+                placeholder="Nhập mô tả template..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Content Tab -->
+          <div v-if="activeTab === 'content'" class="space-y-4">
+            <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <button 
+                @click="insertVariable('{{name}}')" 
+                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+              >
+                <i class="material-icons text-base">person</i>
+                Tên
+              </button>
+              <button 
+                @click="insertVariable('{{email}}')" 
+                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+              >
+                <i class="material-icons text-base">email</i>
+                Email
+              </button>
+              <button 
+                @click="insertVariable('{{orderNumber}}')" 
+                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+              >
+                <i class="material-icons text-base">receipt</i>
+                Số đơn hàng
+              </button>
+              <button 
+                @click="insertVariable('{{total}}')" 
+                class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+              >
+                <i class="material-icons text-base">attach_money</i>
+                Tổng tiền
+              </button>
+            </div>
+            
+            <div>
+              <textarea 
+                v-model="templateForm.body" 
+                class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono"
+                rows="12"
+                placeholder="Nhập nội dung email..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Preview Tab -->
+          <div v-if="activeTab === 'preview'" class="space-y-4">
+            <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ templateForm.subject || 'Chủ đề email' }}</h4>
+                <div class="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                  <span>Gửi đến: {{ previewData.email }}</span>
+                  <span>Ngày: {{ formatDate(new Date()) }}</span>
                 </div>
               </div>
-
-              <!-- Content Tab -->
-              <div v-if="activeTab === 'content'" class="tab-content">
-                <div class="editor-toolbar">
-                  <button @click="insertVariable('{{name}}')" class="toolbar-btn">
-                    <span class="material-icons">person</span>
-                    Tên
-                  </button>
-                  <button @click="insertVariable('{{email}}')" class="toolbar-btn">
-                    <span class="material-icons">email</span>
-                    Email
-                  </button>
-                  <button @click="insertVariable('{{orderNumber}}')" class="toolbar-btn">
-                    <span class="material-icons">receipt</span>
-                    Số đơn hàng
-                  </button>
-                  <button @click="insertVariable('{{total}}')" class="toolbar-btn">
-                    <span class="material-icons">attach_money</span>
-                    Tổng tiền
-                  </button>
-                </div>
-                
-                <div class="editor-container">
-                  <textarea 
-                    v-model="templateForm.body" 
-                    class="editor-textarea"
-                    placeholder="Nhập nội dung email..."
-                  ></textarea>
-                </div>
-              </div>
-
-              <!-- Preview Tab -->
-              <div v-if="activeTab === 'preview'" class="tab-content">
-                <div class="preview-container">
-                  <div class="preview-header">
-                    <h4>{{ templateForm.subject || 'Chủ đề email' }}</h4>
-                    <div class="preview-meta">
-                      <span>Gửi đến: {{ previewData.email }}</span>
-                      <span>Ngày: {{ formatDate(new Date()) }}</span>
-                    </div>
-                  </div>
-                  <div class="preview-body" v-html="previewContent"></div>
-                </div>
-              </div>
+              <div class="prose dark:prose-invert max-w-none" v-html="previewContent"></div>
             </div>
           </div>
         </div>
-        <div class="modal-actions">
-          <button @click="closeEditorModal" class="btn btn-secondary">Hủy</button>
-          <button @click="saveTemplate" class="btn btn-primary">
-            <span class="material-icons">save</span>
+        <div class="flex items-center justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button 
+            @click="closeEditorModal" 
+            class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+          >
+            Hủy
+          </button>
+          <button 
+            @click="saveTemplate" 
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+          >
+            <i class="material-icons text-base">save</i>
             {{ isEditing ? 'Cập nhật' : 'Tạo mới' }}
           </button>
         </div>
@@ -481,51 +575,76 @@
     </div>
 
     <!-- Template Viewer Modal -->
-    <div v-if="showViewerModal" class="modal-overlay" @click="closeViewerModal">
-      <div class="modal-content modal-lg" @click.stop>
-        <div class="modal-header">
-          <h3 class="modal-title">
-            <span class="material-icons">visibility</span>
+    <div 
+      v-if="showViewerModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-opacity-70 p-4"
+      @click="closeViewerModal"
+    >
+      <div 
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">visibility</i>
             {{ selectedTemplate?.name }}
           </h3>
-          <button @click="closeViewerModal" class="modal-close">
-            <span class="material-icons">close</span>
+          <button 
+            @click="closeViewerModal" 
+            class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            <i class="material-icons text-base">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div v-if="selectedTemplate" class="template-viewer">
-            <div class="template-info">
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>Loại:</label>
-                  <span>{{ getTemplateTypeText(selectedTemplate.type) }}</span>
+        <div class="p-4">
+          <div v-if="selectedTemplate">
+            <div class="mb-6">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Loại:</label>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ getTemplateTypeText(selectedTemplate.type) }}</span>
                 </div>
-                <div class="info-item">
-                  <label>Trạng thái:</label>
-                  <span :class="['status-badge', selectedTemplate.isActive ? 'active' : 'inactive']">
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Trạng thái:</label>
+                  <span 
+                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                    :class="selectedTemplate.isActive 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'"
+                  >
                     {{ selectedTemplate.isActive ? 'Hoạt động' : 'Tạm dừng' }}
                   </span>
                 </div>
-                <div class="info-item">
-                  <label>Đã gửi:</label>
-                  <span>{{ formatNumber(selectedTemplate.sentCount) }}</span>
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Đã gửi:</label>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ formatNumber(selectedTemplate.sentCount) }}</span>
                 </div>
-                <div class="info-item">
-                  <label>Tỷ lệ mở:</label>
-                  <span>{{ selectedTemplate.openRate }}%</span>
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Tỷ lệ mở:</label>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ selectedTemplate.openRate }}%</span>
                 </div>
               </div>
             </div>
             
-            <div class="template-preview">
-              <h4>{{ selectedTemplate.subject }}</h4>
-              <div class="preview-content" v-html="selectedTemplate.body"></div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ selectedTemplate.subject }}</h4>
+              <div class="prose dark:prose-invert max-w-none" v-html="selectedTemplate.body"></div>
             </div>
           </div>
         </div>
-        <div class="modal-actions">
-          <button @click="closeViewerModal" class="btn btn-secondary">Đóng</button>
-          <button @click="editTemplate(selectedTemplate)" class="btn btn-primary">Chỉnh sửa</button>
+        <div class="flex items-center justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button 
+            @click="closeViewerModal" 
+            class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+          >
+            Đóng
+          </button>
+          <button 
+            @click="editTemplate(selectedTemplate)" 
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+          >
+            Chỉnh sửa
+          </button>
         </div>
       </div>
     </div>
@@ -822,10 +941,12 @@ const closeViewerModal = () => {
 }
 
 const insertVariable = (variable) => {
-  const textarea = document.querySelector('.editor-textarea')
+  const textarea = document.querySelector('textarea[placeholder="Nhập nội dung email..."]')
+  if (!textarea) return
+  
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
-  const text = templateForm.value.body
+  const text = templateForm.value.body || ''
   const before = text.substring(0, start)
   const after = text.substring(end, text.length)
   
@@ -956,946 +1077,5 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* Page Header */
-.page-header {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
 
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
 
-.title-section {
-  flex: 1;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-/* Enhanced Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.stat-card {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  transition: all var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--space-4);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon .material-icons {
-  font-size: 24px;
-  color: white;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-medium);
-}
-
-.stat-value {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.stat-change {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-.stat-change.positive {
-  color: var(--success-text);
-}
-
-.stat-change.negative {
-  color: var(--error-text);
-}
-
-.stat-change.neutral {
-  color: var(--text-secondary);
-}
-
-.stat-change .material-icons {
-  font-size: 16px;
-}
-
-/* Filters Section */
-.filters-section {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: var(--space-4);
-  align-items: end;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-3);
-  color: var(--text-tertiary);
-  font-size: 20px;
-  z-index: 1;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
-  border: 1.5px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.4);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition: all var(--transition-fast);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.search-clear {
-  position: absolute;
-  right: var(--space-3);
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
-}
-
-.search-clear:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Templates Container */
-.templates-container {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.templates-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.templates-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.templates-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.templates-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.view-toggle {
-  display: flex;
-  gap: var(--space-1);
-}
-
-.view-btn {
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--border-primary);
-  background: transparent;
-  color: var(--text-tertiary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.view-btn:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.view-btn.active {
-  background: var(--accent-primary);
-  color: white;
-  border-color: var(--accent-primary);
-}
-
-/* Templates Grid */
-.templates-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--space-4);
-  padding: var(--space-6);
-}
-
-.template-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-}
-
-.template-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: var(--accent-primary);
-}
-
-.template-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-}
-
-.template-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--accent-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.template-icon .material-icons {
-  color: white;
-  font-size: 20px;
-}
-
-.template-content {
-  margin-bottom: var(--space-4);
-}
-
-.template-name {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.template-subject {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin: 0 0 var(--space-2) 0;
-  line-height: 1.4;
-}
-
-.template-type {
-  margin-bottom: var(--space-3);
-}
-
-.type-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-1) var(--space-2);
-  background: var(--info-bg);
-  color: var(--info-text);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.template-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.template-stats {
-  display: flex;
-  gap: var(--space-3);
-}
-
-.stat {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-.stat .material-icons {
-  font-size: 16px;
-}
-
-.template-actions {
-  display: flex;
-  gap: var(--space-1);
-}
-
-.btn-icon {
-  width: 28px;
-  height: 28px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.btn-icon:hover {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-.btn-edit:hover {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-.btn-duplicate:hover {
-  background: var(--info-bg);
-  color: var(--info-text);
-}
-
-.btn-delete:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Templates List */
-.templates-list {
-  padding: var(--space-6);
-}
-
-.list-header {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
-}
-
-.list-column {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.list-item {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-2);
-  transition: all var(--transition-fast);
-}
-
-.list-item:hover {
-  background: var(--bg-secondary);
-  border-color: var(--accent-primary);
-}
-
-.list-cell {
-  display: flex;
-  align-items: center;
-}
-
-.template-cell {
-  justify-content: flex-start;
-}
-
-.template-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.template-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.action-buttons {
-  display: flex;
-  gap: var(--space-1);
-}
-
-/* Status Badge */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.status-badge.active {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-
-.status-badge.inactive {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-content.modal-lg {
-  max-width: 800px;
-}
-
-.modal-content.modal-xl {
-  max-width: 1200px;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-/* Template Editor */
-.template-editor {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.editor-tabs {
-  display: flex;
-  gap: var(--space-2);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.tab-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all var(--transition-fast);
-}
-
-.tab-btn:hover {
-  color: var(--text-primary);
-}
-
-.tab-btn.active {
-  color: var(--accent-primary);
-  border-bottom-color: var(--accent-primary);
-}
-
-.editor-content {
-  min-height: 400px;
-}
-
-.tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.form-label {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.form-input {
-  padding: var(--space-3);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-}
-
-.toggle-switch {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.toggle-slider {
-  width: 40px;
-  height: 20px;
-  background: var(--bg-secondary);
-  border-radius: 20px;
-  position: relative;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.toggle-slider::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  background: white;
-  border-radius: 50%;
-  top: 2px;
-  left: 2px;
-  transition: all var(--transition-fast);
-}
-
-.toggle-switch input:checked + .toggle-slider {
-  background: var(--accent-primary);
-}
-
-.toggle-switch input:checked + .toggle-slider::after {
-  transform: translateX(20px);
-}
-
-.toggle-label {
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-}
-
-/* Editor Toolbar */
-.editor-toolbar {
-  display: flex;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
-}
-
-.toolbar-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-primary);
-  background: transparent;
-  color: var(--text-secondary);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.toolbar-btn:hover {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-color: var(--accent-primary);
-}
-
-.editor-container {
-  flex: 1;
-}
-
-.editor-textarea {
-  width: 100%;
-  height: 300px;
-  padding: var(--space-4);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-family: monospace;
-  font-size: var(--text-sm);
-  resize: vertical;
-}
-
-.editor-textarea:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-}
-
-/* Preview */
-.preview-container {
-  background: white;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.preview-header {
-  background: #f8f9fa;
-  padding: var(--space-4);
-  border-bottom: 1px solid #e9ecef;
-}
-
-.preview-header h4 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: #333;
-  margin: 0 0 var(--space-2) 0;
-}
-
-.preview-meta {
-  display: flex;
-  gap: var(--space-4);
-  font-size: var(--text-sm);
-  color: #666;
-}
-
-.preview-body {
-  padding: var(--space-4);
-  color: #333;
-  line-height: 1.6;
-}
-
-/* Template Viewer */
-.template-viewer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-}
-
-.template-info {
-  background: var(--bg-secondary);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-3);
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.info-item label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-}
-
-.info-item span {
-  color: var(--text-primary);
-}
-
-.template-preview {
-  background: white;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.template-preview h4 {
-  background: #f8f9fa;
-  padding: var(--space-4);
-  margin: 0;
-  border-bottom: 1px solid #e9ecef;
-  font-size: var(--text-lg);
-  color: #333;
-}
-
-.preview-content {
-  padding: var(--space-4);
-  color: #333;
-  line-height: 1.6;
-}
-
-/* Pagination */
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border-primary);
-  background: transparent;
-  color: var(--text-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--accent-primary);
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-/* Loading & Empty States */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  color: var(--text-secondary);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: var(--space-4);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  text-align: center;
-}
-
-.empty-state .material-icons {
-  font-size: 64px;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-4);
-}
-
-.empty-state h3 {
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.empty-state p {
-  color: var(--text-secondary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .filter-row {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .templates-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .list-header,
-  .list-item {
-    grid-template-columns: 1fr;
-    gap: var(--space-2);
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .editor-tabs {
-    flex-wrap: wrap;
-  }
-  
-  .tab-btn {
-    flex: 1;
-    min-width: 120px;
-  }
-}
-</style>

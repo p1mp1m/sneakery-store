@@ -1,119 +1,127 @@
 <template>
-  <div class="admin-page admin-inventory">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header animate-fade-in">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">inventory</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">inventory</i>
             Quản lý kho hàng
           </h1>
-          <p class="page-subtitle">Theo dõi tồn kho và lịch sử nhập/xuất hàng</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Theo dõi tồn kho và lịch sử nhập/xuất hàng</p>
         </div>
-        <div class="header-actions">
-          <button @click="exportInventory('csv')" class="btn btn-secondary">
-            <span class="material-icons">file_download</span>
+        <div class="flex items-center gap-2">
+          <button @click="exportInventory('csv')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">file_download</i>
             CSV
           </button>
-          <button @click="exportInventory('json')" class="btn btn-secondary">
-            <span class="material-icons">code</span>
+          <button @click="exportInventory('json')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">code</i>
             JSON
           </button>
-          <button @click="openStockAdjustmentModal" class="btn btn-primary">
-            <span class="material-icons">add</span>
+          <button @click="openStockAdjustmentModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">add</i>
             Điều chỉnh kho
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Enhanced Stats Grid -->
-    <div class="stats-grid animate-fade-up">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
-          <span class="material-icons">inventory_2</span>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">inventory_2</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Tổng sản phẩm</div>
-          <div class="stat-value">{{ formatNumber(totalProducts) }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">trending_up</span>
-            +{{ formatNumber(newProductsThisMonth) }} tháng này
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(totalProducts) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng sản phẩm</p>
+          <div class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+            <i class="material-icons text-sm">trending_up</i>
+            <span>+{{ formatNumber(newProductsThisMonth) }} tháng này</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-          <span class="material-icons">check_circle</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">check_circle</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Còn hàng</div>
-          <div class="stat-value">{{ formatNumber(inStockProducts) }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">done</span>
-            {{ Math.round((inStockProducts / totalProducts) * 100) || 0 }}% tổng số
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(inStockProducts) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Còn hàng</p>
+          <div class="flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400">
+            <i class="material-icons text-sm">done</i>
+            <span>{{ Math.round((inStockProducts / totalProducts) * 100) || 0 }}% tổng số</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-          <span class="material-icons">warning</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">warning</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Sắp hết hàng</div>
-          <div class="stat-value">{{ formatNumber(lowStockProducts) }}</div>
-          <div class="stat-change neutral">
-            <span class="material-icons">info</span>
-            Cần nhập hàng
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(lowStockProducts) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Sắp hết hàng</p>
+          <div class="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400">
+            <i class="material-icons text-sm">info</i>
+            <span>Cần nhập hàng</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-          <span class="material-icons">remove_shopping_cart</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">remove_shopping_cart</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Hết hàng</div>
-          <div class="stat-value">{{ formatNumber(outOfStockProducts) }}</div>
-          <div class="stat-change negative">
-            <span class="material-icons">trending_down</span>
-            Cần nhập khẩn cấp
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(outOfStockProducts) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Hết hàng</p>
+          <div class="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+            <i class="material-icons text-sm">trending_down</i>
+            <span>Cần nhập khẩn cấp</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Filters Section -->
-    <div class="filters-section animate-fade-up">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">search</span>
+    <!-- Filters -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">search</i>
             Tìm kiếm
           </label>
-          <div class="search-box">
-            <span class="material-icons search-icon">search</span>
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
             <input 
               type="text" 
-              class="search-input" 
               v-model="searchKeyword"
               placeholder="Tìm theo tên sản phẩm, SKU..."
+              class="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
-            <button v-if="searchKeyword" @click="clearSearch" class="search-clear">
-              <span class="material-icons">close</span>
+            <button v-if="searchKeyword" @click="clearSearch" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <i class="material-icons text-base">close</i>
             </button>
           </div>
         </div>
         
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">filter_list</span>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">filter_list</i>
             Trạng thái kho
           </label>
-          <select class="filter-select" v-model="filterStockStatus">
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterStockStatus">
             <option value="all">Tất cả</option>
             <option value="in-stock">Còn hàng</option>
             <option value="low-stock">Sắp hết hàng</option>
@@ -121,12 +129,12 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">category</span>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">category</i>
             Thương hiệu
           </label>
-          <select class="filter-select" v-model="filterBrand">
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterBrand">
             <option value="all">Tất cả</option>
             <option value="nike">Nike</option>
             <option value="adidas">Adidas</option>
@@ -135,9 +143,9 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <button class="btn btn-outline" @click="resetFilters">
-            <span class="material-icons">refresh</span>
+        <div class="flex items-end">
+          <button class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium w-full" @click="resetFilters">
+            <i class="material-icons text-base">refresh</i>
             Làm mới
           </button>
         </div>
@@ -145,96 +153,100 @@
     </div>
 
     <!-- Inventory Table -->
-    <div class="table-container animate-fade-up">
-      <div class="table-header">
-        <h3 class="table-title">Danh sách tồn kho</h3>
-        <div class="table-actions">
-          <span class="table-info">{{ filteredProducts.length }} sản phẩm</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Danh sách tồn kho</h3>
+        <span class="text-sm text-gray-600 dark:text-gray-400">{{ filteredProducts.length }} sản phẩm</span>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="filteredProducts.length === 0" class="flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">inventory</i>
         </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Không có sản phẩm nào</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center">Chưa có sản phẩm nào được tìm thấy</p>
       </div>
 
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
-      </div>
-
-      <div v-else-if="filteredProducts.length === 0" class="empty-state">
-        <span class="material-icons">inventory</span>
-        <h3>Không có sản phẩm nào</h3>
-        <p>Chưa có sản phẩm nào được tìm thấy</p>
-      </div>
-
-      <div v-else class="table-responsive">
-        <table class="admin-table">
-          <thead>
+      <!-- Table -->
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-900/50">
             <tr>
-              <th>Sản phẩm</th>
-              <th>SKU</th>
-              <th>Thương hiệu</th>
-              <th>Tồn kho</th>
-              <th>Giá nhập</th>
-              <th>Giá bán</th>
-              <th>Trạng thái</th>
-              <th>Cập nhật cuối</th>
-              <th>Thao tác</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Sản phẩm</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">SKU</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thương hiệu</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tồn kho</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Giá nhập</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Giá bán</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Cập nhật cuối</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="product in paginatedProducts" :key="product.id" class="product-row">
-              <td>
-                <div class="product-info">
-                  <div class="product-image">
-                    <img v-if="product.image" :src="product.image" :alt="product.name">
-                    <span v-else class="material-icons">image</span>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="product in paginatedProducts" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                    <img v-if="product.image" :src="product.image" :alt="product.name" class="w-full h-full object-cover">
+                    <i v-else class="material-icons text-gray-400 dark:text-gray-500">image</i>
                   </div>
-                  <div class="product-details">
-                    <div class="product-name">{{ product.name }}</div>
-                    <div class="product-variant">{{ product.size }} - {{ product.color }}</div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <div class="sku-code">{{ product.sku }}</div>
-              </td>
-              <td>
-                <div class="brand-info">
-                  <span class="brand-name">{{ product.brandName }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="stock-info">
-                  <div class="stock-quantity">{{ formatNumber(product.stockQuantity) }}</div>
-                  <div v-if="product.lowStockThreshold" class="stock-threshold">
-                    Tối thiểu: {{ formatNumber(product.lowStockThreshold) }}
+                  <div>
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ product.name }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ product.size }} - {{ product.color }}</div>
                   </div>
                 </div>
               </td>
-              <td>
-                <div class="cost-price">{{ formatCurrency(product.costPrice) }}</div>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900 dark:text-gray-100 font-mono">{{ product.sku }}</div>
               </td>
-              <td>
-                <div class="sale-price">{{ formatCurrency(product.priceBase) }}</div>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span class="text-sm text-gray-900 dark:text-gray-100">{{ product.brandName }}</span>
               </td>
-              <td>
-                <span :class="['stock-status', getStockStatusClass(product.stockQuantity, product.lowStockThreshold)]">
+              <td class="px-4 py-4">
+                <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatNumber(product.stockQuantity) }}</div>
+                <div v-if="product.lowStockThreshold" class="text-xs text-gray-500 dark:text-gray-400">
+                  Tối thiểu: {{ formatNumber(product.lowStockThreshold) }}
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900 dark:text-gray-100">{{ formatCurrency(product.costPrice) }}</div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ formatCurrency(product.priceBase) }}</div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span 
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': product.stockQuantity > (product.lowStockThreshold || 0),
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': product.stockQuantity > 0 && product.stockQuantity <= (product.lowStockThreshold || 0),
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': product.stockQuantity === 0
+                  }"
+                >
                   {{ getStockStatusText(product.stockQuantity, product.lowStockThreshold) }}
                 </span>
               </td>
-              <td>
-                <div class="update-time">
-                  <div class="time">{{ formatDateTime(product.updatedAt) }}</div>
-                </div>
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                {{ formatDateTime(product.updatedAt) }}
               </td>
-              <td>
-                <div class="action-buttons">
-                  <button @click="viewInventoryHistory(product)" class="btn-icon btn-view" title="Lịch sử">
-                    <span class="material-icons">history</span>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button @click="viewInventoryHistory(product)" class="p-1.5 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors" title="Lịch sử">
+                    <i class="material-icons text-base">history</i>
                   </button>
-                  <button @click="adjustStock(product)" class="btn-icon btn-adjust" title="Điều chỉnh">
-                    <span class="material-icons">edit</span>
+                  <button @click="adjustStock(product)" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Điều chỉnh">
+                    <i class="material-icons text-base">edit</i>
                   </button>
-                  <button @click="restockProduct(product)" class="btn-icon btn-restock" title="Nhập hàng">
-                    <span class="material-icons">add_shopping_cart</span>
+                  <button @click="restockProduct(product)" class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" title="Nhập hàng">
+                    <i class="material-icons text-base">add_shopping_cart</i>
                   </button>
                 </div>
               </td>
@@ -244,139 +256,159 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="pagination-container">
-        <button 
-          @click="goToPage(currentPage - 1)" 
-          :disabled="currentPage === 0"
-          class="page-btn"
-        >
-          <span class="material-icons">chevron_left</span>
-        </button>
-        
-        <span class="page-info">
+      <div v-if="totalPages > 1 && !loading" class="flex items-center justify-between gap-4 px-4 py-3 mt-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
           Trang {{ currentPage + 1 }} / {{ totalPages }}
-        </span>
-        
-        <button 
-          @click="goToPage(currentPage + 1)" 
-          :disabled="currentPage === totalPages - 1"
-          class="page-btn"
-        >
-          <span class="material-icons">chevron_right</span>
-        </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button 
+            @click="goToPage(currentPage - 1)" 
+            :disabled="currentPage === 0"
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="material-icons text-base">chevron_left</i>
+          </button>
+          <button 
+            @click="goToPage(currentPage + 1)" 
+            :disabled="currentPage === totalPages - 1"
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="material-icons text-base">chevron_right</i>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Stock Adjustment Modal -->
-    <div v-if="showAdjustmentModal" class="modal-overlay" @click="closeAdjustmentModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3 class="modal-title">
-            <span class="material-icons">edit</span>
+    <div v-if="showAdjustmentModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeAdjustmentModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">edit</i>
             Điều chỉnh tồn kho
           </h3>
-          <button @click="closeAdjustmentModal" class="modal-close">
-            <span class="material-icons">close</span>
+          <button @click="closeAdjustmentModal" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div v-if="selectedProduct" class="adjustment-form">
-            <div class="product-info">
-              <h4>{{ selectedProduct.name }}</h4>
-              <p>SKU: {{ selectedProduct.sku }}</p>
-              <p>Tồn kho hiện tại: <strong>{{ formatNumber(selectedProduct.stockQuantity) }}</strong></p>
+        <div class="p-4">
+          <div v-if="selectedProduct" class="space-y-4">
+            <div class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ selectedProduct.name }}</h4>
+              <p class="text-xs text-gray-600 dark:text-gray-400">SKU: {{ selectedProduct.sku }}</p>
+              <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                Tồn kho hiện tại: <strong>{{ formatNumber(selectedProduct.stockQuantity) }}</strong>
+              </p>
             </div>
             
-            <div class="form-group">
-              <label class="form-label">Loại điều chỉnh</label>
-              <select v-model="adjustmentType" class="form-input">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Loại điều chỉnh</label>
+              <select v-model="adjustmentType" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                 <option value="add">Thêm vào kho</option>
                 <option value="subtract">Trừ khỏi kho</option>
                 <option value="set">Đặt số lượng</option>
               </select>
             </div>
             
-            <div class="form-group">
-              <label class="form-label">Số lượng</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số lượng</label>
               <input 
                 type="number" 
                 v-model="adjustmentQuantity" 
-                class="form-input"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 :min="adjustmentType === 'subtract' ? 0 : 1"
                 :max="adjustmentType === 'subtract' ? selectedProduct.stockQuantity : undefined"
               >
             </div>
             
-            <div class="form-group">
-              <label class="form-label">Lý do</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Lý do</label>
               <textarea 
                 v-model="adjustmentReason" 
-                class="form-input"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 rows="3"
                 placeholder="Nhập lý do điều chỉnh..."
               ></textarea>
             </div>
             
-            <div v-if="adjustmentType && adjustmentQuantity" class="preview">
-              <h5>Kết quả sau điều chỉnh:</h5>
-              <p>
+            <div v-if="adjustmentType && adjustmentQuantity" class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border-l-4 border-purple-500">
+              <h5 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">Kết quả sau điều chỉnh:</h5>
+              <p class="text-sm text-gray-700 dark:text-gray-300">
                 Tồn kho hiện tại: {{ formatNumber(selectedProduct.stockQuantity) }} 
-                → {{ formatNumber(calculateNewStock()) }}
+                → <strong>{{ formatNumber(calculateNewStock()) }}</strong>
               </p>
             </div>
           </div>
         </div>
-        <div class="modal-actions">
-          <button @click="closeAdjustmentModal" class="btn btn-secondary">Hủy</button>
-          <button @click="confirmAdjustment" class="btn btn-primary">Xác nhận</button>
+        <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="closeAdjustmentModal" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            Hủy
+          </button>
+          <button @click="confirmAdjustment" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
+            Xác nhận
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Inventory History Modal -->
-    <div v-if="showHistoryModal" class="modal-overlay" @click="closeHistoryModal">
-      <div class="modal-content modal-lg" @click.stop>
-        <div class="modal-header">
-          <h3 class="modal-title">
-            <span class="material-icons">history</span>
+    <div v-if="showHistoryModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeHistoryModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">history</i>
             Lịch sử tồn kho
           </h3>
-          <button @click="closeHistoryModal" class="modal-close">
-            <span class="material-icons">close</span>
+          <button @click="closeHistoryModal" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div v-if="selectedProduct" class="history-content">
-            <div class="product-info">
-              <h4>{{ selectedProduct.name }}</h4>
-              <p>SKU: {{ selectedProduct.sku }}</p>
+        <div class="p-4">
+          <div v-if="selectedProduct" class="space-y-4">
+            <div class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ selectedProduct.name }}</h4>
+              <p class="text-xs text-gray-600 dark:text-gray-400">SKU: {{ selectedProduct.sku }}</p>
             </div>
             
-            <div class="history-list">
-              <div v-for="log in inventoryHistory" :key="log.id" class="history-item">
-                <div class="history-icon">
-                  <span class="material-icons">{{ getChangeTypeIcon(log.changeType) }}</span>
+            <div v-if="loadingHistory" class="flex flex-col items-center justify-center p-12">
+              <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải lịch sử...</p>
+            </div>
+            
+            <div v-else-if="inventoryHistory.length === 0" class="flex flex-col items-center justify-center p-12">
+              <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+                <i class="material-icons text-gray-400 dark:text-gray-500 text-3xl">history</i>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Chưa có lịch sử tồn kho</p>
+            </div>
+            
+            <div v-else class="space-y-3">
+              <div v-for="log in inventoryHistory" :key="log.id" class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900/70 transition-colors">
+                <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                  <i class="material-icons text-purple-600 dark:text-purple-400">{{ getChangeTypeIcon(log.changeType) }}</i>
                 </div>
-                <div class="history-content">
-                  <div class="history-header">
-                    <span class="change-type">{{ getChangeTypeText(log.changeType) }}</span>
-                    <span class="change-time">{{ formatDateTime(log.createdAt) }}</span>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ getChangeTypeText(log.changeType) }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDateTime(log.createdAt) }}</span>
                   </div>
-                  <div class="history-details">
-                    <span class="quantity-change">
+                  <div class="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400 mb-1">
+                    <span class="font-medium" :class="log.quantityChange > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
                       {{ log.quantityChange > 0 ? '+' : '' }}{{ formatNumber(log.quantityChange) }}
                     </span>
-                    <span class="quantity-before">Trước: {{ formatNumber(log.quantityBefore) }}</span>
-                    <span class="quantity-after">Sau: {{ formatNumber(log.quantityAfter) }}</span>
+                    <span>Trước: {{ formatNumber(log.quantityBefore) }}</span>
+                    <span>Sau: {{ formatNumber(log.quantityAfter) }}</span>
                   </div>
-                  <div v-if="log.note" class="history-note">{{ log.note }}</div>
+                  <p v-if="log.note" class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ log.note }}</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="modal-actions">
-          <button @click="closeHistoryModal" class="btn btn-secondary">Đóng</button>
+        <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="closeHistoryModal" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            Đóng
+          </button>
         </div>
       </div>
     </div>
@@ -407,6 +439,7 @@ const adjustmentType = ref('add')
 const adjustmentQuantity = ref(1)
 const adjustmentReason = ref('')
 const inventoryHistory = ref([])
+const loadingHistory = ref(false)
 
 // Mock data removed - using real API data
 
@@ -483,7 +516,7 @@ const fetchInventoryLogs = async () => {
   loadingHistory.value = true
   try {
     const result = await adminStore.fetchInventoryLogs(0, 50, {})
-    history.value = result.content || []
+    inventoryHistory.value = result.content || []
   } catch (error) {
     console.error('Error loading inventory logs:', error)
   } finally {
@@ -718,673 +751,5 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* Page Header */
-.page-header {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
 
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
 
-.title-section {
-  flex: 1;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-/* Enhanced Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.stat-card {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  transition: all var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--space-4);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon .material-icons {
-  font-size: 24px;
-  color: white;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-medium);
-}
-
-.stat-value {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.stat-change {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-.stat-change.positive {
-  color: var(--success-text);
-}
-
-.stat-change.negative {
-  color: var(--error-text);
-}
-
-.stat-change.neutral {
-  color: var(--text-secondary);
-}
-
-.stat-change .material-icons {
-  font-size: 16px;
-}
-
-/* Filters Section */
-.filters-section {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: var(--space-4);
-  align-items: end;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-3);
-  color: var(--text-tertiary);
-  font-size: 20px;
-  z-index: 1;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
-  border: 1.5px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.4);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition: all var(--transition-fast);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.search-clear {
-  position: absolute;
-  right: var(--space-3);
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
-}
-
-.search-clear:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Table */
-.table-container {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.table-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.table-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.admin-table th {
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-  padding: var(--space-4);
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.admin-table td {
-  padding: var(--space-4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-}
-
-.admin-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Product Info */
-.product-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.product-image {
-  width: 50px;
-  height: 50px;
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-image .material-icons {
-  color: var(--text-tertiary);
-}
-
-.product-name {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.product-variant {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-/* Stock Status */
-.stock-status {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.stock-status.in-stock {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-
-.stock-status.low-stock {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-.stock-status.out-of-stock {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.btn-icon:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.btn-view:hover {
-  background: var(--info-bg);
-  color: var(--info-text);
-}
-
-.btn-adjust:hover {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-.btn-restock:hover {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-content.modal-lg {
-  max-width: 800px;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.adjustment-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.form-label {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.form-input {
-  padding: var(--space-3);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-}
-
-.preview {
-  background: var(--bg-secondary);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  border-left: 4px solid var(--accent-primary);
-}
-
-.preview h5 {
-  margin: 0 0 var(--space-2) 0;
-  color: var(--text-primary);
-}
-
-.preview p {
-  margin: 0;
-  color: var(--text-secondary);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-6);
-  border-top: 1px solid var(--border-primary);
-}
-
-/* History */
-.history-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.history-item {
-  display: flex;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  border-left: 4px solid var(--accent-primary);
-}
-
-.history-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--accent-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.history-icon .material-icons {
-  color: white;
-  font-size: 20px;
-}
-
-.history-content {
-  flex: 1;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-2);
-}
-
-.change-type {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.change-time {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-.history-details {
-  display: flex;
-  gap: var(--space-4);
-  margin-bottom: var(--space-2);
-}
-
-.quantity-change {
-  font-weight: var(--font-bold);
-  color: var(--accent-primary);
-}
-
-.quantity-before,
-.quantity-after {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-.history-note {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-/* Pagination */
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border-primary);
-  background: transparent;
-  color: var(--text-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--accent-primary);
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-/* Loading & Empty States */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  color: var(--text-secondary);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: var(--space-4);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  text-align: center;
-}
-
-.empty-state .material-icons {
-  font-size: 64px;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-4);
-}
-
-.empty-state h3 {
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.empty-state p {
-  color: var(--text-secondary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .filter-row {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .admin-table {
-    font-size: var(--text-sm);
-  }
-  
-  .admin-table th,
-  .admin-table td {
-    padding: var(--space-2);
-  }
-}
-</style>

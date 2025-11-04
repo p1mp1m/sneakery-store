@@ -1,32 +1,51 @@
 <template>
-  <div class="toast-container">
-    <TransitionGroup name="toast" tag="div">
+  <div class="fixed top-20 right-4 z-[9999] flex flex-col gap-2 max-w-sm">
+    <TransitionGroup 
+      name="toast"
+      tag="div"
+      enter-active-class="transition-all duration-300 ease-out"
+      leave-active-class="transition-all duration-300 ease-in"
+      enter-from-class="opacity-0 translate-x-20"
+      enter-to-class="opacity-100 translate-x-0"
+      leave-from-class="opacity-100 translate-x-0"
+      leave-to-class="opacity-0 -translate-x-20"
+    >
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        :class="[
-          'toast-notification',
-          `toast-${toast.type}`,
-          { 'toast-closable': toast.closable }
-        ]"
+        class="flex items-start gap-3 p-3 rounded-xl shadow-lg backdrop-blur-sm border-l-4 min-w-[280px] cursor-pointer transition-all"
+        :class="{
+          'bg-white dark:bg-gray-800 border-green-500': toast.type === 'success',
+          'bg-white dark:bg-gray-800 border-red-500': toast.type === 'error',
+          'bg-white dark:bg-gray-800 border-yellow-500': toast.type === 'warning',
+          'bg-white dark:bg-gray-800 border-blue-500': toast.type === 'info'
+        }"
         @click="toast.closable ? removeToast(toast.id) : null"
       >
-        <div class="toast-icon">
-          <span class="material-icons">{{ getIcon(toast.type) }}</span>
-        </div>
+        <i 
+          class="material-icons text-xl flex-shrink-0"
+          :class="{
+            'text-green-500': toast.type === 'success',
+            'text-red-500': toast.type === 'error',
+            'text-yellow-500': toast.type === 'warning',
+            'text-blue-500': toast.type === 'info'
+          }"
+        >
+          {{ getIcon(toast.type) }}
+        </i>
         
-        <div class="toast-content">
-          <div v-if="toast.title" class="toast-title">{{ toast.title }}</div>
-          <div v-if="toast.message" class="toast-message">{{ toast.message }}</div>
+        <div class="flex-1 min-w-0">
+          <div v-if="toast.title" class="font-semibold text-sm mb-1 text-gray-900 dark:text-gray-100">{{ toast.title }}</div>
+          <div v-if="toast.message" class="text-xs text-gray-600 dark:text-gray-400">{{ toast.message }}</div>
         </div>
 
         <button
           v-if="toast.closable"
-          class="toast-close"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 transition-colors"
           @click.stop="removeToast(toast.id)"
           aria-label="Đóng thông báo"
         >
-          <span class="material-icons">close</span>
+          <i class="material-icons text-lg">close</i>
         </button>
       </div>
     </TransitionGroup>
@@ -70,177 +89,5 @@ export default {
 }
 </script>
 
-<style scoped>
-.toast-container {
-  position: fixed;
-  top: var(--space-6);
-  right: var(--space-6);
-  z-index: 9999;
-  max-width: 400px;
-  pointer-events: none;
-}
 
-.toast-notification {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  margin-bottom: var(--space-3);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(10px);
-  pointer-events: auto;
-  cursor: pointer;
-  transition: var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-}
 
-.toast-notification::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--color-info);
-}
-
-.toast-notification:hover {
-  transform: translateX(-2px);
-  box-shadow: var(--shadow-xl);
-}
-
-.toast-success::before {
-  background: var(--color-success);
-}
-
-.toast-error::before {
-  background: var(--color-error);
-}
-
-.toast-warning::before {
-  background: var(--color-warning);
-}
-
-.toast-info::before {
-  background: var(--color-info);
-}
-
-.toast-icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-}
-
-.toast-icon .material-icons {
-  font-size: 20px;
-  color: var(--text-primary);
-}
-
-.toast-success .toast-icon .material-icons {
-  color: var(--color-success);
-}
-
-.toast-error .toast-icon .material-icons {
-  color: var(--color-error);
-}
-
-.toast-warning .toast-icon .material-icons {
-  color: var(--color-warning);
-}
-
-.toast-info .toast-icon .material-icons {
-  color: var(--color-info);
-}
-
-.toast-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.toast-title {
-  font-weight: var(--font-semibold);
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  margin-bottom: var(--space-1);
-  line-height: 1.4;
-}
-
-.toast-message {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.toast-close {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: none;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  color: var(--text-tertiary);
-}
-
-.toast-close:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.toast-close .material-icons {
-  font-size: 16px;
-}
-
-/* Animations */
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.toast-leave-to {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.toast-move {
-  transition: transform 0.3s ease;
-}
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .toast-container {
-    top: var(--space-4);
-    right: var(--space-4);
-    left: var(--space-4);
-    max-width: none;
-  }
-  
-  .toast-notification {
-    padding: var(--space-3);
-  }
-  
-  .toast-title {
-    font-size: var(--text-xs);
-  }
-  
-  .toast-message {
-    font-size: var(--text-xs);
-  }
-}
-</style>

@@ -1,14 +1,29 @@
 <template>
-  <div class="stat-card" :class="variant">
-    <div class="stat-icon" :style="{ background: gradientStyle }">
-      <span class="material-icons">{{ icon }}</span>
+  <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+    <div class="flex items-center justify-between mb-3">
+      <div 
+        class="w-10 h-10 rounded-lg flex items-center justify-center"
+        :class="{
+          'bg-gradient-to-br from-purple-500 to-purple-600': variant === 'primary',
+          'bg-gradient-to-br from-green-500 to-green-600': variant === 'success',
+          'bg-gradient-to-br from-yellow-500 to-yellow-600': variant === 'warning',
+          'bg-gradient-to-br from-red-500 to-red-600': variant === 'danger',
+          'bg-gradient-to-br from-blue-500 to-blue-600': variant === 'info'
+        }"
+      >
+        <i class="material-icons text-white text-lg">{{ icon }}</i>
+      </div>
     </div>
-    <div class="stat-content">
-      <div class="stat-value">{{ value }}</div>
-      <div class="stat-label">{{ label }}</div>
-      <div v-if="change !== undefined" class="stat-change" :class="changeClass">
-        <span class="material-icons">{{ changeIcon }}</span>
-        {{ Math.abs(change) }}%
+    <div>
+      <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ value }}</h3>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ label }}</p>
+      <div 
+        v-if="change !== undefined" 
+        class="flex items-center gap-1 text-xs"
+        :class="change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+      >
+        <i class="material-icons text-sm">{{ changeIcon }}</i>
+        <span>{{ Math.abs(change) }}%</span>
       </div>
     </div>
   </div>
@@ -61,127 +76,6 @@ const changeIcon = computed(() => {
 })
 </script>
 
-<style scoped>
-.stat-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-card);
-  transition: all var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-}
 
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient-purple-soft);
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow-purple);
-  border-color: var(--accent-primary);
-}
-
-.stat-card:hover::before {
-  opacity: 1;
-}
-
-.stat-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.stat-icon .material-icons {
-  font-size: 2rem;
-  color: white;
-}
-
-.stat-content {
-  flex: 1;
-  position: relative;
-  z-index: 1;
-}
-
-.stat-value {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  line-height: 1;
-  margin-bottom: var(--space-2);
-}
-
-.stat-label {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: var(--space-1);
-}
-
-.stat-change {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-md);
-}
-
-.stat-change.positive {
-  color: var(--success-text);
-  background: var(--success-bg);
-}
-
-.stat-change.negative {
-  color: var(--error-text);
-  background: var(--error-bg);
-}
-
-.stat-change .material-icons {
-  font-size: 1rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .stat-card {
-    padding: var(--space-4);
-  }
-  
-  .stat-icon {
-    width: 48px;
-    height: 48px;
-  }
-  
-  .stat-icon .material-icons {
-    font-size: 1.5rem;
-  }
-  
-  .stat-value {
-    font-size: var(--text-2xl);
-  }
-}
-</style>
 

@@ -1,26 +1,26 @@
 <template>
-  <div class="admin-page admin-loyalty">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header animate-fade-in">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">loyalty</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">loyalty</i>
             Quản lý điểm thưởng
           </h1>
-          <p class="page-subtitle">Quản lý hệ thống điểm thưởng và chương trình khách hàng VIP</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quản lý hệ thống điểm thưởng và chương trình khách hàng VIP</p>
         </div>
-        <div class="header-actions">
-          <button @click="exportLoyalty('csv')" class="btn btn-secondary">
-            <span class="material-icons">file_download</span>
+        <div class="flex items-center gap-2">
+          <button @click="exportLoyalty('csv')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">file_download</i>
             CSV
           </button>
-          <button @click="exportLoyalty('json')" class="btn btn-secondary">
-            <span class="material-icons">code</span>
+          <button @click="exportLoyalty('json')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">code</i>
             JSON
           </button>
-          <button @click="openSettingsModal" class="btn btn-primary">
-            <span class="material-icons">settings</span>
+          <button @click="openSettingsModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">settings</i>
             Cài đặt
           </button>
         </div>
@@ -28,92 +28,100 @@
     </div>
 
     <!-- Enhanced Stats Grid -->
-    <div class="stats-grid animate-fade-up">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
-          <span class="material-icons">stars</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">stars</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Tổng điểm đã phát</div>
-          <div class="stat-value">{{ formatNumber(totalPointsEarned) }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">trending_up</span>
-            +{{ formatNumber(pointsThisMonth) }} tháng này
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(totalPointsEarned) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng điểm đã phát</p>
+          <div class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+            <i class="material-icons text-sm">trending_up</i>
+            <span>+{{ formatNumber(pointsThisMonth) }} tháng này</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-          <span class="material-icons">redeem</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">redeem</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Điểm đã sử dụng</div>
-          <div class="stat-value">{{ formatNumber(totalPointsRedeemed) }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">shopping_cart</span>
-            {{ Math.round((totalPointsRedeemed / totalPointsEarned) * 100) || 0 }}% tỷ lệ sử dụng
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(totalPointsRedeemed) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Điểm đã sử dụng</p>
+          <div class="flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400">
+            <i class="material-icons text-sm">shopping_cart</i>
+            <span>{{ Math.round((totalPointsRedeemed / totalPointsEarned) * 100) || 0 }}% tỷ lệ sử dụng</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-          <span class="material-icons">schedule</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">schedule</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Điểm sắp hết hạn</div>
-          <div class="stat-value">{{ formatNumber(expiringPoints) }}</div>
-          <div class="stat-change neutral">
-            <span class="material-icons">warning</span>
-            Trong 30 ngày tới
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatNumber(expiringPoints) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Điểm sắp hết hạn</p>
+          <div class="flex items-center gap-1 text-xs text-yellow-600 dark:text-yellow-400">
+            <i class="material-icons text-sm">warning</i>
+            <span>Trong 30 ngày tới</span>
           </div>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-          <span class="material-icons">diamond</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">diamond</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Khách hàng VIP</div>
-          <div class="stat-value">{{ vipCustomers }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">trending_up</span>
-            +{{ newVipThisMonth }} tháng này
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ vipCustomers }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Khách hàng VIP</p>
+          <div class="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+            <i class="material-icons text-sm">trending_up</i>
+            <span>+{{ newVipThisMonth }} tháng này</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="filters-section animate-fade-up">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">search</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">search</i>
             Tìm kiếm
           </label>
-          <div class="search-box">
-            <span class="material-icons search-icon">search</span>
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
             <input 
               type="text" 
-              class="search-input" 
+              class="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               v-model="searchKeyword"
               placeholder="Tìm theo tên khách hàng, email..."
             />
-            <button v-if="searchKeyword" @click="clearSearch" class="search-clear">
-              <span class="material-icons">close</span>
+            <button v-if="searchKeyword" @click="clearSearch" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <i class="material-icons text-base">close</i>
             </button>
           </div>
         </div>
         
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">filter_list</span>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">filter_list</i>
             Loại giao dịch
           </label>
-          <select class="filter-select" v-model="filterType">
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterType">
             <option value="all">Tất cả</option>
             <option value="earn">Tích điểm</option>
             <option value="redeem">Đổi điểm</option>
@@ -121,12 +129,12 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">diamond</span>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">diamond</i>
             Cấp độ
           </label>
-          <select class="filter-select" v-model="filterLevel">
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterLevel">
             <option value="all">Tất cả</option>
             <option value="bronze">Đồng</option>
             <option value="silver">Bạc</option>
@@ -135,9 +143,9 @@
           </select>
         </div>
 
-        <div class="filter-group">
-          <button class="btn btn-outline" @click="resetFilters">
-            <span class="material-icons">refresh</span>
+        <div class="flex items-end">
+          <button class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium w-full" @click="resetFilters">
+            <i class="material-icons text-base">refresh</i>
             Làm mới
           </button>
         </div>
@@ -145,99 +153,118 @@
     </div>
 
     <!-- Loyalty Points Table -->
-    <div class="table-container animate-fade-up">
-      <div class="table-header">
-        <h3 class="table-title">Lịch sử điểm thưởng</h3>
-        <div class="table-actions">
-          <span class="table-info">{{ filteredPoints.length }} giao dịch</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Lịch sử điểm thưởng</h3>
+        <span class="text-sm text-gray-500 dark:text-gray-400">{{ filteredPoints.length }} giao dịch</span>
+      </div>
+
+      <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+      </div>
+
+      <div v-else-if="filteredPoints.length === 0" class="flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">loyalty</i>
         </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Không có giao dịch nào</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center">Chưa có giao dịch điểm thưởng nào được tìm thấy</p>
       </div>
 
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
-      </div>
-
-      <div v-else-if="filteredPoints.length === 0" class="empty-state">
-        <span class="material-icons">loyalty</span>
-        <h3>Không có giao dịch nào</h3>
-        <p>Chưa có giao dịch điểm thưởng nào được tìm thấy</p>
-      </div>
-
-      <div v-else class="table-responsive">
-        <table class="admin-table">
-          <thead>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-900/50">
             <tr>
-              <th>Khách hàng</th>
-              <th>Loại giao dịch</th>
-              <th>Số điểm</th>
-              <th>Nguồn</th>
-              <th>Cấp độ</th>
-              <th>Thời gian</th>
-              <th>Hết hạn</th>
-              <th>Thao tác</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Khách hàng</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Loại giao dịch</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Số điểm</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Nguồn</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Cấp độ</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thời gian</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Hết hạn</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="point in paginatedPoints" :key="point.id" class="point-row">
-              <td>
-                <div class="customer-info">
-                  <div class="customer-avatar">
-                    <img v-if="point.customerAvatar" :src="point.customerAvatar" :alt="point.customerName">
-                    <span v-else class="material-icons">person</span>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="point in paginatedPoints" :key="point.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <img v-if="point.customerAvatar" :src="point.customerAvatar" :alt="point.customerName" class="w-full h-full object-cover">
+                    <i v-else class="material-icons text-gray-400 dark:text-gray-500">person</i>
                   </div>
-                  <div class="customer-details">
-                    <div class="customer-name">{{ point.customerName }}</div>
-                    <div class="customer-email">{{ point.customerEmail }}</div>
+                  <div class="min-w-0">
+                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ point.customerName }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ point.customerEmail }}</div>
                   </div>
                 </div>
               </td>
-              <td>
-                <span :class="['transaction-type', `type-${point.transactionType}`]">
-                  <span class="material-icons">{{ getTransactionIcon(point.transactionType) }}</span>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': point.transactionType === 'earn',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': point.transactionType === 'redeem',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': point.transactionType === 'expire'
+                  }"
+                >
+                  <i class="material-icons text-sm">{{ getTransactionIcon(point.transactionType) }}</i>
                   {{ getTransactionText(point.transactionType) }}
                 </span>
               </td>
-              <td>
-                <div class="points-amount">
-                  <span :class="['points-value', point.transactionType === 'earn' ? 'positive' : 'negative']">
-                    {{ point.transactionType === 'earn' ? '+' : '-' }}{{ formatNumber(Math.abs(point.points)) }}
-                  </span>
-                </div>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span 
+                  class="text-sm font-semibold"
+                  :class="point.transactionType === 'earn' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'"
+                >
+                  {{ point.transactionType === 'earn' ? '+' : '-' }}{{ formatNumber(Math.abs(point.points)) }}
+                </span>
               </td>
-              <td>
-                <div class="source-info">
-                  <div class="source-type">{{ getSourceText(point.earnedFromOrderId, point.redeemedInOrderId) }}</div>
-                  <div v-if="point.description" class="source-description">{{ point.description }}</div>
-                </div>
+              <td class="px-4 py-4">
+                <div class="text-sm text-gray-700 dark:text-gray-300">{{ getSourceText(point.earnedFromOrderId, point.redeemedInOrderId) }}</div>
+                <div v-if="point.description" class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-xs">{{ point.description }}</div>
               </td>
-              <td>
-                <span :class="['level-badge', `level-${point.customerLevel}`]">
-                  <span class="material-icons">{{ getLevelIcon(point.customerLevel) }}</span>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400': point.customerLevel === 'bronze',
+                    'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': point.customerLevel === 'silver',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': point.customerLevel === 'gold',
+                    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400': point.customerLevel === 'platinum',
+                    'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': !point.customerLevel || point.customerLevel === 'regular'
+                  }"
+                >
+                  <i class="material-icons text-sm">{{ getLevelIcon(point.customerLevel) }}</i>
                   {{ getLevelText(point.customerLevel) }}
                 </span>
               </td>
-              <td>
-                <div class="transaction-time">
-                  <div class="time">{{ formatDateTime(point.createdAt) }}</div>
-                </div>
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                {{ formatDateTime(point.createdAt) }}
               </td>
-              <td>
-                <div v-if="point.expiresAt" class="expiry-info">
-                  <div class="expiry-date">{{ formatDate(point.expiresAt) }}</div>
-                  <div :class="['expiry-status', getExpiryStatus(point.expiresAt)]">
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div v-if="point.expiresAt" class="space-y-1">
+                  <div class="text-sm text-gray-700 dark:text-gray-300">{{ formatDate(point.expiresAt) }}</div>
+                  <div 
+                    class="text-xs px-2 py-0.5 rounded-full inline-block"
+                    :class="{
+                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getExpiryStatus(point.expiresAt) === 'expired',
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': getExpiryStatus(point.expiresAt) === 'expiring-soon',
+                      'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400': getExpiryStatus(point.expiresAt) === 'expiring',
+                      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getExpiryStatus(point.expiresAt) === 'valid'
+                    }"
+                  >
                     {{ getExpiryText(point.expiresAt) }}
                   </div>
                 </div>
-                <span v-else class="no-expiry">Không hết hạn</span>
+                <span v-else class="text-sm text-gray-400 dark:text-gray-500">Không hết hạn</span>
               </td>
-              <td>
-                <div class="action-buttons">
-                  <button @click="viewPointDetail(point)" class="btn-icon btn-view" title="Xem chi tiết">
-                    <span class="material-icons">visibility</span>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-1">
+                  <button @click="viewPointDetail(point)" class="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Xem chi tiết">
+                    <i class="material-icons text-base">visibility</i>
                   </button>
-                  <button v-if="point.transactionType === 'earn' && canExpire(point.expiresAt)" @click="extendExpiry(point)" class="btn-icon btn-extend" title="Gia hạn">
-                    <span class="material-icons">schedule</span>
+                  <button v-if="point.transactionType === 'earn' && canExpire(point.expiresAt)" @click="extendExpiry(point)" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Gia hạn">
+                    <i class="material-icons text-base">schedule</i>
                   </button>
                 </div>
               </td>
@@ -247,91 +274,93 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="pagination-container">
+      <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button 
           @click="goToPage(currentPage - 1)" 
           :disabled="currentPage === 0"
-          class="page-btn"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span class="material-icons">chevron_left</span>
+          <i class="material-icons text-base">chevron_left</i>
         </button>
         
-        <span class="page-info">
+        <span class="text-sm text-gray-700 dark:text-gray-300">
           Trang {{ currentPage + 1 }} / {{ totalPages }}
         </span>
         
         <button 
           @click="goToPage(currentPage + 1)" 
           :disabled="currentPage === totalPages - 1"
-          class="page-btn"
+          class="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span class="material-icons">chevron_right</span>
+          <i class="material-icons text-base">chevron_right</i>
         </button>
       </div>
     </div>
 
     <!-- Settings Modal -->
-    <div v-if="showSettingsModal" class="modal-overlay" @click="closeSettingsModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3 class="modal-title">
-            <span class="material-icons">settings</span>
+    <div v-if="showSettingsModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeSettingsModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">settings</i>
             Cài đặt hệ thống điểm thưởng
           </h3>
-          <button @click="closeSettingsModal" class="modal-close">
-            <span class="material-icons">close</span>
+          <button @click="closeSettingsModal" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div class="settings-form">
-            <div class="form-group">
-              <label class="form-label">Tỷ lệ tích điểm (VND → Điểm)</label>
-              <input 
-                type="number" 
-                v-model="settings.pointsPerVnd" 
-                class="form-input"
-                placeholder="1000"
-              >
-              <div class="form-help">1 điểm = {{ settings.pointsPerVnd }} VND</div>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Tỷ lệ đổi điểm (Điểm → VND)</label>
-              <input 
-                type="number" 
-                v-model="settings.vndPerPoint" 
-                class="form-input"
-                placeholder="100"
-              >
-              <div class="form-help">1 điểm = {{ settings.vndPerPoint }} VND</div>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Thời hạn điểm (ngày)</label>
-              <input 
-                type="number" 
-                v-model="settings.pointsExpiryDays" 
-                class="form-input"
-                placeholder="365"
-              >
-              <div class="form-help">Điểm sẽ hết hạn sau {{ settings.pointsExpiryDays }} ngày</div>
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Điểm tối thiểu để đổi</label>
-              <input 
-                type="number" 
-                v-model="settings.minRedeemPoints" 
-                class="form-input"
-                placeholder="1000"
-              >
-              <div class="form-help">Khách hàng cần tối thiểu {{ settings.minRedeemPoints }} điểm để đổi</div>
-            </div>
+        <div class="p-4 space-y-4">
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tỷ lệ tích điểm (VND → Điểm)</label>
+            <input 
+              type="number" 
+              v-model="settings.pointsPerVnd" 
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="1000"
+            >
+            <div class="text-xs text-gray-500 dark:text-gray-400">1 điểm = {{ settings.pointsPerVnd }} VND</div>
+          </div>
+          
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tỷ lệ đổi điểm (Điểm → VND)</label>
+            <input 
+              type="number" 
+              v-model="settings.vndPerPoint" 
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="100"
+            >
+            <div class="text-xs text-gray-500 dark:text-gray-400">1 điểm = {{ settings.vndPerPoint }} VND</div>
+          </div>
+          
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Thời hạn điểm (ngày)</label>
+            <input 
+              type="number" 
+              v-model="settings.pointsExpiryDays" 
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="365"
+            >
+            <div class="text-xs text-gray-500 dark:text-gray-400">Điểm sẽ hết hạn sau {{ settings.pointsExpiryDays }} ngày</div>
+          </div>
+          
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Điểm tối thiểu để đổi</label>
+            <input 
+              type="number" 
+              v-model="settings.minRedeemPoints" 
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="1000"
+            >
+            <div class="text-xs text-gray-500 dark:text-gray-400">Khách hàng cần tối thiểu {{ settings.minRedeemPoints }} điểm để đổi</div>
           </div>
         </div>
-        <div class="modal-actions">
-          <button @click="closeSettingsModal" class="btn btn-secondary">Hủy</button>
-          <button @click="saveSettings" class="btn btn-primary">Lưu cài đặt</button>
+        <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="closeSettingsModal" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            Hủy
+          </button>
+          <button @click="saveSettings" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
+            Lưu cài đặt
+          </button>
         </div>
       </div>
     </div>
@@ -663,651 +692,5 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* Page Header */
-.page-header {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
 
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
 
-.title-section {
-  flex: 1;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-/* Enhanced Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.stat-card {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  transition: all var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--space-4);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon .material-icons {
-  font-size: 24px;
-  color: white;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-medium);
-}
-
-.stat-value {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.stat-change {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-.stat-change.positive {
-  color: var(--success-text);
-}
-
-.stat-change.negative {
-  color: var(--error-text);
-}
-
-.stat-change.neutral {
-  color: var(--text-secondary);
-}
-
-.stat-change .material-icons {
-  font-size: 16px;
-}
-
-/* Filters Section */
-.filters-section {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: var(--space-4);
-  align-items: end;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-3);
-  color: var(--text-tertiary);
-  font-size: 20px;
-  z-index: 1;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
-  border: 1.5px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.4);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition: all var(--transition-fast);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.search-clear {
-  position: absolute;
-  right: var(--space-3);
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
-}
-
-.search-clear:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Table */
-.table-container {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.table-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.table-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.admin-table th {
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-  padding: var(--space-4);
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.admin-table td {
-  padding: var(--space-4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-}
-
-.admin-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Customer Info */
-.customer-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.customer-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.customer-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.customer-avatar .material-icons {
-  color: var(--text-tertiary);
-}
-
-.customer-name {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.customer-email {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-/* Transaction Type */
-.transaction-type {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-.type-earn {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-
-.type-redeem {
-  background: var(--info-bg);
-  color: var(--info-text);
-}
-
-.type-expire {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-/* Points Amount */
-.points-amount {
-  text-align: right;
-}
-
-.points-value {
-  font-weight: var(--font-bold);
-  font-size: var(--text-lg);
-}
-
-.points-value.positive {
-  color: var(--success-text);
-}
-
-.points-value.negative {
-  color: var(--error-text);
-}
-
-/* Level Badge */
-.level-badge {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-}
-
-.level-bronze {
-  background: #cd7f32;
-  color: white;
-}
-
-.level-silver {
-  background: #c0c0c0;
-  color: #333;
-}
-
-.level-gold {
-  background: #ffd700;
-  color: #333;
-}
-
-.level-platinum {
-  background: #e5e4e2;
-  color: #333;
-}
-
-/* Expiry Status */
-.expiry-status {
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-}
-
-.expiry-status.valid {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-
-.expiry-status.expiring {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-.expiry-status.expiring-soon {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.expiry-status.expired {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.no-expiry {
-  color: var(--text-tertiary);
-  font-style: italic;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.btn-icon:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.btn-view:hover {
-  background: var(--info-bg);
-  color: var(--info-text);
-}
-
-.btn-extend:hover {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.settings-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.form-label {
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.form-input {
-  padding: var(--space-3);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-}
-
-.form-help {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-6);
-  border-top: 1px solid var(--border-primary);
-}
-
-/* Pagination */
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border-primary);
-  background: transparent;
-  color: var(--text-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--accent-primary);
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-/* Loading & Empty States */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  color: var(--text-secondary);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: var(--space-4);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  text-align: center;
-}
-
-.empty-state .material-icons {
-  font-size: 64px;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-4);
-}
-
-.empty-state h3 {
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.empty-state p {
-  color: var(--text-secondary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .filter-row {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .admin-table {
-    font-size: var(--text-sm);
-  }
-  
-  .admin-table th,
-  .admin-table td {
-    padding: var(--space-2);
-  }
-}
-</style>

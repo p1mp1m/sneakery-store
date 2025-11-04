@@ -1,46 +1,54 @@
 <template>
-  <div class="date-range-picker">
-    <div class="quick-filters">
+  <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
+    <div class="flex flex-wrap gap-2">
       <button
         v-for="preset in presets"
         :key="preset.key"
         @click="applyPreset(preset)"
-        class="preset-btn"
-        :class="{ 'active': activePreset === preset.key }"
+        class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+        :class="activePreset === preset.key 
+          ? 'bg-purple-500 text-white' 
+          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
       >
         {{ preset.label }}
       </button>
     </div>
 
-    <div class="date-inputs">
-      <div class="date-input-group">
-        <label>Từ ngày</label>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Từ ngày</label>
         <input
           v-model="startDate"
           type="date"
-          class="form-control"
+          class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           :max="endDate || today"
         />
       </div>
-      <div class="date-input-group">
-        <label>Đến ngày</label>
+      <div class="flex flex-col gap-2">
+        <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Đến ngày</label>
         <input
           v-model="endDate"
           type="date"
-          class="form-control"
+          class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           :min="startDate"
           :max="today"
         />
       </div>
     </div>
 
-    <div class="actions">
-      <button @click="clear" class="btn btn-secondary btn-sm">
-        <i class="material-icons">clear</i>
+    <div class="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <button 
+        @click="clear" 
+        class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+      >
+        <i class="material-icons text-base">clear</i>
         Xóa
       </button>
-      <button @click="apply" class="btn btn-primary btn-sm">
-        <i class="material-icons">check</i>
+      <button 
+        @click="apply" 
+        class="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+      >
+        <i class="material-icons text-base">check</i>
         Áp dụng
       </button>
     </div>
@@ -159,79 +167,6 @@ const clear = () => {
 }
 </script>
 
-<style scoped>
-.date-range-picker {
-  background: var(--dark-bg-card, rgba(30, 41, 59, 0.6));
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-5);
-  backdrop-filter: blur(10px);
-}
 
-.quick-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--border-primary);
-}
 
-.preset-btn {
-  padding: var(--space-2) var(--space-4);
-  background: transparent;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.preset-btn:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--accent-primary);
-}
-
-.preset-btn.active {
-  background: var(--gradient-primary);
-  border-color: var(--accent-primary);
-  color: white;
-}
-
-.date-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-  margin-bottom: var(--space-4);
-}
-
-.date-input-group label {
-  display: block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
-}
-
-@media (max-width: 640px) {
-  .quick-filters {
-    flex-direction: column;
-  }
-  
-  .preset-btn {
-    width: 100%;
-  }
-  
-  .date-inputs {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
 

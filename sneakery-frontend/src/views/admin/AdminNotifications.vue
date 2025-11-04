@@ -1,21 +1,21 @@
 <template>
-  <div class="admin-page admin-notifications">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-content">
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 class="page-title">
-            <i class="material-icons">notifications</i>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">notifications</i>
             Quản lý Thông Báo
           </h1>
-          <p class="page-subtitle">
-            <i class="material-icons">info</i>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+            <i class="material-icons text-xs">info</i>
             Gửi và quản lý thông báo đến khách hàng
           </p>
         </div>
-        <div class="header-actions">
-          <button @click="showCreateDialog = true" class="btn btn-primary">
-            <i class="material-icons">add</i>
+        <div class="flex items-center gap-2">
+          <button @click="showCreateDialog = true" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">add</i>
             Tạo thông báo
           </button>
         </div>
@@ -23,72 +23,75 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="stats-grid">
-      <div class="stats-card success">
-        <div class="stats-header">
-          <div class="stats-icon success">
-            <i class="material-icons">mark_email_read</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.sent }}</div>
-            <div class="stats-label">Đã gửi</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">mark_email_read</i>
           </div>
         </div>
-      </div>
-      <div class="stats-card info">
-        <div class="stats-header">
-          <div class="stats-icon info">
-            <i class="material-icons">visibility</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.opened }}</div>
-            <div class="stats-label">Đã đọc</div>
-          </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.sent }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đã gửi</p>
         </div>
       </div>
-      <div class="stats-card warning">
-        <div class="stats-header">
-          <div class="stats-icon warning">
-            <i class="material-icons">schedule_send</i>
-          </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.scheduled }}</div>
-            <div class="stats-label">Đã lên lịch</div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">visibility</i>
           </div>
         </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.opened }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đã đọc</p>
+        </div>
       </div>
-      <div class="stats-card danger">
-        <div class="stats-header">
-          <div class="stats-icon danger">
-            <i class="material-icons">error</i>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">schedule_send</i>
           </div>
-          <div class="stats-info">
-            <div class="stats-value">{{ stats.failed }}</div>
-            <div class="stats-label">Thất bại</div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.scheduled }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đã lên lịch</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">error</i>
           </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.failed }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Thất bại</p>
         </div>
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="filters-section">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label>Tìm kiếm</label>
-          <div class="search-box">
-            <i class="material-icons search-icon">search</i>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">search</i>
+            Tìm kiếm
+          </label>
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
             <input 
               v-model="filters.search"
               type="text" 
-              class="search-input" 
+              class="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="Tìm theo tiêu đề, nội dung..."
               @input="handleSearch"
             />
           </div>
         </div>
-        <div class="filter-group">
-          <label>Loại</label>
-          <select v-model="filters.type" @change="fetchNotifications" class="form-control">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Loại</label>
+          <select v-model="filters.type" @change="fetchNotifications" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
             <option value="">Tất cả</option>
             <option value="promotion">Khuyến mãi</option>
             <option value="order">Đơn hàng</option>
@@ -96,9 +99,9 @@
             <option value="announcement">Thông báo chung</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label>Trạng thái</label>
-          <select v-model="filters.status" @change="fetchNotifications" class="form-control">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Trạng thái</label>
+          <select v-model="filters.status" @change="fetchNotifications" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
             <option value="">Tất cả</option>
             <option value="draft">Bản nháp</option>
             <option value="scheduled">Đã lên lịch</option>
@@ -106,10 +109,9 @@
             <option value="failed">Thất bại</option>
           </select>
         </div>
-        <div class="filter-group">
-          <label>&nbsp;</label>
-          <button @click="resetFilters" class="btn btn-secondary">
-            <i class="material-icons">refresh</i>
+        <div class="flex items-end">
+          <button @click="resetFilters" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium w-full">
+            <i class="material-icons text-base">refresh</i>
             Xóa bộ lọc
           </button>
         </div>
@@ -117,118 +119,140 @@
     </div>
 
     <!-- Table -->
-    <div class="table-container">
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
       </div>
 
-      <div v-else-if="notifications.length === 0" class="empty-state">
-        <i class="material-icons">notifications</i>
-        <h3>Chưa có thông báo</h3>
-        <p>Nhấn nút "Tạo thông báo" để bắt đầu</p>
+      <div v-else-if="notifications.length === 0" class="flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">notifications</i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có thông báo</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">Nhấn nút "Tạo thông báo" để bắt đầu</p>
+        <button @click="showCreateDialog = true" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+          <i class="material-icons text-base">add</i>
+          Tạo thông báo
+        </button>
       </div>
 
-      <table v-else class="admin-table">
-        <thead>
-          <tr>
-            <th>Tiêu đề</th>
-            <th>Loại</th>
-            <th>Đối tượng</th>
-            <th>Thời gian gửi</th>
-            <th>Tỷ lệ đọc</th>
-            <th>Trạng thái</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in notifications" :key="item.id">
-            <td>
-              <div class="notification-title">
-                <i class="material-icons" :style="{ color: getTypeColor(item.type) }">
-                  {{ getTypeIcon(item.type) }}
-                </i>
-                <div>
-                  <strong>{{ item.title }}</strong>
-                  <p>{{ truncate(item.message, 80) }}</p>
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-900/50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tiêu đề</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Loại</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Đối tượng</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thời gian gửi</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tỷ lệ đọc</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="item in notifications" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+              <td class="px-4 py-4">
+                <div class="flex items-start gap-3">
+                  <i class="material-icons text-lg flex-shrink-0" :style="{ color: getTypeColor(item.type) }">
+                    {{ getTypeIcon(item.type) }}
+                  </i>
+                  <div class="min-w-0">
+                    <strong class="text-sm font-medium text-gray-900 dark:text-gray-100 block">{{ item.title }}</strong>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ truncate(item.message, 80) }}</p>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <span class="badge" :class="getTypeBadgeClass(item.type)">
-                {{ getTypeText(item.type) }}
-              </span>
-            </td>
-            <td>
-              <div class="recipient-info">
-                <i class="material-icons">{{ item.recipientType === 'all' ? 'public' : 'person' }}</i>
-                <span>{{ getRecipientText(item) }}</span>
-              </div>
-            </td>
-            <td>
-              <div class="time-info">
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span 
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': item.type === 'promotion',
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': item.type === 'order',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': item.type === 'system',
+                    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400': item.type === 'announcement'
+                  }"
+                >
+                  {{ getTypeText(item.type) }}
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <i class="material-icons text-sm text-gray-500 dark:text-gray-400">{{ item.recipientType === 'all' ? 'public' : 'person' }}</i>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ getRecipientText(item) }}</span>
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                 {{ formatDateTime(item.scheduledAt || item.sentAt) }}
-              </div>
-            </td>
-            <td>
-              <div v-if="item.status === 'sent'" class="read-rate">
-                <div class="progress-bar">
-                  <div 
-                    class="progress-fill" 
-                    :style="{ width: getReadRate(item) + '%' }"
-                  ></div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div v-if="item.status === 'sent'" class="space-y-1">
+                  <div class="w-24 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      class="h-full bg-purple-500 rounded-full transition-all duration-300"
+                      :style="{ width: getReadRate(item) + '%' }"
+                    ></div>
+                  </div>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ item.openedCount || 0 }} / {{ item.recipientCount || item.targetUsers || 0 }} ({{ getReadRate(item) }}%)</span>
                 </div>
-                <span>{{ item.openedCount }} / {{ item.recipientCount }} ({{ getReadRate(item) }}%)</span>
-              </div>
-              <span v-else>-</span>
-            </td>
-            <td>
-              <span class="status-badge" :class="getStatusClass(item.status)">
-                {{ getStatusText(item.status) }}
-              </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button @click="viewNotification(item)" class="btn-icon" title="Xem chi tiết">
-                  <i class="material-icons">visibility</i>
-                </button>
-                <button 
-                  v-if="item.status === 'draft'" 
-                  @click="editNotification(item)" 
-                  class="btn-icon" 
-                  title="Sửa"
+                <span v-else class="text-sm text-gray-400 dark:text-gray-500">-</span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span 
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': item.status === 'draft',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': item.status === 'scheduled',
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': item.status === 'sent',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': item.status === 'failed'
+                  }"
                 >
-                  <i class="material-icons">edit</i>
-                </button>
-                <button 
-                  v-if="item.status === 'draft' || item.status === 'scheduled'" 
-                  @click="deleteNotification(item)" 
-                  class="btn-icon danger" 
-                  title="Xóa"
-                >
-                  <i class="material-icons">delete</i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                  {{ getStatusText(item.status) }}
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-1">
+                  <button @click="viewNotification(item)" class="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Xem chi tiết">
+                    <i class="material-icons text-base">visibility</i>
+                  </button>
+                  <button 
+                    v-if="item.status === 'draft'" 
+                    @click="editNotification(item)" 
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
+                    title="Sửa"
+                  >
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+                  <button 
+                    v-if="item.status === 'draft' || item.status === 'scheduled'" 
+                    @click="deleteNotification(item)" 
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
+                    title="Xóa"
+                  >
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Create/Edit Dialog -->
-    <div v-if="showCreateDialog" class="modal-overlay" @click="closeDialog">
-      <div class="modal modal-lg" @click.stop>
-        <div class="modal-header">
-          <h3>{{ editingNotification ? 'Chỉnh sửa thông báo' : 'Tạo thông báo mới' }}</h3>
-          <button @click="closeDialog" class="modal-close">
-            <i class="material-icons">close</i>
+    <div v-if="showCreateDialog" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeDialog">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ editingNotification ? 'Chỉnh sửa thông báo' : 'Tạo thông báo mới' }}</h3>
+          <button @click="closeDialog" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <form @submit.prevent="saveNotification">
-            <div class="form-group">
-              <label class="required">Loại thông báo</label>
-              <select v-model="formData.type" class="form-control" required>
+        <div class="p-4">
+          <form @submit.prevent="saveNotification" class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Loại thông báo *</label>
+              <select v-model="formData.type" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
                 <option value="">-- Chọn loại --</option>
                 <option value="promotion">Khuyến mãi</option>
                 <option value="order">Đơn hàng</option>
@@ -237,111 +261,111 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label class="required">Tiêu đề</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tiêu đề *</label>
               <input 
                 v-model="formData.title"
                 type="text" 
-                class="form-control" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Tiêu đề ngắn gọn, thu hút"
                 required
               />
             </div>
 
-            <div class="form-group">
-              <label class="required">Nội dung</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Nội dung *</label>
               <textarea 
                 v-model="formData.message"
-                class="form-control" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 rows="5"
                 placeholder="Nội dung chi tiết thông báo..."
                 required
               ></textarea>
             </div>
 
-            <div class="form-group">
-              <label>Link liên kết (tùy chọn)</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Link liên kết (tùy chọn)</label>
               <input 
                 v-model="formData.link"
                 type="url" 
-                class="form-control" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="https://..."
               />
-              <small class="form-help">Link sẽ mở khi người dùng nhấn vào thông báo</small>
+              <small class="text-xs text-gray-500 dark:text-gray-400">Link sẽ mở khi người dùng nhấn vào thông báo</small>
             </div>
 
-            <div class="form-group">
-              <label class="required">Đối tượng nhận</label>
-              <div class="radio-group">
-                <label class="radio-option">
-                  <input type="radio" v-model="formData.recipientType" value="all" />
-                  <i class="material-icons">public</i>
-                  Tất cả người dùng
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Đối tượng nhận *</label>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="flex items-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all" :class="formData.recipientType === 'all' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'">
+                  <input type="radio" v-model="formData.recipientType" value="all" class="w-4 h-4 text-purple-600" />
+                  <i class="material-icons text-sm">public</i>
+                  <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Tất cả</span>
                 </label>
-                <label class="radio-option">
-                  <input type="radio" v-model="formData.recipientType" value="role" />
-                  <i class="material-icons">badge</i>
-                  Theo vai trò
+                <label class="flex items-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all" :class="formData.recipientType === 'role' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'">
+                  <input type="radio" v-model="formData.recipientType" value="role" class="w-4 h-4 text-purple-600" />
+                  <i class="material-icons text-sm">badge</i>
+                  <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Vai trò</span>
                 </label>
-                <label class="radio-option">
-                  <input type="radio" v-model="formData.recipientType" value="specific" />
-                  <i class="material-icons">person</i>
-                  Người dùng cụ thể
+                <label class="flex items-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all" :class="formData.recipientType === 'specific' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'">
+                  <input type="radio" v-model="formData.recipientType" value="specific" class="w-4 h-4 text-purple-600" />
+                  <i class="material-icons text-sm">person</i>
+                  <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Cụ thể</span>
                 </label>
               </div>
             </div>
 
-            <div v-if="formData.recipientType === 'role'" class="form-group">
-              <label>Chọn vai trò</label>
-              <select v-model="formData.role" class="form-control">
+            <div v-if="formData.recipientType === 'role'" class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Chọn vai trò</label>
+              <select v-model="formData.role" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                 <option value="">-- Chọn --</option>
                 <option value="USER">Khách hàng</option>
                 <option value="ADMIN">Quản trị viên</option>
               </select>
             </div>
 
-            <div v-if="formData.recipientType === 'specific'" class="form-group">
-              <label>Email người nhận (cách nhau bởi dấu phẩy)</label>
+            <div v-if="formData.recipientType === 'specific'" class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Email người nhận (cách nhau bởi dấu phẩy)</label>
               <textarea 
                 v-model="formData.recipientEmails"
-                class="form-control" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 rows="3"
                 placeholder="user1@gmail.com, user2@gmail.com"
               ></textarea>
             </div>
 
-            <div class="form-group">
-              <label>Thời gian gửi</label>
-              <div class="radio-group">
-                <label class="radio-option">
-                  <input type="radio" v-model="formData.sendTime" value="now" />
-                  <i class="material-icons">send</i>
-                  Gửi ngay
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Thời gian gửi</label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex items-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all" :class="formData.sendTime === 'now' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'">
+                  <input type="radio" v-model="formData.sendTime" value="now" class="w-4 h-4 text-purple-600" />
+                  <i class="material-icons text-sm">send</i>
+                  <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Gửi ngay</span>
                 </label>
-                <label class="radio-option">
-                  <input type="radio" v-model="formData.sendTime" value="schedule" />
-                  <i class="material-icons">schedule</i>
-                  Lên lịch
+                <label class="flex items-center gap-2 p-3 border-2 rounded-lg cursor-pointer transition-all" :class="formData.sendTime === 'schedule' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'">
+                  <input type="radio" v-model="formData.sendTime" value="schedule" class="w-4 h-4 text-purple-600" />
+                  <i class="material-icons text-sm">schedule</i>
+                  <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Lên lịch</span>
                 </label>
               </div>
             </div>
 
-            <div v-if="formData.sendTime === 'schedule'" class="form-group">
-              <label class="required">Thời gian gửi</label>
+            <div v-if="formData.sendTime === 'schedule'" class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Thời gian gửi *</label>
               <input 
                 v-model="formData.scheduledAt"
                 type="datetime-local" 
-                class="form-control" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 :required="formData.sendTime === 'schedule'"
               />
             </div>
 
-            <div class="form-actions">
-              <button type="button" @click="closeDialog" class="btn btn-secondary">
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" @click="closeDialog" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 Hủy
               </button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">
-                <i class="material-icons">{{ formData.sendTime === 'now' ? 'send' : 'schedule_send' }}</i>
+              <button type="submit" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" :disabled="saving">
+                <i class="material-icons text-base" :class="{ 'animate-spin': saving }">{{ formData.sendTime === 'now' ? 'send' : 'schedule_send' }}</i>
                 {{ saving ? 'Đang xử lý...' : (formData.sendTime === 'now' ? 'Gửi ngay' : 'Lên lịch') }}
               </button>
             </div>
@@ -351,53 +375,71 @@
     </div>
 
     <!-- Detail Dialog -->
-    <div v-if="showDetailDialog" class="modal-overlay" @click="showDetailDialog = false">
-      <div class="modal modal-md" @click.stop>
-        <div class="modal-header">
-          <h3>Chi tiết thông báo</h3>
-          <button @click="showDetailDialog = false" class="modal-close">
-            <i class="material-icons">close</i>
+    <div v-if="showDetailDialog" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="showDetailDialog = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Chi tiết thông báo</h3>
+          <button @click="showDetailDialog = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div v-if="selectedNotification" class="notification-detail">
-            <div class="detail-item">
-              <label>Loại:</label>
-              <span class="badge" :class="getTypeBadgeClass(selectedNotification.type)">
+        <div class="p-4">
+          <div v-if="selectedNotification" class="space-y-4">
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Loại:</label>
+              <span 
+                class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                :class="{
+                  'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': selectedNotification.type === 'promotion',
+                  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': selectedNotification.type === 'order',
+                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': selectedNotification.type === 'system',
+                  'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400': selectedNotification.type === 'announcement'
+                }"
+              >
                 {{ getTypeText(selectedNotification.type) }}
               </span>
             </div>
-            <div class="detail-item">
-              <label>Tiêu đề:</label>
-              <strong>{{ selectedNotification.title }}</strong>
+            <div class="flex flex-col gap-1 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tiêu đề:</label>
+              <strong class="text-sm text-gray-900 dark:text-gray-100">{{ selectedNotification.title }}</strong>
             </div>
-            <div class="detail-item">
-              <label>Nội dung:</label>
-              <p>{{ selectedNotification.message }}</p>
+            <div class="flex flex-col gap-1 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Nội dung:</label>
+              <p class="text-sm text-gray-700 dark:text-gray-300">{{ selectedNotification.message }}</p>
             </div>
-            <div v-if="selectedNotification.link" class="detail-item">
-              <label>Link:</label>
-              <a :href="selectedNotification.link" target="_blank">{{ selectedNotification.link }}</a>
+            <div v-if="selectedNotification.link" class="flex flex-col gap-1 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Link:</label>
+              <a :href="selectedNotification.link" target="_blank" class="text-sm text-purple-600 dark:text-purple-400 hover:underline">{{ selectedNotification.link }}</a>
             </div>
-            <div class="detail-item">
-              <label>Đối tượng:</label>
-              <p>{{ getRecipientText(selectedNotification) }}</p>
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Đối tượng:</label>
+              <p class="text-sm text-gray-700 dark:text-gray-300">{{ getRecipientText(selectedNotification) }}</p>
             </div>
-            <div class="detail-item">
-              <label>Trạng thái:</label>
-              <span class="status-badge" :class="getStatusClass(selectedNotification.status)">
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Trạng thái:</label>
+              <span 
+                class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                :class="{
+                  'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': selectedNotification.status === 'draft',
+                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': selectedNotification.status === 'scheduled',
+                  'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': selectedNotification.status === 'sent',
+                  'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': selectedNotification.status === 'failed'
+                }"
+              >
                 {{ getStatusText(selectedNotification.status) }}
               </span>
             </div>
-            <div v-if="selectedNotification.status === 'sent'" class="detail-item">
-              <label>Thống kê:</label>
-              <p>Đã gửi: {{ selectedNotification.recipientCount }}</p>
-              <p>Đã đọc: {{ selectedNotification.openedCount }} ({{ getReadRate(selectedNotification) }}%)</p>
+            <div v-if="selectedNotification.status === 'sent'" class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">Thống kê:</label>
+              <div class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                <p>Đã gửi: {{ selectedNotification.recipientCount || selectedNotification.targetUsers || 0 }}</p>
+                <p>Đã đọc: {{ selectedNotification.openedCount || 0 }} ({{ getReadRate(selectedNotification) }}%)</p>
+              </div>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button @click="showDetailDialog = false" class="btn btn-secondary">Đóng</button>
+        <div class="flex items-center justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="showDetailDialog = false" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Đóng</button>
         </div>
       </div>
     </div>
@@ -702,9 +744,9 @@ const getTypeBadgeClass = (type) => {
 
 const getRecipientText = (item) => {
   if (item.recipientType === 'all') return 'Tất cả người dùng'
-  if (item.recipientType === 'role') return `Vai trò: ${item.role}`
-  if (item.recipientType === 'specific') return `${item.recipientCount} người`
-  return '-'
+  if (item.recipientType === 'role') return `Vai trò: ${item.role || 'USER'}`
+  if (item.recipientType === 'specific') return `${item.recipientCount || item.targetUsers || 0} người`
+  return 'Tất cả người dùng'
 }
 
 const getStatusClass = (status) => {
@@ -728,8 +770,9 @@ const getStatusText = (status) => {
 }
 
 const getReadRate = (item) => {
-  if (!item.recipientCount || item.recipientCount === 0) return 0
-  return Math.round((item.openedCount / item.recipientCount) * 100)
+  const recipientCount = item.recipientCount || item.targetUsers || 0
+  if (!recipientCount || recipientCount === 0) return 0
+  return Math.round(((item.openedCount || 0) / recipientCount) * 100)
 }
 
 const truncate = (text, length) => {
@@ -754,944 +797,6 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* ===== ADMIN NOTIFICATIONS PAGE - UNIFIED DARK THEME ===== */
 
-/* Page Layout */
-.admin-notifications {
-  padding: var(--space-8);
-  max-width: 1600px;
-  margin: 0 auto;
-  min-height: calc(100vh - 4rem);
-}
 
-/* Page Header */
-.page-header {
-  background: var(--bg-card);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-8);
-  margin-bottom: var(--space-8);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-6);
-}
-
-.page-title {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.page-title .material-icons {
-  font-size: 2rem;
-  color: var(--accent-primary);
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  margin: 0;
-  font-size: var(--text-base);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.page-subtitle .material-icons {
-  font-size: 1.125rem;
-  color: var(--accent-primary);
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-3);
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
-}
-
-.stats-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.stats-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.stats-card.success::before {
-  background: var(--gradient-success);
-}
-
-.stats-card.warning::before {
-  background: var(--gradient-warning);
-}
-
-.stats-card.danger::before {
-  background: var(--gradient-danger);
-}
-
-.stats-card.info::before {
-  background: var(--gradient-info);
-}
-
-.stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow-purple);
-  border-color: var(--border-hover);
-}
-
-.stats-card:hover::before {
-  opacity: 1;
-}
-
-.stats-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.stats-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-}
-
-.stats-icon.success {
-  background: var(--gradient-success);
-  color: white;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
-}
-
-.stats-icon.warning {
-  background: var(--gradient-warning);
-  color: white;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
-}
-
-.stats-icon.danger {
-  background: var(--gradient-danger);
-  color: white;
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
-}
-
-.stats-icon.info {
-  background: var(--gradient-info);
-  color: white;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-}
-
-.stats-card:hover .stats-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.stats-icon .material-icons {
-  font-size: 26px;
-}
-
-.stats-info {
-  flex: 1;
-  text-align: right;
-}
-
-.stats-value {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  line-height: 1;
-  margin: 0 0 var(--space-2) 0;
-}
-
-.stats-label {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  font-weight: var(--font-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* Filters Section */
-.filters-section {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: var(--space-4);
-  align-items: flex-end;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.filter-group label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--text-secondary);
-}
-
-.search-box {
-  position: relative;
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-3);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-tertiary);
-  font-size: 1.25rem;
-  pointer-events: none;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition: all 0.3s ease;
-}
-
-.search-input:hover {
-  border-color: var(--border-hover);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.search-input::placeholder {
-  color: var(--text-tertiary);
-}
-
-.form-control {
-  padding: var(--space-3) var(--space-4);
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition: all 0.3s ease;
-}
-
-.form-control:hover {
-  border-color: var(--border-hover);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-  background: rgba(15, 23, 42, 0.8);
-}
-
-/* Table Container */
-.table-container {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-/* Admin Table */
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.admin-table thead {
-  background: var(--table-header-bg);
-}
-
-/* Table headers use global admin-tables.css styles */
-
-.admin-table tbody tr {
-  border-bottom: 1px solid var(--border-primary);
-  transition: all 0.2s ease;
-}
-
-.admin-table tbody tr:hover {
-  background: var(--gradient-purple-soft);
-  transform: scale(1.002);
-}
-
-/* Table cells use global admin-tables.css styles */
-
-/* Notification Title Cell */
-.notification-title {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  max-width: 400px;
-}
-
-.notification-title .material-icons {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.notification-title strong {
-  display: block;
-  margin-bottom: var(--space-1);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.notification-title p {
-  margin: 0;
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  line-height: 1.5;
-}
-
-/* Recipient Info */
-.recipient-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-}
-
-.recipient-info .material-icons {
-  font-size: 1.125rem;
-  color: var(--accent-primary);
-}
-
-/* Time Info */
-.time-info {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-/* Read Rate */
-.read-rate {
-  min-width: 180px;
-}
-
-.read-rate span {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  margin-top: var(--space-1);
-  display: block;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  margin-bottom: var(--space-2);
-  border: 1px solid var(--border-primary);
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--gradient-primary);
-  transition: width 0.3s ease;
-  box-shadow: 0 0 8px rgba(167, 139, 250, 0.5);
-}
-
-/* Badges */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.badge-success {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
-.badge-warning {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border: 1px solid var(--warning-border);
-}
-
-.badge-info {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid var(--info-border);
-}
-
-.badge-primary {
-  background: var(--gradient-purple-soft);
-  color: var(--accent-primary);
-  border: 1px solid var(--border-primary);
-}
-
-/* Status Badges */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  white-space: nowrap;
-}
-
-.status-completed {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
-.status-pending {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border: 1px solid var(--warning-border);
-}
-
-.status-cancelled {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
-}
-
-.status-inactive {
-  background: rgba(100, 116, 139, 0.15);
-  color: var(--text-tertiary);
-  border: 1px solid var(--border-primary);
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-/* Action buttons use global admin-tables.css styles */
-
-/* Loading & Empty States */
-.loading-container {
-  padding: var(--space-16) var(--space-8);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid rgba(167, 139, 250, 0.2);
-  border-top-color: var(--accent-primary);
-  border-radius: var(--radius-full);
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.loading-container p {
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-}
-
-.empty-state {
-  padding: var(--space-16) var(--space-8);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-}
-
-.empty-state .material-icons {
-  font-size: 64px;
-  color: var(--text-disabled);
-}
-
-.empty-state h3 {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-}
-
-.empty-state p {
-  margin: 0;
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-}
-
-/* Modal Overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: var(--space-4);
-  animation: fadeIn 0.2s ease;
-}
-
-/* Modal */
-.modal {
-  background: var(--bg-card);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-2xl);
-  border: 1px solid var(--border-primary);
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp 0.3s ease;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
-.modal-md {
-  width: 100%;
-  max-width: 600px;
-}
-
-.modal-lg {
-  width: 100%;
-  max-width: 800px;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6) var(--space-8);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-}
-
-.modal-close {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.4);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-secondary);
-}
-
-.modal-close:hover {
-  background: var(--error-bg);
-  border-color: var(--error-border);
-  color: var(--error-text);
-  transform: rotate(90deg);
-}
-
-.modal-body {
-  padding: var(--space-8);
-  overflow-y: auto;
-  flex: 1;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-6) var(--space-8);
-  border-top: 1px solid var(--border-primary);
-}
-
-/* Form */
-.form-group {
-  margin-bottom: var(--space-5);
-}
-
-.form-group label {
-  display: block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-}
-
-.form-group label.required::after {
-  content: ' *';
-  color: var(--error-text);
-}
-
-.form-control {
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition: all 0.3s ease;
-  font-family: inherit;
-}
-
-.form-control:hover {
-  border-color: var(--border-hover);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-  background: rgba(15, 23, 42, 0.8);
-}
-
-textarea.form-control {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.form-help {
-  display: block;
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-}
-
-/* Radio Group */
-.radio-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--space-3);
-  margin-top: var(--space-3);
-}
-
-.radio-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: rgba(15, 23, 42, 0.4);
-}
-
-.radio-option:hover {
-  border-color: var(--accent-primary);
-  background: var(--gradient-purple-soft);
-}
-
-.radio-option:has(input:checked) {
-  border-color: var(--accent-primary);
-  background: var(--gradient-purple-soft);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-}
-
-.radio-option input[type="radio"] {
-  margin: 0;
-  cursor: pointer;
-}
-
-.radio-option .material-icons {
-  font-size: 2rem;
-  color: var(--accent-primary);
-}
-
-/* Notification Detail */
-.notification-detail {
-  padding: var(--space-4);
-}
-
-.detail-item {
-  margin-bottom: var(--space-5);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.detail-item:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.detail-item label {
-  display: block;
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-2);
-}
-
-.detail-item strong {
-  font-size: var(--text-base);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.detail-item p {
-  margin: var(--space-1) 0 0 0;
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.detail-item a {
-  color: var(--accent-primary);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  transition: all 0.2s ease;
-}
-
-.detail-item a:hover {
-  text-decoration: underline;
-  color: var(--accent-light);
-}
-
-/* Form Actions */
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--border-primary);
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: none;
-  white-space: nowrap;
-}
-
-.btn-primary {
-  background: var(--gradient-primary);
-  color: white;
-  box-shadow: var(--shadow-btn);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-secondary {
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-primary);
-}
-
-.btn-secondary:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.btn .material-icons {
-  font-size: 1.125rem;
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .filter-row {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .filter-group:first-child {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 768px) {
-  .admin-notifications {
-    padding: var(--space-4);
-  }
-
-  .page-header {
-    padding: var(--space-6);
-  }
-
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .page-title {
-    font-size: var(--text-2xl);
-  }
-
-  .header-actions {
-    width: 100%;
-  }
-
-  .header-actions .btn {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-row {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-group:first-child {
-    grid-column: 1;
-  }
-
-  .table-container {
-    overflow-x: auto;
-  }
-
-  .admin-table {
-    min-width: 800px;
-  }
-
-  .notification-title {
-    max-width: 250px;
-  }
-
-  .modal {
-    margin: var(--space-4);
-  }
-
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    padding: var(--space-4);
-  }
-
-  .radio-group {
-    grid-template-columns: 1fr;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .form-actions .btn {
-    width: 100%;
-    justify-content: center;
-  }
-}
-</style>
 

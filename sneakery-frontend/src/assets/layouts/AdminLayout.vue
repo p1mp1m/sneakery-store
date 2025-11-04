@@ -1,102 +1,133 @@
 <template>
-  <div class="admin-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed, 'sidebar-open-mobile': isMobile && !sidebarCollapsed }">
+  <div class="min-h-screen flex bg-gray-50 dark:bg-gray-900">
     <!-- Hamburger Menu (Mobile Only) -->
     <button 
       v-if="isMobile"
-      class="hamburger-btn"
+      class="fixed top-4 left-4 z-[110] flex flex-col gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow-lg cursor-pointer transition-colors duration-150 hover:bg-gray-100 dark:hover:bg-gray-700"
       @click="toggleSidebar"
       type="button"
       title="Toggle menu"
     >
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-    </button>
-
-    <!-- Nút Toggle - Bên ngoài sidebar (Desktop Only) -->
-    <button
-      v-if="!isMobile"
-      class="sidebar-toggle-btn"
-      @click="toggleSidebar"
-      type="button"
-      :title="sidebarCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'"
-    >
-      <i class="material-icons">{{
-        sidebarCollapsed ? "chevron_right" : "chevron_left"
-      }}</i>
+      <span class="w-6 h-0.5 bg-gray-900 dark:bg-gray-100 rounded-full transition-all duration-150"></span>
+      <span class="w-6 h-0.5 bg-gray-900 dark:bg-gray-100 rounded-full transition-all duration-150"></span>
+      <span class="w-6 h-0.5 bg-gray-900 dark:bg-gray-100 rounded-full transition-all duration-150"></span>
     </button>
 
     <!-- Admin Sidebar -->
-    <aside class="admin-sidebar" :class="{ 'collapsed': sidebarCollapsed, 'mobile-top': isMobile }">
-      <div class="sidebar-header">
-        <div class="brand">
+    <aside class="fixed left-0 top-0 bottom-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg transition-all duration-300 z-[100] flex flex-col" :class="{ 'w-20': sidebarCollapsed, 'w-[280px]': !sidebarCollapsed, 'translate-x-0': !isMobile || !sidebarCollapsed, '-translate-x-full': isMobile && sidebarCollapsed }">
+      <!-- Header với Logo và Toggle Button -->
+      <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 transition-all duration-300" :class="sidebarCollapsed ? 'p-3 justify-center' : 'p-4'">
+        <!-- Logo khi expanded -->
+        <div v-if="!sidebarCollapsed" class="flex items-center justify-center flex-1 transition-all duration-300">
           <img
             src="@/assets/images/logo.png"
             alt="Sneakery Store"
-            class="logo"
+            class="h-28 w-auto object-contain transition-all duration-300"
           />
         </div>
+        
+        <!-- Toggle Button khi expanded - Desktop -->
+        <button 
+          v-if="!isMobile && !sidebarCollapsed"
+          class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 flex-shrink-0"
+          @click="toggleSidebar"
+          type="button"
+          title="Thu gọn"
+        >
+          <i class="material-icons text-lg">chevron_left</i>
+        </button>
+        
+        <!-- Toggle Button khi collapsed - Desktop (thay thế icon hòm thư) -->
+        <button 
+          v-if="!isMobile && sidebarCollapsed"
+          class="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all duration-200 mx-auto"
+          @click="toggleSidebar"
+          type="button"
+          title="Mở rộng"
+        >
+          <i class="material-icons text-2xl">chevron_right</i>
+        </button>
+        
         <!-- Toggle Button cho Mobile - trong sidebar -->
         <button 
           v-if="isMobile"
-          class="sidebar-close-btn"
+          class="flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 flex-shrink-0"
           @click="toggleSidebar"
           type="button"
           title="Đóng menu"
         >
-          <i class="material-icons">close</i>
+          <i class="material-icons text-xl">close</i>
         </button>
       </div>
 
-      <nav class="sidebar-nav">
-        <ul class="nav-list">
+      <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 sidebar-nav">
+        <ul class="list-none p-0 m-0">
           <template v-for="route in adminRoutes" :key="route.id || route.name">
             <!-- Menu có submenu (dropdown) -->
-            <li v-if="route.children" class="nav-item nav-item-parent">
+            <li v-if="route.children" class="mb-1 relative">
               <a
-                class="nav-link nav-parent"
+                class="flex items-center rounded-lg text-gray-700 dark:text-gray-300 no-underline transition-all duration-200 cursor-pointer relative group"
                 :class="{
-                  active: isSubmenuActive(route.children),
-                  open: isMenuOpen(route.id),
+                  'justify-center w-12 h-12 mx-auto': sidebarCollapsed,
+                  'gap-3 px-4 py-3 mx-2': !sidebarCollapsed,
+                  'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400': isSubmenuActive(route.children) || (sidebarCollapsed && hoveredMenuId === route.id),
+                  'hover:bg-gray-100 dark:hover:bg-gray-700': !isSubmenuActive(route.children) && !(sidebarCollapsed && hoveredMenuId === route.id),
                 }"
-                @click.prevent="toggleMenu(route.id)"
+                @click.prevent.stop="sidebarCollapsed ? (hoveredMenuId = hoveredMenuId === route.id ? null : route.id) : toggleMenu(route.id)"
                 href="#"
                 :title="sidebarCollapsed ? route.meta.title : ''"
               >
-                <i class="material-icons">{{ route.meta.icon }}</i>
-                <span v-if="!sidebarCollapsed" class="nav-text">{{
+                <i class="material-icons flex-shrink-0 transition-all duration-200" :class="sidebarCollapsed ? 'text-2xl' : 'text-xl'">{{ route.meta.icon }}</i>
+                <span v-if="!sidebarCollapsed" class="flex-1 font-medium text-sm transition-opacity duration-200">{{
                   route.meta.title
                 }}</span>
-                <!-- Expand icon - hiện cả khi collapsed -->
+                <!-- Expand icon -->
                 <i
-                  class="material-icons expand-icon"
-                  :class="{ 'collapsed-icon': sidebarCollapsed }"
+                  v-if="!sidebarCollapsed"
+                  class="material-icons text-lg transition-transform duration-200 flex-shrink-0"
+                  :class="{ 'rotate-180': isMenuOpen(route.id) }"
                 >
                   {{ isMenuOpen(route.id) ? "expand_less" : "expand_more" }}
                 </i>
               </a>
 
-              <!-- Submenu dropdown (Normal & Collapsed) -->
-              <transition name="submenu">
+              <!-- Submenu dropdown - hiển thị khi expanded hoặc khi collapsed và được chọn -->
+              <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 -translate-y-2"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 -translate-y-2"
+              >
                 <ul
-                  v-if="isMenuOpen(route.id)"
-                  class="submenu"
-                  :class="{ 'submenu-collapsed': sidebarCollapsed }"
+                  v-if="(isMenuOpen(route.id) && !sidebarCollapsed) || (hoveredMenuId === route.id && sidebarCollapsed)"
+                  class="list-none p-0 m-0 mt-1"
+                  :class="sidebarCollapsed ? 'pl-0 border-l-2 border-purple-300 dark:border-purple-600 ml-4' : 'pl-4'"
                 >
                   <li
                     v-for="child in route.children"
                     :key="child.name"
-                    class="submenu-item"
+                    class="mb-1"
                   >
                     <router-link
                       :to="child.path"
-                      class="nav-link nav-child"
-                      :class="{ active: $route.name === child.name }"
-                      :title="sidebarCollapsed ? child.meta.title : ''"
+                      class="flex items-center rounded-lg text-gray-600 dark:text-gray-400 no-underline transition-all duration-200 text-sm relative"
+                      :class="{
+                        'justify-center w-10 h-10 mx-auto': sidebarCollapsed,
+                        'gap-3 px-4 py-2 mx-2': !sidebarCollapsed,
+                        'pl-6': !sidebarCollapsed,
+                        'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400': $route.name === child.name,
+                        'hover:bg-gray-100 dark:hover:bg-gray-700': $route.name !== child.name,
+                        'opacity-90': sidebarCollapsed,
+                      }"
                       @click="isMobile && (sidebarCollapsed = true)"
+                      :title="sidebarCollapsed ? child.meta.title : ''"
                     >
-                      <i class="material-icons">{{ child.meta.icon }}</i>
-                      <span class="nav-text">{{ child.meta.title }}</span>
+                      <!-- Indicator line cho expanded -->
+                      <span v-if="!sidebarCollapsed" class="absolute left-0 w-0.5 h-6 bg-purple-300 dark:bg-purple-600 rounded-full"></span>
+                      <i class="material-icons flex-shrink-0" :class="sidebarCollapsed ? 'text-lg' : 'text-base'">{{ child.meta.icon }}</i>
+                      <span v-if="!sidebarCollapsed" class="flex-1 text-sm">{{ child.meta.title }}</span>
                     </router-link>
                   </li>
                 </ul>
@@ -104,16 +135,21 @@
             </li>
 
             <!-- Menu thường (không có submenu) -->
-            <li v-else class="nav-item">
+            <li v-else class="mb-1">
               <router-link
                 :to="route.path"
-                class="nav-link"
-                :class="{ active: $route.name === route.name }"
+                class="flex items-center rounded-lg text-gray-700 dark:text-gray-300 no-underline transition-all duration-200 font-medium relative group"
+                :class="{
+                  'justify-center w-12 h-12 mx-auto': sidebarCollapsed,
+                  'gap-3 px-4 py-3 mx-2 text-sm': !sidebarCollapsed,
+                  'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400': $route.name === route.name,
+                  'hover:bg-gray-100 dark:hover:bg-gray-700': $route.name !== route.name,
+                }"
                 :title="sidebarCollapsed ? route.meta.title : ''"
                 @click="isMobile && (sidebarCollapsed = true)"
               >
-                <i class="material-icons">{{ route.meta.icon }}</i>
-                <span v-if="!sidebarCollapsed" class="nav-text">{{
+                <i class="material-icons flex-shrink-0 transition-all duration-200" :class="sidebarCollapsed ? 'text-2xl' : 'text-xl'">{{ route.meta.icon }}</i>
+                <span v-if="!sidebarCollapsed" class="flex-1 transition-opacity duration-200">{{
                   route.meta.title
                 }}</span>
               </router-link>
@@ -122,35 +158,87 @@
         </ul>
       </nav>
 
-      <!-- Thông tin Admin ở dưới cùng -->
-      <div class="sidebar-footer">
-        <div
-          class="admin-info"
-          :title="sidebarCollapsed ? 'Admin - Quản trị viên' : ''"
-        >
-          <div class="admin-avatar">
-            <i class="material-icons">account_circle</i>
+      <!-- Profile Card ở dưới cùng -->
+      <div class="border-t border-gray-200 dark:border-gray-700 transition-all duration-300" :class="sidebarCollapsed ? 'p-2' : 'p-4'">
+        <div class="relative">
+          <div 
+            class="flex items-center gap-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 transition-all duration-200 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+            :class="sidebarCollapsed ? 'justify-center p-2' : 'p-2'"
+            @click="toggleProfileMenu"
+            :title="sidebarCollapsed ? 'Admin' : ''"
+          >
+            <div class="relative flex-shrink-0">
+              <div class="rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center transition-all duration-200" :class="sidebarCollapsed ? 'w-10 h-10' : 'w-8 h-8'">
+                <i class="material-icons text-white" :class="sidebarCollapsed ? 'text-xl' : 'text-sm'">person</i>
+              </div>
+              <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+            </div>
+            <div v-if="!sidebarCollapsed" class="flex-1 min-w-0">
+              <div class="font-semibold text-sm text-gray-900 dark:text-gray-100 capitalize truncate">{{ adminUser?.email?.split('@')[0] || 'Admin' }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">{{ currentTime }} • {{ currentDate }}</div>
+            </div>
+            <button 
+              v-if="!sidebarCollapsed"
+              class="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
+              @click.stop="toggleProfileMenu"
+            >
+              <i class="material-icons text-gray-600 dark:text-gray-300 text-sm">{{ showProfileMenu ? 'expand_more' : 'expand_less' }}</i>
+            </button>
           </div>
-          <div v-if="!sidebarCollapsed" class="admin-details">
-            <div class="admin-name">Admin</div>
-            <div class="admin-role">QUẢN TRỊ VIÊN</div>
-          </div>
+
+          <!-- Dropdown Menu -->
+          <transition
+            enter-active-class="transition-all duration-200 ease-out"
+            leave-active-class="transition-all duration-200 ease-in"
+            enter-from-class="opacity-0 scale-95 -translate-y-2"
+            enter-to-class="opacity-100 scale-100 translate-y-0"
+            leave-from-class="opacity-100 scale-100 translate-y-0"
+            leave-to-class="opacity-0 scale-95 -translate-y-2"
+          >
+            <div 
+              v-if="showProfileMenu && !sidebarCollapsed" 
+              class="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-[110]"
+            >
+              <a href="#" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click.prevent="handleProfileEdit">
+                <i class="material-icons text-base">person_outline</i>
+                <span>Hồ sơ</span>
+              </a>
+              <a href="#" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click.prevent="handleSettings">
+                <i class="material-icons text-base">settings</i>
+                <span>Cài đặt</span>
+              </a>
+              <a href="#" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click.prevent="handleChangePassword">
+                <i class="material-icons text-base">lock</i>
+                <span>Đổi mật khẩu</span>
+              </a>
+              <div class="border-t border-gray-200 dark:border-gray-700"></div>
+              <a href="#" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" @click.prevent="handleThemeToggle">
+                <i class="material-icons text-base">{{ isDark ? 'light_mode' : 'dark_mode' }}</i>
+                <span>{{ isDark ? 'Chế độ sáng' : 'Chế độ tối' }}</span>
+              </a>
+              <div class="border-t border-gray-200 dark:border-gray-700"></div>
+              <a href="#" class="flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" @click.prevent="handleLogout">
+                <i class="material-icons text-base">logout</i>
+                <span>Đăng xuất</span>
+              </a>
+            </div>
+          </transition>
         </div>
       </div>
     </aside>
 
     <!-- Main Content -->
-    <div class="admin-main">
+    <div class="flex-1 transition-all duration-300" :class="{ 'ml-20': sidebarCollapsed, 'ml-[280px]': !sidebarCollapsed }">
       <!-- Page Content -->
-      <main class="admin-content">
+      <main class="p-4 min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
         <router-view />
       </main>
     </div>
 
     <!-- Mobile Overlay -->
     <div
-      v-if="sidebarCollapsed && isMobile"
-      class="mobile-overlay"
+      v-if="!sidebarCollapsed && isMobile"
+      class="fixed inset-0 bg-black/50 z-[90] transition-opacity duration-300"
       @click="toggleSidebar"
     ></div>
 
@@ -161,17 +249,107 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useAdminStore } from "@/stores/admin";
+import { useAuthStore } from "@/stores/auth";
+import { useTheme } from "@/composables/useTheme";
 import ToastContainer from "@/components/ToastContainer.vue";
+import { ElMessage } from "element-plus";
 
 const route = useRoute();
+const router = useRouter();
 const adminStore = useAdminStore();
+const authStore = useAuthStore();
+
+// Theme
+const { toggleTheme, isDark } = useTheme();
 
 // State
 const sidebarCollapsed = ref(false);
 const isMobile = ref(false);
 const openMenus = ref([]); // Danh sách các menu đang mở
+const hoveredMenuId = ref(null); // Menu đang được chọn khi collapsed
+const popoverRef = ref(null); // Ref cho popover container
+const showProfileMenu = ref(false);
+const currentTime = ref('');
+const currentDate = ref('');
+
+// Admin user
+const adminUser = computed(() => adminStore.adminUser || authStore.currentUser);
+
+// Update time and date
+const updateDateTime = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  currentTime.value = `${hours}:${minutes}`;
+  
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dayName = days[now.getDay()];
+  const day = now.getDate();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  currentDate.value = `${dayName}, ${day} tháng ${month}, ${year}`;
+};
+
+// Theme toggle handler
+const handleThemeToggle = () => {
+  toggleTheme();
+  showProfileMenu.value = false;
+};
+
+// Handle click outside to close submenu khi collapsed
+const handleClickOutside = (event) => {
+  if (sidebarCollapsed.value && hoveredMenuId.value) {
+    const menuItem = event.target.closest('li.relative');
+    const menuLink = event.target.closest('a[href="#"]');
+    const submenuLink = event.target.closest('a[href^="/admin"]');
+    
+    // Chỉ đóng nếu click bên ngoài menu item và submenu links
+    if (!menuItem && !menuLink && !submenuLink) {
+      hoveredMenuId.value = null;
+    }
+  }
+  
+  // Đóng profile menu nếu click bên ngoài
+  if (showProfileMenu.value) {
+    const profileCard = event.target.closest('.relative');
+    if (!profileCard) {
+      showProfileMenu.value = false;
+    }
+  }
+};
+
+// Profile menu handlers
+const toggleProfileMenu = () => {
+  showProfileMenu.value = !showProfileMenu.value;
+};
+
+const handleProfileEdit = () => {
+  showProfileMenu.value = false;
+  ElMessage.info('Chức năng đang được phát triển');
+};
+
+const handleSettings = () => {
+  showProfileMenu.value = false;
+  router.push('/admin/settings');
+};
+
+const handleChangePassword = () => {
+  showProfileMenu.value = false;
+  ElMessage.info('Chức năng đang được phát triển');
+};
+
+const handleLogout = () => {
+  showProfileMenu.value = false;
+  ElMessage.success('Đang đăng xuất...');
+  setTimeout(() => {
+    authStore.logout();
+    adminStore.reset();
+    localStorage.clear();
+    window.location.href = '/login';
+  }, 1000);
+};
 
 // Admin routes for sidebar với submenu
 const adminRoutes = [
@@ -306,33 +484,30 @@ const adminRoutes = [
 
 // Methods
 const toggleSidebar = () => {
-  console.log("Toggle sidebar clicked! Current state:", sidebarCollapsed.value);
+  const wasCollapsed = sidebarCollapsed.value;
   sidebarCollapsed.value = !sidebarCollapsed.value;
-  console.log("New state:", sidebarCollapsed.value);
+  
+  // Đóng tất cả submenu khi collapse sidebar
+  if (!wasCollapsed && sidebarCollapsed.value) {
+    openMenus.value = [];
+  }
 };
 
 const toggleMenu = (menuId) => {
-  if (!menuId) {
-    console.error("toggleMenu: menuId is missing!");
+  if (!menuId) return;
+  
+  // Nếu collapsed, sử dụng hoveredMenuId thay vì openMenus
+  if (sidebarCollapsed.value) {
+    hoveredMenuId.value = hoveredMenuId.value === menuId ? null : menuId;
     return;
   }
-
-  console.log("🔄 toggleMenu called for:", menuId);
-  console.log("📋 Before toggle - openMenus:", JSON.stringify(openMenus.value));
-
+  
   const index = openMenus.value.indexOf(menuId);
   if (index > -1) {
-    // Đóng menu
     openMenus.value.splice(index, 1);
-    console.log("❌ Menu closed:", menuId);
   } else {
-    // Mở menu
     openMenus.value.push(menuId);
-    console.log("✅ Menu opened:", menuId);
   }
-
-  console.log("📋 After toggle - openMenus:", JSON.stringify(openMenus.value));
-  console.log("🎯 isMenuOpen result:", isMenuOpen(menuId));
 };
 
 const isMenuOpen = (menuId) => {
@@ -362,11 +537,6 @@ const checkMobile = () => {
     sidebarCollapsed.value = false
   }
   
-  console.log('📱 Mobile check:', {
-    width,
-    isMobile: isMobile.value,
-    sidebarCollapsed: sidebarCollapsed.value
-  })
 }
 
 // Function để update openMenus dựa trên route hiện tại
@@ -385,16 +555,24 @@ const updateOpenMenus = () => {
   // Chỉ update nếu có thay đổi
   if (JSON.stringify(openMenus.value) !== JSON.stringify(newOpenMenus)) {
     openMenus.value = newOpenMenus;
-    console.log("📊 Updated openMenus:", JSON.stringify(openMenus.value));
   }
 };
 
 // Watch route changes để tự động đóng/mở menu
 watch(
   () => route.name,
-  (newRouteName, oldRouteName) => {
-    console.log("🔄 Route changed:", oldRouteName, "→", newRouteName);
+  () => {
     updateOpenMenus();
+  }
+);
+
+// Watch sidebar collapse để tự động đóng submenu
+watch(
+  () => sidebarCollapsed.value,
+  (collapsed) => {
+    if (collapsed) {
+      openMenus.value = [];
+    }
   }
 );
 
@@ -402,1326 +580,25 @@ watch(
 onMounted(() => {
   checkMobile();
   window.addEventListener("resize", checkMobile);
-
-  console.log("🚀 AdminLayout mounted");
-  console.log("📋 Admin routes:", adminRoutes);
-  console.log("📍 Current route:", route.name);
-
-  // Tự động mở menu nếu route hiện tại nằm trong submenu
+  document.addEventListener("click", handleClickOutside);
   updateOpenMenus();
+  updateDateTime();
+  setInterval(updateDateTime, 1000);
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", checkMobile);
+  document.removeEventListener("click", handleClickOutside);
 });
 </script>
 
 <style scoped>
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    var(--dark-bg-primary) 0%,
-    var(--dark-bg-secondary) 100%
-  );
-  position: relative;
-  overflow-x: hidden;
-}
-
-/* ===== NÚT TOGGLE SIDEBAR - SUBTLE & MINIMAL ===== */
-.sidebar-toggle-btn {
-  position: fixed;
-  top: 50%;
-  left: calc(220px - 18px);
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(71, 85, 105, 0.4);
-  border-radius: 50%;
-  color: rgba(148, 163, 184, 0.7);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 9999;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  pointer-events: auto;
-  opacity: 0.7;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.sidebar-toggle-btn:hover {
-  background: var(--primary-gradient);
-  border-color: var(--primary-color);
-  color: white;
-  opacity: 1;
-  transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.sidebar-toggle-btn:active {
-  transform: translateY(-50%) scale(0.9);
-}
-
-.sidebar-toggle-btn:focus {
-  outline: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(167, 139, 250, 0.3);
-}
-
-.sidebar-toggle-btn i {
-  font-size: 18px;
-  transition: transform 0.2s ease;
-  line-height: 1;
-}
-
-.sidebar-toggle-btn:hover i {
-  transform: rotate(0deg);
-}
-
-/* ===== HAMBURGER BUTTON (MOBILE) ===== */
-.hamburger-btn {
-  display: none;
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  z-index: 10002;
-  width: 48px;
-  height: 48px;
-  background: var(--primary-gradient);
-  border: none;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  box-shadow: var(--shadow-glass-lg);
-  transition: all var(--transition-fast);
-}
-
-.hamburger-line {
-  width: 24px;
-  height: 2px;
-  background: white;
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-/* ===== SIDEBAR ===== */
-.admin-sidebar {
-  width: 220px;
-  background: var(--dark-bg-card);
-  color: var(--dark-text-primary);
-  display: flex;
-  flex-direction: column;
-  transition: all var(--transition-slow);
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  z-index: 1000;
-  box-shadow: var(--shadow-glass-lg);
-  overflow: hidden;
-  border-right: 1px solid var(--dark-border-color);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  will-change: transform;
-  transform: translateX(0);
-  visibility: visible;
-  opacity: 1;
-}
-
-.admin-sidebar.collapsed {
-  width: 75px;
-}
-
-.sidebar-header {
-  padding: 0.75rem 0.5rem;
-  border-bottom: 1px solid var(--dark-border-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 65px;
-  position: relative;
-  z-index: 5;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  flex: 1;
-}
-
-.logo {
-  width: 160px;
-  height: 75px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  object-fit: contain;
-}
-
-.admin-sidebar.collapsed .logo {
-  display: none;
-}
-
-.admin-sidebar.collapsed .brand {
-  display: none;
-}
-
-.admin-sidebar.collapsed .sidebar-header {
-  justify-content: center;
-  padding: 0.75rem 0.5rem;
-  min-height: auto;
-}
-
-/* Khi collapsed - nút di chuyển theo */
-.admin-layout.sidebar-collapsed .sidebar-toggle-btn {
-  left: calc(75px - 16px);
-}
-
-.admin-layout.sidebar-collapsed .sidebar-toggle-btn:hover {
-  transform: translateY(-50%) scale(1.08);
-}
-
-.admin-layout.sidebar-collapsed .sidebar-toggle-btn:active {
-  transform: translateY(-50%) scale(0.95);
-}
-
-/* ===== NAVIGATION ===== */
 .sidebar-nav {
-  flex: 1;
-  padding: 0.5rem 0;
-  overflow-y: visible;
-  overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
-/* Ẩn scrollbar khi không collapsed và khi collapsed */
-.admin-sidebar .sidebar-nav::-webkit-scrollbar {
-  width: 0;
-  display: none;
-}
-
-.admin-sidebar .sidebar-nav {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.admin-sidebar.collapsed .sidebar-nav::-webkit-scrollbar {
-  width: 0;
-  display: none;
-}
-
-.admin-sidebar.collapsed .sidebar-nav {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.nav-item {
-  margin: 0 0.25rem;
-  position: relative;
-}
-
-.nav-item-parent {
-  margin: 0 0.25rem;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: calc(100% - 0.5rem);
-  overflow: visible;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.625rem;
-  color: var(--dark-text-secondary);
-  text-decoration: none;
-  transition: all var(--transition-normal);
-  position: relative;
-  border-radius: var(--radius-md);
-  overflow: visible;
-  margin: 0.1rem 0;
-  border: 1.5px solid transparent;
-  font-size: 0.9rem;
-}
-
-.nav-link:hover {
-  background: rgba(167, 139, 250, 0.1);
-  color: var(--dark-text-primary);
-  border-color: var(--dark-border-light);
-  box-shadow: var(--shadow-glass-sm);
-}
-
-.nav-link.active {
-  background: var(--gradient-purple-soft);
-  color: var(--primary-light);
-  font-weight: 600;
-  border-color: var(--dark-border-medium);
-}
-
-.nav-link i {
-  font-size: 1rem;
-  min-width: 18px;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.nav-link:hover i {
-  color: var(--primary-light);
-  transform: scale(1.1) rotate(3deg);
-  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.5));
-}
-
-.nav-link.active i {
-  color: var(--primary-color);
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.7));
-}
-
-.nav-text {
-  white-space: nowrap;
-  font-weight: 500;
-  font-size: 0.875rem;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-
-.admin-sidebar.collapsed .nav-text {
-  opacity: 0;
-  width: 0;
-  display: none;
-}
-
-.admin-sidebar.collapsed .nav-link {
-  justify-content: center;
-  padding: 0.625rem 0.5rem;
-  gap: 0;
-  position: relative;
-}
-
-.admin-sidebar.collapsed .nav-parent {
-  justify-content: center;
-  padding: 0.625rem 0.5rem;
-}
-
-.admin-sidebar.collapsed .nav-link i {
-  margin: 0 auto;
-  font-size: 1.25rem;
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-}
-
-.admin-sidebar.collapsed .nav-parent i:first-child {
-  margin: 0 auto;
-  position: relative;
-  left: 0;
-  transform: none;
-}
-
-/* ===== SIDEBAR FOOTER ===== */
-.sidebar-footer {
-  padding: 0.75rem 0.5rem;
-  border-top: 1px solid var(--dark-border-color);
-  background: rgba(15, 23, 42, 0.4);
-}
-
-.admin-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.admin-info:hover {
-  background: rgba(167, 139, 250, 0.1);
-}
-
-.admin-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--primary-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.admin-avatar i {
-  font-size: 28px;
-  color: white;
-}
-
-.admin-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.admin-name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--dark-text-primary);
-  margin-bottom: 0.125rem;
-}
-
-.admin-role {
-  font-size: 0.7rem;
-  color: var(--dark-text-tertiary);
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-/* ===== COLLAPSED FOOTER ===== */
-.admin-sidebar.collapsed .sidebar-footer {
-  padding: 0.75rem 0.25rem;
-}
-
-.admin-sidebar.collapsed .admin-info {
-  justify-content: center;
-  padding: 0.4rem;
-}
-
-.admin-sidebar.collapsed .admin-avatar {
-  width: 44px;
-  height: 44px;
-  margin: 0 auto;
-}
-
-.admin-sidebar.collapsed .admin-avatar i {
-  font-size: 32px;
-}
-
-/* ===== MAIN CONTENT ===== */
-.admin-main {
-  flex: 1;
-  margin-left: 220px;
-  transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  width: calc(100vw - 220px);
-  min-width: 0;
-  max-width: calc(100vw - 220px);
-}
-
-.admin-layout.sidebar-collapsed .admin-main {
-  margin-left: 75px;
-  width: calc(100vw - 75px);
-  max-width: calc(100vw - 75px);
-}
-
-/* ===== CONTENT ===== */
-.admin-content {
-  flex: 1;
-  padding: 1.25rem; /* Giảm từ 1.5rem → 1.25rem (20px) để gọn gàng hơn */
-  overflow-y: auto;
-  max-width: 100%;
-  width: 100%;
-  position: relative;
-  /* Bỏ z-index để cards bên trong có thể hover đúng */
-}
-
-/* ===== MOBILE OVERLAY ===== */
-.mobile-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .admin-sidebar {
-    width: 220px;
-  }
-  
-  .admin-main {
-    margin-left: 220px;
-    width: calc(100vw - 220px);
-    max-width: calc(100vw - 220px);
-  }
-  
-  .admin-layout.sidebar-collapsed .admin-main {
-    margin-left: 75px;
-    width: calc(100vw - 75px);
-    max-width: calc(100vw - 75px);
-  }
-}
-
-/* CSS cho mobile-top - áp dụng bất kể media query khi có class này */
-.admin-sidebar.mobile-top {
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100vw !important;
-  height: auto !important;
-  max-height: 0 !important;
-  transform: translateY(-100%) !important;
-  transition: transform 0.3s ease, max-height 0.3s ease !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  z-index: 10000 !important;
-  border-right: none !important;
-  border-bottom: 1px solid var(--dark-border-color) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-  position: fixed !important;
-}
-
-.admin-sidebar.mobile-top:not(.collapsed) {
-  transform: translateY(0) !important;
-  max-height: 80vh !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-.admin-sidebar.mobile-top.collapsed {
-  transform: translateY(-100%) !important;
-  max-height: 0 !important;
-  visibility: hidden !important;
-}
-
-/* Hamburger button và close button luôn hiển thị khi có mobile-top */
-/* Đặt ở đây để override mọi media query */
-.admin-sidebar.mobile-top ~ * .hamburger-btn,
-.hamburger-btn {
-  /* Sẽ được override bởi CSS mobile hoặc khi có class mobile-top */
-}
-
-.admin-sidebar.mobile-top .sidebar-close-btn {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-@media (max-width: 767px) {
-  .admin-sidebar {
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100vw !important;
-    height: auto !important;
-    max-height: 0;
-    transform: translateY(-100%) !important;
-    transition: transform 0.3s ease, max-height 0.3s ease;
-    overflow-y: auto;
-    overflow-x: hidden;
-    z-index: 10000;
-    border-right: none !important;
-    border-bottom: 1px solid var(--dark-border-color) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    position: fixed !important;
-  }
-
-  .admin-sidebar:not(.collapsed) {
-    transform: translateY(0) !important;
-    max-height: 80vh !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .admin-sidebar.collapsed {
-    transform: translateY(-100%) !important;
-    max-height: 0 !important;
-    visibility: hidden !important;
-  }
-  
-  .admin-sidebar.mobile-top:not(.collapsed) {
-    transform: translateY(0) !important;
-    max-height: 80vh !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .admin-sidebar.mobile-top.collapsed {
-    transform: translateY(-100%) !important;
-    max-height: 0 !important;
-    visibility: hidden !important;
-  }
-
-  .admin-main {
-    margin-left: 0 !important;
-    margin-top: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    padding-top: 0;
-  }
-
-  .admin-layout.sidebar-collapsed .admin-main {
-    margin-left: 0 !important;
-    margin-top: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    padding-top: 0;
-  }
-
-  .admin-content {
-    padding: 0.875rem; /* Mobile: 14px */
-  }
-
-  .sidebar-header {
-    min-height: 60px;
-    padding: 0.75rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--dark-border-color);
-    background: var(--dark-bg-card);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  
-  .logo {
-    width: 120px;
-    height: auto;
-    max-height: 50px;
-  }
-  
-  .sidebar-close-btn {
-    width: 40px !important;
-    height: 40px !important;
-    background: var(--primary-gradient) !important;
-    border: none !important;
-    border-radius: var(--radius-lg) !important;
-    color: white !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    flex-shrink: 0;
-    box-shadow: var(--shadow-glass-sm);
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .sidebar-close-btn:hover {
-    transform: scale(1.05);
-    box-shadow: var(--shadow-glow-purple);
-  }
-  
-  .sidebar-close-btn i {
-    font-size: 24px;
-  }
-  
-  .sidebar-nav {
-    max-height: calc(80vh - 120px);
-    overflow-y: auto;
-    padding: 0.5rem 0;
-  }
-  
-  .nav-link {
-    padding: 0.75rem 1rem;
-  }
-  
-  .nav-parent {
-    padding: 0.75rem 1rem;
-  }
-  
-  .submenu {
-    padding: 0.5rem 0;
-    margin: 0;
-  }
-  
-  .nav-child {
-    padding: 0.625rem 1rem 0.625rem 2.5rem !important;
-  }
-  
-  .sidebar-footer {
-    display: none;
-  }
-  
-  /* Nút toggle trên mobile - ẩn */
-  .sidebar-toggle-btn {
-    display: none;
-  }
-  
-  /* Hiện hamburger menu trên mobile - LUÔN hiển thị khi width < 768px */
-  .hamburger-btn {
-    display: flex !important;
-    position: fixed !important;
-    top: 10px !important;
-    left: 10px !important;
-    z-index: 10002 !important;
-    background: var(--primary-gradient) !important;
-    box-shadow: var(--shadow-glass-lg) !important;
-    transition: opacity var(--transition-fast);
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .admin-layout.sidebar-open-mobile .hamburger-btn {
-    opacity: 0;
-    pointer-events: none;
-  }
-  
-  .mobile-overlay {
-    z-index: 9999;
-  }
-}
-
-/* Đảm bảo sidebar luôn hiển thị trên desktop - CHỈ khi width >= 768px VÀ không có class mobile-top */
-/* Lưu ý: Khi có class mobile-top, luôn dùng top navigation bất kể media query */
-@media (min-width: 768px) {
-  .admin-sidebar:not(.mobile-top) {
-    transform: translateX(0) !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    max-height: none !important;
-    height: 100vh !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: auto !important;
-    width: 220px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    border-right: 1px solid var(--dark-border-color) !important;
-    border-bottom: none !important;
-    position: fixed !important;
-    z-index: 1000 !important;
-  }
-  
-  .admin-sidebar.collapsed:not(.mobile-top) {
-    width: 75px !important;
-  }
-  
-  /* Khi có mobile-top class, override tất cả để dùng top navigation */
-  .admin-sidebar.mobile-top {
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100vw !important;
-    height: auto !important;
-    max-height: 0 !important;
-    transform: translateY(-100%) !important;
-    transition: transform 0.3s ease, max-height 0.3s ease !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    z-index: 10000 !important;
-    border-right: none !important;
-    border-bottom: 1px solid var(--dark-border-color) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-    position: fixed !important;
-  }
-  
-  .admin-sidebar.mobile-top:not(.collapsed) {
-    transform: translateY(0) !important;
-    max-height: 80vh !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .admin-sidebar.mobile-top.collapsed {
-    transform: translateY(-100%) !important;
-    max-height: 0 !important;
-    visibility: hidden !important;
-  }
-  
-  .hamburger-btn {
-    display: none !important;
-  }
-  
-  .sidebar-close-btn {
-    display: none !important;
-  }
-  
-  /* Khi có mobile-top, override để hiển thị hamburger và close button */
-  .admin-sidebar.mobile-top ~ .admin-main .hamburger-btn,
-  .admin-layout .hamburger-btn {
-    /* Fallback - sẽ được override bởi mobile CSS */
-  }
-  
-  .admin-sidebar.mobile-top .sidebar-close-btn {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .sidebar-header {
-    position: relative !important;
-    min-height: 65px !important;
-    padding: 0.75rem 0.5rem !important;
-    justify-content: space-between !important;
-  }
-  
-  .admin-sidebar.mobile-top .sidebar-header {
-    min-height: 60px !important;
-    padding: 0.75rem 1rem !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 10 !important;
-  }
-  
-  .sidebar-nav {
-    max-height: none !important;
-    overflow-y: auto !important;
-    padding: 0.5rem 0 !important;
-  }
-  
-  .admin-sidebar.mobile-top .sidebar-nav {
-    max-height: calc(80vh - 120px) !important;
-  }
-  
-  .nav-link {
-    padding: 0.5rem 0.625rem !important;
-  }
-  
-  .admin-sidebar.mobile-top .nav-link {
-    padding: 0.75rem 1rem !important;
-  }
-  
-  .nav-parent {
-    padding: 0.5rem 0.625rem !important;
-  }
-  
-  .admin-sidebar.mobile-top .nav-parent {
-    padding: 0.75rem 1rem !important;
-  }
-  
-  .nav-child {
-    padding: 0.4rem 0.5rem 0.4rem 1.625rem !important;
-  }
-  
-  .admin-sidebar.mobile-top .nav-child {
-    padding: 0.625rem 1rem 0.625rem 2.5rem !important;
-  }
-  
-  .sidebar-footer {
-    display: block !important;
-  }
-  
-  .admin-sidebar.mobile-top .sidebar-footer {
-    display: none !important;
-  }
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes slideIn {
-  from {
-    transform: translateX(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.nav-item {
-  animation: slideIn 0.3s ease-out;
-}
-
-.nav-item:nth-child(1) {
-  animation-delay: 0.05s;
-}
-.nav-item:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.nav-item:nth-child(3) {
-  animation-delay: 0.15s;
-}
-.nav-item:nth-child(4) {
-  animation-delay: 0.2s;
-}
-.nav-item:nth-child(5) {
-  animation-delay: 0.25s;
-}
-.nav-item:nth-child(6) {
-  animation-delay: 0.3s;
-}
-.nav-item:nth-child(7) {
-  animation-delay: 0.35s;
-}
-.nav-item:nth-child(8) {
-  animation-delay: 0.4s;
-}
-.nav-item:nth-child(9) {
-  animation-delay: 0.45s;
-}
-.nav-item:nth-child(10) {
-  animation-delay: 0.5s;
-}
-.nav-item:nth-child(11) {
-  animation-delay: 0.55s;
-}
-.nav-item:nth-child(12) {
-  animation-delay: 0.6s;
-}
-.nav-item:nth-child(13) {
-  animation-delay: 0.65s;
-}
-
-/* ===== GLOW EFFECT ===== */
-@keyframes glow {
-  0%,
-  100% {
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.25);
-  }
-  50% {
-    box-shadow: 0 2px 16px rgba(102, 126, 234, 0.4);
-  }
-}
-
-.nav-link.active {
-  animation: glow 2s ease-in-out infinite;
-}
-
-/* ===== TOOLTIP WHEN COLLAPSED ===== */
-.admin-sidebar.collapsed .nav-link {
-  position: relative;
-}
-
-.admin-sidebar.collapsed .nav-link::after {
-  content: attr(title);
-  position: absolute;
-  left: calc(100% + 8px);
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--primary-gradient);
-  color: white;
-  padding: 0.375rem 0.75rem;
-  border-radius: var(--radius-md);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-glass-md);
-  z-index: 1001;
-}
-
-.admin-sidebar.collapsed .nav-link:hover::after {
-  opacity: 1;
-  left: calc(100% + 12px);
-}
-
-/* Disable tooltip cho menu có submenu khi collapsed */
-.admin-sidebar.collapsed .nav-parent::after {
-  display: none;
-}
-
-/* ===== DROPDOWN MENU (SUBMENU) - THIẾT KẾ ĐẸP ===== */
-.nav-parent {
-  cursor: pointer !important;
-  position: relative;
-  user-select: none;
-}
-
-.expand-icon {
-  margin-left: auto;
-  font-size: 1.125rem !important;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 20px !important;
-  min-width: 20px !important;
-  height: 20px !important;
-  color: var(--dark-text-tertiary);
-  flex-shrink: 0;
-}
-
-.nav-parent:hover .expand-icon {
-  color: var(--dark-text-primary);
-}
-
-.nav-parent.open .expand-icon {
-  transform: rotate(180deg);
-  color: var(--primary-color);
-}
-
-/* Submenu container - Đẹp và hiện đại */
-.submenu {
-  list-style: none;
-  padding: 0.4rem 0.25rem;
-  margin: 0.2rem 0;
-  background: var(--dark-bg-glass-dark);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--dark-border-light);
-  border-left: 3px solid var(--primary-color);
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100%;
-  overflow: visible;
-  box-shadow: var(--shadow-glass-sm);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.submenu-item {
-  margin: 0;
-  padding: 0;
-  display: block !important;
-  width: 100%;
-  list-style: none;
-}
-
-/* Menu con - Design mới đẹp hơn */
-.nav-child {
-  display: flex !important;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.5rem 0.4rem 1.625rem !important;
-  font-size: 0.8rem;
-  color: var(--dark-text-secondary);
-  background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: var(--radius-md);
-  position: relative;
-  transition: all var(--transition-normal);
-  font-weight: 500;
-  text-decoration: none;
-  margin: 0.15rem 0.2rem;
-  width: calc(100% - 0.4rem);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Dot indicator trước mỗi submenu item */
-.nav-child::before {
-  content: "";
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 5px;
-  height: 5px;
-  background: var(--dark-text-quaternary);
-  border-radius: 50%;
-  transition: all var(--transition-normal);
-}
-
-/* Hover state - Đẹp và mượt */
-.nav-child:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--dark-border-light);
-  color: var(--dark-text-primary);
-  padding-left: 2rem !important;
-  box-shadow: var(--shadow-glass-sm);
-}
-
-.nav-child:hover::before {
-  background: var(--primary-gradient);
-  width: 6px;
-  height: 6px;
-  left: 0.875rem;
-  box-shadow: 0 0 12px rgba(167, 139, 250, 0.7);
-}
-
-/* Active state - Nổi bật */
-.nav-child.active {
-  background: var(--gradient-purple-soft);
-  border-color: var(--dark-border-medium);
-  color: var(--primary-light);
-  font-weight: 600;
-  box-shadow: var(--shadow-glass-md);
-}
-
-.nav-child.active::before {
-  background: var(--primary-gradient);
-  width: 7px;
-  height: 7px;
-  box-shadow: 0 0 14px rgba(167, 139, 250, 0.9),
-    0 0 24px rgba(167, 139, 250, 0.5);
-}
-
-/* Icons trong submenu */
-.nav-child .material-icons {
-  font-size: 1rem !important;
-  width: 18px !important;
-  min-width: 18px !important;
-  height: 18px !important;
-  color: var(--dark-text-tertiary);
-  transition: all var(--transition-normal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.nav-child:hover .material-icons {
-  color: var(--primary-light);
-  transform: scale(1.15);
-}
-
-.nav-child.active .material-icons {
-  color: var(--primary-light);
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.7));
-}
-
-/* Text trong submenu */
-.nav-child .nav-text {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.015em;
-  transition: all 0.3s ease;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.nav-child:hover .nav-text {
-  letter-spacing: 0.025em;
-}
-
-.nav-child.active .nav-text {
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-/* Transition animation cho submenu - Mượt mà */
-.submenu-enter-active {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-.submenu-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-.submenu-enter-from {
-  opacity: 0;
-  max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-  transform: translateY(-8px);
-}
-
-.submenu-enter-to {
-  opacity: 1;
-  max-height: 500px;
-  transform: translateY(0);
-}
-
-.submenu-leave-from {
-  opacity: 1;
-  max-height: 500px;
-  transform: translateY(0);
-}
-
-.submenu-leave-to {
-  opacity: 0;
-  max-height: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin-top: 0;
-  margin-bottom: 0;
-  transform: translateY(-8px);
-}
-
-/* Parent active state */
-.nav-parent.active {
-  background: var(--gradient-purple-soft);
-  border-color: var(--dark-border-medium);
-}
-
-.nav-parent.active .material-icons:first-child {
-  color: var(--primary-light);
-}
-
-/* Expand icon khi collapsed - nhỏ hơn ở góc dưới */
-.expand-icon.collapsed-icon {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  font-size: 0.75rem !important;
-  width: 14px !important;
-  min-width: 14px !important;
-  height: 14px !important;
-  background: var(--primary-gradient);
-  border-radius: 50%;
-  color: white !important;
-  padding: 2px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.expand-icon.collapsed-icon:hover {
-  transform: none !important;
-}
-
-/* ===== SUBMENU COLLAPSED (DROPDOWN XUỐNG) ===== */
-.submenu.submenu-collapsed {
-  /* Keep normal flow - dropdown xuống */
-  position: relative;
-  left: auto;
-  top: auto;
-  min-width: auto;
-  max-width: none;
-  width: 100%;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center;
-  
-  /* Visual style - giống như normal nhưng compact hơn */
-  list-style: none;
-  padding: 0.5rem 0.125rem;
-  margin: 0.25rem 0.125rem;
-  background: var(--dark-bg-glass-dark);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--dark-border-light);
-  border-left: 3px solid var(--primary-color);
-  box-shadow: var(--shadow-glass-sm);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  /* Normal transitions */
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-  pointer-events: auto;
-  z-index: auto;
-}
-
-/* Items trong collapsed submenu */
-.submenu.submenu-collapsed .submenu-item {
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  list-style: none;
-}
-
-/* Nav child trong collapsed submenu */
-.submenu.submenu-collapsed .nav-child {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  padding: 0.625rem 0.25rem !important;
-  font-size: 0.875rem;
-  color: var(--dark-text-secondary);
-  background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: var(--radius-md);
-  position: relative;
-  transition: all var(--transition-normal);
-  font-weight: 500;
-  text-decoration: none;
-  margin: 0.1875rem 0.125rem;
-  width: calc(100% - 0.25rem);
-  text-align: center;
-}
-
-/* Ẩn dot indicator khi collapsed */
-.submenu.submenu-collapsed .nav-child::before {
-  display: none;
-}
-
-/* Chỉ hiện icon khi collapsed */
-.submenu.submenu-collapsed .nav-child .material-icons {
-  font-size: 1.125rem !important;
-  width: 24px !important;
-  min-width: 24px !important;
-  height: 24px !important;
-  color: var(--dark-text-tertiary);
-  transition: all var(--transition-normal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin: 0;
-  position: relative;
-  left: 0;
-  transform: none;
-}
-
-/* Ẩn text khi collapsed */
-.submenu.submenu-collapsed .nav-child .nav-text {
-  display: none !important;
-  opacity: 0 !important;
-  width: 0 !important;
-}
-
-/* Hover state cho collapsed submenu */
-.submenu.submenu-collapsed .nav-child:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--dark-border-light);
-  color: var(--dark-text-primary);
-  box-shadow: var(--shadow-glass-sm);
-}
-
-.submenu.submenu-collapsed .nav-child:hover .material-icons {
-  color: var(--primary-light);
-  transform: scale(1.15);
-}
-
-/* Active state cho collapsed submenu */
-.submenu.submenu-collapsed .nav-child.active {
-  background: var(--gradient-purple-soft);
-  border-color: var(--dark-border-medium);
-  color: var(--primary-light);
-  font-weight: 600;
-  box-shadow: var(--shadow-glass-md);
-}
-
-.submenu.submenu-collapsed .nav-child.active .material-icons {
-  color: var(--primary-light);
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.7));
-}
-
-/* Tooltip cho submenu items khi collapsed */
-.submenu.submenu-collapsed .nav-child {
-  position: relative;
-}
-
-.submenu.submenu-collapsed .nav-child::after {
-  content: attr(title);
-  position: absolute;
-  left: calc(100% + 8px);
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--primary-gradient);
-  color: white;
-  padding: 0.375rem 0.75rem;
-  border-radius: var(--radius-md);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-glass-md);
-  z-index: 1001;
-}
-
-.submenu.submenu-collapsed .nav-child:hover::after {
-  opacity: 1;
-  left: calc(100% + 12px);
+.sidebar-nav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 </style>

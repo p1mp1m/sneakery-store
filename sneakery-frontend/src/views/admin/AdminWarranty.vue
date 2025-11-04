@@ -1,27 +1,26 @@
 <template>
-  <div class="admin-page admin-warranty">
-    <!-- Enhanced Page Header -->
-    <div class="page-header animate-fade-in">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">verified_user</span>
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
+    <!-- Page Header -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">verified_user</i>
             Quản lý Bảo Hành
           </h1>
-          <p class="page-subtitle">Quản lý yêu cầu bảo hành và sửa chữa sản phẩm</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quản lý yêu cầu bảo hành và sửa chữa sản phẩm</p>
         </div>
-        
-        <div class="header-actions">
-          <button @click="exportWarranties('csv')" class="btn btn-secondary">
-            <span class="material-icons">file_download</span>
+        <div class="flex items-center gap-2">
+          <button @click="exportWarranties('csv')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">file_download</i>
             Xuất CSV
           </button>
-          <button @click="exportWarranties('json')" class="btn btn-secondary">
-            <span class="material-icons">description</span>
+          <button @click="exportWarranties('json')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">description</i>
             Xuất JSON
           </button>
-          <button @click="showBulkActions = !showBulkActions" class="btn btn-secondary">
-            <span class="material-icons">checklist</span>
+          <button @click="showBulkActions = !showBulkActions" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">checklist</i>
             Hành động hàng loạt
           </button>
         </div>
@@ -29,246 +28,323 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid">
-      <StatsCard
-        icon="schedule"
-        :value="stats.pending"
-        label="Chờ xử lý"
-        variant="warning"
-      />
-      <StatsCard
-        icon="build"
-        :value="stats.inProgress"
-        label="Đang sửa chữa"
-        variant="info"
-      />
-      <StatsCard
-        icon="done_all"
-        :value="stats.completed"
-        label="Hoàn thành"
-        variant="success"
-      />
-      <StatsCard
-        icon="highlight_off"
-        :value="stats.rejected"
-        label="Từ chối"
-        variant="danger"
-      />
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">schedule</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.pending }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Chờ xử lý</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">build</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.inProgress }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đang sửa chữa</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">done_all</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.completed }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Hoàn thành</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">highlight_off</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.rejected }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Từ chối</p>
+        </div>
+      </div>
     </div>
     
     <!-- Bulk Actions Bar -->
-    <BulkActions
+    <div
       v-if="showBulkActions && selectedWarranties.length > 0"
-      :selected-count="selectedWarranties.length"
-      :actions="bulkActions"
-      v-model:selected-action="bulkAction"
-      @execute="executeBulkAction"
-      @clear="clearSelection"
-    />
+      class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800 mb-4"
+    >
+      <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <i class="material-icons text-purple-600 dark:text-purple-400">check_circle</i>
+        <span>Đã chọn <strong class="font-semibold">{{ selectedWarranties.length }}</strong> yêu cầu bảo hành</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <select 
+          v-model="bulkAction" 
+          class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        >
+          <option value="">-- Chọn hành động --</option>
+          <option value="approve">Chấp nhận</option>
+          <option value="reject">Từ chối</option>
+          <option value="in_progress">Đang sửa chữa</option>
+          <option value="completed">Hoàn thành</option>
+        </select>
+        <button 
+          @click="executeBulkAction" 
+          :disabled="!bulkAction" 
+          class="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <i class="material-icons text-base">update</i>
+          Thực hiện
+        </button>
+        <button 
+          @click="clearSelection" 
+          class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+        >
+          <i class="material-icons text-base">clear</i>
+          Bỏ chọn
+        </button>
+      </div>
+    </div>
 
     <!-- Filters -->
-    <FilterBar
-      v-model:search="filters.search"
-      search-placeholder="Tìm theo mã, khách hàng, sản phẩm..."
-      @search="handleSearch"
-      @reset="resetFilters"
-    >
-      <template #filters>
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">check_circle</span>
-            Trạng thái
-          </label>
-          <select v-model="filters.status" @change="fetchWarranties" class="form-control">
-            <option value="">Tất cả</option>
-            <option value="pending">Chờ xử lý</option>
-            <option value="approved">Đã chấp nhận</option>
-            <option value="in_progress">Đang sửa chữa</option>
-            <option value="completed">Hoàn thành</option>
-            <option value="rejected">Từ chối</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">build</span>
-            Loại bảo hành
-          </label>
-          <select v-model="filters.type" @change="fetchWarranties" class="form-control">
-            <option value="">Tất cả</option>
-            <option value="repair">Sửa chữa</option>
-            <option value="replace">Đổi mới</option>
-            <option value="refund">Hoàn tiền</option>
-          </select>
-        </div>
-      </template>
-    </FilterBar>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <FilterBar
+        v-model:search="filters.search"
+        search-placeholder="Tìm theo mã, khách hàng, sản phẩm..."
+        @search="handleSearch"
+        @reset="resetFilters"
+      >
+        <template #filters>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <i class="material-icons text-sm">check_circle</i>
+              Trạng thái
+            </label>
+            <select v-model="filters.status" @change="fetchWarranties" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="">Tất cả</option>
+              <option value="pending">Chờ xử lý</option>
+              <option value="approved">Đã chấp nhận</option>
+              <option value="in_progress">Đang sửa chữa</option>
+              <option value="completed">Hoàn thành</option>
+              <option value="rejected">Từ chối</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <i class="material-icons text-sm">build</i>
+              Loại bảo hành
+            </label>
+            <select v-model="filters.type" @change="fetchWarranties" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="">Tất cả</option>
+              <option value="repair">Sửa chữa</option>
+              <option value="replace">Đổi mới</option>
+              <option value="refund">Hoàn tiền</option>
+            </select>
+          </div>
+        </template>
+      </FilterBar>
+    </div>
 
     <!-- Table -->
-    <div class="table-container">
-      <LoadingState v-if="loading" />
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <!-- Loading State -->
+      <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải danh sách bảo hành...</p>
+      </div>
 
-      <EmptyState
-        v-else-if="warranties.length === 0"
-        icon="verified_user"
-        title="Chưa có yêu cầu bảo hành"
-        description="Danh sách yêu cầu bảo hành sẽ hiển thị ở đây"
-      />
+      <!-- Empty State -->
+      <div v-else-if="warranties.length === 0" class="flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">verified_user</i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có yêu cầu bảo hành</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+          Danh sách yêu cầu bảo hành sẽ hiển thị ở đây
+        </p>
+      </div>
 
-      <table v-else class="admin-table">
-        <thead>
-          <tr>
-            <th v-if="showBulkActions" style="width: 50px;">
-              <input 
-                type="checkbox" 
-                :checked="isAllSelected"
-                @change="toggleSelectAll"
-                class="checkbox-input"
-              />
-            </th>
-            <th>Mã BH</th>
-            <th>Khách hàng</th>
-            <th>Sản phẩm</th>
-            <th>Vấn đề</th>
-            <th>Loại BH</th>
-            <th>Ngày yêu cầu</th>
-            <th>Thời hạn</th>
-            <th>Trạng thái</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in warranties" :key="item.id">
-            <td v-if="showBulkActions">
-              <input 
-                type="checkbox" 
-                :checked="isSelected(item.id)"
-                @change="toggleSelect(item.id)"
-                class="checkbox-input"
-              />
-            </td>
-            <td>
-              <strong class="warranty-code">#WTY{{ item.id.toString().padStart(6, '0') }}</strong>
-            </td>
-            <td>
-              <div class="customer-cell">
-                <strong>{{ item.customerName }}</strong>
-                <p>{{ item.customerEmail }}</p>
-                <p>{{ item.customerPhone }}</p>
-              </div>
-            </td>
-            <td>
-              <div class="product-cell">
-                <img :src="item.productImage" :alt="item.productName" class="product-thumb" />
-                <div>
-                  <strong>{{ item.productName }}</strong>
-                  <p>{{ item.variant }}</p>
-                  <p>Mua: {{ formatDate(item.purchaseDate) }}</p>
+      <!-- Warranty Table -->
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+            <tr>
+              <th v-if="showBulkActions" class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10">
+                <input 
+                  type="checkbox" 
+                  :checked="isAllSelected"
+                  @change="toggleSelectAll"
+                  class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Mã BH</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Khách hàng</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Sản phẩm</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Vấn đề</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Loại BH</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Ngày yêu cầu</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thời hạn</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="item in warranties" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+              <td v-if="showBulkActions" class="px-4 py-4 whitespace-nowrap">
+                <input 
+                  type="checkbox" 
+                  :checked="isSelected(item.id)"
+                  @change="toggleSelect(item.id)"
+                  class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                />
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100">#WTY{{ item.id.toString().padStart(6, '0') }}</code>
+              </td>
+              <td class="px-4 py-4">
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.userName }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ item.userEmail }}</div>
+              </td>
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-3">
+                  <img :src="item.productImage" :alt="item.productName" class="w-12 h-12 object-cover rounded-lg" />
+                  <div>
+                    <strong class="text-sm font-medium text-gray-900 dark:text-gray-100 block">{{ item.productName }}</strong>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.variantName }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Mua: {{ formatDate(item.purchaseDate) }}</p>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>
-              <p class="issue-text">{{ item.issue }}</p>
-            </td>
-            <td>
-              <span class="warranty-type-badge" :class="getTypeBadgeClass(item.warrantyType)">
-                {{ getWarrantyTypeText(item.warrantyType) }}
-              </span>
-            </td>
-            <td>{{ formatDate(item.createdAt) }}</td>
-            <td>
-              <div class="warranty-period" :class="{ 'expired': isWarrantyExpired(item) }">
-                <i class="material-icons">schedule</i>
-                <span v-if="isWarrantyExpired(item)" class="text-danger">Hết hạn</span>
-                <span v-else>{{ calculateDaysLeft(item) }} ngày</span>
-              </div>
-            </td>
-            <td>
-              <span class="status-badge" :class="getStatusClass(item.status)">
-                {{ getStatusText(item.status) }}
-              </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button @click="viewWarrantyDetail(item)" class="btn-icon" title="Xem chi tiết">
-                  <span class="material-icons">visibility</span>
-                </button>
-                <button 
-                  v-if="item.status === 'pending'" 
-                  @click="approveWarranty(item)" 
-                  class="btn-icon btn-success" 
-                  title="Chấp nhận"
+              </td>
+              <td class="px-4 py-4">
+                <p class="text-sm text-gray-900 dark:text-gray-100 max-w-xs truncate" :title="item.issueDescription">{{ item.issueDescription }}</p>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span 
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': item.warrantyType === 'repair',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': item.warrantyType === 'replace',
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': item.warrantyType === 'refund'
+                  }"
                 >
-                  <span class="material-icons">check_circle</span>
-                </button>
-                <button 
-                  v-if="item.status === 'approved'" 
-                  @click="updateStatus(item, 'in_progress')" 
-                  class="btn-icon btn-info" 
-                  title="Bắt đầu sửa"
+                  {{ getWarrantyTypeText(item.warrantyType) }}
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ formatDate(item.submittedAt) }}</td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-1" :class="{ 'text-red-600 dark:text-red-400': isWarrantyExpired(item) }">
+                  <i class="material-icons text-sm">schedule</i>
+                  <span v-if="isWarrantyExpired(item)" class="text-xs font-medium">Hết hạn</span>
+                  <span v-else class="text-xs">{{ calculateDaysLeft(item) }} ngày</span>
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span 
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': item.status === 'pending',
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': item.status === 'approved' || item.status === 'in_progress',
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': item.status === 'completed',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': item.status === 'rejected'
+                  }"
                 >
-                  <span class="material-icons">build</span>
-                </button>
-                <button 
-                  v-if="item.status === 'in_progress'" 
-                  @click="updateStatus(item, 'completed')" 
-                  class="btn-icon btn-success" 
-                  title="Hoàn thành"
-                >
-                  <span class="material-icons">done_all</span>
-                </button>
-                <button 
-                  @click="openUploadModal(item)" 
-                  class="btn-icon" 
-                  title="Tải tài liệu"
-                >
-                  <span class="material-icons">upload_file</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                  {{ getStatusText(item.status) }}
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button 
+                    @click="viewWarrantyDetail(item)" 
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
+                    title="Xem chi tiết"
+                  >
+                    <i class="material-icons text-base">visibility</i>
+                  </button>
+                  <button 
+                    v-if="item.status === 'pending'" 
+                    @click="approveWarranty(item)" 
+                    class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" 
+                    title="Chấp nhận"
+                  >
+                    <i class="material-icons text-base">check_circle</i>
+                  </button>
+                  <button 
+                    v-if="item.status === 'approved'" 
+                    @click="updateStatus(item, 'in_progress')" 
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
+                    title="Bắt đầu sửa"
+                  >
+                    <i class="material-icons text-base">build</i>
+                  </button>
+                  <button 
+                    v-if="item.status === 'in_progress'" 
+                    @click="updateStatus(item, 'completed')" 
+                    class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" 
+                    title="Hoàn thành"
+                  >
+                    <i class="material-icons text-base">done_all</i>
+                  </button>
+                  <button 
+                    @click="openUploadModal(item)" 
+                    class="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors" 
+                    title="Tải tài liệu"
+                  >
+                    <i class="material-icons text-base">upload_file</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Document Upload Modal -->
-    <div v-if="showUploadModal" class="modal-overlay" @click="showUploadModal = false">
-      <div class="modal" @click.stop>
-        <div class="modal-header">
-          <h3>Tải tài liệu bảo hành</h3>
-          <button @click="showUploadModal = false" class="modal-close">
-            <span class="material-icons">close</span>
+    <div v-if="showUploadModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="showUploadModal = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Tải tài liệu bảo hành</h3>
+          <button @click="showUploadModal = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div class="upload-area" @click="triggerFileInput">
-            <span class="material-icons upload-icon">cloud_upload</span>
-            <p>Nhấp để tải lên hoặc kéo thả file vào đây</p>
-            <p class="upload-hint">Hỗ trợ: PDF, JPG, PNG (tối đa 10MB)</p>
+        <div class="p-4">
+          <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-purple-500 dark:hover:border-purple-400 transition-colors" @click="triggerFileInput">
+            <i class="material-icons text-4xl text-gray-400 dark:text-gray-500 mb-2">cloud_upload</i>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Nhấp để tải lên hoặc kéo thả file vào đây</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500">Hỗ trợ: PDF, JPG, PNG (tối đa 10MB)</p>
             <input 
               ref="fileInput" 
               type="file" 
               multiple 
               accept="image/*,.pdf"
               @change="handleFileUpload"
-              style="display: none"
+              class="hidden"
             />
           </div>
           
-          <div v-if="uploadedFiles.length > 0" class="uploaded-files">
-            <h4>Files đã tải lên:</h4>
-            <div v-for="(file, index) in uploadedFiles" :key="index" class="file-item">
-              <span class="material-icons file-icon">description</span>
-              <span class="file-name">{{ file.name }}</span>
-              <button @click="removeFile(index)" class="btn-remove-file">
-                <span class="material-icons">delete</span>
+          <div v-if="uploadedFiles.length > 0" class="mt-4 space-y-2">
+            <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Files đã tải lên:</h4>
+            <div v-for="(file, index) in uploadedFiles" :key="index" class="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <i class="material-icons text-gray-500 dark:text-gray-400">description</i>
+              <span class="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate">{{ file.name }}</span>
+              <button @click="removeFile(index)" class="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">
+                <i class="material-icons text-base">delete</i>
               </button>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button @click="showUploadModal = false" class="btn btn-secondary">Hủy</button>
-          <button @click="saveDocuments" class="btn btn-primary">
-            <span class="material-icons">save</span>
+        <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="showUploadModal = false" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Hủy</button>
+          <button @click="saveDocuments" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
+            <i class="material-icons text-base">save</i>
             Lưu tài liệu
           </button>
         </div>
@@ -276,63 +352,44 @@
     </div>
 
     <!-- Detail Dialog -->
-    <div v-if="showDetailDialog" class="modal-overlay" @click="showDetailDialog = false">
-      <div class="modal modal-lg" @click.stop>
-        <div class="modal-header">
-          <h3>Chi tiết yêu cầu bảo hành #WTY{{ selectedWarranty?.id.toString().padStart(6, '0') }}</h3>
-          <button @click="showDetailDialog = false" class="modal-close">
-            <span class="material-icons">close</span>
+    <div v-if="showDetailDialog" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="showDetailDialog = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Chi tiết yêu cầu bảo hành #WTY{{ selectedWarranty?.id.toString().padStart(6, '0') }}</h3>
+          <button @click="showDetailDialog = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div v-if="selectedWarranty" class="warranty-detail">
-            <div class="detail-section">
-              <h4>Thông tin khách hàng</h4>
-              <p><strong>Họ tên:</strong> {{ selectedWarranty.customerName }}</p>
-              <p><strong>Email:</strong> {{ selectedWarranty.customerEmail }}</p>
-              <p><strong>SĐT:</strong> {{ selectedWarranty.customerPhone }}</p>
-            </div>
-            <div class="detail-section">
-              <h4>Thông tin sản phẩm</h4>
-              <p><strong>Sản phẩm:</strong> {{ selectedWarranty.productName }}</p>
-              <p><strong>Biến thể:</strong> {{ selectedWarranty.variant }}</p>
-              <p><strong>Ngày mua:</strong> {{ formatDate(selectedWarranty.purchaseDate) }}</p>
-              <p><strong>Thời hạn BH:</strong> {{ selectedWarranty.warrantyMonths }} tháng</p>
-            </div>
-            <div class="detail-section">
-              <h4>Vấn đề & Giải pháp</h4>
-              <p><strong>Mô tả vấn đề:</strong> {{ selectedWarranty.issue }}</p>
-              <p><strong>Loại BH yêu cầu:</strong> {{ getWarrantyTypeText(selectedWarranty.warrantyType) }}</p>
-            </div>
-            <div v-if="selectedWarranty.images" class="detail-section">
-              <h4>Hình ảnh</h4>
-              <div class="warranty-images">
-                <img 
-                  v-for="(img, index) in selectedWarranty.images" 
-                  :key="index"
-                  :src="img" 
-                  alt="Warranty image"
-                  class="warranty-image"
-                />
+        <div class="p-4">
+          <div v-if="selectedWarranty" class="space-y-6">
+            <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Thông tin khách hàng</h4>
+              <div class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                <p><strong>Họ tên:</strong> {{ selectedWarranty.userName }}</p>
+                <p><strong>Email:</strong> {{ selectedWarranty.userEmail }}</p>
               </div>
             </div>
-            <div class="detail-section">
-              <h4>Trạng thái</h4>
-              <div class="status-timeline">
-                <div v-for="(log, index) in selectedWarranty.statusLogs" :key="index" class="timeline-item">
-                  <div class="timeline-dot"></div>
-                  <div class="timeline-content">
-                    <strong>{{ getStatusText(log.status) }}</strong>
-                    <p>{{ formatDate(log.timestamp) }}</p>
-                    <p v-if="log.note">{{ log.note }}</p>
-                  </div>
-                </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Thông tin sản phẩm</h4>
+              <div class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                <p><strong>Sản phẩm:</strong> {{ selectedWarranty.productName }}</p>
+                <p><strong>Biến thể:</strong> {{ selectedWarranty.variantName }}</p>
+                <p><strong>Ngày mua:</strong> {{ formatDate(selectedWarranty.purchaseDate) }}</p>
+              </div>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Vấn đề & Giải pháp</h4>
+              <div class="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                <p><strong>Mô tả vấn đề:</strong> {{ selectedWarranty.issueDescription }}</p>
+                <p><strong>Loại BH yêu cầu:</strong> {{ getWarrantyTypeText(selectedWarranty.warrantyType) }}</p>
+                <p v-if="selectedWarranty.adminNote"><strong>Ghi chú admin:</strong> {{ selectedWarranty.adminNote }}</p>
+                <p v-if="selectedWarranty.resolutionNote"><strong>Giải pháp:</strong> {{ selectedWarranty.resolutionNote }}</p>
               </div>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button @click="showDetailDialog = false" class="btn btn-secondary">Đóng</button>
+        <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="showDetailDialog = false" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Đóng</button>
         </div>
       </div>
     </div>
@@ -345,11 +402,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
 import { useAdminStore } from '@/stores/admin'
-import StatsCard from '@/assets/components/admin/StatsCard.vue'
 import FilterBar from '@/assets/components/admin/FilterBar.vue'
-import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
-import EmptyState from '@/assets/components/admin/EmptyState.vue'
-import BulkActions from '@/assets/components/admin/BulkActions.vue'
 
 const adminStore = useAdminStore()
 
@@ -411,7 +464,8 @@ const fetchWarranties = async () => {
         variantId: 1,
         variantName: 'Size 42 - Đen',
         purchaseDate: '2024-01-01T00:00:00Z',
-        warrantyType: 'manufacturing_defect',
+        warrantyType: 'repair',
+        warrantyMonths: 12,
         issueDescription: 'Giày bị bong keo sau 2 tuần sử dụng',
         status: 'pending',
         submittedAt: '2024-01-15T10:30:00Z',
@@ -433,7 +487,8 @@ const fetchWarranties = async () => {
         variantId: 2,
         variantName: 'Size 40 - Trắng',
         purchaseDate: '2023-12-15T00:00:00Z',
-        warrantyType: 'material_defect',
+        warrantyType: 'replace',
+        warrantyMonths: 12,
         issueDescription: 'Đế giày bị nứt sau 1 tháng sử dụng',
         status: 'in_progress',
         submittedAt: '2024-01-10T14:20:00Z',
@@ -455,7 +510,8 @@ const fetchWarranties = async () => {
         variantId: 3,
         variantName: 'Size 41 - Đỏ',
         purchaseDate: '2023-11-20T00:00:00Z',
-        warrantyType: 'manufacturing_defect',
+        warrantyType: 'replace',
+        warrantyMonths: 12,
         issueDescription: 'Logo bị phai màu sau 2 tháng',
         status: 'completed',
         submittedAt: '2024-01-05T16:45:00Z',
@@ -477,7 +533,8 @@ const fetchWarranties = async () => {
         variantId: 4,
         variantName: 'Size 39 - Trắng',
         purchaseDate: '2023-10-10T00:00:00Z',
-        warrantyType: 'material_defect',
+        warrantyType: 'repair',
+        warrantyMonths: 12,
         issueDescription: 'Vải bị rách do sử dụng bình thường',
         status: 'rejected',
         submittedAt: '2024-01-08T11:15:00Z',
@@ -499,7 +556,8 @@ const fetchWarranties = async () => {
         variantId: 5,
         variantName: 'Size 43 - Đen',
         purchaseDate: '2023-12-01T00:00:00Z',
-        warrantyType: 'manufacturing_defect',
+        warrantyType: 'repair',
+        warrantyMonths: 12,
         issueDescription: 'Đế giày bị tách rời khỏi thân giày',
         status: 'pending',
         submittedAt: '2024-01-14T13:20:00Z',
@@ -658,15 +716,14 @@ const bulkReject = async () => {
 const exportWarranties = (format) => {
   const data = warranties.value.map(w => ({
     'Mã BH': `#WTY${w.id.toString().padStart(6, '0')}`,
-    'Khách hàng': w.customerName,
-    'Email': w.customerEmail,
-    'Điện thoại': w.customerPhone,
+    'Khách hàng': w.userName,
+    'Email': w.userEmail,
     'Sản phẩm': w.productName,
-    'Biến thể': w.variant,
-    'Vấn đề': w.issue,
+    'Biến thể': w.variantName,
+    'Vấn đề': w.issueDescription,
     'Loại BH': getWarrantyTypeText(w.warrantyType),
     'Trạng thái': getStatusText(w.status),
-    'Ngày yêu cầu': formatDate(w.createdAt),
+    'Ngày yêu cầu': formatDate(w.submittedAt),
     'Ngày mua': formatDate(w.purchaseDate)
   }))
   
@@ -778,14 +835,14 @@ const updateStatus = async (item, newStatus) => {
 const isWarrantyExpired = (item) => {
   const purchaseDate = new Date(item.purchaseDate)
   const expiryDate = new Date(purchaseDate)
-  expiryDate.setMonth(expiryDate.getMonth() + item.warrantyMonths)
+  expiryDate.setMonth(expiryDate.getMonth() + (item.warrantyMonths || 12)) // Default 12 months if not specified
   return expiryDate < new Date()
 }
 
 const calculateDaysLeft = (item) => {
   const purchaseDate = new Date(item.purchaseDate)
   const expiryDate = new Date(purchaseDate)
-  expiryDate.setMonth(expiryDate.getMonth() + item.warrantyMonths)
+  expiryDate.setMonth(expiryDate.getMonth() + (item.warrantyMonths || 12)) // Default 12 months if not specified
   const now = new Date()
   const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24))
   return daysLeft > 0 ? daysLeft : 0
@@ -795,7 +852,9 @@ const getWarrantyTypeText = (type) => {
   const types = {
     repair: 'Sửa chữa',
     replace: 'Đổi mới',
-    refund: 'Hoàn tiền'
+    refund: 'Hoàn tiền',
+    manufacturing_defect: 'Lỗi sản xuất',
+    material_defect: 'Lỗi chất liệu'
   }
   return types[type] || type
 }
@@ -851,620 +910,8 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* ═══════════════════════════════════════════════════════════════════════
-   ADMIN WARRANTY - Enhanced with Design System v2.0
-   ═══════════════════════════════════════════════════════════════════════ */
 
-/* Page Header Enhancements */
-.page-header {
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-card);
-}
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-6);
-  flex-wrap: wrap;
-}
-
-.title-section {
-  flex: 1;
-  min-width: 250px;
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.stat-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-card);
-  transition: all var(--transition-normal);
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow-purple);
-  border-color: var(--accent-primary);
-}
-
-.stat-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon .material-icons {
-  font-size: 2rem;
-  color: white;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-value {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  line-height: 1;
-  margin-bottom: var(--space-2);
-}
-
-.stat-label {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-/* Bulk Actions Bar */
-.bulk-actions-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(167, 139, 250, 0.15));
-  border: 1px solid var(--accent-primary);
-  border-radius: var(--radius-xl);
-  margin-bottom: var(--space-4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.2);
-}
-
-.bulk-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.bulk-info .material-icons {
-  color: var(--accent-primary);
-  font-size: 1.5rem;
-}
-
-.bulk-count {
-  font-size: var(--text-base);
-}
-
-.bulk-buttons {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-/* Slide Down Animation */
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-down-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.slide-down-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-/* Search Box Enhancement */
-.search-box {
-  position: relative;
-  width: 100%;
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-tertiary);
-  font-size: 1.25rem;
-  pointer-events: none;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-12) var(--space-3) var(--space-12);
-}
-
-.search-clear {
-  position: absolute;
-  right: var(--space-2);
-  top: 50%;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.search-clear:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Checkbox */
-.checkbox-input {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--accent-primary);
-}
-
-/* Upload Modal */
-.upload-area {
-  border: 2px dashed var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-12);
-  text-align: center;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  background: rgba(15, 23, 42, 0.4);
-}
-
-.upload-area:hover {
-  border-color: var(--accent-primary);
-  background: rgba(167, 139, 250, 0.1);
-}
-
-.upload-icon {
-  font-size: 4rem;
-  color: var(--accent-primary);
-  margin-bottom: var(--space-4);
-}
-
-.upload-area p {
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  margin: var(--space-2) 0;
-}
-
-.upload-hint {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-}
-
-.uploaded-files {
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--border-primary);
-}
-
-.uploaded-files h4 {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-4) 0;
-}
-
-.file-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-2);
-  transition: all var(--transition-fast);
-}
-
-.file-item:hover {
-  background: rgba(15, 23, 42, 0.6);
-  border-color: var(--border-hover);
-}
-
-.file-icon {
-  color: var(--accent-primary);
-  font-size: 1.5rem;
-}
-
-.file-name {
-  flex: 1;
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-.btn-remove-file {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.btn-remove-file:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Action Buttons Enhancement */
-.action-buttons {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-}
-
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--text-primary);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-icon:hover {
-  background: var(--gradient-purple-soft);
-  border-color: var(--accent-primary);
-  transform: scale(1.1);
-}
-
-.btn-icon.btn-success:hover {
-  background: var(--success-bg);
-  border-color: var(--success-border);
-  color: var(--success-text);
-}
-
-.btn-icon.btn-info:hover {
-  background: var(--info-bg);
-  border-color: var(--info-border);
-  color: var(--info-text);
-}
-
-/* Warranty Code */
-.warranty-code {
-  font-family: var(--font-mono);
-  color: var(--accent-primary);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  background: var(--gradient-purple-soft);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-primary);
-}
-
-/* Customer Cell */
-.customer-cell {
-  min-width: 180px;
-}
-
-.customer-cell strong {
-  display: block;
-  margin-bottom: var(--space-1);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.customer-cell p {
-  margin: var(--space-1) 0;
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-}
-
-/* Product Cell */
-.product-cell {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.product-thumb {
-  width: 50px;
-  height: 50px;
-  border-radius: var(--radius-md);
-  object-fit: cover;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  transition: var(--transition-normal);
-}
-
-.product-thumb:hover {
-  transform: scale(1.1);
-  box-shadow: var(--shadow-md);
-}
-
-.product-cell strong {
-  display: block;
-  margin-bottom: var(--space-1);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.product-cell p {
-  margin: var(--space-1) 0;
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-}
-
-/* Issue Text */
-.issue-text {
-  max-width: 250px;
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  line-height: var(--leading-relaxed);
-}
-
-/* Warranty Type Badge */
-.warranty-type-badge {
-  display: inline-block;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-md);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  transition: var(--transition-fast);
-}
-
-.warranty-type-badge.badge-info {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid var(--info-border);
-}
-
-.warranty-type-badge.badge-warning {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border: 1px solid var(--warning-border);
-}
-
-.warranty-type-badge.badge-success {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
-/* Warranty Period */
-.warranty-period {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--success-text);
-  font-weight: var(--font-medium);
-}
-
-.warranty-period.expired {
-  color: var(--error-text);
-}
-
-.warranty-period .material-icons {
-  font-size: 1.125rem;
-}
-
-.text-danger {
-  color: var(--error-text);
-  font-weight: var(--font-semibold);
-}
-
-/* Warranty Detail */
-.warranty-detail {
-  padding: var(--space-4);
-}
-
-.detail-section {
-  margin-bottom: var(--space-6);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-  animation: fadeInUp 0.4s ease-out;
-}
-
-.detail-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.detail-section h4 {
-  margin: 0 0 var(--space-4) 0;
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.detail-section h4::before {
-  content: '';
-  width: 4px;
-  height: 20px;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-sm);
-}
-
-.detail-section p {
-  margin: var(--space-2) 0;
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  line-height: var(--leading-relaxed);
-}
-
-.detail-section p strong {
-  color: var(--text-primary);
-  font-weight: var(--font-medium);
-  display: inline-block;
-  min-width: 140px;
-}
-
-/* Warranty Images */
-.warranty-images {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: var(--space-4);
-  margin-top: var(--space-3);
-}
-
-.warranty-image {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--border-primary);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-.warranty-image:hover {
-  border-color: var(--accent-primary);
-  box-shadow: var(--shadow-glow-purple);
-  transform: scale(1.05);
-}
-
-/* Status Timeline */
-.status-timeline {
-  position: relative;
-  padding-left: var(--space-8);
-}
-
-.status-timeline::before {
-  content: '';
-  position: absolute;
-  left: 6px;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: var(--gradient-primary);
-  opacity: 0.3;
-}
-
-.timeline-item {
-  position: relative;
-  padding-bottom: var(--space-6);
-}
-
-.timeline-item:last-child {
-  padding-bottom: 0;
-}
-
-.timeline-dot {
-  position: absolute;
-  left: calc(-1 * var(--space-8));
-  top: 4px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--accent-primary);
-  border: 3px solid var(--bg-card);
-  box-shadow: 0 0 0 2px var(--border-primary);
-  z-index: 1;
-  transition: all 0.3s ease;
-}
-
-.timeline-item:last-child .timeline-dot {
-  background: var(--success-solid);
-  box-shadow: 0 0 0 2px var(--success-border), 0 0 12px var(--success-solid);
-}
-
-.timeline-item:hover .timeline-dot {
-  transform: scale(1.3);
-  box-shadow: 0 0 0 2px var(--accent-primary), 0 0 16px var(--accent-primary);
-}
-
-.timeline-content {
-  background: rgba(15, 23, 42, 0.4);
-  padding: var(--space-3);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  transition: all 0.2s ease;
-}
-
-.timeline-content:hover {
-  background: rgba(15, 23, 42, 0.6);
-  border-color: var(--border-primary);
-}
-
-.timeline-content strong {
-  display: block;
-  margin-bottom: var(--space-1);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-}
-
-.timeline-content p {
-  margin: var(--space-1) 0;
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-}
-
-/* Animations and responsive styles use global Design System v2.0 classes */
-</style>
 
 
 

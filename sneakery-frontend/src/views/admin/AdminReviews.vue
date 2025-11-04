@@ -1,217 +1,265 @@
 <template>
-  <div class="admin-page admin-reviews">
-    <!-- ===== PAGE HEADER ===== -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">star_rate</span>
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
+    <!-- Page Header -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">star_rate</i>
             Quản lý Đánh giá
           </h1>
-          <p class="page-subtitle">Quản lý đánh giá sản phẩm từ khách hàng</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quản lý đánh giá sản phẩm từ khách hàng</p>
         </div>
-        <div class="header-actions">
-          <button @click="exportReviews" class="btn btn-secondary">
-            <span class="material-icons">download</span>
+        <div class="flex items-center gap-2">
+          <button @click="exportReviews" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">download</i>
             Xuất Excel
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ===== STATS GRID ===== -->
-    <div class="stats-grid">
-      <StatsCard
-        icon="check_circle"
-        :value="approvedReviewsCount"
-        label="Đã duyệt"
-        variant="success"
-      />
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">check_circle</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ approvedReviewsCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đã duyệt</p>
+        </div>
+      </div>
       
-      <StatsCard
-        icon="pending"
-        :value="pendingReviewsCount"
-        label="Chờ duyệt"
-        variant="warning"
-      />
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">pending</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ pendingReviewsCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Chờ duyệt</p>
+        </div>
+      </div>
       
-      <StatsCard
-        icon="star"
-        :value="averageRating.toFixed(1)"
-        label="Đánh giá trung bình"
-        variant="info"
-      />
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">star</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ averageRating.toFixed(1) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đánh giá trung bình</p>
+        </div>
+      </div>
       
-      <StatsCard
-        icon="rate_review"
-        :value="totalReviews"
-        label="Tổng đánh giá"
-        variant="primary"
-      />
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">rate_review</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ totalReviews }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Tổng đánh giá</p>
+        </div>
+      </div>
     </div>
 
-    <!-- ===== FILTERS ===== -->
-    <FilterBar
-      v-model:search="searchKeyword"
-      search-placeholder="Tìm theo sản phẩm, khách hàng..."
-      @search="handleSearch"
-      @reset="resetFilters"
-    >
-      <template #filters>
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">filter_list</span>
-            Trạng thái
-          </label>
-          <select class="form-control" v-model="filterStatus" @change="handleSearch">
-            <option value="all">Tất cả</option>
-            <option value="pending">Chờ duyệt</option>
-            <option value="approved">Đã duyệt</option>
-          </select>
+    <!-- Filters -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
+            <input
+              v-model="searchKeyword"
+              @input="debounceSearch"
+              type="text"
+              placeholder="Tìm theo sản phẩm, khách hàng..."
+              class="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+            <button 
+              v-if="searchKeyword" 
+              @click="clearSearch" 
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              title="Xóa tìm kiếm"
+            >
+              <i class="material-icons text-base">close</i>
+            </button>
+          </div>
         </div>
+        
+        <div class="flex items-center gap-2">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <i class="material-icons text-sm">filter_list</i>
+              Trạng thái
+            </label>
+            <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterStatus" @change="applyFilters">
+              <option value="all">Tất cả</option>
+              <option value="pending">Chờ duyệt</option>
+              <option value="approved">Đã duyệt</option>
+            </select>
+          </div>
 
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">star</span>
-            Đánh giá
-          </label>
-          <select class="form-control" v-model="filterRating" @change="handleSearch">
-            <option value="all">Tất cả</option>
-            <option value="5">5 sao</option>
-            <option value="4">4 sao</option>
-            <option value="3">3 sao</option>
-            <option value="2">2 sao</option>
-            <option value="1">1 sao</option>
-          </select>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <i class="material-icons text-sm">star</i>
+              Đánh giá
+            </label>
+            <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterRating" @change="applyFilters">
+              <option value="all">Tất cả</option>
+              <option value="5">5 sao</option>
+              <option value="4">4 sao</option>
+              <option value="3">3 sao</option>
+              <option value="2">2 sao</option>
+              <option value="1">1 sao</option>
+            </select>
+          </div>
+
+          <button class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium mt-6" @click="resetFilters">
+            <i class="material-icons text-base">refresh</i>
+            Reset
+          </button>
         </div>
-      </template>
-    </FilterBar>
-
-    <!-- ===== LOADING STATE ===== -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">Đang tải dữ liệu...</p>
+      </div>
     </div>
 
-    <!-- ===== EMPTY STATE ===== -->
-    <EmptyState
-      v-else-if="filteredReviews.length === 0"
-      icon="rate_review"
-      title="Không có đánh giá nào"
-      description="Chưa có đánh giá nào từ khách hàng"
-    />
+    <!-- Loading State -->
+    <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+    </div>
 
-    <!-- ===== REVIEWS LIST ===== -->
-    <div v-else class="reviews-list">
-      <div v-for="review in paginatedReviews" :key="review.id" class="review-card">
-        <div class="review-header">
-          <div class="review-product">
+    <!-- Empty State -->
+    <div v-else-if="filteredReviews.length === 0" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">rate_review</i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Không có đánh giá nào</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 text-center">Chưa có đánh giá nào từ khách hàng</p>
+    </div>
+
+    <!-- Reviews List -->
+    <div v-else class="space-y-4">
+      <div v-for="review in paginatedReviews" :key="review.id" class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+          <div class="flex items-start gap-3">
             <img 
               :src="review.productImage" 
               :alt="review.productName"
-              class="product-thumb"
+              class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
               @error="handleImageError"
             />
-            <div class="product-info">
-              <h4 class="product-name">{{ review.productName }}</h4>
-              <div class="review-rating">
-                <span 
+            <div>
+              <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ review.productName }}</h4>
+              <div class="flex items-center gap-1">
+                <i 
                   v-for="star in 5" 
                   :key="star"
-                  class="material-icons star-icon"
-                  :class="star <= review.rating ? 'star-filled' : 'star-empty'"
+                  class="material-icons text-sm"
+                  :class="star <= review.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
                 >
                   {{ star <= review.rating ? 'star' : 'star_border' }}
-                </span>
-                <span class="rating-text">({{ review.rating }}/5)</span>
+                </i>
+                <span class="text-xs text-gray-600 dark:text-gray-400 ml-1">({{ review.rating }}/5)</span>
               </div>
             </div>
           </div>
           
-          <div class="review-status">
+          <div class="flex items-center gap-2 flex-shrink-0">
             <span 
-              class="status-badge" 
-              :class="review.isApproved ? 'status-approved' : 'status-pending'"
+              class="px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1"
+              :class="review.isApproved ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'"
             >
-              <span class="material-icons">{{ review.isApproved ? 'check_circle' : 'pending' }}</span>
+              <i class="material-icons text-sm">{{ review.isApproved ? 'check_circle' : 'pending' }}</i>
               {{ review.isApproved ? 'Đã duyệt' : 'Chờ duyệt' }}
             </span>
-            <span v-if="review.isVerifiedPurchase" class="verified-badge">
-              <span class="material-icons">verified</span>
+            <span v-if="review.isVerifiedPurchase" class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 flex items-center gap-1">
+              <i class="material-icons text-sm">verified</i>
               Đã mua hàng
             </span>
           </div>
         </div>
 
-        <div class="review-body">
-          <div class="review-author">
-            <div class="author-avatar">
-              <span class="material-icons">account_circle</span>
+        <div class="space-y-3 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <i class="material-icons text-purple-600 dark:text-purple-400">account_circle</i>
             </div>
-            <div class="author-info">
-              <div class="author-name">{{ review.userName }}</div>
-              <div class="review-date">{{ formatDate(review.createdAt) }}</div>
+            <div>
+              <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ review.userName }}</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(review.createdAt) }}</div>
             </div>
           </div>
 
-          <div class="review-content">
-            <h5 v-if="review.title" class="review-title">{{ review.title }}</h5>
-            <p class="review-text">{{ review.body }}</p>
+          <div>
+            <h5 v-if="review.title" class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ review.title }}</h5>
+            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ review.body }}</p>
             
-            <div v-if="review.images && review.images.length > 0" class="review-images">
+            <div v-if="review.images && review.images.length > 0" class="flex gap-2 mt-3">
               <img 
                 v-for="(image, index) in review.images" 
                 :key="index"
                 :src="image" 
                 :alt="`Review image ${index + 1}`"
-                class="review-image"
+                class="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
                 @error="handleImageError"
               />
             </div>
           </div>
 
-          <div v-if="review.replyText" class="admin-reply">
-            <div class="reply-header">
-              <span class="material-icons">reply</span>
-              <strong>Phản hồi từ Admin</strong>
-              <span class="reply-date">{{ formatDate(review.repliedAt) }}</span>
+          <div v-if="review.replyText" class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border-l-4 border-purple-500">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="material-icons text-purple-600 dark:text-purple-400 text-sm">reply</i>
+              <strong class="text-sm text-gray-900 dark:text-gray-100">Phản hồi từ Admin</strong>
+              <span class="text-xs text-gray-500 dark:text-gray-400 ml-auto">{{ formatDate(review.repliedAt) }}</span>
             </div>
-            <p class="reply-text">{{ review.replyText }}</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">{{ review.replyText }}</p>
           </div>
         </div>
 
-        <div class="review-footer">
-          <div class="review-helpful">
-            <span class="material-icons">thumb_up</span>
-            {{ review.helpfulCount }} hữu ích
-            <span class="material-icons">thumb_down</span>
-            {{ review.unhelpfulCount }}
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <span class="flex items-center gap-1">
+              <i class="material-icons text-sm">thumb_up</i>
+              {{ review.helpfulCount }} hữu ích
+            </span>
+            <span class="flex items-center gap-1">
+              <i class="material-icons text-sm">thumb_down</i>
+              {{ review.unhelpfulCount }}
+            </span>
           </div>
           
-          <div class="review-actions">
+          <div class="flex items-center gap-2">
             <button 
               v-if="!review.isApproved" 
-              class="btn-action btn-approve"
+              class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
               @click="approveReview(review)"
               title="Duyệt đánh giá"
             >
-              <span class="material-icons">check</span>
+              <i class="material-icons text-sm">check</i>
               Duyệt
             </button>
             <button 
-              class="btn-action btn-reply"
+              class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
               @click="openReplyModal(review)"
               title="Phản hồi"
             >
-              <span class="material-icons">reply</span>
+              <i class="material-icons text-sm">reply</i>
               {{ review.replyText ? 'Sửa phản hồi' : 'Phản hồi' }}
             </button>
             <button 
-              class="btn-action btn-delete"
+              class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
               @click="confirmDelete(review)"
               title="Xóa đánh giá"
             >
-              <span class="material-icons">delete</span>
+              <i class="material-icons text-sm">delete</i>
               Xóa
             </button>
           </div>
@@ -219,68 +267,68 @@
       </div>
     </div>
 
-    <!-- ===== PAGINATION ===== -->
-    <div v-if="totalPages > 1" class="pagination-container">
-      <div class="pagination-info">
+    <!-- Pagination -->
+    <div v-if="totalPages > 1 && !loading && filteredReviews.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="text-sm text-gray-600 dark:text-gray-400">
         Hiển thị {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, filteredReviews.length) }} 
         trong tổng số {{ filteredReviews.length }} đánh giá
       </div>
-      <div class="pagination-controls">
+      <div class="flex items-center gap-2">
         <button 
-          class="pagination-btn" 
+          class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="currentPage === 1"
           @click="currentPage--"
         >
-          <span class="material-icons">chevron_left</span>
+          <i class="material-icons text-base">chevron_left</i>
           Trước
         </button>
         
-        <span class="page-info">Trang {{ currentPage }} / {{ totalPages }}</span>
+        <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">Trang {{ currentPage }} / {{ totalPages }}</span>
         
         <button 
-          class="pagination-btn" 
+          class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           :disabled="currentPage === totalPages"
           @click="currentPage++"
         >
           Sau
-          <span class="material-icons">chevron_right</span>
+          <i class="material-icons text-base">chevron_right</i>
         </button>
       </div>
     </div>
 
-    <!-- ===== REPLY MODAL ===== -->
-    <div v-if="showReplyModal" class="modal-overlay" @click="closeReplyModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons">reply</span>
+    <!-- Reply Modal -->
+    <div v-if="showReplyModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeReplyModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">reply</i>
             Phản hồi đánh giá
           </h2>
-          <button class="modal-close" @click="closeReplyModal">
-            <span class="material-icons">close</span>
+          <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" @click="closeReplyModal">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
         
-        <div class="modal-body">
-          <div class="review-preview">
-            <div class="preview-rating">
-              <span 
+        <div class="p-4">
+          <div class="p-3 mb-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div class="flex items-center gap-1 mb-2">
+              <i 
                 v-for="star in 5" 
                 :key="star"
-                class="material-icons star-icon"
-                :class="star <= selectedReview?.rating ? 'star-filled' : 'star-empty'"
+                class="material-icons text-sm"
+                :class="star <= selectedReview?.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
               >
                 {{ star <= selectedReview?.rating ? 'star' : 'star_border' }}
-              </span>
+              </i>
             </div>
-            <p><strong>{{ selectedReview?.userName }}</strong>: {{ selectedReview?.body }}</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300"><strong>{{ selectedReview?.userName }}</strong>: {{ selectedReview?.body }}</p>
           </div>
 
-          <form @submit.prevent="saveReply">
-            <div class="form-group">
-              <label class="form-label required">Phản hồi của bạn</label>
+          <form @submit.prevent="saveReply" class="space-y-4">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Phản hồi của bạn *</label>
               <textarea 
-                class="form-textarea" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 v-model="replyText"
                 placeholder="Nhập phản hồi cho khách hàng..."
                 rows="5"
@@ -288,13 +336,13 @@
               ></textarea>
             </div>
 
-            <div class="modal-actions">
-              <button type="button" class="btn btn-outline" @click="closeReplyModal">
-                <span class="material-icons">close</span>
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" @click="closeReplyModal">
+                <i class="material-icons text-base">close</i>
                 Hủy
               </button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">
-                <span class="material-icons">{{ saving ? 'hourglass_empty' : 'send' }}</span>
+              <button type="submit" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" :disabled="saving">
+                <i class="material-icons text-base" :class="{ 'animate-spin': saving }">{{ saving ? 'hourglass_empty' : 'send' }}</i>
                 {{ saving ? 'Đang gửi...' : 'Gửi phản hồi' }}
               </button>
             </div>
@@ -303,30 +351,30 @@
       </div>
     </div>
 
-    <!-- ===== DELETE CONFIRMATION MODAL ===== -->
-    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
-      <div class="modal-content modal-sm" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons text-danger">warning</span>
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="showDeleteModal = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-red-600 dark:text-red-400">warning</i>
             Xác nhận xóa
           </h2>
-          <button class="modal-close" @click="showDeleteModal = false">
-            <span class="material-icons">close</span>
+          <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" @click="showDeleteModal = false">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
         
-        <div class="modal-body">
-          <p>Bạn có chắc chắn muốn xóa đánh giá này?</p>
-          <p class="text-muted">Hành động này không thể hoàn tác.</p>
+        <div class="p-4">
+          <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">Bạn có chắc chắn muốn xóa đánh giá này?</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Hành động này không thể hoàn tác.</p>
           
-          <div class="modal-actions">
-            <button class="btn btn-outline" @click="showDeleteModal = false">
-              <span class="material-icons">close</span>
+          <div class="flex items-center justify-end gap-3">
+            <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" @click="showDeleteModal = false">
+              <i class="material-icons text-base">close</i>
               Hủy
             </button>
-            <button class="btn btn-danger" @click="deleteReview" :disabled="deleting">
-              <span class="material-icons">{{ deleting ? 'hourglass_empty' : 'delete' }}</span>
+            <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" @click="deleteReview" :disabled="deleting">
+              <i class="material-icons text-base" :class="{ 'animate-spin': deleting }">{{ deleting ? 'hourglass_empty' : 'delete' }}</i>
               {{ deleting ? 'Đang xóa...' : 'Xóa' }}
             </button>
           </div>
@@ -340,10 +388,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
-import StatsCard from '@/assets/components/admin/StatsCard.vue'
-import FilterBar from '@/assets/components/admin/FilterBar.vue'
-import EmptyState from '@/assets/components/admin/EmptyState.vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
+import { debounce } from '@/utils/debounce'
 
 const adminStore = useAdminStore()
 
@@ -689,8 +735,19 @@ const deleteReview = async () => {
   }
 }
 
-const handleSearch = () => {
+const debounceSearch = debounce(() => {
+  currentPage.value = 1 // Reset về trang đầu khi search
+  loadReviews()
+}, 500)
+
+const clearSearch = () => {
+  searchKeyword.value = ''
   currentPage.value = 1
+  loadReviews()
+}
+
+const applyFilters = () => {
+  currentPage.value = 1 // Reset về trang đầu khi filter
   loadReviews()
 }
 
@@ -699,6 +756,7 @@ const resetFilters = () => {
   filterStatus.value = 'all'
   filterRating.value = 'all'
   currentPage.value = 1
+  loadReviews() // Gọi lại loadReviews sau khi reset
 }
 
 const formatDate = (dateString) => {
@@ -752,345 +810,6 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* ═══════════════════════════════════════════════════════════════════════
-   ADMIN REVIEWS - REVIEW-SPECIFIC STYLES ONLY
-   All layout, stats, filters, tables, buttons, modals use Design System v2.0 global classes
-   ═══════════════════════════════════════════════════════════════════════ */
 
-/* Page header, stats, filters, loading, empty states, modals, buttons, pagination, responsive all use global classes */
 
-/* ═══ REVIEWS LIST ═══ */
-.reviews-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  margin-bottom: var(--space-6);
-}
-
-.review-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all var(--transition-smooth);
-}
-
-.review-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-  background: var(--gradient-purple-soft);
-}
-
-.review-product {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.product-thumb {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-md);
-  object-fit: cover;
-  border: 1px solid var(--border-primary);
-}
-
-.product-info {
-  flex: 1;
-}
-
-.product-name {
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.review-rating {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.star-icon {
-  font-size: 18px;
-}
-
-.star-filled {
-  color: #fbbf24;
-}
-
-.star-empty {
-  color: var(--text-quaternary);
-}
-
-.rating-text {
-  margin-left: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  font-weight: var(--font-semibold);
-}
-
-.review-status {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-2);
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.status-badge .material-icons {
-  font-size: 16px;
-}
-
-.status-badge.status-approved {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
-.status-badge.status-pending {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border: 1px solid var(--warning-border);
-}
-
-.verified-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  background: var(--info-bg);
-  color: var(--info-text);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  border: 1px solid var(--info-border);
-}
-
-.verified-badge .material-icons {
-  font-size: 14px;
-}
-
-.review-body {
-  padding: var(--space-6);
-}
-
-.review-author {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.author-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--gradient-purple);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.author-avatar .material-icons {
-  font-size: 32px;
-  color: var(--color-white);
-}
-
-.author-info {
-  flex: 1;
-}
-
-.author-name {
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-1);
-}
-
-.review-date {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-}
-
-.review-content {
-  margin-top: var(--space-4);
-}
-
-.review-title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.review-text {
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin: 0 0 var(--space-4) 0;
-}
-
-.review-images {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
-.review-image {
-  width: 120px;
-  height: 120px;
-  border-radius: var(--radius-md);
-  object-fit: cover;
-  border: 1px solid var(--border-primary);
-  transition: all var(--transition-fast);
-  cursor: pointer;
-}
-
-.review-image:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.admin-reply {
-  margin-top: var(--space-4);
-  padding: var(--space-4);
-  background: var(--gradient-purple-soft);
-  border-left: 3px solid var(--accent-primary);
-  border-radius: var(--radius-md);
-}
-
-.reply-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-  color: var(--accent-primary);
-  font-size: var(--text-sm);
-}
-
-.reply-header .material-icons {
-  font-size: 18px;
-}
-
-.reply-date {
-  margin-left: auto;
-  color: var(--text-tertiary);
-  font-weight: var(--font-normal);
-}
-
-.reply-text {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  line-height: 1.6;
-  margin: 0;
-}
-
-.review-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-4) var(--space-6);
-  border-top: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.2);
-}
-
-.review-helpful {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-}
-
-.review-helpful .material-icons {
-  font-size: 18px;
-}
-
-.review-actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.btn-action {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-4);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-action .material-icons {
-  font-size: 18px;
-}
-
-.btn-approve {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border: 1px solid var(--success-border);
-}
-
-.btn-approve:hover {
-  background: var(--success-solid);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.btn-reply {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid var(--info-border);
-}
-
-.btn-reply:hover {
-  background: var(--info-solid);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-delete {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border: 1px solid var(--error-border);
-}
-
-.btn-delete:hover {
-  background: var(--error-solid);
-  color: var(--color-white);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-</style>
 

@@ -1,26 +1,26 @@
 <template>
-  <div class="admin-page admin-coupons">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">local_offer</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">local_offer</i>
             Quản lý Coupon
           </h1>
-          <p class="page-subtitle">Quản lý mã giảm giá và khuyến mãi</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quản lý mã giảm giá và khuyến mãi</p>
         </div>
-        <div class="header-actions">
-          <button @click="exportCoupons('csv')" class="btn btn-secondary">
-            <span class="material-icons">file_download</span>
+        <div class="flex items-center gap-2">
+          <button @click="exportCoupons('csv')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">file_download</i>
             CSV
           </button>
-          <button @click="exportCoupons('json')" class="btn btn-secondary">
-            <span class="material-icons">code</span>
+          <button @click="exportCoupons('json')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">code</i>
             JSON
           </button>
-          <button @click="openCreateModal" class="btn btn-primary">
-            <span class="material-icons">add</span>
+          <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">add</i>
             Thêm Coupon
           </button>
         </div>
@@ -28,346 +28,360 @@
     </div>
 
     <!-- Enhanced Stats Grid -->
-    <div class="stats-grid animate-fade-in">
-      <div class="stat-card">
-        <div class="stat-icon">
-          <span class="material-icons">local_offer</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">local_offer</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Tổng Coupon</div>
-          <div class="stat-value">{{ stats?.totalCoupons || 0 }}</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <span class="material-icons">check_circle</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Đang hoạt động</div>
-          <div class="stat-value">{{ stats?.activeCoupons || 0 }}</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats?.totalCoupons || 0 }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Tổng Coupon</p>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <span class="material-icons">schedule</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">check_circle</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Sắp hết hạn</div>
-          <div class="stat-value">{{ stats?.expiringSoon || 0 }}</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats?.activeCoupons || 0 }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đang hoạt động</p>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <span class="material-icons">trending_up</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">schedule</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Đã sử dụng</div>
-          <div class="stat-value">{{ stats?.totalUsed || 0 }}</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats?.expiringSoon || 0 }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Sắp hết hạn</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">trending_up</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats?.totalUsed || 0 }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đã sử dụng</p>
         </div>
       </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="filters-section">
-      <div class="search-box">
-        <span class="material-icons search-icon">search</span>
-        <input
-          v-model="searchQuery"
-          @input="handleSearch"
-          type="text"
-          placeholder="Tìm kiếm coupon..."
-          class="search-input"
-        />
-        <button v-if="searchQuery" @click="clearSearch" class="search-clear">
-          <span class="material-icons">close</span>
-        </button>
-      </div>
-      <div class="filter-controls">
-        <div class="filter-group">
-          <label class="filter-label">Trạng thái:</label>
-          <select v-model="filters.status" @change="loadCoupons" class="filter-select">
-            <option value="all">Tất cả</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="inactive">Không hoạt động</option>
-            <option value="expired">Đã hết hạn</option>
-          </select>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
+            <input
+              v-model="searchQuery"
+              @input="handleSearch"
+              type="text"
+              placeholder="Tìm kiếm coupon..."
+              class="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+            <button v-if="searchQuery" @click="clearSearch" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <i class="material-icons text-base">close</i>
+            </button>
+          </div>
         </div>
-        <div class="filter-group">
-          <label class="filter-label">Loại giảm giá:</label>
-          <select v-model="filters.discountType" @change="loadCoupons" class="filter-select">
-            <option value="all">Tất cả</option>
-            <option value="fixed">Giảm giá cố định</option>
-            <option value="percentage">Giảm giá phần trăm</option>
-          </select>
+        <div class="flex items-center gap-2">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Trạng thái</label>
+            <select v-model="filters.status" @change="loadCoupons" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="all">Tất cả</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="inactive">Không hoạt động</option>
+              <option value="expired">Đã hết hạn</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Loại giảm giá</label>
+            <select v-model="filters.discountType" @change="loadCoupons" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="all">Tất cả</option>
+              <option value="fixed">Giảm giá cố định</option>
+              <option value="percentage">Giảm giá phần trăm</option>
+            </select>
+          </div>
+          <button @click="resetFilters" class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium mt-6">
+            <i class="material-icons text-base">refresh</i>
+            Reset
+          </button>
         </div>
-        <button @click="resetFilters" class="btn btn-reset">
-          <span class="material-icons">refresh</span>
-          Reset
-        </button>
       </div>
     </div>
 
     <!-- Coupons Table -->
-    <div class="table-container">
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
       </div>
       
-      <div v-else-if="coupons.length === 0" class="empty-state">
-        <span class="material-icons">local_offer</span>
-        <h3>Chưa có coupon nào</h3>
-        <p>Tạo coupon đầu tiên để bắt đầu</p>
-        <button @click="openCreateModal" class="btn btn-primary">
-          <span class="material-icons">add</span>
+      <div v-else-if="coupons.length === 0" class="flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">local_offer</i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có coupon nào</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">Tạo coupon đầu tiên để bắt đầu</p>
+        <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium">
+          <i class="material-icons text-base">add</i>
           Thêm Coupon
         </button>
       </div>
 
-      <table v-else class="admin-table">
-        <thead>
-          <tr>
-            <th>Mã Coupon</th>
-            <th>Mô tả</th>
-            <th>Loại giảm giá</th>
-            <th>Giá trị</th>
-            <th>Thời gian</th>
-            <th>Sử dụng</th>
-            <th>Trạng thái</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="coupon in coupons" :key="coupon.id">
-            <td>
-              <div class="coupon-code">
-                <code>{{ coupon.code }}</code>
-                <button @click="copyCode(coupon.code)" class="btn-copy" title="Sao chép">
-                  <span class="material-icons">content_copy</span>
-                </button>
-              </div>
-            </td>
-            <td>
-              <div class="coupon-description">
-                {{ coupon.description || 'Không có mô tả' }}
-              </div>
-            </td>
-            <td>
-              <span class="discount-type-badge" :class="coupon.discount_type">
-                {{ coupon.discount_type === 'fixed' ? 'Cố định' : 'Phần trăm' }}
-              </span>
-            </td>
-            <td>
-              <div class="discount-value">
-                <span v-if="coupon.discount_type === 'fixed'">
-                  {{ formatCurrency(coupon.discount_value) }}
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Mã Coupon</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Mô tả</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Loại giảm giá</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Giá trị</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thời gian</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Sử dụng</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="coupon in coupons" :key="coupon.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <code class="px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded font-mono">{{ coupon.code }}</code>
+                  <button @click="copyCode(coupon.code)" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Sao chép">
+                    <i class="material-icons text-base">content_copy</i>
+                  </button>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{{ coupon.description || 'Không có mô tả' }}</td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-1 text-xs font-medium rounded-full" :class="coupon.discount_type === 'fixed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'">
+                  {{ coupon.discount_type === 'fixed' ? 'Cố định' : 'Phần trăm' }}
                 </span>
-                <span v-else>
-                  {{ coupon.discount_value }}%
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-col gap-1">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <span v-if="coupon.discount_type === 'fixed'">{{ formatCurrency(coupon.discount_value) }}</span>
+                    <span v-else>{{ coupon.discount_value }}%</span>
+                  </span>
+                  <div v-if="coupon.max_discount_amount" class="text-xs text-gray-500 dark:text-gray-400">
+                    Tối đa: {{ formatCurrency(coupon.max_discount_amount) }}
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-col gap-1 text-xs">
+                  <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                    <i class="material-icons text-sm">schedule</i>
+                    {{ formatDate(coupon.start_at) }}
+                  </div>
+                  <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                    <i class="material-icons text-sm">event</i>
+                    {{ formatDate(coupon.end_at) }}
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-col gap-1">
+                  <div class="text-sm text-gray-900 dark:text-gray-100">{{ coupon.uses_count || 0 }}/{{ coupon.max_uses || '∞' }}</div>
+                  <div v-if="coupon.max_uses" class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      class="h-full bg-purple-500 transition-all duration-300" 
+                      :style="{ width: `${(coupon.uses_count / coupon.max_uses) * 100}%` }"
+                    ></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getStatusClass(coupon) === 'status-active',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getStatusClass(coupon) === 'status-expired',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': getStatusClass(coupon) === 'status-pending',
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': getStatusClass(coupon) === 'status-inactive'
+                  }">
+                  {{ getStatusText(coupon) }}
                 </span>
-                <div v-if="coupon.max_discount_amount" class="max-discount">
-                  Tối đa: {{ formatCurrency(coupon.max_discount_amount) }}
+              </td>
+              <td class="px-4 py-3 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <button @click="viewCoupon(coupon)" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors" title="Xem chi tiết">
+                    <i class="material-icons text-base">visibility</i>
+                  </button>
+                  <button @click="editCoupon(coupon)" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors" title="Chỉnh sửa">
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+                  <button @click="toggleCouponStatus(coupon)" class="p-1.5 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded transition-colors" title="Bật/tắt">
+                    <i class="material-icons text-base">{{ coupon.is_active ? 'pause' : 'play_arrow' }}</i>
+                  </button>
+                  <button @click="deleteCoupon(coupon)" class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors" title="Xóa">
+                    <i class="material-icons text-base">delete</i>
+                  </button>
                 </div>
-              </div>
-            </td>
-            <td>
-              <div class="time-range">
-                <div class="date-item">
-                  <span class="material-icons">schedule</span>
-                  {{ formatDate(coupon.start_at) }}
-                </div>
-                <div class="date-item">
-                  <span class="material-icons">event</span>
-                  {{ formatDate(coupon.end_at) }}
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="usage-stats">
-                <div class="usage-text">
-                  {{ coupon.uses_count || 0 }}/{{ coupon.max_uses || '∞' }}
-                </div>
-                <div v-if="coupon.max_uses" class="progress-bar">
-                  <div 
-                    class="progress-fill" 
-                    :style="{ width: `${(coupon.uses_count / coupon.max_uses) * 100}%` }"
-                  ></div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <span class="status-badge" :class="getStatusClass(coupon)">
-                {{ getStatusText(coupon) }}
-              </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button @click="viewCoupon(coupon)" class="btn-icon btn-view" title="Xem chi tiết">
-                  <span class="material-icons">visibility</span>
-                </button>
-                <button @click="editCoupon(coupon)" class="btn-icon btn-edit" title="Chỉnh sửa">
-                  <span class="material-icons">edit</span>
-                </button>
-                <button @click="toggleCouponStatus(coupon)" class="btn-icon btn-toggle" title="Bật/tắt">
-                  <span class="material-icons">{{ coupon.is_active ? 'pause' : 'play_arrow' }}</span>
-                </button>
-                <button @click="deleteCoupon(coupon)" class="btn-icon btn-delete" title="Xóa">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Pagination -->
-      <div class="pagination-container">
-        <div class="pagination-info">
+      <div v-if="!loading && coupons.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
           Hiển thị {{ (currentPage * pageSize) + 1 }}-{{ Math.min((currentPage + 1) * pageSize, totalItems) }} 
           trong {{ totalItems }} coupon
         </div>
-        <div class="pagination-controls">
+        <div class="flex items-center gap-2">
           <button 
             @click="goToPage(currentPage - 1)" 
             :disabled="currentPage === 0"
-            class="page-btn"
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span class="material-icons">chevron_left</span>
+            <i class="material-icons text-base">chevron_left</i>
           </button>
-          <span class="page-info">{{ currentPage + 1 }} / {{ totalPages }}</span>
+          <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">{{ currentPage + 1 }} / {{ totalPages }}</span>
           <button 
             @click="goToPage(currentPage + 1)" 
             :disabled="currentPage >= totalPages - 1"
-            class="page-btn"
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span class="material-icons">chevron_right</span>
+            <i class="material-icons text-base">chevron_right</i>
           </button>
         </div>
       </div>
     </div>
 
     <!-- Create/Edit Modal -->
-    <div v-if="showModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content modal-lg" @click.stop>
-        <div class="modal-header">
-          <h3 class="modal-title">
-            <span class="material-icons">{{ isEditMode ? 'edit' : 'add' }}</span>
+    <div v-if="showModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">{{ isEditMode ? 'edit' : 'add' }}</i>
             {{ isEditMode ? 'Chỉnh sửa Coupon' : 'Thêm Coupon mới' }}
           </h3>
-          <button @click="closeModal" class="modal-close">
-            <span class="material-icons">close</span>
+          <button @click="closeModal" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <form @submit.prevent="saveCoupon">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">Mã Coupon</label>
+        <div class="p-4">
+          <form @submit.prevent="saveCoupon" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Mã Coupon *</label>
                 <input
                   v-model="formData.code"
                   type="text"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Nhập mã coupon..."
                   required
                 />
               </div>
-              <div class="form-group">
-                <label class="form-label">Mô tả</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Mô tả</label>
                 <input
                   v-model="formData.description"
                   type="text"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Mô tả coupon..."
                 />
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">Loại giảm giá</label>
-                <select v-model="formData.discount_type" class="form-input" required>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Loại giảm giá *</label>
+                <select v-model="formData.discount_type" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
                   <option value="fixed">Giảm giá cố định (VNĐ)</option>
                   <option value="percentage">Giảm giá phần trăm (%)</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label class="form-label required">Giá trị giảm giá</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá trị giảm giá *</label>
                 <input
                   v-model="formData.discount_value"
                   type="number"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Nhập giá trị..."
                   required
                 />
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Giá trị đơn hàng tối thiểu</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá trị đơn hàng tối thiểu</label>
                 <input
                   v-model="formData.min_order_amount"
                   type="number"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="0"
                 />
               </div>
-              <div class="form-group">
-                <label class="form-label">Giá trị giảm tối đa</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá trị giảm tối đa</label>
                 <input
                   v-model="formData.max_discount_amount"
                   type="number"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Không giới hạn"
                 />
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">Ngày bắt đầu</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Ngày bắt đầu *</label>
                 <input
                   v-model="formData.start_at"
                   type="datetime-local"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   required
                 />
               </div>
-              <div class="form-group">
-                <label class="form-label required">Ngày kết thúc</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Ngày kết thúc *</label>
                 <input
                   v-model="formData.end_at"
                   type="datetime-local"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   required
                 />
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Số lần sử dụng tối đa</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số lần sử dụng tối đa</label>
                 <input
                   v-model="formData.max_uses"
                   type="number"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Không giới hạn"
                 />
               </div>
-              <div class="form-group">
-                <label class="form-label">Số lần sử dụng mỗi user</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số lần sử dụng mỗi user</label>
                 <input
                   v-model="formData.max_uses_per_user"
                   type="number"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="1"
                 />
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Áp dụng cho</label>
-              <select v-model="formData.applicable_to" class="form-input">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Áp dụng cho</label>
+              <select v-model="formData.applicable_to" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                 <option value="all">Tất cả sản phẩm</option>
                 <option value="brand">Thương hiệu</option>
                 <option value="category">Danh mục</option>
@@ -375,25 +389,23 @@
               </select>
             </div>
 
-            <div class="form-group">
-              <label class="form-check">
-                <input
-                  v-model="formData.is_active"
-                  type="checkbox"
-                  class="form-check-input"
-                />
-                <span class="form-check-label">Kích hoạt coupon</span>
-              </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model="formData.is_active"
+                type="checkbox"
+                class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+              />
+              <label class="text-sm text-gray-700 dark:text-gray-300">Kích hoạt coupon</label>
             </div>
           </form>
         </div>
-        <div class="modal-actions">
-          <button @click="closeModal" class="btn btn-secondary">
-            <span class="material-icons">close</span>
+        <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="closeModal" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            <i class="material-icons text-base">close</i>
             Hủy
           </button>
-          <button @click="saveCoupon" class="btn btn-primary" :disabled="submitting">
-            <span class="material-icons">{{ isEditMode ? 'save' : 'add' }}</span>
+          <button @click="saveCoupon" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" :disabled="submitting">
+            <i class="material-icons text-base" :class="{ 'animate-spin': submitting }">{{ isEditMode ? 'save' : 'add' }}</i>
             {{ submitting ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Tạo mới') }}
           </button>
         </div>
@@ -402,12 +414,12 @@
 
     <!-- Delete Confirmation Modal -->
     <ConfirmDialog
-      v-if="showDeleteModal"
-      :show="showDeleteModal"
+      v-model="showDeleteModal"
+      type="danger"
       title="Xác nhận xóa Coupon"
       :message="`Bạn có chắc chắn muốn xóa coupon '${couponToDelete?.code}'?`"
-      confirmText="Xóa"
-      cancelText="Hủy"
+      confirm-text="Xóa"
+      cancel-text="Hủy"
       :loading="deleting"
       @confirm="handleDelete"
       @cancel="showDeleteModal = false"
@@ -690,752 +702,5 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.admin-coupons {
-  padding: var(--space-6);
-}
 
-.page-header {
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(139, 92, 246, 0.05));
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  backdrop-filter: blur(10px);
-}
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title-section {
-  flex: 1;
-}
-
-.page-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.page-title .material-icons {
-  color: var(--accent-primary);
-  font-size: 2rem;
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  margin: var(--space-2) 0 0 0;
-  font-size: var(--text-base);
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-3);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.stat-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  border-left: 4px solid var(--accent-primary);
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  border-left-color: var(--accent-hover);
-}
-
-.stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
-}
-
-.stat-icon .material-icons {
-  color: white;
-  font-size: 1.5rem;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-1);
-}
-
-.stat-value {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-}
-
-.filters-section {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  margin-bottom: var(--space-6);
-  backdrop-filter: blur(10px);
-}
-
-.search-box {
-  position: relative;
-  margin-bottom: var(--space-4);
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-3);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
-  font-size: 1.25rem;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  transition: all 0.3s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
-}
-
-.search-clear {
-  position: absolute;
-  right: var(--space-3);
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: var(--space-1);
-  border-radius: var(--radius-sm);
-  transition: all 0.3s ease;
-}
-
-.search-clear:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-.filter-controls {
-  display: flex;
-  gap: var(--space-4);
-  align-items: end;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.filter-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
-}
-
-.filter-select {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  min-width: 150px;
-}
-
-.btn-reset {
-  padding: var(--space-2) var(--space-4);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.btn-reset:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: var(--accent-primary);
-}
-
-.table-container {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-8);
-  color: var(--text-secondary);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(167, 139, 250, 0.3);
-  border-top: 3px solid var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: var(--space-3);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-8);
-  text-align: center;
-}
-
-.empty-state .material-icons {
-  font-size: 4rem;
-  color: var(--text-secondary);
-  margin-bottom: var(--space-4);
-}
-
-.empty-state h3 {
-  font-size: var(--text-xl);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.empty-state p {
-  color: var(--text-secondary);
-  margin-bottom: var(--space-4);
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.admin-table thead {
-  background: rgba(167, 139, 250, 0.1);
-}
-
-.admin-table th {
-  padding: var(--space-4);
-  text-align: left;
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.admin-table td {
-  padding: var(--space-4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-}
-
-.admin-table tbody tr:hover {
-  background: rgba(167, 139, 250, 0.05);
-}
-
-.coupon-code {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.coupon-code code {
-  background: rgba(167, 139, 250, 0.1);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-family: 'Courier New', monospace;
-  font-weight: var(--font-semibold);
-  color: var(--accent-primary);
-}
-
-.btn-copy {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: var(--space-1);
-  border-radius: var(--radius-sm);
-  transition: all 0.3s ease;
-}
-
-.btn-copy:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-.coupon-description {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.discount-type-badge {
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-}
-
-.discount-type-badge.fixed {
-  background: rgba(34, 197, 94, 0.1);
-  color: var(--color-success);
-}
-
-.discount-type-badge.percentage {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--color-info);
-}
-
-.discount-value {
-  font-weight: var(--font-semibold);
-}
-
-.max-discount {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  margin-top: var(--space-1);
-}
-
-.time-range {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.date-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-sm);
-}
-
-.date-item .material-icons {
-  font-size: 1rem;
-  color: var(--text-secondary);
-}
-
-.usage-stats {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.usage-text {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-.progress-bar {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover));
-  transition: width 0.3s ease;
-}
-
-.status-badge {
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-}
-
-.status-badge.status-active {
-  background: rgba(34, 197, 94, 0.1);
-  color: var(--color-success);
-}
-
-.status-badge.status-inactive {
-  background: rgba(107, 114, 128, 0.1);
-  color: var(--text-secondary);
-}
-
-.status-badge.status-pending {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
-}
-
-.status-badge.status-expired {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-error);
-}
-
-.action-buttons {
-  display: flex;
-  gap: var(--space-1);
-}
-
-.btn-icon {
-  padding: var(--space-2);
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-icon .material-icons {
-  font-size: 1rem;
-}
-
-.btn-icon.btn-view {
-  background: rgba(59, 130, 246, 0.1);
-  color: var(--color-info);
-}
-
-.btn-icon.btn-view:hover {
-  background: rgba(59, 130, 246, 0.2);
-}
-
-.btn-icon.btn-edit {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--color-warning);
-}
-
-.btn-icon.btn-edit:hover {
-  background: rgba(245, 158, 11, 0.2);
-}
-
-.btn-icon.btn-toggle {
-  background: rgba(167, 139, 250, 0.1);
-  color: var(--accent-primary);
-}
-
-.btn-icon.btn-toggle:hover {
-  background: rgba(167, 139, 250, 0.2);
-}
-
-.btn-icon.btn-delete {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-error);
-}
-
-.btn-icon.btn-delete:hover {
-  background: rgba(239, 68, 68, 0.2);
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-4);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.pagination-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.page-btn {
-  padding: var(--space-2);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.page-btn:hover:not(:disabled) {
-  background: rgba(167, 139, 250, 0.1);
-  border-color: var(--accent-primary);
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-}
-
-.modal-content {
-  background: var(--bg-primary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  max-width: 800px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  backdrop-filter: blur(10px);
-}
-
-.modal-lg {
-  max-width: 1000px;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-5);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-title .material-icons {
-  color: var(--accent-primary);
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
-  transition: all 0.3s ease;
-}
-
-.modal-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-.modal-body {
-  padding: var(--space-5);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-  margin-bottom: var(--space-4);
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.form-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
-}
-
-.form-label.required::after {
-  content: ' *';
-  color: var(--color-error);
-}
-
-.form-input {
-  padding: var(--space-3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  transition: all 0.3s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
-}
-
-.form-check {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.form-check-input {
-  width: 18px;
-  height: 18px;
-}
-
-.form-check-label {
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.btn {
-  padding: var(--space-3) var(--space-4);
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: var(--accent-primary);
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@media (max-width: 768px) {
-  .admin-coupons {
-    padding: var(--space-4);
-  }
-
-  .header-content {
-    flex-direction: column;
-    gap: var(--space-4);
-    align-items: stretch;
-  }
-
-  .header-actions {
-    justify-content: center;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .modal-content {
-    width: 95%;
-    margin: var(--space-4);
-  }
-
-  .modal-actions {
-    flex-direction: column;
-  }
-
-  .admin-table {
-    font-size: var(--text-sm);
-  }
-
-  .admin-table th,
-  .admin-table td {
-    padding: var(--space-2);
-  }
-}
-</style>

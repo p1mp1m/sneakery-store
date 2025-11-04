@@ -1,29 +1,29 @@
 <template>
-  <div class="admin-sales">
+  <div class="max-w-[1920px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">point_of_sale</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">point_of_sale</i>
             Hệ thống POS
           </h1>
-          <p class="page-subtitle">
-            <span class="material-icons">store</span>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+            <i class="material-icons text-xs">store</i>
             Bán hàng tại quầy
           </p>
         </div>
-        <div class="header-actions">
-          <button @click="showShortcuts = true" class="btn btn-secondary">
-            <span class="material-icons">keyboard</span>
+        <div class="flex items-center gap-2">
+          <button @click="showShortcuts = true" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">keyboard</i>
             Phím tắt
           </button>
-          <button @click="showHistory = true" class="btn btn-secondary">
-            <span class="material-icons">history</span>
+          <button @click="showHistory = true" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">history</i>
             Lịch sử
           </button>
-          <button @click="resetCart" class="btn btn-secondary">
-            <span class="material-icons">refresh</span>
+          <button @click="resetCart" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">refresh</i>
             Làm mới
           </button>
         </div>
@@ -31,47 +31,54 @@
     </div>
 
     <!-- Barcode Scanner -->
-    <transition name="slide-down">
-      <div v-if="showBarcode" class="barcode-scanner">
-        <div class="scanner-input-group">
-          <span class="material-icons">qr_code_scanner</span>
+    <transition
+      enter-active-class="transition-all duration-300 ease-out"
+      leave-active-class="transition-all duration-300 ease-in"
+      enter-from-class="opacity-0 -translate-y-4"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-4"
+    >
+      <div v-if="showBarcode" class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center gap-3">
+          <i class="material-icons text-gray-500 dark:text-gray-400">qr_code_scanner</i>
           <input
             ref="barcodeInput"
             v-model="barcodeValue"
             @keyup.enter="handleBarcodeSearch"
-            class="barcode-input"
+            class="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             placeholder="Quét mã vạch hoặc nhập SKU..."
           />
-          <button @click="showBarcode = false" class="btn btn-secondary">
-            <span class="material-icons">close</span>
+          <button @click="showBarcode = false" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">close</i>
           </button>
         </div>
       </div>
     </transition>
 
     <!-- POS Grid -->
-    <div class="pos-grid">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4">
       <!-- Product Section -->
-      <div class="product-section">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <!-- Search Section -->
-        <div class="search-section">
-          <div class="search-box">
-            <span class="material-icons search-icon">search</span>
+        <div class="space-y-4 mb-4">
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500">search</i>
             <input
               v-model="searchQuery"
               @input="searchProducts"
-              class="search-input"
+              class="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="Tìm kiếm sản phẩm..."
             />
           </div>
-          <div class="filter-row">
-            <select v-model="filterBrand" @change="filterProducts" class="form-control">
+          <div class="grid grid-cols-2 gap-3">
+            <select v-model="filterBrand" @change="filterProducts" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
               <option value="">Tất cả thương hiệu</option>
               <option v-for="brand in brands" :key="brand.id" :value="brand.id">
                 {{ brand.name }}
               </option>
             </select>
-            <select v-model="filterCategory" @change="filterProducts" class="form-control">
+            <select v-model="filterCategory" @change="filterProducts" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
               <option value="">Tất cả danh mục</option>
               <option v-for="category in categories" :key="category.id" :value="category.id">
                 {{ category.name }}
@@ -81,126 +88,137 @@
         </div>
 
         <!-- Products Grid -->
-        <div v-if="loading" class="loading-container">
-          <div class="loading-spinner"></div>
-          <p>Đang tải sản phẩm...</p>
+        <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+          <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải sản phẩm...</p>
         </div>
-        <div v-else class="products-grid">
+        <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[calc(100vh-300px)] overflow-y-auto">
           <div
             v-for="product in products"
             :key="product.id"
             @click="addToCart(product)"
-            class="product-card"
+            class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors border border-gray-200 dark:border-gray-700"
           >
-            <div class="product-image">
-              <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" />
-              <span v-else class="material-icons">image</span>
+            <div class="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+              <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
+              <i v-else class="material-icons text-gray-400 dark:text-gray-500 text-4xl">image</i>
             </div>
-            <div class="product-info">
-              <h3>{{ product.name }}</h3>
-              <p class="product-brand">{{ product.brandName }}</p>
-              <p class="product-price">{{ formatCurrency(product.price) }}</p>
-            </div>
-            <div class="product-stock" :class="{ low: product.stockQuantity < 10, out: product.stockQuantity === 0 }">
-              {{ product.stockQuantity }}
+            <div class="space-y-1">
+              <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">{{ product.name }}</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ product.brandName }}</p>
+              <p class="text-sm font-semibold text-purple-600 dark:text-purple-400">{{ formatCurrency(product.price) }}</p>
+              <div class="flex items-center justify-between mt-1">
+                <span 
+                  class="text-xs px-2 py-0.5 rounded-full"
+                  :class="{
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': product.stockQuantity === 0,
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': product.stockQuantity > 0 && product.stockQuantity < 10,
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': product.stockQuantity >= 10
+                  }"
+                >
+                  {{ product.stockQuantity }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Cart Section -->
-      <div class="cart-section">
-        <div class="cart-header">
-          <h2 class="cart-title">Giỏ hàng</h2>
-          <button @click="resetCart" class="btn btn-secondary btn-sm">
-            <span class="material-icons">clear</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-[calc(100vh-200px)]">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">Giỏ hàng</h2>
+          <button @click="resetCart" class="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <i class="material-icons text-base">clear</i>
           </button>
         </div>
 
         <!-- Cart Items -->
-        <div class="cart-items">
-          <div v-if="cartItems.length === 0" class="loading-container">
-            <span class="material-icons" style="font-size: 3rem; margin-bottom: 1rem;">shopping_cart</span>
-            <p>Giỏ hàng trống</p>
+        <div class="flex-1 overflow-y-auto mb-4 space-y-2">
+          <div v-if="cartItems.length === 0" class="flex flex-col items-center justify-center p-12 text-center">
+            <i class="material-icons text-gray-400 dark:text-gray-500 text-5xl mb-4">shopping_cart</i>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Giỏ hàng trống</p>
           </div>
-          <div v-else>
-            <div v-for="(item, index) in cartItems" :key="index" class="cart-item">
-              <div class="item-image">
-                <span class="material-icons">image</span>
-              </div>
-              <div class="item-info">
-                <h4>{{ item.name }}</h4>
-                <p class="item-details">{{ item.sku }}</p>
-                <p class="item-price">{{ formatCurrency(item.unitPrice) }}</p>
-              </div>
-              <div class="item-controls">
-                <div class="quantity-control">
-                  <button @click="updateQuantity(index, item.quantity - 1)" class="quantity-btn">-</button>
-                  <input
-                    v-model.number="item.quantity"
-                    @change="updateQuantity(index, item.quantity)"
-                    class="quantity-input"
-                    type="number"
-                    min="1"
-                  />
-                  <button @click="updateQuantity(index, item.quantity + 1)" class="quantity-btn">+</button>
+          <div v-else class="space-y-2">
+            <div v-for="(item, index) in cartItems" :key="index" class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div class="flex items-start gap-3">
+                <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="material-icons text-gray-400 dark:text-gray-500">image</i>
                 </div>
-                <button @click="removeFromCart(index)" class="remove-btn">
-                  <span class="material-icons">delete</span>
-                </button>
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.name }}</h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.sku }}</p>
+                  <p class="text-sm font-semibold text-purple-600 dark:text-purple-400 mt-1">{{ formatCurrency(item.unitPrice) }}</p>
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                  <div class="flex items-center gap-1">
+                    <button @click="updateQuantity(index, item.quantity - 1)" class="w-7 h-7 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium">-</button>
+                    <input
+                      v-model.number="item.quantity"
+                      @change="updateQuantity(index, item.quantity)"
+                      class="w-12 h-7 text-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-gray-100"
+                      type="number"
+                      min="1"
+                    />
+                    <button @click="updateQuantity(index, item.quantity + 1)" class="w-7 h-7 flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium">+</button>
+                  </div>
+                  <button @click="removeFromCart(index)" class="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Cart Summary -->
-        <div class="cart-summary">
-          <div class="summary-row">
-            <span class="summary-label">Tạm tính:</span>
-            <span class="summary-value">{{ formatCurrency(subtotal) }}</span>
+        <div class="space-y-2 py-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600 dark:text-gray-400">Tạm tính:</span>
+            <span class="text-gray-900 dark:text-gray-100 font-medium">{{ formatCurrency(subtotal) }}</span>
           </div>
-          <div class="summary-row">
-            <span class="summary-label">Giảm giá:</span>
-            <span class="summary-value">-{{ formatCurrency(discountAmount) }}</span>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-600 dark:text-gray-400">Giảm giá:</span>
+            <span class="text-red-600 dark:text-red-400 font-medium">-{{ formatCurrency(discountAmount) }}</span>
           </div>
-          <div class="summary-row">
-            <span class="total-label">Tổng cộng:</span>
-            <span class="total-value">{{ formatCurrency(totalAmount) }}</span>
+          <div class="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+            <span class="text-base font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
+            <span class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ formatCurrency(totalAmount) }}</span>
           </div>
         </div>
 
         <!-- Discount Section -->
-        <div class="discount-section">
-          <div class="discount-input">
+        <div class="py-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center gap-2">
             <input
               v-model="discountCode"
               placeholder="Mã giảm giá..."
-              class="form-control"
+              class="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
-            <button @click="applyDiscount" class="btn btn-secondary">
-              <span class="material-icons">local_offer</span>
+            <button @click="applyDiscount" class="p-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+              <i class="material-icons text-base">local_offer</i>
             </button>
           </div>
         </div>
 
         <!-- Payment Section -->
-        <div class="payment-section">
-          <div class="payment-options">
+        <div class="py-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="grid grid-cols-2 gap-2">
             <button
               @click="paymentMethod = 'cash'"
-              :class="{ active: paymentMethod === 'cash' }"
-              class="payment-option"
+              class="flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all"
+              :class="paymentMethod === 'cash' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-purple-300 dark:hover:border-purple-700'"
             >
-              <span class="material-icons">money</span>
-              Tiền mặt
+              <i class="material-icons">money</i>
+              <span class="text-xs font-medium">Tiền mặt</span>
             </button>
             <button
               @click="paymentMethod = 'card'"
-              :class="{ active: paymentMethod === 'card' }"
-              class="payment-option"
+              class="flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all"
+              :class="paymentMethod === 'card' ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-purple-300 dark:hover:border-purple-700'"
             >
-              <span class="material-icons">credit_card</span>
-              Thẻ
+              <i class="material-icons">credit_card</i>
+              <span class="text-xs font-medium">Thẻ</span>
             </button>
           </div>
         </div>
@@ -209,40 +227,39 @@
         <button
           @click="processOrder"
           :disabled="cartItems.length === 0 || processing"
-          class="checkout-btn"
+          class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span v-if="processing" class="material-icons animate-spin">autorenew</span>
-          <span v-else class="material-icons">shopping_cart_checkout</span>
+          <i class="material-icons text-base" :class="{ 'animate-spin': processing }">{{ processing ? 'autorenew' : 'shopping_cart_checkout' }}</i>
           {{ processing ? 'Đang xử lý...' : 'Thanh toán' }}
         </button>
       </div>
     </div>
 
     <!-- Receipt Modal -->
-    <div v-if="showReceipt" class="modal-overlay" @click="showReceipt = false">
-      <div class="receipt" @click.stop>
-        <div class="receipt-header">
-          <h2 class="receipt-title">Hóa đơn</h2>
-          <p class="receipt-subtitle">{{ currentReceipt?.orderNumber }}</p>
+    <div v-if="showReceipt" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="showReceipt = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 text-center">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">Hóa đơn</h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ currentReceipt?.orderNumber }}</p>
         </div>
-        <div class="receipt-body">
-          <div v-for="item in currentReceipt?.items" :key="item.id" class="receipt-item">
-            <span>{{ item.name }} x{{ item.quantity }}</span>
-            <span>{{ formatCurrency(item.unitPrice * item.quantity) }}</span>
+        <div class="p-4 space-y-2 max-h-[400px] overflow-y-auto">
+          <div v-for="item in currentReceipt?.items" :key="item.id" class="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+            <span class="text-sm text-gray-700 dark:text-gray-300">{{ item.name }} x{{ item.quantity }}</span>
+            <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ formatCurrency(item.unitPrice * item.quantity) }}</span>
           </div>
         </div>
-        <div class="receipt-footer">
-          <div class="receipt-total">
-            <span>Tổng cộng:</span>
-            <span>{{ formatCurrency(currentReceipt?.totalAmount) }}</span>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-base font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
+            <span class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ formatCurrency(currentReceipt?.totalAmount) }}</span>
           </div>
-          <div class="receipt-actions">
-            <button @click="printReceipt" class="btn btn-primary">
-              <span class="material-icons">print</span>
+          <div class="flex items-center gap-3">
+            <button @click="printReceipt" class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium">
+              <i class="material-icons text-base">print</i>
               In hóa đơn
             </button>
-            <button @click="showReceipt = false" class="btn btn-secondary">
-              <span class="material-icons">close</span>
+            <button @click="showReceipt = false" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+              <i class="material-icons text-base">close</i>
               Đóng
             </button>
           </div>
@@ -251,66 +268,74 @@
     </div>
 
     <!-- Shortcuts Modal -->
-    <div v-if="showShortcuts" class="modal-overlay" @click="showShortcuts = false">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons">keyboard</span>
+    <div v-if="showShortcuts" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="showShortcuts = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">keyboard</i>
             Phím tắt
           </h2>
-          <button @click="showShortcuts = false" class="modal-close">
-            <span class="material-icons">close</span>
+          <button @click="showShortcuts = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div class="shortcuts-list">
-            <div class="shortcut-item">
-              <div class="shortcut-key">
-                <kbd>Ctrl</kbd> + <kbd>K</kbd>
-              </div>
-              <div class="shortcut-description">Mở/đóng thanh tìm kiếm</div>
+        <div class="p-4 space-y-3">
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">Ctrl</kbd>
+              <span class="text-gray-500 dark:text-gray-400">+</span>
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">K</kbd>
             </div>
-            <div class="shortcut-item">
-              <div class="shortcut-key">
-                <kbd>Ctrl</kbd> + <kbd>B</kbd>
-              </div>
-              <div class="shortcut-description">Mở/đóng quét mã vạch</div>
+            <div class="text-sm text-gray-700 dark:text-gray-300">Mở/đóng thanh tìm kiếm</div>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">Ctrl</kbd>
+              <span class="text-gray-500 dark:text-gray-400">+</span>
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">B</kbd>
             </div>
-            <div class="shortcut-item">
-              <div class="shortcut-key">
-                <kbd>Enter</kbd>
-              </div>
-              <div class="shortcut-description">Thêm sản phẩm vào giỏ hàng</div>
+            <div class="text-sm text-gray-700 dark:text-gray-300">Mở/đóng quét mã vạch</div>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">Enter</kbd>
             </div>
-            <div class="shortcut-item">
-              <div class="shortcut-key">
-                <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
-              </div>
-              <div class="shortcut-description">Thanh toán đơn hàng</div>
+            <div class="text-sm text-gray-700 dark:text-gray-300">Thêm sản phẩm vào giỏ hàng</div>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">Ctrl</kbd>
+              <span class="text-gray-500 dark:text-gray-400">+</span>
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">Enter</kbd>
             </div>
-            <div class="shortcut-item">
-              <div class="shortcut-key">
-                <kbd>Esc</kbd>
-              </div>
-              <div class="shortcut-description">Đóng modal/hủy thao tác</div>
+            <div class="text-sm text-gray-700 dark:text-gray-300">Thanh toán đơn hàng</div>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">Esc</kbd>
             </div>
-            <div class="shortcut-item">
-              <div class="shortcut-key">
-                <kbd>Ctrl</kbd> + <kbd>R</kbd>
-              </div>
-              <div class="shortcut-description">Làm mới giỏ hàng</div>
+            <div class="text-sm text-gray-700 dark:text-gray-300">Đóng modal/hủy thao tác</div>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">Ctrl</kbd>
+              <span class="text-gray-500 dark:text-gray-400">+</span>
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">R</kbd>
             </div>
-            <div class="shortcut-item">
-              <div class="shortcut-key">
-                <kbd>+</kbd> / <kbd>-</kbd>
-              </div>
-              <div class="shortcut-description">Tăng/giảm số lượng sản phẩm</div>
+            <div class="text-sm text-gray-700 dark:text-gray-300">Làm mới giỏ hàng</div>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">+</kbd>
+              <span class="text-gray-500 dark:text-gray-400">/</span>
+              <kbd class="px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs font-mono text-gray-900 dark:text-gray-100">-</kbd>
             </div>
+            <div class="text-sm text-gray-700 dark:text-gray-300">Tăng/giảm số lượng sản phẩm</div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button @click="showShortcuts = false" class="btn btn-primary">
-            <span class="material-icons">check</span>
+        <div class="flex items-center justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="showShortcuts = false" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium">
+            <i class="material-icons text-base">check</i>
             Đã hiểu
           </button>
         </div>
@@ -318,56 +343,60 @@
     </div>
 
     <!-- History Modal -->
-    <div v-if="showHistory" class="modal-overlay" @click="showHistory = false">
-      <div class="modal-content modal-large" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons">history</span>
+    <div v-if="showHistory" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="showHistory = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">history</i>
             Lịch sử bán hàng
           </h2>
-          <button @click="showHistory = false" class="modal-close">
-            <span class="material-icons">close</span>
+          <button @click="showHistory = false" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div v-if="loadingHistory" class="loading-container">
-            <div class="loading-spinner"></div>
-            <p>Đang tải lịch sử...</p>
+        <div class="p-4">
+          <div v-if="loadingHistory" class="flex flex-col items-center justify-center p-12">
+            <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải lịch sử...</p>
           </div>
-          <div v-else-if="salesHistory.length === 0" class="empty-state">
-            <span class="material-icons">history</span>
-            <p>Chưa có lịch sử bán hàng</p>
+          <div v-else-if="salesHistory.length === 0" class="flex flex-col items-center justify-center p-12">
+            <i class="material-icons text-gray-400 dark:text-gray-500 text-5xl mb-4">history</i>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Chưa có lịch sử bán hàng</p>
           </div>
-          <div v-else class="history-list">
-            <div v-for="order in salesHistory" :key="order.id" class="history-item">
-              <div class="history-icon">
-                <span class="material-icons">receipt</span>
+          <div v-else class="space-y-3">
+            <div v-for="order in salesHistory" :key="order.id" class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="material-icons text-purple-600 dark:text-purple-400">receipt</i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ order.orderNumber || `Đơn hàng #${order.id}` }}</h4>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(order.createdAt) }}</span>
+                  </div>
+                  <div class="flex items-center gap-4 mb-2">
+                    <span class="text-sm font-semibold text-purple-600 dark:text-purple-400">{{ formatCurrency(order.totalAmount) }}</span>
+                    <span class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 rounded-full">{{ getPaymentMethodLabel(order.paymentMethod) }}</span>
+                  </div>
+                  <div v-if="order.items" class="flex flex-wrap gap-2 mt-2">
+                    <span v-for="(item, idx) in order.items.slice(0, 3)" :key="idx" class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                      {{ item.name }} x{{ item.quantity }}
+                    </span>
+                    <span v-if="order.items.length > 3" class="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                      +{{ order.items.length - 3 }} sản phẩm
+                    </span>
+                  </div>
+                </div>
+                <button @click="viewOrderDetails(order)" class="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Xem chi tiết">
+                  <i class="material-icons text-base">visibility</i>
+                </button>
               </div>
-              <div class="history-content">
-                <div class="history-header">
-                  <h4>{{ order.orderNumber || `Đơn hàng #${order.id}` }}</h4>
-                  <span class="history-date">{{ formatDate(order.createdAt) }}</span>
-                </div>
-                <div class="history-details">
-                  <span class="history-amount">{{ formatCurrency(order.totalAmount) }}</span>
-                  <span class="history-payment">{{ getPaymentMethodLabel(order.paymentMethod) }}</span>
-                </div>
-                <div v-if="order.items" class="history-items">
-                  <span v-for="(item, idx) in order.items.slice(0, 3)" :key="idx" class="item-tag">
-                    {{ item.name }} x{{ item.quantity }}
-                  </span>
-                  <span v-if="order.items.length > 3" class="item-tag">+{{ order.items.length - 3 }} sản phẩm</span>
-                </div>
-              </div>
-              <button @click="viewOrderDetails(order)" class="btn-icon btn-view" title="Xem chi tiết">
-                <span class="material-icons">visibility</span>
-              </button>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button @click="showHistory = false" class="btn btn-secondary">
-            <span class="material-icons">close</span>
+        <div class="flex items-center justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="showHistory = false" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">close</i>
             Đóng
           </button>
         </div>
@@ -669,7 +698,7 @@ const handleKeydown = (event) => {
   // Ctrl + K: Toggle search
   if (event.ctrlKey && event.key === 'k') {
     event.preventDefault()
-    const searchInput = document.querySelector('.search-input')
+    const searchInput = document.querySelector('input[placeholder="Tìm kiếm sản phẩm..."]')
     if (searchInput) {
       searchInput.focus()
     }
@@ -681,10 +710,7 @@ const handleKeydown = (event) => {
     showBarcode.value = !showBarcode.value
     if (showBarcode.value) {
       setTimeout(() => {
-        const barcodeInput = document.querySelector('.barcode-input')
-        if (barcodeInput) {
-          barcodeInput.focus()
-        }
+        barcodeInput.value?.focus()
       }, 100)
     }
   }
@@ -731,1360 +757,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.admin-sales {
-  padding: var(--space-6);
-  background: var(--bg-primary);
-  min-height: 100vh;
-}
 
-.page-header {
-  background: var(--gradient-purple-soft);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8);
-  margin-bottom: var(--space-8);
-  position: relative;
-  overflow: hidden;
-}
-
-.page-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(139, 92, 246, 0.15));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-
-.title-section {
-  flex: 1;
-}
-
-.page-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.page-title .material-icons {
-  font-size: 2rem;
-  color: var(--accent-primary);
-}
-
-.page-subtitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  margin: 0;
-}
-
-.page-subtitle .material-icons {
-  font-size: 1.125rem;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-/* ===== BARCODE SCANNER ===== */
-.barcode-scanner {
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
-  border-top: 2px solid var(--border-primary);
-}
-
-.scanner-input-group {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  max-width: 600px;
-}
-
-.scanner-input-group .material-icons {
-  font-size: 1.5rem;
-  color: var(--accent-primary);
-}
-
-.barcode-input {
-  flex: 1;
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-primary);
-  border: 2px solid var(--accent-primary);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
-  transition: all var(--transition-fast);
-}
-
-.barcode-input:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
-}
-
-/* Slide down transition */
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-down-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.slide-down-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.pos-grid {
-  display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: var(--space-8);
-  height: calc(100vh - 250px);
-}
-
-/* ===== PRODUCT SECTION ===== */
-.product-section {
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-}
-
-.search-section {
-  margin-bottom: var(--space-6);
-}
-
-/* ===== BUTTONS ===== */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-}
-
-.btn .material-icons {
-  font-size: 1.25rem;
-}
-
-.btn-primary {
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn-secondary {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 2px solid var(--border-primary);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--border-medium);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-sm {
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
-}
-
-/* ===== SEARCH BOX ===== */
-.search-box {
-  position: relative;
-  margin-bottom: var(--space-4);
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-tertiary);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
-  background: var(--bg-primary);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  transition: all var(--transition-fast);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
-}
-
-.search-input::placeholder {
-  color: var(--text-tertiary);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-}
-
-.form-control {
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-primary);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition: all var(--transition-fast);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
-}
-
-.form-control::placeholder {
-  color: var(--text-tertiary);
-}
-
-/* ===== PRODUCTS GRID ===== */
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--space-4);
-  flex: 1;
-  overflow-y: auto;
-  padding-right: var(--space-2);
-}
-
-.products-grid::-webkit-scrollbar {
-  width: 6px;
-}
-
-.products-grid::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.products-grid::-webkit-scrollbar-thumb {
-  background: var(--border-primary);
-  border-radius: 3px;
-}
-
-.products-grid::-webkit-scrollbar-thumb:hover {
-  background: var(--border-medium);
-}
-
-.product-card {
-  background: var(--bg-card);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-4);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-}
-
-.product-card:hover {
-  border-color: var(--accent-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.product-card:active {
-  transform: translateY(0);
-}
-
-.product-image {
-  width: 100%;
-  height: 120px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-image .material-icons {
-  font-size: 3rem;
-  color: var(--text-tertiary);
-}
-
-.product-info h3 {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-1) 0;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.product-brand {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.product-price {
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  color: var(--accent-primary);
-  margin: 0;
-}
-
-.product-stock {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  padding: var(--space-1) var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-}
-
-.product-stock.low {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border-color: var(--warning-border);
-}
-
-.product-stock.out {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border-color: var(--error-border);
-}
-
-/* ===== CART SECTION ===== */
-.cart-section {
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-card);
-}
-
-.cart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-6);
-  padding-bottom: var(--space-4);
-  border-bottom: 2px solid var(--border-primary);
-}
-
-.cart-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.cart-items {
-  flex: 1;
-  overflow-y: auto;
-  margin-bottom: var(--space-6);
-}
-
-.cart-items::-webkit-scrollbar {
-  width: 6px;
-}
-
-.cart-items::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.cart-items::-webkit-scrollbar-thumb {
-  background: var(--border-primary);
-  border-radius: 3px;
-}
-
-.cart-items::-webkit-scrollbar-thumb:hover {
-  background: var(--border-medium);
-}
-
-.cart-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-3);
-}
-
-.cart-item:last-child {
-  margin-bottom: 0;
-}
-
-.item-image {
-  width: 50px;
-  height: 50px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.item-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-}
-
-.item-image .material-icons {
-  font-size: 1.5rem;
-  color: var(--text-tertiary);
-}
-
-.item-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.item-info h4 {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-1) 0;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.item-details {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  margin: 0;
-}
-
-.item-price {
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  color: var(--accent-primary);
-  margin: 0;
-}
-
-.item-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.quantity-control {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  padding: var(--space-1);
-}
-
-.quantity-btn {
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.quantity-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.quantity-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.quantity-input {
-  width: 40px;
-  text-align: center;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-}
-
-.quantity-input:focus {
-  outline: none;
-}
-
-.remove-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: var(--error-bg);
-  color: var(--error-text);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.remove-btn:hover {
-  background: var(--error-text);
-  color: var(--color-white);
-}
-
-/* ===== CART SUMMARY ===== */
-.cart-summary {
-  border-top: 2px solid var(--border-primary);
-  padding-top: var(--space-6);
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-}
-
-.summary-row:last-child {
-  margin-bottom: 0;
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--border-primary);
-}
-
-.summary-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-.summary-value {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.total-label {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-}
-
-.total-value {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--accent-primary);
-}
-
-/* ===== DISCOUNT SECTION ===== */
-.discount-section {
-  margin-bottom: var(--space-6);
-}
-
-.discount-input {
-  display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-}
-
-.discount-input input {
-  flex: 1;
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-primary);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-.discount-input input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
-}
-
-.discount-input input::placeholder {
-  color: var(--text-tertiary);
-}
-
-/* ===== PAYMENT SECTION ===== */
-.payment-section {
-  margin-bottom: var(--space-6);
-}
-
-.payment-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-}
-
-.payment-option {
-  padding: var(--space-3) var(--space-4);
-  background: var(--bg-primary);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  text-align: center;
-}
-
-.payment-option:hover {
-  border-color: var(--accent-primary);
-  background: var(--gradient-purple-soft);
-}
-
-.payment-option.active {
-  border-color: var(--accent-primary);
-  background: var(--gradient-primary);
-  color: var(--color-white);
-}
-
-/* ===== CHECKOUT BUTTON ===== */
-.checkout-btn {
-  width: 100%;
-  padding: var(--space-4) var(--space-6);
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  border: none;
-  border-radius: var(--radius-xl);
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-md);
-}
-
-.checkout-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.checkout-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.checkout-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* ===== LOADING ===== */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  color: var(--text-tertiary);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: var(--space-4);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-/* ===== MODALS ===== */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.2s ease-out;
-  padding: var(--space-4);
-}
-
-.modal-content {
-  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(167, 139, 250, 0.05) 100%);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: 0;
-  max-width: 600px;
-  width: 100%;
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.1);
-  animation: slideUp 0.3s ease-out;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  overflow: hidden;
-  position: relative;
-}
-
-.modal-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: var(--gradient-primary);
-  z-index: 1;
-}
-
-.modal-large {
-  max-width: 900px;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 2px solid var(--border-primary);
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, transparent 100%);
-  position: relative;
-  z-index: 0;
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-title .material-icons {
-  font-size: 1.5rem;
-  color: var(--accent-primary);
-}
-
-.modal-close {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: rgba(167, 139, 250, 0.1);
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-  border: 1px solid transparent;
-}
-
-.modal-close:hover {
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  border-color: var(--accent-primary);
-  transform: rotate(90deg) scale(1.1);
-  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
-}
-
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: var(--space-6);
-  background: rgba(167, 139, 250, 0.02);
-}
-
-.modal-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.modal-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.modal-body::-webkit-scrollbar-thumb {
-  background: var(--border-primary);
-  border-radius: 4px;
-}
-
-.modal-body::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
-}
-
-.modal-footer {
-  padding: var(--space-6);
-  border-top: 2px solid var(--border-primary);
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.05) 0%, transparent 100%);
-}
-
-.modal-footer .btn {
-  min-width: 120px;
-  font-weight: var(--font-semibold);
-  transition: all 0.3s ease;
-}
-
-.modal-footer .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.3);
-}
-
-/* Shortcuts Modal */
-.shortcuts-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.shortcut-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(167, 139, 250, 0.05) 100%);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-primary);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.shortcut-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--gradient-primary);
-  transform: scaleY(0);
-  transition: transform 0.3s ease;
-}
-
-.shortcut-item:hover {
-  border-color: var(--accent-primary);
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%);
-  transform: translateX(4px);
-  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.2);
-}
-
-.shortcut-item:hover::before {
-  transform: scaleY(1);
-}
-
-.shortcut-key {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-width: 140px;
-  flex-shrink: 0;
-}
-
-.shortcut-key kbd {
-  padding: var(--space-2) var(--space-4);
-  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(167, 139, 250, 0.1) 100%);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-md);
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.2s ease;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 0.5px;
-  position: relative;
-}
-
-.shortcut-key kbd:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border-color: var(--accent-primary);
-}
-
-.shortcut-key kbd:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-}
-
-.shortcut-description {
-  flex: 1;
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
-  transition: color 0.2s ease;
-}
-
-.shortcut-item:hover .shortcut-description {
-  color: var(--text-primary);
-}
-
-/* History Modal */
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.history-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(167, 139, 250, 0.05) 100%);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-primary);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.history-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--gradient-primary);
-  transform: scaleY(0);
-  transition: transform 0.3s ease;
-}
-
-.history-item:hover {
-  border-color: var(--accent-primary);
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%);
-  transform: translateX(4px);
-  box-shadow: 0 8px 24px rgba(167, 139, 250, 0.25);
-}
-
-.history-item:hover::before {
-  transform: scaleY(1);
-}
-
-.history-icon {
-  width: 56px;
-  height: 56px;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.history-icon::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transform: rotate(45deg);
-  transition: transform 0.6s ease;
-}
-
-.history-item:hover .history-icon::before {
-  transform: rotate(45deg) translate(100%, 100%);
-}
-
-.history-item:hover .history-icon {
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 6px 20px rgba(167, 139, 250, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.history-icon .material-icons {
-  font-size: 1.75rem;
-  color: var(--color-white);
-  position: relative;
-  z-index: 1;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-.history-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-2);
-}
-
-.history-header h4 {
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.history-date {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  padding: var(--space-1) var(--space-3);
-  background: rgba(167, 139, 250, 0.1);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  font-weight: var(--font-medium);
-}
-
-.history-details {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-2);
-}
-
-.history-amount {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  background: linear-gradient(135deg, var(--accent-primary) 0%, rgba(167, 139, 250, 0.8) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 2px 8px rgba(167, 139, 250, 0.3);
-}
-
-.history-payment {
-  font-size: var(--text-xs);
-  color: var(--text-primary);
-  padding: var(--space-2) var(--space-3);
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.15) 0%, rgba(167, 139, 250, 0.05) 100%);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(167, 139, 250, 0.3);
-  font-weight: var(--font-semibold);
-  transition: all 0.2s ease;
-}
-
-.history-item:hover .history-payment {
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.25) 0%, rgba(167, 139, 250, 0.15) 100%);
-  border-color: var(--accent-primary);
-  transform: scale(1.05);
-}
-
-.history-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.item-tag {
-  font-size: var(--text-xs);
-  color: var(--text-primary);
-  padding: var(--space-2) var(--space-3);
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  font-weight: var(--font-medium);
-  transition: all 0.2s ease;
-}
-
-.item-tag:hover {
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.2) 0%, rgba(167, 139, 250, 0.1) 100%);
-  border-color: var(--accent-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.2);
-}
-
-.btn-icon {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: rgba(167, 139, 250, 0.1);
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-  border: 1px solid rgba(167, 139, 250, 0.2);
-}
-
-.btn-icon:hover {
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  border-color: var(--accent-primary);
-  transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.4);
-}
-
-.btn-icon:active {
-  transform: scale(0.95);
-}
-
-.btn-view .material-icons {
-  font-size: 1.25rem;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  color: var(--text-tertiary);
-  text-align: center;
-}
-
-.empty-state .material-icons {
-  font-size: 5rem;
-  margin-bottom: var(--space-4);
-  opacity: 0.3;
-  background: linear-gradient(135deg, var(--accent-primary) 0%, rgba(167, 139, 250, 0.5) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.05);
-  }
-}
-
-.empty-state p {
-  font-size: var(--text-base);
-  margin: 0;
-  font-weight: var(--font-medium);
-  color: var(--text-secondary);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.receipt {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8);
-  max-width: 400px;
-  width: 100%;
-  box-shadow: var(--shadow-xl);
-}
-
-.receipt-header {
-  text-align: center;
-  margin-bottom: var(--space-6);
-  padding-bottom: var(--space-4);
-  border-bottom: 2px solid var(--border-primary);
-}
-
-.receipt-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.receipt-subtitle {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  margin: 0;
-}
-
-.receipt-body {
-  margin-bottom: var(--space-6);
-}
-
-.receipt-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.receipt-item:last-child {
-  border-bottom: none;
-}
-
-.receipt-footer {
-  border-top: 2px solid var(--border-primary);
-  padding-top: var(--space-4);
-}
-
-.receipt-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-4);
-}
-
-.receipt-actions {
-  display: flex;
-  gap: var(--space-3);
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1200px) {
-  .pos-grid {
-    grid-template-columns: 1fr 380px;
-  }
-}
-
-@media (max-width: 1024px) {
-  .pos-grid {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
-  
-  .product-section {
-    height: 60vh;
-  }
-  
-  .cart-section {
-    height: 40vh;
-  }
-}
-
-@media (max-width: 768px) {
-  .admin-sales {
-    padding: var(--space-4) var(--space-2);
-  }
-  
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: var(--space-2);
-  }
-  
-  .payment-options {
-    grid-template-columns: 1fr;
-  }
-  
-  .pos-grid {
-    gap: var(--space-4);
-  }
-}
-</style>

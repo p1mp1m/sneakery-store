@@ -1,267 +1,274 @@
 <template>
-  <div class="admin-shoesoles admin-page">
-    <!-- ===== PAGE HEADER ===== -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">view_day</span>
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
+    <!-- Page Header -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">view_day</i>
             Quản lý Loại đế giày
           </h1>
-          <p class="page-subtitle">
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Quản lý danh sách loại đế giày cho sản phẩm
           </p>
         </div>
-        <div class="header-actions">
-          <button class="btn btn-primary" @click="openCreateModal">
-            <span class="material-icons">add</span>
+        <div class="flex items-center gap-2">
+          <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm" @click="openCreateModal">
+            <i class="material-icons text-base">add</i>
             Thêm Loại đế
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ===== STATS GRID ===== -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-success)">
-          <span class="material-icons">check_circle</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ activeShoeSolesCount }}</div>
-          <div class="stat-label">ĐANG HOẠT ĐỘNG</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-warning)">
-          <span class="material-icons">pause_circle</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ inactiveShoeSolesCount }}</div>
-          <div class="stat-label">TẠM NGƯNG</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-info)">
-          <span class="material-icons">inventory</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ shoeSoles.length }}</div>
-          <div class="stat-label">TỔNG LOẠI ĐẾ</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== FILTERS BAR ===== -->
-    <div class="content-section">
-      <div class="filters-grid">
-        <div class="filter-item wide">
-          <label class="filter-label">
-            <span class="material-icons">search</span>
-            TÌM KIẾM
-          </label>
-          <div class="filter-input-wrapper">
-            <input
-              v-model="searchKeyword"
-              type="text"
-              class="filter-input"
-              placeholder="Tìm theo tên loại đế hoặc slug..."
-            />
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">check_circle</i>
           </div>
         </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ activeShoeSolesCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đang hoạt động</p>
+        </div>
+      </div>
 
-        <div class="filter-item">
-          <label class="filter-label">
-            <span class="material-icons">category</span>
-            TRẠNG THÁI
-          </label>
-          <div class="filter-input-wrapper">
-            <select class="filter-select" v-model="filterStatus">
-              <option value="all">Tất cả</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="inactive">Tạm ngưng</option>
-            </select>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">pause_circle</i>
           </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ inactiveShoeSolesCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Tạm ngưng</p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">inventory</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ shoeSoles.length }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Tổng loại đế</p>
         </div>
       </div>
     </div>
 
-    <!-- ===== TABLE ===== -->
-    <div
-      v-if="!loading && filteredShoeSoles.length > 0"
-      class="table-container"
-    >
-      <table class="admin-table shoesoles-table">
-        <thead>
-          <tr>
-            <th style="width: 6%">ID</th>
-            <th style="width: 20%">Tên loại đế giày</th>
-            <th style="width: 14%">Slug</th>
-            <th style="width: 18%">Trạng thái</th>
-            <th style="width: 14%">Ngày tạo</th>
-            <th style="width: 10%">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="sole in paginatedShoeSoles" :key="sole.id">
-            <td>{{ sole.id }}</td>
-            <td>
-              <strong>{{ sole.name }}</strong>
-              <p v-if="sole.description" class="desc">
-                {{ truncateText(sole.description, 50) }}
-              </p>
-            </td>
-            <td>
-              <code class="code-badge">{{ sole.slug }}</code>
-            </td>
-            <td>
-              <span
-                class="status-badge"
-                :class="sole.isActive ? 'status-active' : 'status-inactive'"
-              >
-                <span class="material-icons">{{
-                  sole.isActive ? "check_circle" : "cancel"
-                }}</span>
-                {{ sole.isActive ? "Hoạt động" : "Tạm ngưng" }}
-              </span>
-            </td>
-            <td>{{ formatDate(sole.createdAt) }}</td>
-            <td>
-              <div class="cell-actions">
-                <button class="btn-icon btn-edit" @click="openEditModal(sole)">
-                  <span class="material-icons">edit</span>
-                </button>
-                <button
-                  class="btn-icon btn-delete"
-                  @click="confirmDelete(sole)"
-                >
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Filters -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">search</i>
+            Tìm kiếm
+          </label>
+          <input
+            v-model="searchKeyword"
+            type="text"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="Tìm theo tên loại đế hoặc slug..."
+          />
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <i class="material-icons text-sm">category</i>
+            Trạng thái
+          </label>
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterStatus">
+            <option value="all">Tất cả</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="inactive">Tạm ngưng</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <!-- ===== EMPTY/LOADING ===== -->
-    <div v-else-if="loading" class="admin-loading">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">Đang tải dữ liệu...</p>
+    <!-- Loading State -->
+    <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
     </div>
-    <div v-else class="admin-empty-state">
-      <div class="empty-state-icon">
-        <span class="material-icons">view_day</span>
+
+    <!-- Empty State -->
+    <div v-else-if="filteredShoeSoles.length === 0" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">view_day</i>
       </div>
-      <h3 class="empty-state-title">Không có loại đế nào</h3>
-      <p class="empty-state-description">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Không có loại đế nào</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-4">
         Bắt đầu thêm loại đế đầu tiên cho cửa hàng của bạn
       </p>
-      <button class="btn btn-primary" @click="openCreateModal">
-        <span class="material-icons">add</span>
+      <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm" @click="openCreateModal">
+        <i class="material-icons text-base">add</i>
         Thêm Loại đế
       </button>
     </div>
 
-    <!-- ===== PAGINATION ===== -->
-    <div v-if="totalPages > 1" class="table-pagination">
-      <button
-        class="pagination-btn"
-        :disabled="currentPage === 1"
-        @click="currentPage--"
-      >
-        <span class="material-icons">chevron_left</span> Trước
-      </button>
-      <div class="pagination-info">
-        Trang {{ currentPage }} / {{ totalPages }}
+    <!-- Table -->
+    <div v-else class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-900/50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">ID</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tên loại đế giày</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Slug</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Ngày tạo</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="sole in paginatedShoeSoles" :key="sole.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ sole.id }}</td>
+              <td class="px-4 py-4">
+                <strong class="text-sm font-medium text-gray-900 dark:text-gray-100 block">{{ sole.name }}</strong>
+                <p v-if="sole.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ truncateText(sole.description, 50) }}
+                </p>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100">{{ sole.slug }}</code>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span
+                  class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full"
+                  :class="sole.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'"
+                >
+                  <i class="material-icons text-sm">{{
+                    sole.isActive ? "check_circle" : "cancel"
+                  }}</i>
+                  {{ sole.isActive ? "Hoạt động" : "Tạm ngưng" }}
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{{ formatDate(sole.createdAt) }}</td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" @click="openEditModal(sole)">
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+                  <button
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    @click="confirmDelete(sole)"
+                  >
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <button
-        class="pagination-btn"
-        :disabled="currentPage === totalPages"
-        @click="currentPage++"
-      >
-        Sau <span class="material-icons">chevron_right</span>
-      </button>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="flex items-center justify-between gap-4 px-4 py-3 mt-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          Trang {{ currentPage }} / {{ totalPages }}
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="currentPage === 1"
+            @click="currentPage--"
+          >
+            <i class="material-icons text-base">chevron_left</i>
+            Trước
+          </button>
+          <button
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="currentPage === totalPages"
+            @click="currentPage++"
+          >
+            Sau
+            <i class="material-icons text-base">chevron_right</i>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- ===== AURORA MODAL ===== -->
-    <div v-if="showModal" class="aurora-modal-overlay" @click="closeModal">
-      <div class="aurora-modal" @click.stop>
-        <div class="aurora-modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons">{{
+    <!-- Create/Edit Modal -->
+    <div v-if="showModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">{{
               isEditMode ? "edit" : "add"
-            }}</span>
+            }}</i>
             {{ isEditMode ? "Chỉnh sửa Loại đế" : "Thêm Loại đế mới" }}
           </h2>
-          <button class="modal-close" @click="closeModal">
-            <span class="material-icons">close</span>
+          <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" @click="closeModal">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
 
-        <div class="aurora-modal-body">
-          <form @submit.prevent="saveShoeSole">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">TÊN LOẠI ĐẾ *</label>
+        <div class="p-4">
+          <form @submit.prevent="saveShoeSole" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tên loại đế *</label>
                 <input
                   v-model="formData.name"
                   type="text"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="VD: Đế cao su, Đế EVA..."
                   @input="generateSlug"
                   required
                 />
               </div>
-              <div class="form-group">
-                <label class="form-label">SLUG *</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Slug *</label>
                 <input
                   v-model="formData.slug"
                   type="text"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="vd: de-cao-su, de-eva..."
                   required
                 />
               </div>
             </div>
 
-            <div class="form-group full">
-              <label class="form-label">MÔ TẢ</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Mô tả</label>
               <textarea
-                class="form-textarea"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 v-model="formData.description"
                 placeholder="Nhập mô tả về loại đế..."
                 rows="3"
               ></textarea>
             </div>
 
-            <div class="form-check">
+            <div class="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="isActive"
                 v-model="formData.isActive"
-                class="form-check-input"
+                class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
-              <label for="isActive" class="form-check-label"
-                >Kích hoạt loại đế</label
-              >
+              <label for="isActive" class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                Kích hoạt loại đế
+              </label>
             </div>
 
-            <div class="form-actions">
-              <button type="button" class="btn btn-outline" @click="closeModal">
-                <span class="material-icons">close</span> Hủy
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" @click="closeModal">
+                <i class="material-icons text-base">close</i>
+                Hủy
               </button>
               <button
                 type="submit"
-                class="btn btn-primary"
+                class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="saving"
-                :class="{ 'btn-loading': saving }"
               >
-                <span class="material-icons">{{
+                <i class="material-icons text-base" :class="{ 'animate-spin': saving }">{{
                   saving ? "hourglass_empty" : "save"
-                }}</span>
+                }}</i>
                 {{ saving ? "Đang lưu..." : "Lưu" }}
               </button>
             </div>
@@ -499,573 +506,5 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.page-title .material-icons {
-  font-size: 2rem;
-  color: var(--accent-primary);
-  animation: pulse 2s ease-in-out infinite;
-}
 
-/* ===== STATS GRID (Aurora v2) ===== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.2rem;
-  margin-top: 1.5rem;
-}
 
-/* Mỗi card thống kê */
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(122, 92, 255, 0.15);
-}
-
-/* Icon trái */
-.stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  background: var(
-    --gradient-primary,
-    linear-gradient(135deg, #7a5cff, #9f6bff)
-  );
-  flex-shrink: 0;
-}
-
-.stat-icon .material-icons {
-  font-size: 26px;
-  color: #fff;
-}
-
-/* Nội dung phải */
-.stat-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.3;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.stat-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* ===== FILTER SECTION ===== */
-.content-section {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-}
-
-.filters-grid {
-  display: flex;
-  align-items: flex-end;
-  gap: 1.5rem;
-  flex-wrap: nowrap;
-}
-
-/* Mỗi ô lọc */
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 220px; /* Mặc định kích thước cho ô trạng thái */
-}
-
-.filter-item.wide {
-  flex: 1; /* Ô tìm kiếm giãn hết phần còn lại */
-  min-width: 350px;
-}
-
-/* Label */
-.filter-label {
-  display: flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  gap: 4px;
-}
-
-.filter-label .material-icons {
-  font-size: 16px;
-  opacity: 0.8;
-}
-
-/* Ô nhập chung */
-.filter-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
-}
-
-.filter-input-wrapper:focus-within {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.25);
-}
-
-/* Input text */
-.filter-input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 0.6rem 0.75rem;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-/* Dropdown */
-.filter-select {
-  width: 100%;
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 0.6rem 0.75rem;
-  font-size: 14px;
-  color: var(--text-primary);
-  appearance: none;
-  cursor: pointer;
-}
-
-.filter-select option {
-  color: #000;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .filters-grid {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .filter-item,
-  .filter-item.wide {
-    flex: 1;
-    width: 100%;
-  }
-}
-
-.brand-desc {
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-  margin: 0;
-}
-
-/* ===== OVERLAY ===== */
-.aurora-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 10, 20, 0.65);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-
-/* ===== MODAL ===== */
-.aurora-modal {
-  width: 480px;
-  background: linear-gradient(145deg, #141726 0%, #1a1f33 100%);
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-  animation: fadeInUp 0.25s ease;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===== HEADER ===== */
-.aurora-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(135deg, #2c235a, #4a2e88);
-  padding: 1rem 1.25rem;
-  color: #fff;
-  font-weight: 600;
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  font-size: 1.1rem;
-  gap: 0.5rem;
-}
-
-.modal-title .material-icons {
-  font-size: 20px;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  color: #fff;
-  opacity: 0.8;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.modal-close:hover {
-  opacity: 1;
-}
-
-/* ===== BODY ===== */
-.aurora-modal-body {
-  padding: 1.25rem 1.5rem 1.5rem;
-}
-
-.form-row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.form-group {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full {
-  width: 100%;
-  margin-bottom: 1rem;
-}
-
-/* Label */
-.form-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary, #aeb3c1);
-  margin-bottom: 6px;
-}
-
-/* Input / Textarea */
-.form-input,
-.form-textarea {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 0.65rem 0.75rem;
-  color: #fff;
-  font-size: 14px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: #7a5cff;
-  box-shadow: 0 0 0 2px rgba(122, 92, 255, 0.25);
-}
-
-/* Checkbox */
-.form-check {
-  display: flex;
-  align-items: center;
-  margin: 0.5rem 0 1.5rem;
-  gap: 0.5rem;
-}
-
-.form-check-input {
-  accent-color: #7a5cff;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.form-check-label {
-  color: #cfd3e1;
-  font-size: 14px;
-}
-
-/* Buttons */
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-.btn {
-  border-radius: 8px;
-  padding: 0.6rem 1.1rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-/* Hủy */
-.btn-outline {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ccc;
-}
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Lưu */
-.btn-primary {
-  background: linear-gradient(135deg, #7a5cff, #9f6bff);
-  color: white;
-  border: none;
-  box-shadow: 0 0 12px rgba(122, 92, 255, 0.3);
-}
-.btn-primary:hover {
-  box-shadow: 0 0 18px rgba(122, 92, 255, 0.45);
-  transform: translateY(-1px);
-}
-
-/* ===== TABLE LAYOUT ===== */
-.table-container {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  overflow: hidden;
-}
-
-/* Bảng chính */
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; /* ⚡ Giữ cột cố định, không lệch khi text khác độ dài */
-  font-size: 15.5px; /* 🔍 Tăng cỡ chữ bảng */
-  line-height: 1.6;
-}
-
-.admin-table thead {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.admin-table th {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-secondary);
-  padding: 1rem; /* ⬆ tăng padding cho cân đối hơn */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* Dòng dữ liệu */
-.admin-table td {
-  padding: 1rem;
-  color: #e2e6f0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  vertical-align: middle;
-}
-
-.admin-table tr:hover td {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* ===== Độ rộng các cột cố định (chuẩn cho toàn hệ thống) ===== */
-.admin-table th:nth-child(1),
-.admin-table td:nth-child(1) {
-  text-align: center;
-}
-
-.admin-table th:nth-child(2),
-.admin-table td:nth-child(2) {
-  text-align: center;
-}
-
-.admin-table th:nth-child(3),
-.admin-table td:nth-child(3),
-.admin-table th:nth-child(4),
-.admin-table td:nth-child(4),
-.admin-table th:nth-child(5),
-.admin-table td:nth-child(5),
-.admin-table th:nth-child(6),
-.admin-table td:nth-child(6) {
-  text-align: center;
-}
-
-/* ===== Mô tả phụ ===== */
-.desc,
-.brand-desc {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.65);
-  margin-top: 3px;
-  line-height: 1.4;
-}
-
-/* ===== Code badge ===== */
-.code-badge {
-  background: rgba(122, 92, 255, 0.12);
-  color: #b49cff;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-family: var(--font-mono);
-}
-
-/* ===== Status badge ===== */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.status-active {
-  color: #79ffb0;
-  border-color: rgba(121, 255, 176, 0.25);
-}
-
-.status-inactive {
-  color: #ff8a8a;
-  border-color: rgba(255, 138, 138, 0.25);
-}
-
-.status-badge .material-icons {
-  font-size: 17px;
-}
-
-/* ===== Action buttons ===== */
-.cell-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.btn-icon {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 6px;
-  cursor: pointer;
-  color: #d5d9e4;
-  transition: all 0.2s ease;
-}
-
-.btn-icon:hover {
-  background: rgba(122, 92, 255, 0.15);
-  color: #fff;
-}
-
-/* ===== Tăng tương phản đầu bảng ===== */
-.admin-table thead th {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-/* ===== DESCRIPTION BELOW NAME ===== */
-.desc {
-  color: var(--text-tertiary);
-  font-size: 13px;
-  margin-top: 2px;
-}
-
-/* ===== CODE BADGE ===== */
-.code-badge {
-  background: rgba(122, 92, 255, 0.1);
-  color: #9f83ff;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-}
-
-/* ===== STATUS BADGE ===== */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.status-active {
-  color: #79ffb0;
-  border-color: rgba(121, 255, 176, 0.2);
-}
-.status-inactive {
-  color: #ff8a8a;
-  border-color: rgba(255, 138, 138, 0.2);
-}
-
-.status-badge .material-icons {
-  font-size: 16px;
-}
-
-/* ===== ACTION BUTTONS ===== */
-.cell-actions {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-icon {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 6px;
-  cursor: pointer;
-  color: #d5d9e4;
-  transition: all 0.2s ease;
-}
-
-.btn-icon:hover {
-  background: rgba(122, 92, 255, 0.15);
-  color: #fff;
-}
-</style>

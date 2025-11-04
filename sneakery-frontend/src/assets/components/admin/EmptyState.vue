@@ -1,13 +1,17 @@
 <template>
-  <div class="empty-state animate-fade-up">
-    <div class="empty-icon">
-      <span class="material-icons">{{ icon }}</span>
+  <div class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+      <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">{{ icon }}</i>
     </div>
-    <h3 class="empty-title">{{ title }}</h3>
-    <p class="empty-description">{{ description }}</p>
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ title }}</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">{{ description }}</p>
     <slot name="action">
-      <button v-if="actionText" @click="$emit('action')" class="btn btn-primary">
-        <span v-if="actionIcon" class="material-icons">{{ actionIcon }}</span>
+      <button 
+        v-if="actionText" 
+        @click="$emit('action')" 
+        class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+      >
+        <i v-if="actionIcon" class="material-icons text-base">{{ actionIcon }}</i>
         {{ actionText }}
       </button>
     </slot>
@@ -41,93 +45,6 @@ defineProps({
 defineEmits(['action'])
 </script>
 
-<style scoped>
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  padding: var(--space-16) var(--space-8);
-  background: var(--card-bg);
-  border: 1px dashed var(--border-primary);
-  border-radius: var(--radius-2xl);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  text-align: center;
-  min-height: 400px;
-}
 
-.empty-icon {
-  width: 120px;
-  height: 120px;
-  border-radius: var(--radius-full);
-  background: var(--gradient-purple-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--space-4);
-}
 
-.empty-icon .material-icons {
-  font-size: 4rem;
-  color: var(--accent-primary);
-  opacity: 0.6;
-}
-
-.empty-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.empty-description {
-  font-size: var(--text-base);
-  color: var(--text-tertiary);
-  max-width: 400px;
-  line-height: var(--leading-relaxed);
-  margin: 0;
-}
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-up {
-  animation: fade-up 0.6s ease-out;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .empty-state {
-    padding: var(--space-12) var(--space-4);
-    min-height: 300px;
-  }
-  
-  .empty-icon {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .empty-icon .material-icons {
-    font-size: 3rem;
-  }
-  
-  .empty-title {
-    font-size: var(--text-xl);
-  }
-  
-  .empty-description {
-    font-size: var(--text-sm);
-  }
-}
-</style>
 

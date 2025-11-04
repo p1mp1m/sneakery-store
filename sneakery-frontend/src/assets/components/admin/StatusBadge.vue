@@ -1,7 +1,16 @@
 <template>
-  <span class="status-badge" :class="`status-${status}`">
-    <span v-if="showIcon" class="material-icons">{{ icon }}</span>
-    {{ text }}
+  <span 
+    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full"
+    :class="{
+      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': ['active', 'approved', 'completed', 'delivered', 'in-stock'].includes(status),
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': ['pending', 'in-progress', 'processing', 'scheduled', 'low-stock', 'upcoming'].includes(status),
+      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': ['inactive', 'rejected', 'cancelled', 'failed', 'expired', 'out-of-stock'].includes(status),
+      'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': ['shipped', 'sent'].includes(status),
+      'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': ['draft'].includes(status)
+    }"
+  >
+    <i v-if="showIcon" class="material-icons text-sm">{{ icon }}</i>
+    {{ text || status }}
   </span>
 </template>
 
@@ -57,80 +66,6 @@ const icon = computed(() => {
 })
 </script>
 
-<style scoped>
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1-5) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  border: 1px solid;
-}
 
-.status-badge .material-icons {
-  font-size: 0.875rem;
-}
 
-/* Status Colors */
-.status-active,
-.status-approved,
-.status-completed,
-.status-delivered,
-.status-in-stock {
-  background: var(--success-bg);
-  color: var(--success-text);
-  border-color: var(--success-border);
-}
-
-.status-inactive,
-.status-cancelled,
-.status-rejected,
-.status-failed,
-.status-out-of-stock {
-  background: var(--error-bg);
-  color: var(--error-text);
-  border-color: var(--error-border);
-}
-
-.status-pending,
-.status-processing,
-.status-in-progress,
-.status-scheduled,
-.status-low-stock {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-  border-color: var(--warning-border);
-}
-
-.status-draft,
-.status-upcoming,
-.status-sent,
-.status-shipped {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border-color: var(--info-border);
-}
-
-.status-expired {
-  background: rgba(100, 116, 139, 0.1);
-  color: var(--text-tertiary);
-  border-color: var(--border-primary);
-}
-
-/* Animated statuses */
-.status-processing .material-icons,
-.status-in-progress .material-icons {
-  animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-</style>
 

@@ -74,13 +74,6 @@ const handleToggle = async () => {
 }
 </script>
 
-<style scoped>
-.el-button {
-  transition: all 0.3s ease;
-}
 
-.el-button:hover {
-  transform: scale(1.05);
-}
-</style>
+
 

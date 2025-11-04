@@ -1,18 +1,18 @@
 <template>
-  <div class="admin-brands admin-page">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- ===== PAGE HEADER ===== -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">local_offer</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">local_offer</i>
             Quản lý Thương hiệu
           </h1>
-          <p class="page-subtitle">Quản lý danh sách thương hiệu sản phẩm</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quản lý danh sách thương hiệu sản phẩm</p>
         </div>
-        <div class="header-actions">
-          <button class="btn btn-primary" @click="openCreateModal">
-            <span class="material-icons">add</span>
+        <div class="flex items-center gap-2">
+          <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm" @click="openCreateModal">
+            <i class="material-icons text-base">add</i>
             Thêm Thương hiệu
           </button>
         </div>
@@ -20,249 +20,244 @@
     </div>
 
     <!-- ===== STATS GRID ===== -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-success)">
-          <span class="material-icons">check_circle</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">check_circle</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ activeBrandsCount }}</div>
-          <div class="stat-label">ĐANG HOẠT ĐỘNG</div>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-warning)">
-          <span class="material-icons">pause_circle</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ inactiveBrandsCount }}</div>
-          <div class="stat-label">TẠM NGƯNG</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ activeBrandsCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Đang hoạt động</p>
         </div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-info)">
-          <span class="material-icons">inventory</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">pause_circle</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ brands.length }}</div>
-          <div class="stat-label">TỔNG THƯƠNG HIỆU</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ inactiveBrandsCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Tạm ngưng</p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">inventory</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ brands.length }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Tổng thương hiệu</p>
         </div>
       </div>
     </div>
 
     <!-- ===== FILTERS BAR ===== -->
-    <div class="content-section">
-      <div class="filters-grid">
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
         <!-- Ô tìm kiếm -->
-        <div class="filter-item wide">
-          <label class="filter-label">
-            <span class="material-icons">search</span>
-            TÌM KIẾM
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1 uppercase">
+            <i class="material-icons text-sm">search</i>
+            Tìm kiếm
           </label>
-          <div class="filter-input-wrapper">
-            <input
-              v-model="searchKeyword"
-              type="text"
-              class="filter-input"
-              placeholder="Tìm theo tên thương hiệu hoặc slug..."
-            />
-          </div>
+          <input
+            v-model="searchKeyword"
+            type="text"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="Tìm theo tên thương hiệu hoặc slug..."
+          />
         </div>
 
         <!-- Ô trạng thái -->
-        <div class="filter-item">
-          <label class="filter-label">
-            <span class="material-icons">category</span>
-            TRẠNG THÁI
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1 uppercase">
+            <i class="material-icons text-sm">category</i>
+            Trạng thái
           </label>
-          <div class="filter-input-wrapper">
-            <select class="filter-select" v-model="filterStatus">
-              <option value="all">Tất cả</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="inactive">Tạm ngưng</option>
-            </select>
-          </div>
+          <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterStatus">
+            <option value="all">Tất cả</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="inactive">Tạm ngưng</option>
+          </select>
         </div>
       </div>
     </div>
 
     <!-- ===== LOADING STATE ===== -->
-    <div v-if="loading" class="admin-loading">
-      <div class="loading-spinner"></div>
-      <p class="loading-text">Đang tải dữ liệu...</p>
+    <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
     </div>
 
     <!-- ===== EMPTY STATE ===== -->
-    <div v-else-if="filteredBrands.length === 0" class="admin-empty-state">
-      <div class="empty-state-icon">
-        <span class="material-icons">local_offer</span>
+    <div v-else-if="filteredBrands.length === 0" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">local_offer</i>
       </div>
-      <h3 class="empty-state-title">Không có thương hiệu nào</h3>
-      <p class="empty-state-description">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Không có thương hiệu nào</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
         Bắt đầu thêm thương hiệu đầu tiên cho cửa hàng của bạn
       </p>
-      <button class="btn btn-primary" @click="openCreateModal">
-        <span class="material-icons">add</span>
+      <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium" @click="openCreateModal">
+        <i class="material-icons text-base">add</i>
         Thêm Thương hiệu
       </button>
     </div>
 
-    <!-- ===== BRANDS TABLE (Aurora Style) ===== -->
-    <div v-if="!loading && filteredBrands.length > 0" class="table-container">
-      <table class="admin-table brands-table">
-        <thead>
-          <tr>
-            <th style="width: 6%">ID</th>
-            <th style="width: 12%">Logo</th>
-            <th style="width: 20%">Tên thương hiệu</th>
-            <th style="width: 14%">Slug</th>
-            <th style="width: 16%">Website</th>
-            <th style="width: 18%">Trạng thái</th>
-            <th style="width: 14%">Ngày tạo</th>
-            <th style="width: 10%">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="brand in paginatedBrands" :key="brand.id">
-            <td class="text-center">{{ brand.id }}</td>
+    <!-- ===== BRANDS TABLE ===== -->
+    <div v-if="!loading && filteredBrands.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[6%]">ID</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[12%]">Logo</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[20%]">Tên thương hiệu</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[14%]">Slug</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[16%]">Website</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[18%]">Trạng thái</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[14%]">Ngày tạo</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-[10%]">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="brand in paginatedBrands" :key="brand.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+              <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 text-center">{{ brand.id }}</td>
 
-            <!-- Logo -->
-            <td>
-              <div class="brand-logo">
-                <img
-                  v-if="brand.logoUrl"
-                  :src="brand.logoUrl"
-                  :alt="brand.name"
-                  @error="handleImageError"
-                />
-                <div v-else class="logo-placeholder">
-                  <span class="material-icons">local_offer</span>
+              <!-- Logo -->
+              <td class="px-4 py-3">
+                <div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                  <img
+                    v-if="brand.logoUrl"
+                    :src="brand.logoUrl"
+                    :alt="brand.name"
+                    @error="handleImageError"
+                    class="w-full h-full object-contain"
+                  />
+                  <i v-else class="material-icons text-gray-400 dark:text-gray-500">local_offer</i>
                 </div>
-              </div>
-            </td>
+              </td>
 
-            <!-- Tên + mô tả -->
-            <td>
-              <strong>{{ brand.name }}</strong>
-              <p v-if="brand.description" class="desc">
-                {{ truncateText(brand.description, 50) }}
-              </p>
-            </td>
+              <!-- Tên + mô tả -->
+              <td class="px-4 py-3">
+                <div class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ brand.name }}</div>
+                <p v-if="brand.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ truncateText(brand.description, 50) }}
+                </p>
+              </td>
 
-            <!-- Slug -->
-            <td>
-              <code class="code-badge">{{ brand.slug }}</code>
-            </td>
+              <!-- Slug -->
+              <td class="px-4 py-3">
+                <code class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded font-mono">{{ brand.slug }}</code>
+              </td>
 
-            <!-- Website -->
-            <td>
-              <a
-                v-if="brand.websiteUrl"
-                :href="brand.websiteUrl"
-                target="_blank"
-                class="website-link"
-              >
-                <span class="material-icons">link</span>
-                {{ truncateText(brand.websiteUrl, 25) }}
-              </a>
-              <span v-else class="text-muted">—</span>
-            </td>
+              <!-- Website -->
+              <td class="px-4 py-3">
+                <a
+                  v-if="brand.websiteUrl"
+                  :href="brand.websiteUrl"
+                  target="_blank"
+                  class="flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                >
+                  <i class="material-icons text-sm">link</i>
+                  {{ truncateText(brand.websiteUrl, 25) }}
+                </a>
+                <span v-else class="text-xs text-gray-400 dark:text-gray-500">—</span>
+              </td>
 
-            <!-- Trạng thái -->
-            <td>
-              <span
-                class="status-badge"
-                :class="brand.isActive ? 'status-active' : 'status-inactive'"
-              >
-                <span class="material-icons">
-                  {{ brand.isActive ? "check_circle" : "cancel" }}
+              <!-- Trạng thái -->
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full" :class="brand.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'">
+                  <i class="material-icons text-sm">{{ brand.isActive ? "check_circle" : "cancel" }}</i>
+                  {{ brand.isActive ? "Hoạt động" : "Tạm ngưng" }}
                 </span>
-                {{ brand.isActive ? "Hoạt động" : "Tạm ngưng" }}
-              </span>
-            </td>
+              </td>
 
-            <!-- Ngày tạo -->
-            <td>{{ formatDate(brand.createdAt) }}</td>
+              <!-- Ngày tạo -->
+              <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ formatDate(brand.createdAt) }}</td>
 
-            <!-- Thao tác -->
-            <td>
-              <div class="cell-actions">
-                <button
-                  class="btn-icon btn-edit"
-                  @click="openEditModal(brand)"
-                  title="Chỉnh sửa"
-                >
-                  <span class="material-icons">edit</span>
-                </button>
-                <button
-                  class="btn-icon btn-delete"
-                  @click="confirmDelete(brand)"
-                  title="Xóa"
-                >
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <!-- Thao tác -->
+              <td class="px-4 py-3 text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <button
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                    @click="openEditModal(brand)"
+                    title="Chỉnh sửa"
+                  >
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+                  <button
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    @click="confirmDelete(brand)"
+                    title="Xóa"
+                  >
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- ===== PAGINATION ===== -->
-    <div v-if="totalPages > 1" class="table-pagination">
-      <button
-        class="pagination-btn"
-        :disabled="currentPage === 1"
-        @click="currentPage--"
-      >
-        <span class="material-icons">chevron_left</span>
-        Trước
-      </button>
+    <div v-if="totalPages > 1" class="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex items-center gap-2">
+        <button
+          class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="currentPage === 1"
+          @click="currentPage--"
+        >
+          <i class="material-icons text-base">chevron_left</i>
+          Trước
+        </button>
 
-      <div class="pagination-info">
-        Trang {{ currentPage }} / {{ totalPages }}
+        <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">Trang {{ currentPage }} / {{ totalPages }}</span>
+
+        <button
+          class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="currentPage === totalPages"
+          @click="currentPage++"
+        >
+          Sau
+          <i class="material-icons text-base">chevron_right</i>
+        </button>
       </div>
-
-      <button
-        class="pagination-btn"
-        :disabled="currentPage === totalPages"
-        @click="currentPage++"
-      >
-        Sau
-        <span class="material-icons">chevron_right</span>
-      </button>
     </div>
 
     <!-- ===== CREATE/EDIT MODAL ===== -->
-    <!-- ===== AURORA MODAL (Thêm / Chỉnh sửa Thương hiệu) ===== -->
-    <div v-if="showModal" class="aurora-modal-overlay" @click="closeModal">
-      <div class="aurora-modal aurora-modal-lg" @click.stop>
+    <div v-if="showModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
         <!-- Header -->
-        <div class="aurora-modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons">
-              {{ isEditMode ? "edit" : "add" }}
-            </span>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">{{ isEditMode ? "edit" : "add" }}</i>
             {{ isEditMode ? "Chỉnh sửa Thương hiệu" : "Thêm Thương hiệu mới" }}
           </h2>
-          <button class="modal-close" @click="closeModal">
-            <span class="material-icons">close</span>
+          <button class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" @click="closeModal">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
 
         <!-- Body -->
-        <div class="aurora-modal-body">
-          <form @submit.prevent="saveBrand">
-            <div class="form-row">
+        <div class="p-4">
+          <form @submit.prevent="saveBrand" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Tên thương hiệu -->
-              <div class="form-group">
-                <label class="form-label">TÊN THƯƠNG HIỆU *</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Tên thương hiệu *</label>
                 <input
                   v-model="formData.name"
                   type="text"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="VD: Nike, Adidas..."
                   @input="generateSlug"
                   required
@@ -270,12 +265,12 @@
               </div>
 
               <!-- Slug -->
-              <div class="form-group">
-                <label class="form-label">SLUG *</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Slug *</label>
                 <input
                   v-model="formData.slug"
                   type="text"
-                  class="form-input"
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="vd: nike, adidas..."
                   required
                 />
@@ -283,32 +278,32 @@
             </div>
 
             <!-- Logo -->
-            <div class="form-group full">
-              <label class="form-label">URL LOGO</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">URL Logo</label>
               <input
                 v-model="formData.logoUrl"
                 type="url"
-                class="form-input"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="https://example.com/logo.png"
               />
             </div>
 
             <!-- Website -->
-            <div class="form-group full">
-              <label class="form-label">WEBSITE</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Website</label>
               <input
                 v-model="formData.websiteUrl"
                 type="url"
-                class="form-input"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="https://example.com"
               />
             </div>
 
             <!-- Mô tả -->
-            <div class="form-group full">
-              <label class="form-label">MÔ TẢ</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Mô tả</label>
               <textarea
-                class="form-textarea"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 v-model="formData.description"
                 placeholder="Nhập mô tả về thương hiệu..."
                 rows="3"
@@ -316,32 +311,30 @@
             </div>
 
             <!-- Kích hoạt -->
-            <div class="form-check">
+            <div class="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="isActive"
                 v-model="formData.isActive"
-                class="form-check-input"
+                class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
               />
-              <label for="isActive" class="form-check-label">
+              <label for="isActive" class="text-sm text-gray-700 dark:text-gray-300">
                 Kích hoạt thương hiệu
               </label>
             </div>
 
             <!-- Nút hành động -->
-            <div class="form-actions">
-              <button type="button" class="btn btn-outline" @click="closeModal">
-                <span class="material-icons">close</span> Hủy
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" @click="closeModal">
+                <i class="material-icons text-base">close</i>
+                Hủy
               </button>
               <button
                 type="submit"
-                class="btn btn-primary"
+                class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="saving"
-                :class="{ 'btn-loading': saving }"
               >
-                <span class="material-icons">
-                  {{ saving ? "hourglass_empty" : "save" }}
-                </span>
+                <i class="material-icons text-base" :class="{ 'animate-spin': saving }">{{ saving ? "hourglass_empty" : "save" }}</i>
                 {{ saving ? "Đang lưu..." : "Lưu" }}
               </button>
             </div>
@@ -367,10 +360,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { ElMessage } from "element-plus";
-import { useAdminStore } from "@/stores/admin";
-import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
+import { ref, computed, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin'
+import { ElMessage } from 'element-plus'
+import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 
 const adminStore = useAdminStore();
 
@@ -588,600 +581,5 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-/* ═══════════════════════════════════════════════════════════════════
-   VIEW-SPECIFIC STYLES ONLY
-   All common styles (buttons, forms, tables, modals) use Design System v2.0
-   ═══════════════════════════════════════════════════════════════════ */
-/* ===== STATS GRID (Aurora v2) ===== */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.2rem;
-  margin-top: 1.5rem;
-}
 
-/* Mỗi card thống kê */
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
 
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(122, 92, 255, 0.15);
-}
-
-/* Icon trái */
-.stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  background: var(
-    --gradient-primary,
-    linear-gradient(135deg, #7a5cff, #9f6bff)
-  );
-  flex-shrink: 0;
-}
-
-.stat-icon .material-icons {
-  font-size: 26px;
-  color: #fff;
-}
-
-/* Nội dung phải */
-.stat-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.3;
-}
-
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.stat-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.page-title .material-icons {
-  font-size: 2rem;
-  color: var(--accent-primary);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-/* Brand Logo */
-.brand-logo {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--dark-bg-glass-light);
-  border: 1px solid var(--dark-border-primary);
-}
-
-.brand-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.logo-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  font-size: 1.5rem;
-}
-
-/* Brand Info */
-.brand-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.brand-info strong {
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-}
-
-.brand-desc {
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-  margin: 0;
-}
-
-/* Code Badge */
-.code-badge {
-  background: rgba(167, 139, 250, 0.1);
-  color: var(--primary-light);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-}
-
-/* Website Link */
-.website-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  color: var(--primary-light);
-  text-decoration: none;
-  font-size: var(--text-sm);
-  transition: var(--transition-fast);
-}
-
-.website-link:hover {
-  color: var(--primary-color);
-  text-decoration: underline;
-}
-
-.website-link .material-icons {
-  font-size: 16px;
-}
-
-/* ===== FILTER SECTION (chuẩn Aurora Admin v2) ===== */
-.content-section {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-}
-
-/* Lưới 2 cột filters */
-.filters-grid {
-  display: flex;
-  align-items: flex-end;
-  gap: 1.5rem;
-  flex-wrap: nowrap;
-}
-
-/* Mỗi ô lọc */
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 220px; /* Ô trạng thái cố định */
-}
-
-.filter-item.wide {
-  flex: 1; /* Ô tìm kiếm giãn hết chiều ngang còn lại */
-  min-width: 350px;
-}
-
-/* Label */
-.filter-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.4px;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-}
-
-.filter-label .material-icons {
-  font-size: 16px;
-  opacity: 0.8;
-}
-
-/* Ô nhập và select */
-.filter-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
-}
-
-.filter-input-wrapper:focus-within {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.25);
-}
-
-/* Input text và select thống nhất */
-.filter-input,
-.filter-select {
-  width: 100%;
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 0.6rem 0.75rem;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.filter-select option {
-  color: #000;
-}
-
-/* Responsive (mobile-friendly) */
-@media (max-width: 768px) {
-  .filters-grid {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .filter-item,
-  .filter-item.wide {
-    flex: 1;
-    width: 100%;
-  }
-}
-
-/* ===== OVERLAY ===== */
-.aurora-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 10, 20, 0.65);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-
-/* ===== MODAL ===== */
-.aurora-modal {
-  width: 500px;
-  background: linear-gradient(145deg, #141726 0%, #1a1f33 100%);
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-  animation: fadeInUp 0.25s ease;
-}
-
-.aurora-modal-lg {
-  width: 540px;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ===== HEADER ===== */
-.aurora-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(135deg, #2c235a, #4a2e88);
-  padding: 1rem 1.25rem;
-  color: #fff;
-  font-weight: 600;
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.1rem;
-}
-
-.modal-title .material-icons {
-  font-size: 20px;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  color: #fff;
-  opacity: 0.8;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.modal-close:hover {
-  opacity: 1;
-}
-
-/* ===== BODY ===== */
-.aurora-modal-body {
-  padding: 1.25rem 1.5rem 1.5rem;
-}
-
-.form-row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.form-group {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full {
-  width: 100%;
-  margin-bottom: 1rem;
-}
-
-/* Label */
-.form-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary, #aeb3c1);
-  margin-bottom: 6px;
-}
-
-/* Input / Textarea */
-.form-input,
-.form-textarea {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 0.65rem 0.75rem;
-  color: #fff;
-  font-size: 14px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: #7a5cff;
-  box-shadow: 0 0 0 2px rgba(122, 92, 255, 0.25);
-}
-
-/* Checkbox */
-.form-check {
-  display: flex;
-  align-items: center;
-  margin: 0.5rem 0 1.5rem;
-  gap: 0.5rem;
-}
-
-.form-check-input {
-  accent-color: #7a5cff;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.form-check-label {
-  color: #cfd3e1;
-  font-size: 14px;
-}
-
-/* Buttons */
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-.btn {
-  border-radius: 8px;
-  padding: 0.6rem 1.1rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-/* Hủy */
-.btn-outline {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ccc;
-}
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Lưu */
-.btn-primary {
-  background: linear-gradient(135deg, #7a5cff, #9f6bff);
-  color: white;
-  border: none;
-  box-shadow: 0 0 12px rgba(122, 92, 255, 0.3);
-}
-.btn-primary:hover {
-  box-shadow: 0 0 18px rgba(122, 92, 255, 0.45);
-  transform: translateY(-1px);
-}
-
-/* ===== BẢNG THƯƠNG HIỆU (Aurora Style) ===== */
-.table-container {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  overflow: hidden;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-  font-size: 15px;
-}
-
-.admin-table thead {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.admin-table th {
-  text-align: left;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-secondary);
-  padding: 0.9rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.admin-table td {
-  padding: 0.9rem 1rem;
-  color: #d5d9e4;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  vertical-align: middle;
-  word-break: break-word;
-}
-
-.admin-table tr:hover td {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* ===== Căn chỉnh cột ===== */
-.admin-table th:nth-child(1),
-.admin-table td:nth-child(1) {
-  text-align: center;
-}
-
-.admin-table th:nth-child(2),
-.admin-table td:nth-child(2) {
-  text-align: center;
-}
-.admin-table th:nth-child(3),
-.admin-table td:nth-child(3),
-.admin-table th:nth-child(4),
-.admin-table td:nth-child(4),
-.admin-table th:nth-child(5),
-.admin-table td:nth-child(5),
-.admin-table th:nth-child(6),
-.admin-table td:nth-child(6),
-.admin-table th:nth-child(7),
-.admin-table td:nth-child(7) {
-  text-align: center;
-}
-
-/* ===== Mô tả ngắn ===== */
-.desc {
-  color: var(--text-tertiary);
-  font-size: 13px;
-  margin-top: 2px;
-}
-
-/* ===== Badge code ===== */
-.code-badge {
-  background: rgba(122, 92, 255, 0.1);
-  color: #9f83ff;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-}
-
-/* ===== Trạng thái ===== */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.status-active {
-  color: #79ffb0;
-  border-color: rgba(121, 255, 176, 0.2);
-}
-.status-inactive {
-  color: #ff8a8a;
-  border-color: rgba(255, 138, 138, 0.2);
-}
-
-.status-badge .material-icons {
-  font-size: 16px;
-}
-
-/* ===== Logo ===== */
-.brand-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  margin: 0 auto;
-}
-.brand-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.logo-placeholder {
-  color: var(--text-tertiary);
-}
-
-/* ===== Website Link ===== */
-.website-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #a88eff;
-  text-decoration: none;
-  font-size: 14px;
-}
-.website-link:hover {
-  text-decoration: underline;
-}
-
-/* ===== Nút thao tác ===== */
-.cell-actions {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-icon {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 6px;
-  cursor: pointer;
-  color: #d5d9e4;
-  transition: all 0.2s ease;
-}
-.btn-icon:hover {
-  background: rgba(122, 92, 255, 0.15);
-  color: #fff;
-}
-</style>

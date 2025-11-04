@@ -3,13 +3,13 @@ import { createPinia } from 'pinia' // 👈 1. Import Pinia
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+// Import Tailwind CSS FIRST - before other styles
+import './assets/styles/tailwind.css'
+
 import App from './App.vue'
 import router from './routers/index.js'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-
-// Import custom CSS - Modular Architecture
-import './assets/styles/main.css' // 🎨 Modular CSS Architecture với 25+ files
 
 const app = createApp(App)
 const pinia = createPinia() // 👈 2. Tạo một instance của Pinia
@@ -81,5 +81,12 @@ axios.interceptors.response.use(
 app.use(router)
 app.use(ElementPlus)
 app.use(pinia) // 👈 3. Sử dụng Pinia
+
+// ═══════════════════════════════════════════════════════════════════════
+// 🎨 THEME INITIALIZATION - Apply theme before first render
+// ═══════════════════════════════════════════════════════════════════════
+import { useThemeStore } from '@/stores/theme'
+const themeStore = useThemeStore()
+themeStore.initTheme()
 
 app.mount('#app')

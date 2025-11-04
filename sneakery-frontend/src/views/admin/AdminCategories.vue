@@ -1,26 +1,26 @@
 <template>
-  <div class="admin-page admin-categories">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">category</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">category</i>
             Quản lý danh mục
           </h1>
-          <p class="page-subtitle">Quản lý danh mục sản phẩm với cấu trúc phân cấp</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Quản lý danh mục sản phẩm với cấu trúc phân cấp</p>
         </div>
-        <div class="header-actions">
-          <button @click="handleExport('csv')" class="btn btn-secondary" title="Xuất CSV">
-            <span class="material-icons">download</span>
+        <div class="flex items-center gap-2">
+          <button @click="handleExport('csv')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium" title="Xuất CSV">
+            <i class="material-icons text-base">download</i>
             Xuất CSV
           </button>
-          <button @click="handleExport('json')" class="btn btn-secondary" title="Xuất JSON">
-            <span class="material-icons">file_download</span>
+          <button @click="handleExport('json')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium" title="Xuất JSON">
+            <i class="material-icons text-base">file_download</i>
             Xuất JSON
           </button>
-          <button @click="openCreateModal" class="btn btn-primary">
-            <span class="material-icons">add</span>
+          <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">add</i>
             Thêm danh mục
           </button>
         </div>
@@ -28,247 +28,270 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid animate-fade-in">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-primary);">
-          <span class="material-icons">category</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">category</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ totalCategories }}</div>
-          <div class="stat-label">TỔNG DANH MỤC</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-success);">
-          <span class="material-icons">folder_open</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ rootCategoriesCount }}</div>
-          <div class="stat-label">DANH MỤC GỐC</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ totalCategories }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Tổng danh mục</p>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: var(--gradient-info);">
-          <span class="material-icons">subdirectory_arrow_right</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">folder_open</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-value">{{ childCategoriesCount }}</div>
-          <div class="stat-label">DANH MỤC CON</div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ rootCategoriesCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Danh mục gốc</p>
+        </div>
+      </div>
+      
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">subdirectory_arrow_right</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ childCategoriesCount }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">Danh mục con</p>
         </div>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-container animate-fade-in">
-      <div class="loading-spinner"></div>
-      <p>Đang tải danh sách danh mục...</p>
+    <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải danh sách danh mục...</p>
     </div>
     
     <!-- Empty State -->
-    <div v-else-if="!categories || categories.length === 0" class="empty-state animate-fade-up">
-      <i class="material-icons">category</i>
-      <h3>Chưa có danh mục nào</h3>
-      <p>Nhấn "Thêm danh mục" để tạo danh mục đầu tiên</p>
+    <div v-else-if="!categories || categories.length === 0" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">category</i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có danh mục nào</h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">Nhấn "Thêm danh mục" để tạo danh mục đầu tiên</p>
+      <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium">
+        <i class="material-icons text-base">add</i>
+        Thêm danh mục
+      </button>
     </div>
 
     <!-- Categories List -->
-    <div v-else-if="categories && categories.length > 0" class="categories-list animate-fade-up">
+    <div v-else-if="categories && categories.length > 0" class="space-y-4">
       <!-- Search & Filters -->
-      <div class="filters-section">
-        <div class="search-box">
-          <span class="material-icons search-icon">search</span>
-          <input 
-            type="text" 
-            class="search-input" 
-            v-model="searchQuery"
-            placeholder="Tìm kiếm danh mục..."
-          />
-        </div>
-        
-        <div class="filter-actions">
-          <button 
-            v-if="selectedCategories.length > 0" 
-            @click="handleBulkDelete"
-            class="btn btn-danger btn-sm"
-          >
-            <span class="material-icons">delete</span>
-            Xóa {{ selectedCategories.length }} mục
-          </button>
-          <button @click="expandAll" class="btn btn-secondary btn-sm">
-            <span class="material-icons">unfold_more</span>
-            Mở rộng tất cả
-          </button>
-          <button @click="collapseAll" class="btn btn-secondary btn-sm">
-            <span class="material-icons">unfold_less</span>
-            Thu gọn tất cả
-          </button>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <div class="relative">
+              <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
+              <input 
+                type="text" 
+                class="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                v-model="searchQuery"
+                placeholder="Tìm kiếm danh mục..."
+              />
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button 
+              v-if="selectedCategories.length > 0" 
+              @click="handleBulkDelete"
+              class="flex items-center gap-2 px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-sm font-medium"
+            >
+              <i class="material-icons text-base">delete</i>
+              Xóa {{ selectedCategories.length }} mục
+            </button>
+            <button @click="expandAll" class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+              <i class="material-icons text-base">unfold_more</i>
+              Mở rộng tất cả
+            </button>
+            <button @click="collapseAll" class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+              <i class="material-icons text-base">unfold_less</i>
+              Thu gọn tất cả
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th style="width: 40px;">
-                <input 
-                  type="checkbox" 
-                  @change="toggleSelectAll"
-                  :checked="allSelected"
-                  class="checkbox-input"
-                />
-              </th>
-              <th style="width: 40px;"></th>
-              <th>Tên danh mục</th>
-              <th>Slug</th>
-              <th>Danh mục cha</th>
-              <th class="text-center">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            <template v-for="category in filteredCategories" :key="category.id">
-              <tr class="category-row root" :class="{ 'selected': isSelected(category.id) }">
-                <td>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10">
                   <input 
                     type="checkbox" 
-                    :checked="isSelected(category.id)"
-                    @change="toggleSelect(category.id)"
-                    class="checkbox-input"
+                    @change="toggleSelectAll"
+                    :checked="allSelected"
+                    class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                   />
-                </td>
-                <td>
-                  <button 
-                    v-if="getChildren(category.id).length > 0"
-                    @click="toggleExpand(category.id)"
-                    class="btn-expand"
-                    :class="{ 'expanded': isExpanded(category.id) }"
-                    title="Mở rộng/Thu gọn"
-                  >
-                    <span class="material-icons">{{ isExpanded(category.id) ? 'expand_more' : 'chevron_right' }}</span>
-                  </button>
-                </td>
-                <td>
-                  <div class="category-name">
-                    <span class="material-icons">folder</span>
-                    <strong v-html="highlightSearch(category.name)"></strong>
-                    <span v-if="getChildren(category.id).length > 0" class="child-count">
-                      ({{ getChildren(category.id).length }})
-                    </span>
-                  </div>
-                </td>
-                <td><code v-html="highlightSearch(category.slug)"></code></td>
-                <td><span class="badge badge-secondary">Danh mục gốc</span></td>
-                <td class="text-center">
-                  <div class="action-buttons">
-                    <button 
-                      @click="openEditModal(category)" 
-                      class="btn-icon"
-                      title="Chỉnh sửa"
-                    >
-                      <span class="material-icons">edit</span>
-                    </button>
-                    <button 
-                      @click="confirmDelete(category)" 
-                      class="btn-icon danger"
-                      title="Xóa"
-                    >
-                      <span class="material-icons">delete</span>
-                    </button>
-                  </div>
-                </td>
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10"></th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Tên danh mục</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Slug</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Danh mục cha</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
               </tr>
-              <!-- Child categories - Collapsible -->
-              <template v-if="isExpanded(category.id)">
-                <tr 
-                  v-for="child in getChildren(category.id)" 
-                  :key="child.id"
-                  class="category-row child"
-                  :class="{ 'selected': isSelected(child.id) }"
-                >
-                  <td>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+              <template v-for="category in filteredCategories" :key="category.id">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors" :class="{ 'bg-purple-50 dark:bg-purple-900/20': isSelected(category.id) }">
+                  <td class="px-4 py-3">
                     <input 
                       type="checkbox" 
-                      :checked="isSelected(child.id)"
-                      @change="toggleSelect(child.id)"
-                      class="checkbox-input"
+                      :checked="isSelected(category.id)"
+                      @change="toggleSelect(category.id)"
+                      class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                     />
                   </td>
-                  <td></td>
-                  <td>
-                    <div class="category-name child-indent">
-                      <span class="material-icons">subdirectory_arrow_right</span>
-                      <span v-html="highlightSearch(child.name)"></span>
+                  <td class="px-4 py-3">
+                    <button 
+                      v-if="getChildren(category.id).length > 0"
+                      @click="toggleExpand(category.id)"
+                      class="p-1 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                      title="Mở rộng/Thu gọn"
+                    >
+                      <i class="material-icons text-base">{{ isExpanded(category.id) ? 'expand_more' : 'chevron_right' }}</i>
+                    </button>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <i class="material-icons text-gray-500 dark:text-gray-400 text-lg">folder</i>
+                      <strong class="text-sm text-gray-900 dark:text-gray-100" v-html="highlightSearch(category.name)"></strong>
+                      <span v-if="getChildren(category.id).length > 0" class="text-xs text-gray-500 dark:text-gray-400">
+                        ({{ getChildren(category.id).length }})
+                      </span>
                     </div>
                   </td>
-                  <td><code v-html="highlightSearch(child.slug)"></code></td>
-                  <td>{{ category.name }}</td>
-                  <td class="text-center">
-                    <div class="action-buttons">
+                  <td class="px-4 py-3">
+                    <code class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded font-mono" v-html="highlightSearch(category.slug)"></code>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">Danh mục gốc</span>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <div class="flex items-center justify-center gap-2">
                       <button 
-                        @click="openEditModal(child)" 
-                        class="btn-icon"
+                        @click="openEditModal(category)" 
+                        class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
                         title="Chỉnh sửa"
                       >
-                        <span class="material-icons">edit</span>
+                        <i class="material-icons text-base">edit</i>
                       </button>
                       <button 
-                        @click="confirmDelete(child)" 
-                        class="btn-icon danger"
+                        @click="confirmDelete(category)" 
+                        class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                         title="Xóa"
                       >
-                        <span class="material-icons">delete</span>
+                        <i class="material-icons text-base">delete</i>
                       </button>
                     </div>
                   </td>
                 </tr>
+                <!-- Child categories - Collapsible -->
+                <template v-if="isExpanded(category.id)">
+                  <tr 
+                    v-for="child in getChildren(category.id)" 
+                    :key="child.id"
+                    class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+                    :class="{ 'bg-purple-50 dark:bg-purple-900/20': isSelected(child.id) }"
+                  >
+                    <td class="px-4 py-3">
+                      <input 
+                        type="checkbox" 
+                        :checked="isSelected(child.id)"
+                        @change="toggleSelect(child.id)"
+                        class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                    </td>
+                    <td class="px-4 py-3"></td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2 pl-6">
+                        <i class="material-icons text-gray-500 dark:text-gray-400 text-lg">subdirectory_arrow_right</i>
+                        <span class="text-sm text-gray-900 dark:text-gray-100" v-html="highlightSearch(child.name)"></span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <code class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded font-mono" v-html="highlightSearch(child.slug)"></code>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ category.name }}</td>
+                    <td class="px-4 py-3 text-center">
+                      <div class="flex items-center justify-center gap-2">
+                        <button 
+                          @click="openEditModal(child)" 
+                          class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                          title="Chỉnh sửa"
+                        >
+                          <i class="material-icons text-base">edit</i>
+                        </button>
+                        <button 
+                          @click="confirmDelete(child)" 
+                          class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                          title="Xóa"
+                        >
+                          <i class="material-icons text-base">delete</i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
               </template>
-            </template>
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <!-- Create/Edit Modal -->
-    <div v-if="showModal" class="modal-overlay" @click="closeModal">
-      <div class="modal" @click.stop>
-        <div class="modal-header">
-          <h2 class="modal-title">
+    <div v-if="showModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeModal">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
             {{ isEditMode ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới' }}
           </h2>
-          <button @click="closeModal" class="modal-close">
-            <i class="material-icons">close</i>
+          <button @click="closeModal" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
 
-        <div class="modal-body">
-          <div class="form-group">
-            <label class="form-label required">Tên danh mục</label>
+        <div class="p-4 space-y-4">
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tên danh mục *</label>
             <input 
               v-model="formData.name"
               type="text" 
-              class="form-control"
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="Ví dụ: Giày chạy bộ, Giày bóng rổ..."
               @input="generateSlug"
             />
-            <span v-if="formErrors.name" class="form-error">{{ formErrors.name }}</span>
+            <span v-if="formErrors.name" class="text-xs text-red-600 dark:text-red-400">{{ formErrors.name }}</span>
           </div>
 
-          <div class="form-group">
-            <label class="form-label required">Slug</label>
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Slug *</label>
             <input 
               v-model="formData.slug"
               type="text" 
-              class="form-control"
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               placeholder="giay-chay-bo, giay-bong-ro..."
             />
-            <span v-if="formErrors.slug" class="form-error">{{ formErrors.slug }}</span>
-            <span class="form-help">URL thân thiện (tự động tạo từ tên)</span>
+            <span v-if="formErrors.slug" class="text-xs text-red-600 dark:text-red-400">{{ formErrors.slug }}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">URL thân thiện (tự động tạo từ tên)</span>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Danh mục cha</label>
-            <select v-model="formData.parentId" class="form-control">
+          <div class="flex flex-col gap-2">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Danh mục cha</label>
+            <select v-model="formData.parentId" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
               <option :value="null">-- Không có (danh mục gốc) --</option>
               <option 
                 v-for="cat in rootCategories" 
@@ -279,24 +302,24 @@
                 {{ cat.name }}
               </option>
             </select>
-            <span class="form-help">Để trống nếu đây là danh mục gốc</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Để trống nếu đây là danh mục gốc</span>
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button @click="closeModal" class="btn btn-secondary">
+        <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button @click="closeModal" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             Hủy
           </button>
           <button 
             @click="handleSubmit" 
-            class="btn btn-primary"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             :disabled="submitting"
           >
-            <span v-if="submitting" class="btn-loading"></span>
+            <i class="material-icons text-base" :class="{ 'animate-spin': submitting }">{{ submitting ? 'hourglass_empty' : 'save' }}</i>
             {{ submitting ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Thêm mới') }}
           </button>
+        </div>
       </div>
-    </div>
     </div>
 
     <!-- Delete Confirmation Dialog -->
@@ -682,835 +705,5 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* ═══════════════════════════════════════════════════════════════════════
-   📂 ADMIN CATEGORIES - UNIFIED DARK THEME
-   ═══════════════════════════════════════════════════════════════════════ */
 
-.admin-categories {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: var(--space-8) var(--space-4);
-  min-height: calc(100vh - 4rem);
-}
 
-/* ═══ PAGE HEADER ═══ */
-.page-header {
-  background: var(--card-bg);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-8);
-  margin-bottom: var(--space-8);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-6);
-}
-
-.title-section {
-  flex: 1;
-}
-
-.page-title {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-2) 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.page-title .material-icons {
-  font-size: 2rem;
-  color: var(--accent-primary);
-  animation: rotate 10s linear infinite;
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.page-subtitle {
-  color: var(--text-tertiary);
-  margin: 0;
-  font-size: var(--text-base);
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-3);
-  flex-shrink: 0;
-}
-
-/* ═══ LOADING & EMPTY STATES ═══ */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  padding: var(--space-16) var(--space-8);
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-2xl);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  text-align: center;
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid rgba(167, 139, 250, 0.2);
-  border-top-color: var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-container p {
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  padding: var(--space-16) var(--space-8);
-  background: var(--card-bg);
-  border: 1px dashed var(--border-primary);
-  border-radius: var(--radius-2xl);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  text-align: center;
-}
-
-.empty-state i {
-  font-size: 4rem;
-  color: var(--accent-primary);
-  opacity: 0.5;
-}
-
-.empty-state h3 {
-  font-size: var(--text-xl);
-  color: var(--text-primary);
-  font-weight: var(--font-bold);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.empty-state p {
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-/* ═══ STATS GRID ═══ */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
-}
-
-.stat-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-card);
-  transition: all var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient-purple-soft);
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-glow-purple);
-  border-color: var(--accent-primary);
-}
-
-.stat-card:hover::before {
-  opacity: 1;
-}
-
-.stat-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.stat-icon .material-icons {
-  font-size: 2rem;
-  color: white;
-}
-
-.stat-content {
-  flex: 1;
-  position: relative;
-  z-index: 1;
-}
-
-.stat-value {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  line-height: 1;
-  margin-bottom: var(--space-2);
-}
-
-.stat-label {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-/* ═══ CATEGORIES LIST ═══ */
-.categories-list {
-  background: var(--card-bg);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border-primary);
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-/* ═══ FILTERS SECTION ═══ */
-.filters-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-  background: var(--gradient-purple-soft);
-  flex-wrap: wrap;
-}
-
-.search-box {
-  position: relative;
-  flex: 1;
-  min-width: 280px;
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-4);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-tertiary);
-  font-size: 1.25rem;
-  pointer-events: none;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-12);
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-base);
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.search-input:hover {
-  border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.9);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
-}
-
-.search-input::placeholder {
-  color: var(--text-quaternary);
-}
-
-.filter-actions {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-/* ═══ SEARCH HIGHLIGHT ═══ */
-.search-highlight {
-  background: rgba(234, 179, 8, 0.3);
-  color: #fbbf24;
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-weight: var(--font-semibold);
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  background: transparent;
-}
-
-.table thead {
-  background: var(--table-header-bg);
-  border-bottom: 2px solid var(--border-primary);
-}
-
-/* Table headers use global admin-tables.css styles */
-
-/* Table cells use global admin-tables.css styles */
-
-.table tbody tr {
-  background: rgba(30, 41, 59, 0.4);
-  transition: all var(--transition-fast);
-}
-
-.table tbody tr:hover {
-  background: rgba(167, 139, 250, 0.1);
-  transform: scale(1.002);
-}
-
-.table tbody tr.selected {
-  background: rgba(167, 139, 250, 0.2) !important;
-  border-left: 3px solid var(--accent-primary) !important;
-}
-
-.category-row.root {
-  background: rgba(30, 41, 59, 0.6);
-  border-left: 3px solid var(--accent-primary);
-}
-
-.category-row.child {
-  background: rgba(30, 41, 59, 0.3);
-  border-left: 3px solid var(--text-quaternary);
-}
-
-.category-row.root:hover {
-  background: rgba(167, 139, 250, 0.15);
-  border-left-color: var(--accent-light);
-}
-
-.category-row.child:hover {
-  background: rgba(167, 139, 250, 0.1);
-  border-left-color: var(--accent-primary);
-}
-
-/* ═══ CHECKBOX INPUT ═══ */
-.checkbox-input {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--accent-primary);
-  border-radius: var(--radius-sm);
-}
-
-.category-name {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.category-name.child-indent {
-  padding-left: var(--space-8);
-}
-
-.category-name i {
-  color: var(--accent-primary);
-  font-size: 1.25rem;
-  transition: transform var(--transition-fast);
-}
-
-.category-row:hover .category-name i {
-  transform: scale(1.15);
-}
-
-/* ═══ EXPAND BUTTON ═══ */
-.btn-expand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 1.5px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-expand:hover {
-  background: rgba(167, 139, 250, 0.1);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-  transform: scale(1.1);
-}
-
-.btn-expand.expanded {
-  background: rgba(167, 139, 250, 0.15);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-}
-
-.btn-expand .material-icons {
-  font-size: 1.25rem;
-  transition: transform var(--transition-fast);
-}
-
-.btn-expand.expanded .material-icons {
-  transform: rotate(0deg);
-}
-
-/* ═══ CHILD COUNT BADGE ═══ */
-.child-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 20px;
-  padding: 0 var(--space-2);
-  background: var(--accent-primary);
-  color: white;
-  border-radius: var(--radius-full);
-  font-size: 0.7rem;
-  font-weight: var(--font-bold);
-  margin-left: var(--space-1);
-  box-shadow: 0 2px 6px rgba(167, 139, 250, 0.3);
-}
-
-.text-center {
-  text-align: center;
-}
-
-.action-buttons {
-  display: flex;
-  gap: var(--space-2);
-  justify-content: center;
-}
-
-/* Action buttons use global admin-tables.css styles */
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.badge-secondary {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid var(--info-border);
-}
-
-code {
-  background: var(--bg-tertiary);
-  color: var(--accent-primary);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-sm);
-  font-family: var(--font-mono);
-  border: 1px solid var(--border-primary);
-}
-
-/* ═══ MODAL ═══ */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  padding: var(--space-4);
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal {
-  background: var(--modal-bg);
-  border-radius: var(--radius-2xl);
-  border: 1px solid var(--border-primary);
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-2xl);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modal-header {
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--gradient-purple-soft);
-}
-
-.modal-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-  transform: rotate(90deg);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.modal-footer {
-  padding: var(--space-6);
-  border-top: 1px solid var(--border-primary);
-  display: flex;
-  gap: var(--space-3);
-  justify-content: flex-end;
-  background: var(--gradient-purple-soft);
-}
-
-/* ═══ FORM ═══ */
-.form-group {
-  margin-bottom: var(--space-5);
-}
-
-.form-label {
-  display: block;
-  font-weight: var(--font-semibold);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.form-label.required::after {
-  content: ' *';
-  color: var(--error-solid);
-  margin-left: var(--space-1);
-}
-
-.form-control {
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--border-primary);
-  background: rgba(15, 23, 42, 0.6);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-base);
-  color: var(--text-primary);
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.form-control:hover {
-  border-color: var(--border-hover);
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.9);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15),
-              0 4px 16px rgba(167, 139, 250, 0.2);
-}
-
-.form-control::placeholder {
-  color: var(--text-quaternary);
-}
-
-.form-error {
-  display: block;
-  color: var(--error-text);
-  font-size: var(--text-xs);
-  margin-top: var(--space-2);
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.form-help {
-  display: block;
-  color: var(--text-quaternary);
-  font-size: var(--text-xs);
-  margin-top: var(--space-2);
-}
-
-/* ═══ BUTTONS ═══ */
-.btn {
-  padding: var(--space-3) var(--space-6);
-  border: none;
-  border-radius: var(--radius-lg);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  white-space: nowrap;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  filter: grayscale(0.5);
-}
-
-.btn-primary {
-  background: var(--gradient-primary);
-  color: var(--color-white);
-  box-shadow: var(--shadow-btn);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-purple);
-}
-
-.btn-secondary {
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-primary);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: rgba(15, 23, 42, 0.8);
-  border-color: var(--border-hover);
-  color: var(--text-primary);
-}
-
-.btn-danger {
-  background: var(--gradient-danger);
-  color: var(--color-white);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
-}
-
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
-}
-
-.btn-sm {
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-sm);
-}
-
-.btn-sm .material-icons {
-  font-size: 1rem;
-}
-
-.btn-loading {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-/* ═══ ANIMATIONS ═══ */
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-
-.animate-fade-up {
-  animation: fadeUp 0.6s ease-out;
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ═══ RESPONSIVE ═══ */
-@media (max-width: 1024px) {
-  .admin-categories {
-    padding: var(--space-6) var(--space-3);
-  }
-  
-  .page-header {
-    padding: var(--space-6);
-  }
-}
-
-@media (max-width: 768px) {
-  .admin-categories {
-    padding: var(--space-4);
-  }
-  
-  .page-header {
-    padding: var(--space-5);
-  }
-  
-  .header-content {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .page-title {
-    font-size: var(--text-2xl);
-  }
-  
-  .page-title .material-icons {
-    font-size: 1.5rem;
-  }
-  
-  .header-actions {
-    width: 100%;
-  }
-  
-  .header-actions .btn {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .table {
-    font-size: var(--text-sm);
-  }
-
-  .table th,
-  .table td {
-    padding: var(--space-3) var(--space-2);
-  }
-  
-  .category-name.child-indent {
-    padding-left: var(--space-4);
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .modal {
-    max-width: 100%;
-    min-height: 100vh;
-    border-radius: 0;
-  }
-  
-  .modal-footer {
-    flex-direction: column-reverse;
-  }
-  
-  .modal-footer .btn {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .table th,
-  .table td {
-    font-size: var(--text-xs);
-    padding: var(--space-2);
-  }
-  
-  code {
-    font-size: var(--text-xs);
-    padding: 2px var(--space-1);
-  }
-}
-</style>

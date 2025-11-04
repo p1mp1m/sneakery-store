@@ -1,10 +1,10 @@
 <template>
-  <div class="enhanced-search">
-    <div class="search-wrapper">
-      <div class="search-input-container">
-        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <div class="relative">
+    <div class="relative">
+      <div class="flex items-center gap-3 px-4 py-2 border-2 border-white/30 rounded-lg bg-white/10 backdrop-blur-sm focus-within:border-white/60 focus-within:bg-white/20 transition-all">
+        <svg class="flex-shrink-0 text-white/90" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21L16.65 16.65"/>
         </svg>
         <input
           type="text"
@@ -13,28 +13,35 @@
           @focus="showSuggestions = true"
           @blur="handleBlur"
           placeholder="Tìm kiếm sản phẩm, thương hiệu..."
-          class="search-input"
+          class="flex-1 bg-transparent border-none outline-none text-white placeholder:text-white/60 text-sm"
         />
-        <button v-if="searchQuery" @click="clearSearch" class="clear-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <button v-if="searchQuery" @click="clearSearch" class="flex-shrink-0 text-white/70 hover:text-white transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
 
       <!-- Suggestions Dropdown -->
-      <Transition name="dropdown">
-        <div v-if="showSuggestions && (suggestions.length > 0 || searchQuery)" class="suggestions-dropdown">
+      <transition
+        enter-active-class="transition-all duration-200 ease-out"
+        leave-active-class="transition-all duration-200 ease-in"
+        enter-from-class="opacity-0 scale-95 -translate-y-2"
+        enter-to-class="opacity-100 scale-100 translate-y-0"
+        leave-from-class="opacity-100 scale-100 translate-y-0"
+        leave-to-class="opacity-0 scale-95 -translate-y-2"
+      >
+        <div v-if="showSuggestions && (suggestions.length > 0 || searchQuery)" class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-[9999] max-h-96 overflow-y-auto">
           <!-- Quick Filters -->
-          <div v-if="!searchQuery" class="quick-filters">
-            <h3 class="filter-title">Tìm kiếm phổ biến:</h3>
-            <div class="filter-tags">
+          <div v-if="!searchQuery" class="p-4">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Tìm kiếm phổ biến:</h3>
+            <div class="flex flex-wrap gap-2">
               <button
                 v-for="tag in popularSearches"
                 :key="tag"
                 @click="searchTag(tag)"
-                class="filter-tag"
+                class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
               >
                 {{ tag }}
               </button>
@@ -42,42 +49,42 @@
           </div>
 
           <!-- Search Suggestions -->
-          <div v-if="searchQuery" class="search-suggestions">
-            <div v-if="suggestions.length > 0" class="suggestion-group">
-              <h3 class="suggestion-title">Sản phẩm</h3>
+          <div v-if="searchQuery" class="p-2">
+            <div v-if="suggestions.length > 0" class="space-y-1">
+              <h3 class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Sản phẩm</h3>
               <div
                 v-for="item in suggestions"
                 :key="item.id"
                 @click="selectSuggestion(item)"
-                class="suggestion-item"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
               >
-                <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.name" class="suggestion-image" />
-                <div class="suggestion-info">
-                  <span class="suggestion-brand">{{ item.brandName }}</span>
-                  <span class="suggestion-name">{{ item.name }}</span>
-                  <span class="suggestion-price">{{ formatCurrency(item.price) }}</span>
+                <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.name" class="w-12 h-12 rounded-lg object-cover" />
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{{ item.brandName }}</div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.name }}</div>
+                  <div class="text-sm font-semibold text-purple-600 dark:text-purple-400">{{ formatCurrency(item.price) }}</div>
                 </div>
               </div>
             </div>
 
             <!-- No Results -->
-            <div v-else class="no-results">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div v-else class="text-center py-8">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-3 text-gray-400">
                 <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <p>Không tìm thấy sản phẩm</p>
+              <p class="text-gray-600 dark:text-gray-400">Không tìm thấy sản phẩm</p>
             </div>
 
             <!-- View All Results -->
-            <router-link v-if="searchQuery" :to="`/products?search=${searchQuery}`" class="view-all-link">
-              Xem tất cả kết quả cho "{{ searchQuery }}"
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <router-link v-if="searchQuery" :to="`/products?search=${searchQuery}`" class="flex items-center justify-between px-4 py-3 mt-2 border-t border-gray-200 dark:border-gray-700 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium text-sm transition-colors">
+              <span>Xem tất cả kết quả cho "{{ searchQuery }}"</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12H19M19 12L12 5M19 12L12 19"/>
               </svg>
             </router-link>
           </div>
         </div>
-      </Transition>
+      </transition>
     </div>
   </div>
 </template>
@@ -151,231 +158,3 @@ const formatCurrency = (value) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 };
 </script>
-
-<style scoped>
-.enhanced-search {
-  position: relative;
-  max-width: 600px;
-  width: 100%;
-}
-
-.search-wrapper {
-  position: relative;
-}
-
-.search-input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  transition: all var(--transition-normal);
-}
-
-.search-input-container:focus-within {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-4);
-  color: var(--text-muted);
-  pointer-events: none;
-}
-
-.search-input {
-  flex: 1;
-  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-12);
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  font-size: var(--text-base);
-  outline: none;
-}
-
-.search-input::placeholder {
-  color: var(--text-muted);
-}
-
-.clear-btn {
-  padding: var(--space-2);
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-normal);
-}
-
-.clear-btn:hover {
-  color: var(--text-primary);
-}
-
-.suggestions-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: var(--space-2);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  max-height: 500px;
-  overflow-y: auto;
-  z-index: 1000;
-}
-
-.quick-filters {
-  padding: var(--space-4);
-}
-
-.filter-title {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-3);
-}
-
-.filter-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.filter-tag {
-  padding: var(--space-2) var(--space-3);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-full);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-}
-
-.filter-tag:hover {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.search-suggestions {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.suggestion-group {
-  padding: var(--space-4);
-}
-
-.suggestion-title {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-muted);
-  margin-bottom: var(--space-3);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.suggestion-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-}
-
-.suggestion-item:hover {
-  background: var(--bg-secondary);
-}
-
-.suggestion-image {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-}
-
-.suggestion-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.suggestion-brand {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-.suggestion-name {
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  font-weight: var(--font-medium);
-}
-
-.suggestion-price {
-  font-size: var(--text-sm);
-  color: var(--primary-color);
-  font-weight: var(--font-bold);
-}
-
-.no-results {
-  text-align: center;
-  padding: var(--space-8);
-  color: var(--text-muted);
-}
-
-.no-results svg {
-  margin-bottom: var(--space-2);
-  opacity: 0.5;
-}
-
-.view-all-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border-top: 1px solid var(--border-light);
-  color: var(--primary-color);
-  font-weight: var(--font-semibold);
-  text-decoration: none;
-  transition: all var(--transition-normal);
-}
-
-.view-all-link:hover {
-  background: var(--bg-secondary);
-}
-
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.2s ease;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-@media (max-width: 768px) {
-  .enhanced-search {
-    max-width: 100%;
-  }
-
-  .suggestions-dropdown {
-    max-height: 400px;
-  }
-}
-</style>
-

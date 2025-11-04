@@ -17,10 +17,10 @@ import adminRoutes from "./adminRoutes";
 import userRoutes from "./userRoutes";
 
 const routes = [
-  // Default route - redirect to login
+  // Default route - redirect to home
   {
     path: "/",
-    redirect: "/login",
+    redirect: "/home",
   },
   // Routes với DefaultLayout (Public pages)
   {
@@ -126,16 +126,8 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // ====== 3.1. KIỂM TRA TRANG HOME ======
-  // Nếu đã đăng nhập mà vào trang home → redirect về dashboard tương ứng
-  if (to.name === "home" && authStore.isAuthenticated) {
-    const user = authStore.currentUser;
-    if (user && (user.role === "ADMIN" || user.role === "MODERATOR")) {
-      next({ path: "/admin/dashboard" });
-    } else {
-      next({ path: "/user/dashboard" });
-    }
-    return;
-  }
+  // Cho phép vào trang home bất kể đã đăng nhập hay chưa
+  // (Đã bỏ redirect tự động về dashboard để user có thể xem trang home)
 
   // ====== 4. KIỂM TRA CÁC ROUTES CHUNG CẦN ĐĂNG NHẬP ======
   if (requiresAuth && !authStore.isAuthenticated) {

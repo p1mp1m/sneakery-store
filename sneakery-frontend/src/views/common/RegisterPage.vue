@@ -1,20 +1,22 @@
 <template>
-  <div class="register-page">
-    <div class="register-container">
-      <div class="register-card">
+  <div class="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <!-- Register Card -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 md:p-12">
         <!-- Header -->
-        <div class="register-header">
-          <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
+        <div class="text-center mb-8">
+          <img src="@/assets/images/logo.png" alt="Sneakery Store" class="h-16 mx-auto mb-4" />
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Đăng ký</h2>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">Tạo tài khoản mới để bắt đầu mua sắm</p>
         </div>
 
         <!-- Register Form -->
-      <el-form
-        ref="registerFormRef"
-        :model="registerForm"
-        :rules="rules"
-          class="register-form"
-        @submit.prevent="handleRegister(registerFormRef)"
-      >
+        <el-form
+          ref="registerFormRef"
+          :model="registerForm"
+          :rules="rules"
+          @submit.prevent="handleRegister(registerFormRef)"
+        >
           <!-- Error Message -->
           <el-alert
             v-if="serverError"
@@ -22,7 +24,7 @@
             type="error"
             show-icon
             :closable="false"
-            class="error-alert"
+            class="mb-6"
           />
 
           <!-- Success Message -->
@@ -32,11 +34,11 @@
             type="success"
             show-icon
             :closable="false"
-            class="error-alert"
+            class="mb-6"
           />
 
           <!-- Full Name Field -->
-          <el-form-item prop="fullName">
+          <el-form-item prop="fullName" class="mb-4">
             <el-input
               v-model="registerForm.fullName"
               placeholder="Nhập họ và tên"
@@ -44,10 +46,10 @@
               :prefix-icon="UserIcon"
               clearable
             />
-        </el-form-item>
+          </el-form-item>
 
           <!-- Email Field -->
-          <el-form-item prop="email">
+          <el-form-item prop="email" class="mb-4">
             <el-input
               v-model="registerForm.email"
               type="email"
@@ -56,23 +58,23 @@
               :prefix-icon="EmailIcon"
               clearable
             />
-        </el-form-item>
+          </el-form-item>
 
           <!-- Password Field -->
-          <el-form-item prop="password">
-          <el-input
-            v-model="registerForm.password"
-            type="password"
-            placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
-            size="large"
+          <el-form-item prop="password" class="mb-4">
+            <el-input
+              v-model="registerForm.password"
+              type="password"
+              placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+              size="large"
               :prefix-icon="LockIcon"
-            show-password
+              show-password
               clearable
-          />
-        </el-form-item>
-        
+            />
+          </el-form-item>
+          
           <!-- Phone Number Field -->
-          <el-form-item prop="phoneNumber">
+          <el-form-item prop="phoneNumber" class="mb-4">
             <el-input
               v-model="registerForm.phoneNumber"
               placeholder="Nhập số điện thoại (tùy chọn)"
@@ -80,31 +82,35 @@
               :prefix-icon="PhoneIcon"
               clearable
             />
-        </el-form-item>
+          </el-form-item>
 
           <!-- Submit Button -->
           <el-form-item>
-          <el-button
+            <el-button
               type="primary"
-            size="large"
-              class="register-button"
-            :loading="loading"
+              size="large"
+              class="w-full"
+              :loading="loading"
               native-type="submit"
-              block
-          >
+            >
               <span v-if="!loading">Tạo tài khoản</span>
               <span v-else>Đang tạo tài khoản...</span>
-          </el-button>
-        </el-form-item>
-      </el-form>
-      
+            </el-button>
+          </el-form-item>
+        </el-form>
+        
         <!-- Divider -->
-        <div class="divider">
-          <span class="divider-text">Hoặc</span>
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Hoặc</span>
+          </div>
         </div>
 
         <!-- Social Login -->
-        <div class="social-login">
+        <div class="mb-6">
           <GoogleButton 
             text="Đăng ký với Google"
             :loading="false"
@@ -113,43 +119,48 @@
         </div>
 
         <!-- Login Link -->
-        <div class="login-link">
-          <p>Đã có tài khoản? <a href="/login">Đăng nhập ngay</a></p>
+        <div class="text-center">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Đã có tài khoản? 
+            <router-link to="/login" class="text-purple-600 dark:text-purple-400 font-semibold hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
+              Đăng nhập ngay
+            </router-link>
+          </p>
         </div>
       </div>
 
       <!-- Welcome Section -->
-      <div class="welcome-section">
-        <div class="welcome-content">
-          <h2 class="welcome-title">Chào mừng đến với Sneakery Store</h2>
-          <p class="welcome-subtitle">Khám phá bộ sưu tập giày sneaker đa dạng và chất lượng cao</p>
+      <div class="hidden lg:block text-white">
+        <div class="space-y-6">
+          <h2 class="text-4xl font-bold">Chào mừng đến với Sneakery Store</h2>
+          <p class="text-lg text-white/90">Khám phá bộ sưu tập giày sneaker đa dạng và chất lượng cao</p>
           
-          <div class="features">
-            <div class="feature-item">
-              <div class="feature-icon">
+          <div class="space-y-4 mt-8">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <span>Sản phẩm chính hãng 100%</span>
+              <span class="text-lg">Sản phẩm chính hãng 100%</span>
             </div>
             
-            <div class="feature-item">
-              <div class="feature-icon">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <span>Giao hàng nhanh chóng</span>
+              <span class="text-lg">Giao hàng nhanh chóng</span>
             </div>
             
-            <div class="feature-item">
-              <div class="feature-icon">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
-              <span>Hỗ trợ 24/7</span>
+              <span class="text-lg">Hỗ trợ 24/7</span>
             </div>
           </div>
         </div>
@@ -313,266 +324,3 @@ const handleGoogleLogin = () => {
   ElMessage.info('Tính năng đăng ký Google sẽ được cập nhật sớm!');
 };
 </script>
-
-<style scoped>
-/* ===== REGISTER PAGE ===== */
-.register-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
-  padding-top: 40px; /* Space for fixed navbar */
-}
-
-.register-container {
-  width: 100%;
-  max-width: 1000px;
-  background: var(--white);
-  border-radius: 30px;
-  padding: var(--space-8);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border-light);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-8);
-  align-items: center;
-}
-
-.register-card {
-  background: transparent;
-  border-radius: 0;
-  padding: 0;
-  box-shadow: none;
-  border: none;
-}
-
-/* ===== REGISTER HEADER ===== */
-.register-header {
-  text-align: center;
-  margin-bottom: var(--space-8);
-}
-
-.logo-image {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto var(--space-6);
-  display: block;
-  object-fit: contain;
-}
-
-/* ===== REGISTER FORM ===== */
-.register-form {
-  margin-bottom: var(--space-8);
-}
-
-.error-alert {
-  margin-bottom: var(--space-5);
-}
-
-.register-button {
-  width: 100%;
-  height: 50px;
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  color: var(--white);
-  border: 1px solid #475569;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
-  transition: all var(--transition-normal);
-  padding: 0 var(--space-6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.register-button:hover {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  border-color: #334155;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(30, 41, 59, 0.4);
-}
-
-.register-button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
-}
-
-/* ===== ELEMENT PLUS INPUT CUSTOMIZATION ===== */
-.register-page :deep(.el-input__wrapper) {
-  background-color: white;
-}
-
-.register-page :deep(.el-input__inner) {
-  color: #1e293b !important; /* Màu tối cho textbox */
-}
-
-.register-page :deep(.el-input__inner::placeholder) {
-  color: var(--color-gray-500) !important;
-}
-
-/* ===== DIVIDER ===== */
-.divider {
-  text-align: center;
-  margin: var(--space-8) 0;
-  border: none; /* Bỏ border */
-}
-
-.divider-text {
-  color: #1e293b;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-
-/* ===== SOCIAL LOGIN ===== */
-.social-login {
-  margin-bottom: var(--space-8);
-}
-
-/* Google button styles are now handled by GoogleButton component */
-
-/* ===== LOGIN LINK ===== */
-.login-link {
-  text-align: center;
-}
-
-.login-link p {
-  color: #1e293b;
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-.login-link a {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: var(--font-medium);
-  transition: color var(--transition-fast);
-}
-
-.login-link a:hover {
-  color: var(--primary-dark);
-  text-decoration: underline;
-}
-
-/* ===== WELCOME SECTION ===== */
-.welcome-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px;
-  padding: var(--space-8);
-  position: relative;
-  overflow: hidden;
-}
-
-.welcome-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-  opacity: 0.3;
-}
-
-.welcome-content {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-}
-
-.welcome-title {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  color: var(--white);
-  margin: 0 0 var(--space-5) 0;
-  line-height: var(--leading-tight);
-}
-
-.welcome-subtitle {
-  font-size: var(--text-lg);
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 var(--space-8) 0;
-  line-height: var(--leading-relaxed);
-}
-
-.features {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: var(--white);
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
-}
-
-.feature-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-full);
-  color: var(--white);
-  flex-shrink: 0;
-}
-
-/* ===== RESPONSIVE DESIGN ===== */
-@media (max-width: 768px) {
-  .register-container {
-    grid-template-columns: 1fr;
-    max-width: 450px;
-  }
-  
-  .register-page {
-    padding: var(--space-4);
-  }
-  
-  .register-card {
-    padding: var(--space-6);
-  }
-  
-  .logo-image {
-    width: 100px;
-    height: 100px;
-  }
-  
-  .welcome-title {
-    font-size: var(--text-2xl);
-  }
-  
-  .welcome-subtitle {
-    font-size: var(--text-base);
-  }
-}
-
-@media (max-width: 480px) {
-  .register-page {
-    padding: var(--space-3);
-  }
-  
-  .register-card {
-    padding: var(--space-6);
-  }
-  
-  .logo-image {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .register-btn,
-  .social-btn {
-    height: 45px;
-    font-size: var(--text-sm);
-  }
-}
-</style>

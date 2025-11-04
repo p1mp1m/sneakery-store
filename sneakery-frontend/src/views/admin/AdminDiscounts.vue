@@ -1,28 +1,26 @@
 <template>
-  <div class="admin-page admin-discounts">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">percent</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">percent</i>
             Quản lý Mã Giảm Giá
           </h1>
-          <p class="page-subtitle">
-            Tạo và quản lý các chương trình giảm giá, khuyến mãi
-          </p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Tạo và quản lý các chương trình giảm giá, khuyến mãi</p>
         </div>
-        <div class="header-actions">
-          <button @click="handleExport('csv')" class="btn btn-secondary" title="Xuất CSV">
-            <span class="material-icons">download</span>
+        <div class="flex items-center gap-2">
+          <button @click="handleExport('csv')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium" title="Xuất CSV">
+            <i class="material-icons text-base">download</i>
             Xuất CSV
           </button>
-          <button @click="handleExport('json')" class="btn btn-secondary" title="Xuất JSON">
-            <span class="material-icons">file_download</span>
+          <button @click="handleExport('json')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium" title="Xuất JSON">
+            <i class="material-icons text-base">file_download</i>
             Xuất JSON
           </button>
-          <button @click="showCreateDialog = true" class="btn btn-primary">
-            <span class="material-icons">add</span>
+          <button @click="showCreateDialog = true" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">add</i>
             Tạo mã giảm giá
           </button>
         </div>
@@ -30,351 +28,404 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="stats-grid">
-      <StatsCard
-        icon="local_activity"
-        :value="stats.totalCoupons"
-        label="Tổng mã giảm giá"
-        variant="primary"
-      />
-      <StatsCard
-        icon="check_circle"
-        :value="stats.activeCoupons"
-        label="Đang hoạt động"
-        variant="success"
-      />
-      <StatsCard
-        icon="schedule"
-        :value="stats.expiringSoon"
-        label="Sắp hết hạn"
-        variant="warning"
-      />
-      <StatsCard
-        icon="block"
-        :value="stats.expiredCoupons"
-        label="Đã hết hạn"
-        variant="danger"
-      />
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">local_activity</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.totalCoupons }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Tổng mã giảm giá</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">check_circle</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.activeCoupons }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đang hoạt động</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">schedule</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.expiringSoon }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Sắp hết hạn</p>
+        </div>
+      </div>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">block</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.expiredCoupons }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Đã hết hạn</p>
+        </div>
+      </div>
     </div>
 
     <!-- Filters -->
-    <FilterBar
-      v-model:search="filters.search"
-      search-placeholder="Tìm theo mã, mô tả..."
-      @search="handleSearch"
-      @reset="resetFilters"
-    >
-      <template #filters>
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">percent</span>
-            Loại giảm giá
-          </label>
-          <select v-model="filters.type" @change="fetchCoupons" class="form-control">
-            <option value="">Tất cả</option>
-            <option value="percent">Phần trăm (%)</option>
-            <option value="amount">Số tiền cố định</option>
-          </select>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
+            <input
+              v-model="filters.search"
+              @input="handleSearch"
+              type="text"
+              placeholder="Tìm theo mã, mô tả..."
+              class="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+            <button v-if="filters.search" @click="filters.search = ''; fetchCoupons()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <i class="material-icons text-base">close</i>
+            </button>
+          </div>
         </div>
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">check_circle</span>
-            Trạng thái
-          </label>
-          <select v-model="filters.status" @change="fetchCoupons" class="form-control">
-            <option value="">Tất cả</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="expired">Đã hết hạn</option>
-            <option value="upcoming">Chưa bắt đầu</option>
-          </select>
+        <div class="flex items-center gap-2">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <i class="material-icons text-sm">percent</i>
+              Loại giảm giá
+            </label>
+            <select v-model="filters.type" @change="fetchCoupons" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="">Tất cả</option>
+              <option value="percent">Phần trăm (%)</option>
+              <option value="amount">Số tiền cố định</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <i class="material-icons text-sm">check_circle</i>
+              Trạng thái
+            </label>
+            <select v-model="filters.status" @change="fetchCoupons" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="">Tất cả</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="expired">Đã hết hạn</option>
+              <option value="upcoming">Chưa bắt đầu</option>
+            </select>
+          </div>
+          <button @click="resetFilters" class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium mt-6">
+            <i class="material-icons text-base">refresh</i>
+            Reset
+          </button>
         </div>
-      </template>
-    </FilterBar>
+      </div>
+    </div>
 
     <!-- Table -->
-    <div class="table-container">
-      <LoadingState v-if="loading" />
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+      </div>
+      
+      <div v-else-if="coupons.length === 0" class="flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">local_activity</i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có mã giảm giá</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">Nhấn nút 'Tạo mã giảm giá' để bắt đầu</p>
+        <button @click="showCreateDialog = true" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium">
+          <i class="material-icons text-base">add</i>
+          Tạo mã giảm giá
+        </button>
+      </div>
 
-      <EmptyState
-        v-else-if="coupons.length === 0"
-        icon="local_activity"
-        title="Chưa có mã giảm giá"
-        description="Nhấn nút 'Tạo mã giảm giá' để bắt đầu"
-      />
-
-      <table v-else class="admin-table">
-        <thead>
-          <tr>
-            <th>Mã</th>
-            <th>Loại</th>
-            <th>Giá trị</th>
-            <th>Điều kiện</th>
-            <th>Thời gian</th>
-            <th>Lượt dùng</th>
-            <th>Trạng thái</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="coupon in coupons" :key="coupon.id">
-            <td>
-              <div class="coupon-code">
-                <strong>{{ coupon.code }}</strong>
-                <button @click="copyCouponCode(coupon.code)" class="btn-copy">
-                  <i class="material-icons">content_copy</i>
-                </button>
-              </div>
-              <p class="coupon-description">{{ coupon.description }}</p>
-            </td>
-            <td>
-              <span class="badge" :class="coupon.discountType === 'percent' ? 'badge-info' : 'badge-success'">
-                <i class="material-icons">{{ coupon.discountType === 'percent' ? 'percent' : 'attach_money' }}</i>
-                {{ coupon.discountType === 'percent' ? 'Phần trăm' : 'Số tiền' }}
-              </span>
-            </td>
-            <td>
-              <strong class="discount-value">
-                {{ coupon.discountType === 'percent' ? `${coupon.value}%` : formatPrice(coupon.value) }}
-              </strong>
-              <div v-if="coupon.maxDiscountAmount" class="max-discount">
-                Tối đa: {{ formatPrice(coupon.maxDiscountAmount) }}
-              </div>
-            </td>
-            <td>
-              <div v-if="coupon.minOrderAmount" class="condition">
-                <i class="material-icons">shopping_cart</i>
-                Đơn tối thiểu: {{ formatPrice(coupon.minOrderAmount) }}
-              </div>
-              <div v-else class="condition">
-                <i class="material-icons">check_circle</i>
-                Không giới hạn
-              </div>
-            </td>
-            <td>
-              <div class="time-range">
-                <div class="date-item">
-                  <i class="material-icons">event</i>
-                  {{ formatDate(coupon.startAt) }}
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Mã</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Loại</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Giá trị</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Điều kiện</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thời gian</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Lượt dùng</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="coupon in coupons" :key="coupon.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2 mb-1">
+                  <strong class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ coupon.code }}</strong>
+                  <button @click="copyCouponCode(coupon.code)" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" title="Sao chép">
+                    <i class="material-icons text-base">content_copy</i>
+                  </button>
                 </div>
-                <div class="date-item">
-                  <i class="material-icons">event</i>
-                  {{ formatDate(coupon.endAt) }}
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="usage-stats">
-                <div class="progress-bar">
-                  <div 
-                    class="progress-fill" 
-                    :style="{ width: getUsagePercentage(coupon) + '%' }"
-                  ></div>
-                </div>
-                <span class="usage-text">
-                  {{ coupon.usesCount }} / {{ coupon.maxUses || '∞' }}
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ coupon.description }}</p>
+              </td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 w-fit" :class="coupon.discountType === 'percent' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'">
+                  <i class="material-icons text-sm">{{ coupon.discountType === 'percent' ? 'percent' : 'attach_money' }}</i>
+                  {{ coupon.discountType === 'percent' ? 'Phần trăm' : 'Số tiền' }}
                 </span>
-              </div>
-            </td>
-            <td>
-              <span class="status-badge" :class="getCouponStatusClass(coupon)">
-                {{ getCouponStatusText(coupon) }}
-              </span>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button @click="editCoupon(coupon)" class="btn-icon" title="Sửa">
-                  <i class="material-icons">edit</i>
-                </button>
-                <button @click="toggleCouponStatus(coupon)" class="btn-icon" :title="coupon.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'">
-                  <i class="material-icons">{{ coupon.isActive ? 'block' : 'check_circle' }}</i>
-                </button>
-                <button @click="deleteCoupon(coupon)" class="btn-icon danger" title="Xóa">
-                  <i class="material-icons">delete</i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-col gap-1">
+                  <strong class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    {{ coupon.discountType === 'percent' ? `${coupon.value}%` : formatPrice(coupon.value) }}
+                  </strong>
+                  <div v-if="coupon.maxDiscountAmount" class="text-xs text-gray-500 dark:text-gray-400">
+                    Tối đa: {{ formatPrice(coupon.maxDiscountAmount) }}
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-1 text-sm" :class="coupon.minOrderAmount ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'">
+                  <i class="material-icons text-base">{{ coupon.minOrderAmount ? 'shopping_cart' : 'check_circle' }}</i>
+                  <span>{{ coupon.minOrderAmount ? `Đơn tối thiểu: ${formatPrice(coupon.minOrderAmount)}` : 'Không giới hạn' }}</span>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-col gap-1 text-xs">
+                  <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                    <i class="material-icons text-sm">event</i>
+                    {{ formatDate(coupon.startAt) }}
+                  </div>
+                  <div class="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                    <i class="material-icons text-sm">event</i>
+                    {{ formatDate(coupon.endAt) }}
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-col gap-1">
+                  <div v-if="coupon.maxUses" class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      class="h-full bg-purple-500 transition-all duration-300" 
+                      :style="{ width: getUsagePercentage(coupon) + '%' }"
+                    ></div>
+                  </div>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">
+                    {{ coupon.usesCount }} / {{ coupon.maxUses || '∞' }}
+                  </span>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-1 text-xs font-medium rounded-full" 
+                  :class="{
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getCouponStatusClass(coupon) === 'status-active',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getCouponStatusClass(coupon) === 'status-expired',
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': getCouponStatusClass(coupon) === 'status-upcoming',
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': getCouponStatusClass(coupon) === 'status-inactive' || getCouponStatusClass(coupon) === 'status-full'
+                  }">
+                  {{ getCouponStatusText(coupon) }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <button @click="editCoupon(coupon)" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors" title="Sửa">
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+                  <button @click="toggleCouponStatus(coupon)" class="p-1.5 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded transition-colors" :title="coupon.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'">
+                    <i class="material-icons text-base">{{ coupon.isActive ? 'block' : 'check_circle' }}</i>
+                  </button>
+                  <button @click="deleteCoupon(coupon)" class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors" title="Xóa">
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="pagination-container">
-      <div class="pagination-info">
+    <div v-if="totalPages > 1 && !loading && coupons.length > 0" class="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="text-sm text-gray-600 dark:text-gray-400">
         Hiển thị {{ (currentPage) * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalElements) }} trong tổng số {{ totalElements }}
       </div>
-      <div class="pagination-controls">
+      <div class="flex items-center gap-1">
         <button 
           @click="goToPage(currentPage - 1)" 
           :disabled="currentPage === 0"
-          class="pagination-btn"
+          class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <i class="material-icons">chevron_left</i>
+          <i class="material-icons text-base">chevron_left</i>
         </button>
         <button 
           v-for="page in visiblePages" 
           :key="page"
           @click="goToPage(page - 1)"
-          class="pagination-btn"
-          :class="{ 'active': page - 1 === currentPage }"
+          class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+          :class="page - 1 === currentPage 
+            ? 'bg-purple-500 text-white' 
+            : 'text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'"
         >
           {{ page }}
         </button>
         <button 
           @click="goToPage(currentPage + 1)" 
           :disabled="currentPage >= totalPages - 1"
-          class="pagination-btn"
+          class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <i class="material-icons">chevron_right</i>
+          <i class="material-icons text-base">chevron_right</i>
         </button>
       </div>
     </div>
 
     <!-- Create/Edit Dialog -->
-    <div v-if="showCreateDialog" class="modal-overlay" @click="closeDialog">
-      <div class="modal modal-lg" @click.stop>
-        <div class="modal-header">
-          <h3>{{ editingCoupon ? 'Chỉnh sửa mã giảm giá' : 'Tạo mã giảm giá mới' }}</h3>
-          <button @click="closeDialog" class="modal-close">
-            <i class="material-icons">close</i>
+    <div v-if="showCreateDialog" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeDialog">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ editingCoupon ? 'Chỉnh sửa mã giảm giá' : 'Tạo mã giảm giá mới' }}</h3>
+          <button @click="closeDialog" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <i class="material-icons text-xl">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <form @submit.prevent="saveCoupon">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="required">Mã giảm giá</label>
+        <div class="p-4">
+          <form @submit.prevent="saveCoupon" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Mã giảm giá *</label>
                 <input 
                   v-model="formData.code"
                   type="text" 
-                  class="form-control" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="VD: SUMMER2025"
                   required
                   :disabled="editingCoupon"
                 />
-                <small class="form-help">Chữ in hoa, không dấu, không khoảng trắng</small>
+                <small class="text-xs text-gray-500 dark:text-gray-400">Chữ in hoa, không dấu, không khoảng trắng</small>
               </div>
-              <div class="form-group">
-                <label>Mô tả</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Mô tả</label>
                 <input 
                   v-model="formData.description"
                   type="text" 
-                  class="form-control" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Mô tả ngắn gọn về mã giảm giá"
                 />
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="required">Loại giảm giá</label>
-                <select v-model="formData.discountType" class="form-control" required>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Loại giảm giá *</label>
+                <select v-model="formData.discountType" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
                   <option value="">-- Chọn loại --</option>
                   <option value="percent">Phần trăm (%)</option>
                   <option value="fixed">Số tiền cố định (VNĐ)</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label class="required">Giá trị giảm</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá trị giảm *</label>
                 <input 
                   v-model.number="formData.value"
                   type="number" 
                   min="0"
                   :max="formData.discountType === 'percent' ? 100 : undefined"
-                  class="form-control" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="VD: 10"
                   required
                 />
-                <small class="form-help">
+                <small class="text-xs text-gray-500 dark:text-gray-400">
                   {{ formData.discountType === 'percent' ? 'Từ 1 đến 100%' : 'Số tiền VNĐ' }}
                 </small>
               </div>
             </div>
 
-            <div v-if="formData.discountType === 'percent'" class="form-group">
-              <label>Số tiền giảm tối đa (VNĐ)</label>
+            <div v-if="formData.discountType === 'percent'" class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số tiền giảm tối đa (VNĐ)</label>
               <input 
                 v-model.number="formData.maxDiscountAmount"
                 type="number" 
                 min="0"
-                class="form-control" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Để trống nếu không giới hạn"
               />
-              <small class="form-help">Giới hạn số tiền giảm tối đa khi dùng %</small>
+              <small class="text-xs text-gray-500 dark:text-gray-400">Giới hạn số tiền giảm tối đa khi dùng %</small>
             </div>
 
-            <div class="form-group">
-              <label>Đơn hàng tối thiểu (VNĐ)</label>
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Đơn hàng tối thiểu (VNĐ)</label>
               <input 
                 v-model.number="formData.minOrderAmount"
                 type="number" 
                 min="0"
-                class="form-control" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Để trống nếu không giới hạn"
               />
-              <small class="form-help">Giá trị đơn hàng tối thiểu để áp dụng mã</small>
+              <small class="text-xs text-gray-500 dark:text-gray-400">Giá trị đơn hàng tối thiểu để áp dụng mã</small>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="required">Ngày bắt đầu</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Ngày bắt đầu *</label>
                 <input 
                   v-model="formData.startAt"
                   type="datetime-local" 
-                  class="form-control" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   required
                 />
               </div>
-              <div class="form-group">
-                <label class="required">Ngày kết thúc</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Ngày kết thúc *</label>
                 <input 
                   v-model="formData.endAt"
                   type="datetime-local" 
-                  class="form-control" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   required
                 />
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Số lượt dùng tối đa</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số lượt dùng tối đa</label>
                 <input 
                   v-model.number="formData.maxUses"
                   type="number" 
                   min="1"
-                  class="form-control" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Để trống nếu không giới hạn"
                 />
-                <small class="form-help">Tổng số lần mã có thể được sử dụng</small>
+                <small class="text-xs text-gray-500 dark:text-gray-400">Tổng số lần mã có thể được sử dụng</small>
               </div>
-              <div class="form-group">
-                <label>Số lần dùng/người</label>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số lần dùng/người</label>
                 <input 
                   v-model.number="formData.maxUsesPerUser"
                   type="number" 
                   min="1"
-                  class="form-control" 
+                  class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="1"
                 />
-                <small class="form-help">Mỗi khách hàng có thể dùng tối đa bao nhiêu lần</small>
+                <small class="text-xs text-gray-500 dark:text-gray-400">Mỗi khách hàng có thể dùng tối đa bao nhiêu lần</small>
               </div>
             </div>
 
-            <div class="form-group">
-              <label class="toggle-switch">
-                <input v-model="formData.isActive" type="checkbox" />
-                <span class="toggle-slider"></span>
-                Kích hoạt ngay
-              </label>
+            <div class="flex items-center gap-2">
+              <input
+                v-model="formData.isActive"
+                type="checkbox"
+                class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+              />
+              <label class="text-sm text-gray-700 dark:text-gray-300">Kích hoạt ngay</label>
             </div>
 
-            <div class="form-actions">
-              <button type="button" @click="closeDialog" class="btn btn-secondary">
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" @click="closeDialog" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                 Hủy
               </button>
-              <button type="submit" class="btn btn-primary" :disabled="saving">
-                <i class="material-icons">save</i>
+              <button type="submit" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" :disabled="saving">
+                <i class="material-icons text-base" :class="{ 'animate-spin': saving }">save</i>
                 {{ saving ? 'Đang lưu...' : (editingCoupon ? 'Cập nhật' : 'Tạo mới') }}
               </button>
             </div>
@@ -391,10 +442,6 @@ import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import adminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import StatsCard from '@/assets/components/admin/StatsCard.vue'
-import FilterBar from '@/assets/components/admin/FilterBar.vue'
-import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
-import EmptyState from '@/assets/components/admin/EmptyState.vue'
 
 const adminStore = useAdminStore()
 
@@ -694,125 +741,6 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* ═══════════════════════════════════════════════════════════════════════
-   ADMIN DISCOUNTS - COUPON-SPECIFIC STYLES ONLY
-   All layout, buttons, forms, tables use Design System v2.0 global classes
-   ═══════════════════════════════════════════════════════════════════════ */
 
-/* Coupon Code */
-.coupon-code {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
 
-.coupon-code strong {
-  font-family: 'Courier New', monospace;
-  font-size: var(--text-base);
-  color: var(--accent-primary);
-  font-weight: var(--font-bold);
-}
-
-.btn-copy {
-  background: transparent;
-  border: none;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  padding: var(--space-1);
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-.btn-copy:hover {
-  color: var(--accent-primary);
-  background: var(--gradient-purple-soft);
-  transform: scale(1.1);
-}
-
-.btn-copy .material-icons {
-  font-size: var(--text-base);
-}
-
-.coupon-description {
-  margin: var(--space-1) 0 0 0;
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-}
-
-/* Discount type badge uses global .badge class */
-
-/* Discount Value */
-.discount-value {
-  font-size: var(--text-lg);
-  color: var(--success-text);
-  font-weight: var(--font-bold);
-}
-
-.max-discount {
-  margin-top: var(--space-1);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-}
-
-/* Condition */
-.condition {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-.condition .material-icons {
-  font-size: var(--text-base);
-  color: var(--success-text);
-}
-
-/* Time Range */
-.time-range {
-  font-size: var(--text-xs);
-}
-
-.date-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin-bottom: var(--space-1);
-  color: var(--text-tertiary);
-}
-
-.date-item .material-icons {
-  font-size: var(--text-sm);
-}
-
-/* Usage Stats */
-.usage-stats {
-  min-width: 120px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  margin-bottom: var(--space-2);
-  border: 1px solid var(--border-primary);
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--gradient-success);
-  transition: var(--transition-smooth);
-}
-
-.usage-text {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
-}
-
-/* Status badges, action buttons, pagination, modals, forms, buttons, responsive all use global Design System v2.0 classes */
-</style>
 

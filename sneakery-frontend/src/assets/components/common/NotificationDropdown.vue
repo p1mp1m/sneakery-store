@@ -1,68 +1,85 @@
 <template>
-  <div class="notification-dropdown" ref="dropdownRef">
+  <div class="relative" ref="dropdownRef">
     <!-- Notification Bell Button -->
     <button 
-      class="notification-bell"
+      class="relative flex items-center justify-center w-10 h-10 rounded-lg text-white/90 bg-transparent transition-all duration-200 cursor-pointer border border-transparent hover:bg-white/10 hover:text-white hover:border-white/20"
       @click="toggleDropdown"
-      :class="{ 'has-unread': unreadCount > 0 }"
     >
-      <span class="material-icons">notifications</span>
-      <span v-if="unreadCount > 0" class="notification-badge">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8C6 11.3137 8.68629 14 12 14C15.3137 14 18 11.3137 18 8Z"/>
+        <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"/>
+      </svg>
+      <span v-if="unreadCount > 0" class="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1.5 bg-red-500 text-white text-[11px] font-semibold rounded-full flex items-center justify-center shadow-md">
         {{ unreadCount > 99 ? '99+' : unreadCount }}
       </span>
     </button>
 
     <!-- Dropdown Menu -->
-    <transition name="dropdown">
-      <div v-if="isOpen" class="dropdown-menu">
+    <transition
+      enter-active-class="transition-all duration-200 ease-out"
+      leave-active-class="transition-all duration-200 ease-in"
+      enter-from-class="opacity-0 scale-95 -translate-y-2"
+      enter-to-class="opacity-100 scale-100 translate-y-0"
+      leave-from-class="opacity-100 scale-100 translate-y-0"
+      leave-to-class="opacity-0 scale-95 -translate-y-2"
+    >
+      <div v-if="isOpen" class="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden z-[1000]">
         <!-- Header -->
-        <div class="dropdown-header">
-          <h3>Thông báo</h3>
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="font-semibold text-gray-900 dark:text-gray-100">Thông báo</h3>
           <button 
             v-if="unreadCount > 0"
             @click="handleMarkAllRead" 
-            class="mark-all-btn"
+            class="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium transition-colors"
           >
             Đánh dấu đã đọc
           </button>
         </div>
 
         <!-- Loading State -->
-        <div v-if="loading" class="dropdown-loading">
-          <div class="loading-spinner"></div>
-          <p>Đang tải thông báo...</p>
+        <div v-if="loading" class="flex flex-col items-center justify-center py-12">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent mb-3"></div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải thông báo...</p>
         </div>
 
         <!-- Notification List -->
-        <div v-else-if="notifications.length > 0" class="notifications-list">
+        <div v-else-if="notifications.length > 0" class="max-h-96 overflow-y-auto">
           <div 
             v-for="notification in notifications" 
             :key="notification.id"
-            class="notification-item"
-            :class="{ 'unread': !notification.isRead }"
+            class="flex items-start gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+            :class="{ 'bg-purple-50 dark:bg-purple-900/20': !notification.isRead }"
             @click="handleNotificationClick(notification)"
           >
-            <!-- Icon based on type -->
-            <div class="notification-icon" :class="`type-${notification.type}`">
-              <span class="material-icons">{{ getNotificationIcon(notification.type) }}</span>
+            <!-- Icon -->
+            <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center"
+              :class="{
+                'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': notification.type === 'order_status',
+                'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400': notification.type === 'promotion',
+                'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400': notification.type === 'product_restock',
+                'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400': notification.type === 'review_reply',
+                'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400': notification.type === 'system'
+              }"
+            >
+              <i class="material-icons text-lg">{{ getNotificationIcon(notification.type) }}</i>
             </div>
 
             <!-- Content -->
-            <div class="notification-content">
-              <h4>{{ notification.title }}</h4>
-              <p>{{ notification.message }}</p>
-              <span class="notification-time">{{ formatTime(notification.createdAt) }}</span>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1">{{ notification.title }}</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">{{ notification.message }}</p>
+              <span class="text-xs text-gray-500 dark:text-gray-500">{{ formatTime(notification.createdAt) }}</span>
             </div>
 
             <!-- Unread Indicator -->
-            <div v-if="!notification.isRead" class="unread-indicator"></div>
+            <div v-if="!notification.isRead" class="flex-shrink-0 w-2 h-2 bg-purple-600 rounded-full mt-2"></div>
           </div>
 
           <!-- Load More Button -->
           <button 
             v-if="hasMore" 
             @click="handleLoadMore"
-            class="load-more-btn"
+            class="w-full px-4 py-3 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-t border-gray-200 dark:border-gray-700"
             :disabled="loadingMore"
           >
             {{ loadingMore ? 'Đang tải...' : 'Xem thêm' }}
@@ -70,9 +87,12 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else class="dropdown-empty">
-          <span class="material-icons">notifications_none</span>
-          <p>Không có thông báo nào</p>
+        <div v-else class="flex flex-col items-center justify-center py-12">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-3 text-gray-400">
+            <path d="M18 8A6 6 0 0 0 6 8C6 11.3137 8.68629 14 12 14C15.3137 14 18 11.3137 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p class="text-gray-600 dark:text-gray-400">Không có thông báo nào</p>
         </div>
       </div>
     </transition>
@@ -176,302 +196,3 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
-
-<style scoped>
-.notification-dropdown {
-  position: relative;
-}
-
-.notification-bell {
-  position: relative;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: var(--space-2);
-  border-radius: var(--radius-lg);
-  transition: var(--transition-fast);
-  color: var(--text-primary);
-}
-
-.notification-bell:hover {
-  background-color: var(--bg-secondary);
-}
-
-.notification-bell.has-unread .material-icons {
-  color: var(--color-primary);
-}
-
-.notification-bell .material-icons {
-  font-size: 24px;
-}
-
-.notification-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-size: 10px;
-  font-weight: var(--font-bold);
-  padding: 2px 5px;
-  border-radius: 10px;
-  min-width: 18px;
-  text-align: center;
-}
-
-/* Dropdown Menu */
-.dropdown-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 380px;
-  max-height: 500px;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  border: 1px solid var(--border-light);
-  overflow: hidden;
-  z-index: var(--z-dropdown);
-}
-
-.dropdown-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--border-light);
-}
-
-.dropdown-header h3 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.mark-all-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-primary);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-.mark-all-btn:hover {
-  background-color: var(--primary-light);
-}
-
-/* Notifications List */
-.notifications-list {
-  max-height: 420px;
-  overflow-y: auto;
-}
-
-.notification-item {
-  display: flex;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border-bottom: 1px solid var(--border-light);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  position: relative;
-}
-
-.notification-item:hover {
-  background-color: var(--bg-secondary);
-}
-
-.notification-item:last-child {
-  border-bottom: none;
-}
-
-.notification-item.unread {
-  background-color: rgba(102, 126, 234, 0.05);
-}
-
-.notification-icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.notification-icon.type-order_status {
-  background-color: rgba(72, 187, 120, 0.1);
-  color: var(--color-success);
-}
-
-.notification-icon.type-promotion {
-  background-color: rgba(237, 137, 54, 0.1);
-  color: var(--color-warning);
-}
-
-.notification-icon.type-product_restock {
-  background-color: rgba(66, 153, 225, 0.1);
-  color: var(--color-info);
-}
-
-.notification-icon.type-review_reply {
-  background-color: rgba(102, 126, 234, 0.1);
-  color: var(--color-primary);
-}
-
-.notification-icon.type-system {
-  background-color: rgba(160, 174, 192, 0.1);
-  color: var(--text-tertiary);
-}
-
-.notification-content {
-  flex: 1;
-}
-
-.notification-content h4 {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-1) 0;
-}
-
-.notification-content p {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin: 0 0 var(--space-1) 0;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.notification-time {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-}
-
-.unread-indicator {
-  position: absolute;
-  top: 50%;
-  right: var(--space-4);
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  background: var(--color-primary);
-  border-radius: var(--radius-full);
-}
-
-/* Load More Button */
-.load-more-btn {
-  width: 100%;
-  padding: var(--space-3);
-  background: transparent;
-  border: none;
-  color: var(--color-primary);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.load-more-btn:hover:not(:disabled) {
-  background-color: var(--bg-secondary);
-}
-
-.load-more-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Loading State */
-.dropdown-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-8);
-}
-
-.loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--border-light);
-  border-top-color: var(--color-primary);
-  border-radius: var(--radius-full);
-  animation: spin 0.8s linear infinite;
-  margin-bottom: var(--space-3);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.dropdown-loading p {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-}
-
-/* Empty State */
-.dropdown-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12) var(--space-6);
-}
-
-.dropdown-empty .material-icons {
-  font-size: 48px;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-3);
-}
-
-.dropdown-empty p {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-}
-
-/* Dropdown Transition */
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.2s ease;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-/* Scrollbar */
-.notifications-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.notifications-list::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-}
-
-.notifications-list::-webkit-scrollbar-thumb {
-  background: var(--border-dark);
-  border-radius: 3px;
-}
-
-.notifications-list::-webkit-scrollbar-thumb:hover {
-  background: var(--text-tertiary);
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-  .dropdown-menu {
-    width: calc(100vw - 32px);
-    right: -50px;
-  }
-}
-</style>
-

@@ -1,48 +1,58 @@
 <template>
-  <div class="user-page checkout-page">
-    <div class="checkout-container">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+    <div class="max-w-7xl mx-auto px-4">
       <!-- Page Header -->
-      <div class="page-header">
-        <h1 class="page-title">Thanh toán</h1>
-        <p class="page-subtitle">Hoàn tất đơn hàng của bạn</p>
+      <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Thanh toán</h1>
+        <p class="text-gray-600 dark:text-gray-400">Hoàn tất đơn hàng của bạn</p>
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner-lg"></div>
-        <p>Đang tải thông tin...</p>
+      <div v-if="loading" class="flex items-center justify-center py-16">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mb-4"></div>
+          <p class="text-gray-600 dark:text-gray-400">Đang tải thông tin...</p>
+        </div>
       </div>
 
       <!-- Checkout Content -->
-      <div v-else class="checkout-grid">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left: Multi-Step Form -->
-        <div class="checkout-steps">
+        <div class="lg:col-span-2 space-y-6">
           <!-- Step Progress Indicator -->
-          <div class="step-progress">
-            <div
-              v-for="(step, index) in steps"
-              :key="step.id"
-              class="step-item"
-              :class="{
-                active: currentStep === index + 1,
-                completed: currentStep > index + 1,
-              }"
-              @click="goToStep(index + 1)"
-            >
-              <div class="step-circle">
-                <span v-if="currentStep > index + 1" class="step-check">✓</span>
-                <span v-else>{{ index + 1 }}</span>
-              </div>
-              <div class="step-label">
-                <div class="step-title">{{ step.title }}</div>
-                <div class="step-desc">{{ step.description }}</div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="flex items-center justify-between">
+              <div
+                v-for="(step, index) in steps"
+                :key="step.id"
+                :class="[
+                  'flex items-center gap-3 cursor-pointer transition-all',
+                  currentStep === index + 1 ? 'text-purple-600 dark:text-purple-400' : currentStep > index + 1 ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'
+                ]"
+                @click="goToStep(index + 1)"
+              >
+                <div :class="[
+                  'w-10 h-10 rounded-full flex items-center justify-center font-semibold border-2 transition-all',
+                  currentStep === index + 1 
+                    ? 'bg-purple-600 text-white border-purple-600' 
+                    : currentStep > index + 1 
+                    ? 'bg-green-600 text-white border-green-600' 
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-400 border-gray-300 dark:border-gray-600'
+                ]">
+                  <span v-if="currentStep > index + 1">✓</span>
+                  <span v-else>{{ index + 1 }}</span>
+                </div>
+                <div class="hidden md:block">
+                  <div class="font-semibold text-sm">{{ step.title }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ step.description }}</div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Step 1: Shipping Address -->
-          <div v-show="currentStep === 1" class="form-step">
-            <h2 class="step-heading">
+          <div v-show="currentStep === 1" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
@@ -50,13 +60,13 @@
               Địa chỉ giao hàng
             </h2>
 
-            <div v-if="addresses.length === 0" class="no-data-state">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <div v-if="addresses.length === 0" class="text-center py-12">
+              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-4 text-gray-400">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                 <circle cx="12" cy="10" r="3"></circle>
               </svg>
-              <p>Bạn chưa có địa chỉ giao hàng nào</p>
-              <button @click="showAddressForm = true" class="btn btn-gradient">
+              <p class="text-gray-600 dark:text-gray-400 mb-4">Bạn chưa có địa chỉ giao hàng nào</p>
+              <button @click="showAddressForm = true" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -65,53 +75,63 @@
               </button>
             </div>
 
-            <div v-else class="address-list">
+            <div v-else class="space-y-4">
               <div
                 v-for="addr in addresses"
                 :key="addr.id"
-                :class="['address-card', { selected: selectedAddress === addr.id }]"
+                :class="[
+                  'p-4 rounded-xl border-2 cursor-pointer transition-all',
+                  selectedAddress === addr.id
+                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
+                ]"
                 @click="selectedAddress = addr.id"
               >
-                <div class="card-radio">
-                  <div class="radio-circle" :class="{ checked: selectedAddress === addr.id }">
-                    <span v-if="selectedAddress === addr.id">✓</span>
+                <div class="flex items-start gap-4">
+                  <div :class="[
+                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1',
+                    selectedAddress === addr.id
+                      ? 'bg-purple-600 border-purple-600 text-white'
+                      : 'border-gray-300 dark:border-gray-600'
+                  ]">
+                    <span v-if="selectedAddress === addr.id" class="text-xs">✓</span>
                   </div>
-                </div>
-                <div class="card-content">
-                  <h4>{{ addr.recipientName }}</h4>
-                  <div class="address-details">
-                    <div class="detail-item">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                      </svg>
-                      {{ addr.phone }}
-                    </div>
-                    <div class="detail-item">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                      </svg>
-                      {{ addr.line1 }}
-                    </div>
-                    <div v-if="addr.line2" class="detail-item">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                      </svg>
-                      {{ addr.line2 }}
-                    </div>
-                    <div class="detail-item">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="2" y1="12" x2="22" y2="12"></line>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                      </svg>
-                      {{ addr.district }}, {{ addr.city }}
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ addr.recipientName }}</h4>
+                    <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                      <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        {{ addr.phone }}
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        {{ addr.line1 }}
+                      </div>
+                      <div v-if="addr.line2" class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        {{ addr.line2 }}
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="2" y1="12" x2="22" y2="12"></line>
+                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                        {{ addr.district }}, {{ addr.city }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <button @click="showAddressForm = true" class="btn btn-outline btn-add-address">
+              <button @click="showAddressForm = true" class="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-purple-400 dark:hover:border-purple-600 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -120,11 +140,11 @@
               </button>
             </div>
 
-            <div class="step-actions">
+            <div class="flex justify-end mt-6">
               <button
                 @click="nextStep"
                 :disabled="!selectedAddress"
-                class="btn btn-gradient btn-lg btn-next"
+                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Tiếp tục
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -136,8 +156,8 @@
           </div>
 
           <!-- Step 2: Payment Method -->
-          <div v-show="currentStep === 2" class="form-step">
-            <h2 class="step-heading">
+          <div v-show="currentStep === 2" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                 <line x1="1" y1="10" x2="23" y2="10"></line>
@@ -145,75 +165,95 @@
               Phương thức thanh toán
             </h2>
 
-            <div class="payment-methods">
+            <div class="space-y-4 mb-6">
               <div
-                :class="['payment-card', { selected: paymentMethod === 'cod' }]"
+                :class="[
+                  'p-4 rounded-xl border-2 cursor-pointer transition-all',
+                  paymentMethod === 'cod'
+                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
+                ]"
                 @click="paymentMethod = 'cod'"
               >
-                <div class="card-radio">
-                  <div class="radio-circle" :class="{ checked: paymentMethod === 'cod' }">
-                    <span v-if="paymentMethod === 'cod'">✓</span>
+                <div class="flex items-start gap-4">
+                  <div :class="[
+                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1',
+                    paymentMethod === 'cod'
+                      ? 'bg-purple-600 border-purple-600 text-white'
+                      : 'border-gray-300 dark:border-gray-600'
+                  ]">
+                    <span v-if="paymentMethod === 'cod'" class="text-xs">✓</span>
                   </div>
-                </div>
-                <div class="card-content">
-                  <div class="payment-header">
-                    <div class="payment-icon cod-icon">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                      </svg>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <div class="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-purple-600 dark:text-purple-400">
+                          <line x1="12" y1="1" x2="12" y2="23"></line>
+                          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-gray-900 dark:text-gray-100">Thanh toán khi nhận hàng (COD)</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Thanh toán bằng tiền mặt khi nhận hàng</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4>Thanh toán khi nhận hàng (COD)</h4>
-                      <p>Thanh toán bằng tiền mặt khi nhận hàng</p>
+                    <div class="flex gap-2">
+                      <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">✓ Tiện lợi</span>
+                      <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">✓ Không mất phí</span>
                     </div>
-                  </div>
-                  <div class="payment-features">
-                    <span class="feature-badge">✓ Tiện lợi</span>
-                    <span class="feature-badge">✓ Không mất phí</span>
                   </div>
                 </div>
               </div>
 
               <div
-                :class="['payment-card', { selected: paymentMethod === 'online' }]"
+                :class="[
+                  'p-4 rounded-xl border-2 cursor-pointer transition-all',
+                  paymentMethod === 'online'
+                    ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
+                ]"
                 @click="paymentMethod = 'online'"
               >
-                <div class="card-radio">
-                  <div class="radio-circle" :class="{ checked: paymentMethod === 'online' }">
-                    <span v-if="paymentMethod === 'online'">✓</span>
+                <div class="flex items-start gap-4">
+                  <div :class="[
+                    'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1',
+                    paymentMethod === 'online'
+                      ? 'bg-purple-600 border-purple-600 text-white'
+                      : 'border-gray-300 dark:border-gray-600'
+                  ]">
+                    <span v-if="paymentMethod === 'online'" class="text-xs">✓</span>
                   </div>
-                </div>
-                <div class="card-content">
-                  <div class="payment-header">
-                    <div class="payment-icon online-icon">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                        <line x1="1" y1="10" x2="23" y2="10"></line>
-                      </svg>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <div class="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-600 dark:text-blue-400">
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                          <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-gray-900 dark:text-gray-100">Thanh toán trực tuyến</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Thanh toán qua VNPay, MoMo, thẻ ATM/Visa...</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4>Thanh toán trực tuyến</h4>
-                      <p>Thanh toán qua VNPay, MoMo, thẻ ATM/Visa...</p>
+                    <div class="flex gap-2">
+                      <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs">✓ Nhanh chóng</span>
+                      <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs">✓ Bảo mật</span>
                     </div>
-                  </div>
-                  <div class="payment-features">
-                    <span class="feature-badge">✓ Nhanh chóng</span>
-                    <span class="feature-badge">✓ Bảo mật</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="step-actions">
-              <button @click="prevStep" class="btn btn-outline btn-lg">
+            <div class="flex justify-between mt-6">
+              <button @click="prevStep" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="19" y1="12" x2="5" y2="12"></line>
                   <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
                 Quay lại
               </button>
-              <button @click="nextStep" class="btn btn-gradient btn-lg btn-next">
+              <button @click="nextStep" class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">
                 Tiếp tục
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -224,8 +264,8 @@
           </div>
 
           <!-- Step 3: Review & Confirm -->
-          <div v-show="currentStep === 3" class="form-step">
-            <h2 class="step-heading">
+          <div v-show="currentStep === 3" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="9 11 12 14 22 4"></polyline>
                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
@@ -233,57 +273,46 @@
               Xác nhận đơn hàng
             </h2>
 
-            <div class="review-section">
-              <div class="review-card">
-                <div class="review-header">
-                  <h3>Địa chỉ giao hàng</h3>
-                  <button @click="currentStep = 1" class="btn-edit">Sửa</button>
+            <div class="space-y-4 mb-6">
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-semibold text-gray-900 dark:text-gray-100">Địa chỉ giao hàng</h3>
+                  <button @click="currentStep = 1" class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium">Sửa</button>
                 </div>
-                <div class="review-content" v-if="selectedAddressData">
-                  <div class="review-item">
-                    <strong>{{ selectedAddressData.recipientName }}</strong>
-                  </div>
-                  <div class="review-item">{{ selectedAddressData.phone }}</div>
-                  <div class="review-item">{{ selectedAddressData.line1 }}</div>
-                  <div class="review-item" v-if="selectedAddressData.line2">{{ selectedAddressData.line2 }}</div>
-                  <div class="review-item">{{ selectedAddressData.district }}, {{ selectedAddressData.city }}</div>
+                <div v-if="selectedAddressData" class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                  <div><strong class="text-gray-900 dark:text-gray-100">{{ selectedAddressData.recipientName }}</strong></div>
+                  <div>{{ selectedAddressData.phone }}</div>
+                  <div>{{ selectedAddressData.line1 }}</div>
+                  <div v-if="selectedAddressData.line2">{{ selectedAddressData.line2 }}</div>
+                  <div>{{ selectedAddressData.district }}, {{ selectedAddressData.city }}</div>
                 </div>
               </div>
 
-              <div class="review-card">
-                <div class="review-header">
-                  <h3>Phương thức thanh toán</h3>
-                  <button @click="currentStep = 2" class="btn-edit">Sửa</button>
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-semibold text-gray-900 dark:text-gray-100">Phương thức thanh toán</h3>
+                  <button @click="currentStep = 2" class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-sm font-medium">Sửa</button>
                 </div>
-                <div class="review-content">
-                  <div class="review-item">
-                    <strong v-if="paymentMethod === 'cod'">Thanh toán khi nhận hàng (COD)</strong>
-                    <strong v-else>Thanh toán trực tuyến</strong>
-                  </div>
-                  <div class="review-item" v-if="paymentMethod === 'cod'">
-                    Thanh toán bằng tiền mặt khi nhận hàng
-                  </div>
-                  <div class="review-item" v-else>
-                    Thanh toán qua VNPay, MoMo, thẻ ATM/Visa...
-                  </div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                  <div><strong class="text-gray-900 dark:text-gray-100" v-if="paymentMethod === 'cod'">Thanh toán khi nhận hàng (COD)</strong><strong class="text-gray-900 dark:text-gray-100" v-else>Thanh toán trực tuyến</strong></div>
+                  <div v-if="paymentMethod === 'cod'">Thanh toán bằng tiền mặt khi nhận hàng</div>
+                  <div v-else>Thanh toán qua VNPay, MoMo, thẻ ATM/Visa...</div>
                 </div>
               </div>
 
-              <div class="review-card">
-                <div class="review-header">
-                  <h3>Ghi chú (không bắt buộc)</h3>
-                </div>
+              <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-3">Ghi chú (không bắt buộc)</h3>
                 <textarea
                   v-model="notes"
                   placeholder="Nhập ghi chú cho đơn hàng (nếu có)..."
-                  class="notes-textarea"
+                  class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   rows="4"
                 ></textarea>
               </div>
             </div>
 
-            <div class="step-actions">
-              <button @click="prevStep" class="btn btn-outline btn-lg">
+            <div class="flex justify-between">
+              <button @click="prevStep" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="19" y1="12" x2="5" y2="12"></line>
                   <polyline points="12 19 5 12 12 5"></polyline>
@@ -293,7 +322,7 @@
               <button
                 @click="handleCheckout"
                 :disabled="processing"
-                class="btn btn-gradient btn-lg btn-next btn-checkout-confirm"
+                class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <svg v-if="!processing" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="20 6 9 17 4 12"></polyline>
@@ -306,9 +335,9 @@
         </div>
 
         <!-- Right: Order Summary -->
-        <div class="order-summary-sticky">
-          <div class="order-summary">
-            <h2>
+        <div class="lg:col-span-1">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
+            <h2 class="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
@@ -318,110 +347,108 @@
             </h2>
 
             <!-- Cart Items -->
-            <div class="summary-items">
+            <div class="space-y-3 mb-6 max-h-64 overflow-y-auto">
               <div
                 v-for="item in cart?.items || []"
                 :key="item.cartItemId"
-                class="summary-item"
+                class="flex gap-3"
               >
-                <div class="item-image">
-                  <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.productName" />
+                <div class="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                  <img :src="item.imageUrl || '/placeholder-image.png'" :alt="item.productName" class="w-full h-full object-cover" />
                 </div>
-                <div class="summary-item-info">
-                  <p class="item-name">{{ item.productName }}</p>
-                  <p class="item-variant">{{ item.size }} / {{ item.color }}</p>
-                  <p class="item-quantity">Số lượng: {{ item.quantity }}</p>
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{{ item.productName }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.size }} / {{ item.color }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Số lượng: {{ item.quantity }}</p>
                 </div>
-                <p class="item-price">{{ formatPrice(item.totalPrice) }}</p>
+                <p class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ formatPrice(item.totalPrice) }}</p>
               </div>
             </div>
 
             <!-- Price Breakdown -->
-            <div class="price-breakdown">
-              <div class="price-row">
+            <div class="space-y-3 mb-6">
+              <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>Tạm tính</span>
-                <span>{{ formatPrice(cart?.subTotal || 0) }}</span>
+                <span class="text-gray-900 dark:text-gray-100">{{ formatPrice(cart?.subTotal || 0) }}</span>
               </div>
-              <div class="price-row">
+              <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span>Phí vận chuyển</span>
-                <span :class="{ 'free-text': shippingFee === 0 }">
+                <span :class="shippingFee === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'">
                   {{ shippingFee === 0 ? 'Miễn phí' : formatPrice(shippingFee) }}
                 </span>
               </div>
 
               <!-- Loyalty Points Section -->
-              <div class="loyalty-points-section">
-                <div class="loyalty-header">
-                  <div class="loyalty-toggle">
+              <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                <div class="flex items-center justify-between mb-2">
+                  <label class="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       id="use-points"
                       v-model="usePoints"
                       :disabled="currentBalance === 0"
-                      class="loyalty-checkbox"
+                      class="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
                     />
-                    <label for="use-points" class="loyalty-label">
-                      <span class="material-icons">stars</span>
-                      Sử dụng điểm thưởng
-                    </label>
-                  </div>
-                  <span class="loyalty-balance">
+                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Sử dụng điểm thưởng</span>
+                  </label>
+                  <span class="text-sm text-purple-600 dark:text-purple-400 font-semibold">
                     {{ currentBalance.toLocaleString() }} điểm
                   </span>
                 </div>
 
-                <div v-if="usePoints" class="loyalty-control">
-                  <div class="points-input-wrapper">
+                <div v-if="usePoints" class="mt-3 space-y-2">
+                  <div class="flex gap-2">
                     <input
                       type="number"
                       v-model.number="pointsToUse"
                       :max="maxPointsUsable"
                       :min="0"
-                      class="points-input"
+                      class="flex-1 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
                       placeholder="Nhập số điểm"
                     />
                     <button
                       @click="pointsToUse = maxPointsUsable"
-                      class="btn-use-max"
+                      class="px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-lg text-xs font-medium hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
                     >
-                      Dùng tối đa
+                      Tối đa
                     </button>
                   </div>
-                  <p class="points-info">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
                     Tối đa {{ maxPointsUsable.toLocaleString() }} điểm (≈ {{ formatPrice(maxPointsUsable * 1000) }})
                   </p>
                 </div>
               </div>
 
-              <div v-if="loyaltyDiscount > 0" class="price-row discount-row">
+              <div v-if="loyaltyDiscount > 0" class="flex justify-between text-sm text-green-600 dark:text-green-400">
                 <span>Giảm giá từ điểm thưởng</span>
-                <span class="discount-amount">-{{ formatPrice(loyaltyDiscount) }}</span>
+                <span>-{{ formatPrice(loyaltyDiscount) }}</span>
               </div>
 
-              <div class="price-divider"></div>
-              <div class="price-row total">
-                <span>Tổng cộng</span>
-                <span class="total-amount">{{ formatPrice(totalAmount) }}</span>
+              <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">Tổng cộng</span>
+                  <span class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ formatPrice(totalAmount) }}</span>
+                </div>
               </div>
             </div>
 
             <!-- Trust Badges -->
-            <div class="trust-badges">
-              <div class="trust-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="grid grid-cols-1 gap-2 mb-4">
+              <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
                 Thanh toán bảo mật
               </div>
-              <div class="trust-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
                 Chính hãng 100%
               </div>
-              <div class="trust-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="23 4 23 10 17 10"></polyline>
                   <polyline points="1 20 1 14 7 14"></polyline>
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -430,9 +457,9 @@
               </div>
             </div>
 
-            <p class="checkout-note">
+            <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
               Bằng việc đặt hàng, bạn đồng ý với 
-              <a href="#">Điều khoản sử dụng</a> của chúng tôi
+              <a href="#" class="text-purple-600 dark:text-purple-400 hover:underline">Điều khoản sử dụng</a> của chúng tôi
             </p>
           </div>
         </div>
@@ -440,73 +467,73 @@
     </div>
 
     <!-- Add Address Modal -->
-    <div v-if="showAddressForm" class="modal-overlay" @click.self="showAddressForm = false">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Thêm địa chỉ mới</h3>
-          <button @click="showAddressForm = false" class="modal-close">×</button>
+    <div v-if="showAddressForm" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showAddressForm = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">Thêm địa chỉ mới</h3>
+          <button @click="showAddressForm = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">×</button>
         </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>Họ tên người nhận *</label>
+        <div class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Họ tên người nhận *</label>
             <input
               v-model="newAddress.recipientName"
               type="text"
-              class="form-control"
+              class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="Nguyễn Văn A"
             />
           </div>
-          <div class="form-group">
-            <label>Số điện thoại *</label>
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Số điện thoại *</label>
             <input
               v-model="newAddress.phone"
               type="tel"
-              class="form-control"
+              class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="0912345678"
             />
           </div>
-          <div class="form-group">
-            <label>Địa chỉ *</label>
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Địa chỉ *</label>
             <input
               v-model="newAddress.line1"
               type="text"
-              class="form-control"
+              class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="123 Đường ABC"
             />
           </div>
-          <div class="form-group">
-            <label>Địa chỉ bổ sung (không bắt buộc)</label>
+          <div>
+            <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Địa chỉ bổ sung (không bắt buộc)</label>
             <input
               v-model="newAddress.line2"
               type="text"
-              class="form-control"
+              class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="Căn hộ, tòa nhà..."
             />
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Quận/Huyện *</label>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Quận/Huyện *</label>
               <input
                 v-model="newAddress.district"
                 type="text"
-                class="form-control"
+                class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Quận 1"
               />
             </div>
-            <div class="form-group">
-              <label>Tỉnh/Thành phố *</label>
+            <div>
+              <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Tỉnh/Thành phố *</label>
               <input
                 v-model="newAddress.city"
                 type="text"
-                class="form-control"
+                class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="TP. Hồ Chí Minh"
               />
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button @click="saveAddress" class="btn btn-gradient">Lưu địa chỉ</button>
-          <button @click="showAddressForm = false" class="btn btn-outline">Hủy</button>
+        <div class="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+          <button @click="saveAddress" class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all">Lưu địa chỉ</button>
+          <button @click="showAddressForm = false" class="flex-1 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">Hủy</button>
         </div>
       </div>
     </div>
@@ -724,981 +751,3 @@ onMounted(async () => {
   await loyaltyStore.fetchBalance();
 });
 </script>
-
-<style scoped>
-/* ===== CHECKOUT PAGE - MODERN DARK THEME ===== */
-
-.checkout-page {
-  min-height: 100vh;
-  background: transparent;
-  padding: var(--space-6);
-}
-
-.checkout-container {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Page Header */
-.page-header {
-  margin-bottom: var(--space-8);
-  text-align: center;
-}
-
-.page-title {
-  font-size: 2.5rem;
-  font-weight: var(--font-bold);
-  color: #f1f5f9;
-  margin: 0 0 var(--space-2);
-}
-
-.page-subtitle {
-  font-size: var(--text-lg);
-  color: #94a3b8;
-  margin: 0;
-}
-
-/* Loading */
-.loading-container {
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  color: #e2e8f0;
-}
-
-.loading-spinner-lg {
-  width: 60px;
-  height: 60px;
-  border: 4px solid rgba(167, 139, 250, 0.2);
-  border-top-color: #a78bfa;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Checkout Grid */
-.checkout-grid {
-  display: grid;
-  grid-template-columns: 1fr 450px;
-  gap: var(--space-8);
-  align-items: start;
-}
-
-/* Step Progress */
-.step-progress {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: var(--space-8);
-  padding: var(--space-6);
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  border-radius: var(--radius-xl);
-  backdrop-filter: blur(10px);
-}
-
-.step-item {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  position: relative;
-}
-
-.step-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: calc(-50% + 40px);
-  top: 20px;
-  width: calc(100% - 80px);
-  height: 2px;
-  background: rgba(167, 139, 250, 0.2);
-  z-index: 0;
-}
-
-.step-item.completed:not(:last-child)::after {
-  background: linear-gradient(90deg, #a78bfa 0%, #8b5cf6 100%);
-}
-
-.step-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(30, 41, 59, 0.6);
-  border: 2px solid rgba(167, 139, 250, 0.3);
-  font-weight: var(--font-bold);
-  color: #94a3b8;
-  font-size: var(--text-lg);
-  transition: all var(--transition-fast);
-  position: relative;
-  z-index: 1;
-}
-
-.step-item.active .step-circle,
-.step-item.completed .step-circle {
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-  border-color: #a78bfa;
-  color: white;
-  box-shadow: 0 4px 20px rgba(167, 139, 250, 0.4);
-}
-
-.step-check {
-  font-size: 20px;
-}
-
-.step-label {
-  flex: 1;
-}
-
-.step-title {
-  font-weight: var(--font-semibold);
-  color: #e2e8f0;
-  font-size: var(--text-base);
-  margin-bottom: var(--space-1);
-}
-
-.step-item.active .step-title {
-  color: #a78bfa;
-}
-
-.step-desc {
-  font-size: var(--text-sm);
-  color: #64748b;
-}
-
-/* Form Steps */
-.form-step {
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.step-heading {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  font-size: 1.75rem;
-  font-weight: var(--font-bold);
-  color: #f1f5f9;
-  margin: 0 0 var(--space-6);
-  padding: var(--space-5);
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(10px);
-}
-
-.step-heading svg {
-  color: #a78bfa;
-}
-
-/* No Data State */
-.no-data-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  padding: var(--space-10) var(--space-6);
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  border-radius: var(--radius-lg);
-  text-align: center;
-}
-
-.no-data-state svg {
-  color: #64748b;
-}
-
-.no-data-state p {
-  color: #94a3b8;
-  font-size: var(--text-lg);
-  margin: 0;
-}
-
-/* Address List */
-.address-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.address-card {
-  display: flex;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  background: rgba(30, 41, 59, 0.4);
-  border: 2px solid rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
-}
-
-.address-card:hover {
-  border-color: rgba(167, 139, 250, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-}
-
-.address-card.selected {
-  border-color: #a78bfa;
-  background: rgba(167, 139, 250, 0.1);
-  box-shadow: 0 0 30px rgba(167, 139, 250, 0.2);
-}
-
-.card-radio {
-  flex-shrink: 0;
-}
-
-.radio-circle {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid rgba(167, 139, 250, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-  color: white;
-  font-weight: var(--font-bold);
-  font-size: 14px;
-}
-
-.radio-circle.checked {
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-  border-color: #a78bfa;
-}
-
-.card-content {
-  flex: 1;
-}
-
-.card-content h4 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: #f1f5f9;
-  margin: 0 0 var(--space-3);
-}
-
-.address-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: #cbd5e1;
-  font-size: var(--text-sm);
-}
-
-.detail-item svg {
-  flex-shrink: 0;
-  color: #64748b;
-}
-
-.btn-add-address {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  width: 100%;
-  padding: var(--space-4);
-  font-weight: var(--font-semibold);
-}
-
-/* Payment Methods */
-.payment-methods {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.payment-card {
-  display: flex;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  background: rgba(30, 41, 59, 0.4);
-  border: 2px solid rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(10px);
-}
-
-.payment-card:hover {
-  border-color: rgba(167, 139, 250, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-}
-
-.payment-card.selected {
-  border-color: #a78bfa;
-  background: rgba(167, 139, 250, 0.1);
-  box-shadow: 0 0 30px rgba(167, 139, 250, 0.2);
-}
-
-.payment-header {
-  display: flex;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.payment-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.cod-icon {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
-}
-
-.online-icon {
-  background: rgba(59, 130, 246, 0.15);
-  color: #93c5fd;
-}
-
-.payment-header h4 {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: #f1f5f9;
-  margin: 0 0 var(--space-1);
-}
-
-.payment-header p {
-  font-size: var(--text-sm);
-  color: #94a3b8;
-  margin: 0;
-}
-
-.payment-features {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.feature-badge {
-  padding: var(--space-1) var(--space-2);
-  background: rgba(167, 139, 250, 0.15);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  color: #c4b5fd;
-  font-weight: var(--font-medium);
-}
-
-/* Review Section */
-.review-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.review-card {
-  padding: var(--space-5);
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(10px);
-}
-
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid rgba(167, 139, 250, 0.1);
-}
-
-.review-header h3 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: #f1f5f9;
-  margin: 0;
-}
-
-.btn-edit {
-  padding: var(--space-1) var(--space-3);
-  background: transparent;
-  border: 1px solid rgba(167, 139, 250, 0.3);
-  border-radius: var(--radius-md);
-  color: #a78bfa;
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-edit:hover {
-  background: rgba(167, 139, 250, 0.15);
-  border-color: #a78bfa;
-}
-
-.review-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.review-item {
-  color: #cbd5e1;
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-.review-item strong {
-  color: #f1f5f9;
-  font-size: var(--text-base);
-}
-
-.notes-textarea {
-  width: 100%;
-  padding: var(--space-3);
-  background: rgba(15, 23, 42, 0.6);
-  border: 2px solid rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-md);
-  color: #f1f5f9;
-  font-family: inherit;
-  font-size: var(--text-base);
-  resize: vertical;
-  transition: all var(--transition-fast);
-}
-
-.notes-textarea:focus {
-  outline: none;
-  border-color: #a78bfa;
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.notes-textarea::placeholder {
-  color: #64748b;
-}
-
-/* Step Actions */
-.step-actions {
-  display: flex;
-  gap: var(--space-4);
-  justify-content: flex-end;
-  margin-top: var(--space-8);
-  padding-top: var(--space-6);
-  border-top: 1px solid rgba(167, 139, 250, 0.1);
-}
-
-.btn-next {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-4) var(--space-6);
-}
-
-.btn-checkout-confirm {
-  flex: 1;
-}
-
-/* Order Summary Sticky */
-.order-summary-sticky {
-  position: sticky;
-  top: var(--space-6);
-}
-
-.order-summary {
-  padding: var(--space-6);
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(167, 139, 250, 0.15);
-  border-radius: var(--radius-xl);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-}
-
-.order-summary h2 {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: #f1f5f9;
-  margin: 0 0 var(--space-5);
-  padding-bottom: var(--space-4);
-  border-bottom: 2px solid rgba(167, 139, 250, 0.2);
-}
-
-.order-summary h2 svg {
-  color: #a78bfa;
-}
-
-.summary-items {
-  max-height: 400px;
-  overflow-y: auto;
-  margin-bottom: var(--space-5);
-  padding-right: var(--space-2);
-}
-
-.summary-items::-webkit-scrollbar {
-  width: 6px;
-}
-
-.summary-items::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.4);
-  border-radius: var(--radius-full);
-}
-
-.summary-items::-webkit-scrollbar-thumb {
-  background: rgba(167, 139, 250, 0.3);
-  border-radius: var(--radius-full);
-}
-
-.summary-items::-webkit-scrollbar-thumb:hover {
-  background: rgba(167, 139, 250, 0.5);
-}
-
-.summary-item {
-  display: flex;
-  gap: var(--space-3);
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.1);
-}
-
-.summary-item:last-child {
-  border-bottom: none;
-}
-
-.item-image {
-  flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(167, 139, 250, 0.1);
-}
-
-.item-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.summary-item-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.item-name {
-  font-weight: var(--font-semibold);
-  font-size: var(--text-sm);
-  color: #f1f5f9;
-  margin: 0 0 var(--space-1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.item-variant,
-.item-quantity {
-  font-size: var(--text-xs);
-  color: #94a3b8;
-  margin: 2px 0;
-}
-
-.item-price {
-  font-weight: var(--font-semibold);
-  color: #c4b5fd;
-  white-space: nowrap;
-  font-size: var(--text-sm);
-  margin: 0;
-}
-
-/* Price Breakdown */
-.price-breakdown {
-  margin-top: var(--space-5);
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-  font-size: var(--text-base);
-  color: #cbd5e1;
-}
-
-.free-text {
-  color: #6ee7b7;
-  font-weight: var(--font-semibold);
-}
-
-.price-divider {
-  height: 1px;
-  background: rgba(167, 139, 250, 0.2);
-  margin: var(--space-4) 0;
-}
-
-.price-row.total {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  margin-top: var(--space-3);
-  padding-top: var(--space-3);
-}
-
-.price-row.total span:first-child {
-  color: #f1f5f9;
-}
-
-.total-amount {
-  font-size: 1.75rem;
-  font-weight: var(--font-bold);
-  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Trust Badges */
-.trust-badges {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-2);
-  margin-top: var(--space-5);
-  padding: var(--space-4);
-  background: rgba(15, 23, 42, 0.4);
-  border-radius: var(--radius-md);
-}
-
-.trust-badge {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: #94a3b8;
-}
-
-.trust-badge svg {
-  flex-shrink: 0;
-  color: #6ee7b7;
-}
-
-.checkout-note {
-  text-align: center;
-  font-size: var(--text-sm);
-  color: #64748b;
-  margin-top: var(--space-4);
-}
-
-.checkout-note a {
-  color: #a78bfa;
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-
-.checkout-note a:hover {
-  color: #c4b5fd;
-}
-
-/* Loyalty Points Section */
-.loyalty-points-section {
-  margin: var(--space-4) 0;
-  padding: var(--space-4);
-  background: rgba(167, 139, 250, 0.05);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-md);
-}
-
-.loyalty-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-}
-
-.loyalty-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.loyalty-checkbox {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: #a78bfa;
-}
-
-.loyalty-checkbox:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.loyalty-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: #f1f5f9;
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  font-size: var(--text-sm);
-}
-
-.loyalty-label .material-icons {
-  font-size: 18px;
-  color: #ffd700;
-}
-
-.loyalty-balance {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
-  color: white;
-  border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-}
-
-.loyalty-control {
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.points-input-wrapper {
-  display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-
-.points-input {
-  flex: 1;
-  padding: var(--space-2) var(--space-3);
-  background: rgba(15, 23, 42, 0.6);
-  border: 2px solid rgba(167, 139, 250, 0.3);
-  border-radius: var(--radius-md);
-  color: #f1f5f9;
-  font-size: var(--text-base);
-  transition: all var(--transition-fast);
-}
-
-.points-input:focus {
-  outline: none;
-  border-color: #a78bfa;
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.btn-use-max {
-  padding: var(--space-2) var(--space-4);
-  background: rgba(167, 139, 250, 0.2);
-  border: 1px solid rgba(167, 139, 250, 0.4);
-  border-radius: var(--radius-md);
-  color: #c4b5fd;
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-}
-
-.btn-use-max:hover {
-  background: rgba(167, 139, 250, 0.3);
-  border-color: #a78bfa;
-}
-
-.points-info {
-  font-size: var(--text-xs);
-  color: #94a3b8;
-  margin: 0;
-}
-
-.discount-row {
-  color: #6ee7b7;
-}
-
-.discount-amount {
-  font-weight: var(--font-bold);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(5px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal {
-  background: rgba(30, 41, 59, 0.95);
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-xl);
-  max-width: 600px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-5);
-  border-bottom: 1px solid rgba(167, 139, 250, 0.15);
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: #f1f5f9;
-}
-
-.modal-close {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  font-size: 2rem;
-  cursor: pointer;
-  color: #64748b;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-4);
-}
-
-.form-group {
-  margin-bottom: var(--space-4);
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-semibold);
-  color: #e2e8f0;
-  font-size: var(--text-sm);
-}
-
-.form-control {
-  width: 100%;
-  padding: var(--space-3);
-  background: rgba(15, 23, 42, 0.6);
-  border: 2px solid rgba(167, 139, 250, 0.2);
-  border-radius: var(--radius-md);
-  color: #f1f5f9;
-  font-size: var(--text-base);
-  transition: all var(--transition-fast);
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #a78bfa;
-  background: rgba(15, 23, 42, 0.8);
-}
-
-.form-control::placeholder {
-  color: #64748b;
-}
-
-.modal-footer {
-  padding: var(--space-5);
-  border-top: 1px solid rgba(167, 139, 250, 0.15);
-  display: flex;
-  gap: var(--space-3);
-  justify-content: flex-end;
-}
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .checkout-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
-
-  .order-summary-sticky {
-    position: static;
-  }
-}
-
-@media (max-width: 768px) {
-  .step-progress {
-    flex-direction: column;
-  }
-
-  .step-item::after {
-    display: none;
-  }
-
-  .step-actions {
-    flex-direction: column-reverse;
-  }
-
-  .step-actions button {
-    width: 100%;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .page-title {
-    font-size: 2rem;
-  }
-}
-</style>

@@ -1,26 +1,26 @@
 <template>
-  <div class="admin-page admin-payments">
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="page-header animate-fade-in">
-      <div class="header-content">
-        <div class="title-section">
-          <h1 class="page-title">
-            <span class="material-icons">payment</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">payment</i>
             Quản lý thanh toán
           </h1>
-          <p class="page-subtitle">Theo dõi và quản lý tất cả giao dịch thanh toán</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Theo dõi và quản lý tất cả giao dịch thanh toán</p>
         </div>
-        <div class="header-actions">
-          <button @click="exportPayments('csv')" class="btn btn-secondary">
-            <span class="material-icons">file_download</span>
+        <div class="flex items-center gap-2">
+          <button @click="exportPayments('csv')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">file_download</i>
             CSV
           </button>
-          <button @click="exportPayments('json')" class="btn btn-secondary">
-            <span class="material-icons">code</span>
+          <button @click="exportPayments('json')" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+            <i class="material-icons text-base">code</i>
             JSON
           </button>
-          <button @click="refreshPayments" class="btn btn-primary">
-            <span class="material-icons">refresh</span>
+          <button @click="refreshPayments" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+            <i class="material-icons text-base">refresh</i>
             Làm mới
           </button>
         </div>
@@ -28,119 +28,123 @@
     </div>
 
     <!-- Enhanced Stats Grid -->
-    <div class="stats-grid animate-fade-up">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">
-          <span class="material-icons">attach_money</span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-teal-400 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">attach_money</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Tổng doanh thu</div>
-          <div class="stat-value">{{ formatCurrency(totalRevenue) }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">trending_up</span>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ formatCurrency(totalRevenue) }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Tổng doanh thu</p>
+          <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+            <i class="material-icons text-sm">trending_up</i>
             +12.5% so với tháng trước
-          </div>
+          </p>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-          <span class="material-icons">check_circle</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">check_circle</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Giao dịch thành công</div>
-          <div class="stat-value">{{ completedPayments }}</div>
-          <div class="stat-change positive">
-            <span class="material-icons">done</span>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ completedPayments }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Giao dịch thành công</p>
+          <p class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+            <i class="material-icons text-sm">done</i>
             {{ Math.round((completedPayments / totalPayments) * 100) || 0 }}% tổng số
-          </div>
+          </p>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-          <span class="material-icons">error</span>
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">error</i>
+          </div>
         </div>
-        <div class="stat-content">
-          <div class="stat-label">Giao dịch thất bại</div>
-          <div class="stat-value">{{ failedPayments }}</div>
-          <div class="stat-change negative">
-            <span class="material-icons">trending_down</span>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ failedPayments }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Giao dịch thất bại</p>
+          <p class="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+            <i class="material-icons text-sm">trending_down</i>
             Cần xem xét
-          </div>
+          </p>
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-          <span class="material-icons">pending</span>
-        </div>
-        <div class="stat-content">
-          <div class="stat-label">Đang xử lý</div>
-          <div class="stat-value">{{ pendingPayments }}</div>
-          <div class="stat-change neutral">
-            <span class="material-icons">schedule</span>
-            Chờ xử lý
+      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
+            <i class="material-icons text-white text-lg">pending</i>
           </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ pendingPayments }}</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Đang xử lý</p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
+            <i class="material-icons text-sm">schedule</i>
+            Chờ xử lý
+          </p>
         </div>
       </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="filters-section animate-fade-up">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">search</span>
-            Tìm kiếm
-          </label>
-          <div class="search-box">
-            <span class="material-icons search-icon">search</span>
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <div class="relative">
+            <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg">search</i>
             <input 
               type="text" 
-              class="search-input" 
+              class="w-full pl-10 pr-10 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               v-model="searchKeyword"
               placeholder="Tìm theo mã giao dịch, đơn hàng..."
             />
-            <button v-if="searchKeyword" @click="clearSearch" class="search-clear">
-              <span class="material-icons">close</span>
+            <button v-if="searchKeyword" @click="clearSearch" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+              <i class="material-icons text-base">close</i>
             </button>
           </div>
         </div>
         
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">filter_list</span>
-            Trạng thái
-          </label>
-          <select class="filter-select" v-model="filterStatus">
-            <option value="all">Tất cả</option>
-            <option value="completed">Thành công</option>
-            <option value="pending">Đang xử lý</option>
-            <option value="failed">Thất bại</option>
-            <option value="refunded">Đã hoàn tiền</option>
-          </select>
-        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <i class="material-icons text-sm">filter_list</i>
+              Trạng thái
+            </label>
+            <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterStatus">
+              <option value="all">Tất cả</option>
+              <option value="completed">Thành công</option>
+              <option value="pending">Đang xử lý</option>
+              <option value="failed">Thất bại</option>
+              <option value="refunded">Đã hoàn tiền</option>
+            </select>
+          </div>
 
-        <div class="filter-group">
-          <label class="filter-label">
-            <span class="material-icons">payment</span>
-            Phương thức
-          </label>
-          <select class="filter-select" v-model="filterMethod">
-            <option value="all">Tất cả</option>
-            <option value="cod">COD</option>
-            <option value="vnpay">VNPay</option>
-            <option value="momo">MoMo</option>
-            <option value="zalopay">ZaloPay</option>
-            <option value="bank_transfer">Chuyển khoản</option>
-            <option value="credit_card">Thẻ tín dụng</option>
-          </select>
-        </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <i class="material-icons text-sm">payment</i>
+              Phương thức
+            </label>
+            <select class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" v-model="filterMethod">
+              <option value="all">Tất cả</option>
+              <option value="cod">COD</option>
+              <option value="vnpay">VNPay</option>
+              <option value="momo">MoMo</option>
+              <option value="zalopay">ZaloPay</option>
+              <option value="bank_transfer">Chuyển khoản</option>
+              <option value="credit_card">Thẻ tín dụng</option>
+            </select>
+          </div>
 
-        <div class="filter-group">
-          <button class="btn btn-outline" @click="resetFilters">
-            <span class="material-icons">refresh</span>
+          <button class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium mt-6" @click="resetFilters">
+            <i class="material-icons text-base">refresh</i>
             Làm mới
           </button>
         </div>
@@ -148,83 +152,104 @@
     </div>
 
     <!-- Payments Table -->
-    <div class="table-container animate-fade-up">
-      <div class="table-header">
-        <h3 class="table-title">Danh sách giao dịch thanh toán</h3>
-        <div class="table-actions">
-          <span class="table-info">{{ filteredPayments.length }} giao dịch</span>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Danh sách giao dịch thanh toán</h3>
+        <span class="text-sm text-gray-600 dark:text-gray-400">{{ filteredPayments.length }} giao dịch</span>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="flex flex-col items-center justify-center p-12">
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải danh sách giao dịch...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else-if="filteredPayments.length === 0" class="flex flex-col items-center justify-center p-12">
+        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
+          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">payment</i>
         </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Không có giao dịch nào</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+          Chưa có giao dịch thanh toán nào được tìm thấy
+        </p>
       </div>
 
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Đang tải dữ liệu...</p>
-      </div>
-
-      <div v-else-if="filteredPayments.length === 0" class="empty-state">
-        <span class="material-icons">payment</span>
-        <h3>Không có giao dịch nào</h3>
-        <p>Chưa có giao dịch thanh toán nào được tìm thấy</p>
-      </div>
-
-      <div v-else class="table-responsive">
-        <table class="admin-table">
-          <thead>
+      <!-- Payments Table -->
+      <div v-else class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
             <tr>
-              <th>Mã giao dịch</th>
-              <th>Đơn hàng</th>
-              <th>Phương thức</th>
-              <th>Số tiền</th>
-              <th>Trạng thái</th>
-              <th>Thời gian</th>
-              <th>Thao tác</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Mã giao dịch</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Đơn hàng</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Phương thức</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Số tiền</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thời gian</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="payment in paginatedPayments" :key="payment.id" class="payment-row">
-              <td>
-                <div class="transaction-id">{{ payment.transactionId || 'N/A' }}</div>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="payment in paginatedPayments" :key="payment.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+              <td class="px-4 py-4">
+                <code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100">
+                  {{ payment.transactionId || 'N/A' }}
+                </code>
               </td>
-              <td>
-                <div class="order-info">
-                  <div class="order-number">{{ payment.orderNumber }}</div>
-                  <div class="order-date">{{ formatDate(payment.createdAt) }}</div>
+              <td class="px-4 py-4">
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ payment.orderNumber }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(payment.createdAt) }}</div>
+              </td>
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-2">
+                  <i class="material-icons text-base text-gray-600 dark:text-gray-400">{{ getPaymentMethodIcon(payment.paymentMethod) }}</i>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ getPaymentMethodName(payment.paymentMethod) }}</span>
                 </div>
               </td>
-              <td>
-                <div class="payment-method">
-                  <span class="method-icon">
-                    <span class="material-icons">{{ getPaymentMethodIcon(payment.paymentMethod) }}</span>
-                  </span>
-                  <span class="method-name">{{ getPaymentMethodName(payment.paymentMethod) }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="amount">{{ formatCurrency(payment.amount) }}</div>
-              </td>
-              <td>
-                <span :class="['status-badge', `status-${payment.status}`]">
+              <td class="px-4 py-4 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(payment.amount) }}</td>
+              <td class="px-4 py-4">
+                <span 
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="{
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': payment.status === 'pending',
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': payment.status === 'completed',
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': payment.status === 'failed',
+                    'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': payment.status === 'refunded'
+                  }"
+                >
                   {{ getStatusText(payment.status) }}
                 </span>
               </td>
-              <td>
-                <div class="payment-time">
-                  <div class="time">{{ formatDateTime(payment.createdAt) }}</div>
-                  <div v-if="payment.paidAt" class="paid-time">
-                    Thanh toán: {{ formatDateTime(payment.paidAt) }}
-                  </div>
+              <td class="px-4 py-4">
+                <div class="text-sm text-gray-900 dark:text-gray-100">{{ formatDateTime(payment.createdAt) }}</div>
+                <div v-if="payment.paidAt" class="text-xs text-gray-500 dark:text-gray-400">
+                  Thanh toán: {{ formatDateTime(payment.paidAt) }}
                 </div>
               </td>
-              <td>
-                <div class="action-buttons">
-                  <button @click="viewPaymentDetail(payment)" class="btn-icon btn-view" title="Xem chi tiết">
-                    <span class="material-icons">visibility</span>
+              <td class="px-4 py-4 text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <button 
+                    @click="viewPaymentDetail(payment)" 
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <i class="material-icons text-base">visibility</i>
                   </button>
-                  <button v-if="payment.status === 'failed'" @click="retryPayment(payment)" class="btn-icon btn-retry" title="Thử lại">
-                    <span class="material-icons">refresh</span>
+                  <button 
+                    v-if="payment.status === 'failed'" 
+                    @click="retryPayment(payment)" 
+                    class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                    title="Thử lại"
+                  >
+                    <i class="material-icons text-base">refresh</i>
                   </button>
-                  <button v-if="payment.status === 'completed'" @click="refundPayment(payment)" class="btn-icon btn-refund" title="Hoàn tiền">
-                    <span class="material-icons">money_off</span>
+                  <button 
+                    v-if="payment.status === 'completed'" 
+                    @click="refundPayment(payment)" 
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    title="Hoàn tiền"
+                  >
+                    <i class="material-icons text-base">money_off</i>
                   </button>
                 </div>
               </td>
@@ -234,91 +259,121 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="pagination-container">
-        <button 
-          @click="goToPage(currentPage - 1)" 
-          :disabled="currentPage === 0"
-          class="page-btn"
-        >
-          <span class="material-icons">chevron_left</span>
-        </button>
-        
-        <span class="page-info">
-          Trang {{ currentPage + 1 }} / {{ totalPages }}
-        </span>
-        
-        <button 
-          @click="goToPage(currentPage + 1)" 
-          :disabled="currentPage === totalPages - 1"
-          class="page-btn"
-        >
-          <span class="material-icons">chevron_right</span>
-        </button>
+      <div v-if="!loading && filteredPayments.length > 0 && totalPages > 1" class="flex items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          Hiển thị {{ currentPage * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, filteredPayments.length) }} trong tổng số {{ filteredPayments.length }} giao dịch
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="currentPage === 0"
+            @click="goToPage(currentPage - 1)"
+          >
+            <i class="material-icons text-base">chevron_left</i>
+            Trước
+          </button>
+          <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">
+            Trang {{ currentPage + 1 }} / {{ totalPages }}
+          </span>
+          <button
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="currentPage >= totalPages - 1"
+            @click="goToPage(currentPage + 1)"
+          >
+            Sau
+            <i class="material-icons text-base">chevron_right</i>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Payment Detail Modal -->
-    <div v-if="showDetailModal" class="modal-overlay" @click="closeDetailModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3 class="modal-title">
-            <span class="material-icons">payment</span>
+    <div 
+      v-if="showDetailModal" 
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 dark:bg-opacity-70 p-4"
+      @click="closeDetailModal"
+    >
+      <div 
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-purple-600 dark:text-purple-400">payment</i>
             Chi tiết giao dịch
           </h3>
-          <button @click="closeDetailModal" class="modal-close">
-            <span class="material-icons">close</span>
+          <button 
+            @click="closeDetailModal" 
+            class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            <i class="material-icons text-base">close</i>
           </button>
         </div>
-        <div class="modal-body">
-          <div v-if="selectedPayment" class="payment-detail">
-            <div class="detail-section">
-              <h4>Thông tin giao dịch</h4>
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <label>Mã giao dịch:</label>
-                  <span>{{ selectedPayment.transactionId || 'N/A' }}</span>
+        <div class="p-4">
+          <div v-if="selectedPayment">
+            <div class="mb-6">
+              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Thông tin giao dịch</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Mã giao dịch:</label>
+                  <code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
+                    {{ selectedPayment.transactionId || 'N/A' }}
+                  </code>
                 </div>
-                <div class="detail-item">
-                  <label>Đơn hàng:</label>
-                  <span>{{ selectedPayment.orderNumber }}</span>
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Đơn hàng:</label>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ selectedPayment.orderNumber }}</span>
                 </div>
-                <div class="detail-item">
-                  <label>Phương thức:</label>
-                  <span>{{ getPaymentMethodName(selectedPayment.paymentMethod) }}</span>
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Phương thức:</label>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ getPaymentMethodName(selectedPayment.paymentMethod) }}</span>
                 </div>
-                <div class="detail-item">
-                  <label>Số tiền:</label>
-                  <span class="amount">{{ formatCurrency(selectedPayment.amount) }}</span>
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Số tiền:</label>
+                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(selectedPayment.amount) }}</span>
                 </div>
-                <div class="detail-item">
-                  <label>Trạng thái:</label>
-                  <span :class="['status-badge', `status-${selectedPayment.status}`]">
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Trạng thái:</label>
+                  <span 
+                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                    :class="{
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': selectedPayment.status === 'pending',
+                      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': selectedPayment.status === 'completed',
+                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': selectedPayment.status === 'failed',
+                      'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400': selectedPayment.status === 'refunded'
+                    }"
+                  >
                     {{ getStatusText(selectedPayment.status) }}
                   </span>
                 </div>
-                <div class="detail-item">
-                  <label>Thời gian tạo:</label>
-                  <span>{{ formatDateTime(selectedPayment.createdAt) }}</span>
+                <div>
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Thời gian tạo:</label>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ formatDateTime(selectedPayment.createdAt) }}</span>
                 </div>
-                <div v-if="selectedPayment.paidAt" class="detail-item">
-                  <label>Thời gian thanh toán:</label>
-                  <span>{{ formatDateTime(selectedPayment.paidAt) }}</span>
+                <div v-if="selectedPayment.paidAt">
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Thời gian thanh toán:</label>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ formatDateTime(selectedPayment.paidAt) }}</span>
                 </div>
-                <div v-if="selectedPayment.refundedAt" class="detail-item">
-                  <label>Thời gian hoàn tiền:</label>
-                  <span>{{ formatDateTime(selectedPayment.refundedAt) }}</span>
+                <div v-if="selectedPayment.refundedAt">
+                  <label class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 block">Thời gian hoàn tiền:</label>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ formatDateTime(selectedPayment.refundedAt) }}</span>
                 </div>
               </div>
             </div>
             
-            <div v-if="selectedPayment.gatewayResponse" class="detail-section">
-              <h4>Phản hồi từ cổng thanh toán</h4>
-              <pre class="gateway-response">{{ selectedPayment.gatewayResponse }}</pre>
+            <div v-if="selectedPayment.gatewayResponse" class="mb-6">
+              <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Phản hồi từ cổng thanh toán</h4>
+              <pre class="p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg text-xs font-mono text-gray-900 dark:text-gray-100 overflow-x-auto">{{ selectedPayment.gatewayResponse }}</pre>
             </div>
           </div>
         </div>
-        <div class="modal-actions">
-          <button @click="closeDetailModal" class="btn btn-secondary">Đóng</button>
+        <div class="flex items-center justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+          <button 
+            @click="closeDetailModal" 
+            class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+          >
+            Đóng
+          </button>
         </div>
       </div>
     </div>
@@ -598,546 +653,5 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* Page Header */
-.page-header {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
 
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-}
 
-.title-section {
-  flex: 1;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-/* Enhanced Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.stat-card {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  transition: all var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--space-4);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon .material-icons {
-  font-size: 24px;
-  color: white;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-medium);
-}
-
-.stat-value {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.stat-change {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-}
-
-.stat-change.positive {
-  color: var(--success-text);
-}
-
-.stat-change.negative {
-  color: var(--error-text);
-}
-
-.stat-change.neutral {
-  color: var(--text-secondary);
-}
-
-.stat-change .material-icons {
-  font-size: 16px;
-}
-
-/* Filters Section */
-.filters-section {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  gap: var(--space-4);
-  align-items: end;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--space-3);
-  color: var(--text-tertiary);
-  font-size: 20px;
-  z-index: 1;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
-  border: 1.5px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  background: rgba(15, 23, 42, 0.4);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
-  transition: all var(--transition-fast);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: rgba(15, 23, 42, 0.6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.search-clear {
-  position: absolute;
-  right: var(--space-3);
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all var(--transition-fast);
-}
-
-.search-clear:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Table */
-.table-container {
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.table-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.table-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.admin-table th {
-  background: rgba(15, 23, 42, 0.6);
-  color: var(--text-primary);
-  font-weight: var(--font-semibold);
-  padding: var(--space-4);
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.admin-table td {
-  padding: var(--space-4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-}
-
-.admin-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* Status Badges */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.status-completed {
-  background: var(--success-bg);
-  color: var(--success-text);
-}
-
-.status-pending {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-.status-failed {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.status-refunded {
-  background: var(--info-bg);
-  color: var(--info-text);
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.btn-icon:hover {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.btn-view:hover {
-  background: var(--info-bg);
-  color: var(--info-text);
-}
-
-.btn-retry:hover {
-  background: var(--warning-bg);
-  color: var(--warning-text);
-}
-
-.btn-refund:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-6);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.modal-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--error-bg);
-  color: var(--error-text);
-}
-
-.modal-body {
-  padding: var(--space-6);
-}
-
-.detail-section {
-  margin-bottom: var(--space-6);
-}
-
-.detail-section h4 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-4);
-}
-
-.detail-grid {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.detail-item label {
-  font-weight: var(--font-medium);
-  color: var(--text-secondary);
-}
-
-.gateway-response {
-  background: var(--bg-secondary);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  font-family: monospace;
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  white-space: pre-wrap;
-  overflow-x: auto;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-6);
-  border-top: 1px solid var(--border-primary);
-}
-
-/* Pagination */
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.page-btn {
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border-primary);
-  background: transparent;
-  color: var(--text-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition-fast);
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--accent-primary);
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.page-info {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-/* Loading & Empty States */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  color: var(--text-secondary);
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--accent-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: var(--space-4);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-12);
-  text-align: center;
-}
-
-.empty-state .material-icons {
-  font-size: 64px;
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-4);
-}
-
-.empty-state h3 {
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.empty-state p {
-  color: var(--text-secondary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .filter-row {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .admin-table {
-    font-size: var(--text-sm);
-  }
-  
-  .admin-table th,
-  .admin-table td {
-    padding: var(--space-2);
-  }
-}
-</style>
