@@ -229,9 +229,22 @@
                 <i class="material-icons text-white text-lg">shopping_cart</i>
               </div>
               <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">Giỏ hàng</h2>
-              <span v-if="cartItems.length > 0" class="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-semibold">
-                {{ cartItems.length }}
-              </span>
+              <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                leave-active-class="transition-all duration-200 ease-in"
+                enter-from-class="opacity-0 scale-0"
+                enter-to-class="opacity-100 scale-100"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-0"
+              >
+                <span 
+                  v-if="totalCartQuantity > 0" 
+                  :key="`badge-${totalCartQuantity}-${badgeAnimationKey}`"
+                  class="px-2.5 py-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full text-xs font-bold shadow-lg min-w-[24px] text-center inline-flex items-center justify-center badge-update"
+                >
+                  {{ totalCartQuantity }}
+                </span>
+              </transition>
             </div>
             <button 
               @click="resetCart" 
@@ -649,10 +662,16 @@
               </div>
               <p class="text-xs text-gray-600 dark:text-gray-400 mt-3 font-medium">Đang tìm kiếm...</p>
             </div>
-            <div v-else-if="searchCustomersList.length === 0" class="text-center py-8">
+            <div v-else-if="isSearchingCustomers && searchCustomersList.length === 0" class="text-center py-8">
               <p class="text-gray-500 dark:text-gray-400">Không tìm thấy khách hàng</p>
             </div>
+            <div v-else-if="!isSearchingCustomers && searchCustomersList.length === 0" class="text-center py-8">
+              <p class="text-gray-500 dark:text-gray-400">Đang tải danh sách khách hàng...</p>
+            </div>
             <div v-else class="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
+              <div v-if="!isSearchingCustomers && searchCustomersList.length > 0" class="mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Gợi ý khách hàng</p>
+              </div>
               <div
                 v-for="customer in searchCustomersList"
                 :key="customer.id"
@@ -882,7 +901,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 
 const adminStore = useAdminStore()
 
@@ -921,6 +940,8 @@ const customerSearchQuery = ref('')
 const searchCustomersList = ref([])
 const loadingCustomers = ref(false)
 const customerSearchTimeout = ref(null)
+const isSearchingCustomers = ref(false) // Phân biệt giữa gợi ý và kết quả tìm kiếm
+const badgeAnimationKey = ref(0) // Key để trigger animation khi badge thay đổi
 
 // Shortcuts data
 const shortcuts = [
@@ -940,6 +961,10 @@ const subtotal = computed(() => {
 
 const totalAmount = computed(() => {
   return subtotal.value - discountAmount.value
+})
+
+const totalCartQuantity = computed(() => {
+  return cartItems.value.reduce((sum, item) => sum + (item.quantity || 0), 0)
 })
 
 // Computed để lấy sản phẩm hiển thị (giới hạn số lượng)
@@ -1009,7 +1034,7 @@ const loadData = async () => {
     
   } catch (error) {
     console.error('Error loading data:', error)
-    ElMessage.error('Không thể tải dữ liệu')
+    toastService.error('Lỗi', 'Không thể tải dữ liệu')
   } finally {
     loading.value = false
   }
@@ -1035,11 +1060,11 @@ const searchProducts = async () => {
       showingAll.value = true // Khi search, hiển thị tất cả kết quả
       
       if (products.value.length === 0 && searchQuery.value.trim()) {
-        ElMessage.info('Không tìm thấy sản phẩm nào')
+        toastService.info('Thông tin', 'Không tìm thấy sản phẩm nào')
       }
     } catch (error) {
       console.error('Error searching products:', error)
-      ElMessage.error('Không thể tìm kiếm sản phẩm')
+      toastService.error('Lỗi', 'Không thể tìm kiếm sản phẩm')
     } finally {
       loading.value = false
     }
@@ -1063,7 +1088,7 @@ const filterProducts = async () => {
     
   } catch (error) {
     console.error('Error filtering products:', error)
-    ElMessage.error('Không thể lọc sản phẩm')
+    toastService.error('Lỗi', 'Không thể lọc sản phẩm')
   } finally {
     loading.value = false
   }
@@ -1087,14 +1112,14 @@ const handleBarcodeSearch = async () => {
     if (foundProducts.length > 0) {
       addToCart(foundProducts[0])
       barcodeValue.value = ''
-      ElMessage.success(`Đã thêm ${foundProducts[0].name} vào giỏ hàng`)
+      toastService.success('Thành công',`Đã thêm ${foundProducts[0].name} vào giỏ hàng`)
     } else {
-      ElMessage.warning('Không tìm thấy sản phẩm với mã này')
+      toastService.warning('Cảnh báo','Không tìm thấy sản phẩm với mã này')
     }
     
   } catch (error) {
     console.error('Error searching barcode:', error)
-    ElMessage.error('Không thể tìm kiếm sản phẩm')
+    toastService.error('Lỗi','Không thể tìm kiếm sản phẩm')
   } finally {
     loading.value = false
   }
@@ -1102,7 +1127,7 @@ const handleBarcodeSearch = async () => {
 
 const processOrder = async () => {
   if (cartItems.value.length === 0) {
-    ElMessage.warning('Giỏ hàng trống')
+    toastService.warning('Cảnh báo','Giỏ hàng trống')
     return
   }
   
@@ -1137,7 +1162,7 @@ const processOrder = async () => {
     // Xóa localStorage sau khi thanh toán thành công
     localStorage.removeItem('pos_cart')
     
-    ElMessage.success('Đơn hàng đã được tạo thành công')
+    toastService.success('Thành công','Đơn hàng đã được tạo thành công')
     
   } catch (error) {
     console.error('Error processing order:', error)
@@ -1163,7 +1188,7 @@ const processOrder = async () => {
     }
     
     // Show detailed error message
-    ElMessage.error(errorMessage)
+    toastService.error('Lỗi',errorMessage)
   } finally {
     processing.value = false
   }
@@ -1175,9 +1200,25 @@ const resetCart = () => {
   discountAmount.value = 0
   selectedCustomer.value = null
   selectedCustomerLoyaltyPoints.value = null
+  badgeAnimationKey.value += 1 // Trigger animation
   // Xóa localStorage
   localStorage.removeItem('pos_cart')
-  ElMessage.info('Đã làm mới giỏ hàng')
+  toastService.info('Thông tin','Đã làm mới giỏ hàng')
+}
+
+// Load danh sách khách hàng gợi ý
+const loadSuggestedCustomers = async () => {
+  try {
+    loadingCustomers.value = true
+    isSearchingCustomers.value = false
+    const result = await adminStore.fetchUsers(0, 10, {}) // Load 10 khách hàng đầu tiên
+    searchCustomersList.value = result.content || result || []
+  } catch (error) {
+    console.error('Error loading suggested customers:', error)
+    searchCustomersList.value = []
+  } finally {
+    loadingCustomers.value = false
+  }
 }
 
 // Tìm kiếm khách hàng
@@ -1188,19 +1229,22 @@ const searchCustomers = async () => {
   
   customerSearchTimeout.value = setTimeout(async () => {
     if (!customerSearchQuery.value.trim()) {
-      searchCustomersList.value = []
+      // Nếu không có query, hiển thị lại danh sách gợi ý
+      isSearchingCustomers.value = false
+      await loadSuggestedCustomers()
       return
     }
     
     try {
       loadingCustomers.value = true
+      isSearchingCustomers.value = true
       const result = await adminStore.fetchUsers(0, 20, {
         search: customerSearchQuery.value.trim()
       })
       searchCustomersList.value = result.content || result || []
     } catch (error) {
       console.error('Error searching customers:', error)
-      ElMessage.error('Không thể tìm kiếm khách hàng')
+      toastService.error('Lỗi','Không thể tìm kiếm khách hàng')
       searchCustomersList.value = []
     } finally {
       loadingCustomers.value = false
@@ -1214,18 +1258,35 @@ const selectCustomer = async (customer) => {
   showCustomerModal.value = false
   customerSearchQuery.value = ''
   searchCustomersList.value = []
+  isSearchingCustomers.value = false
   
   // Load loyalty points
   try {
     const balanceData = await adminStore.getUserLoyaltyBalance(customer.id)
     selectedCustomerLoyaltyPoints.value = balanceData.balance || 0
-    ElMessage.success(`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
+    toastService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
   } catch (error) {
     console.error('Error loading loyalty points:', error)
     selectedCustomerLoyaltyPoints.value = 0
-    ElMessage.success(`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
+    toastService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
   }
 }
+
+// Watch để tự động load gợi ý khi mở modal
+watch(showCustomerModal, async (newVal) => {
+  if (newVal) {
+    // Reset trạng thái khi mở modal
+    customerSearchQuery.value = ''
+    isSearchingCustomers.value = false
+    // Tự động load danh sách gợi ý
+    await loadSuggestedCustomers()
+  } else {
+    // Reset khi đóng modal
+    customerSearchQuery.value = ''
+    searchCustomersList.value = []
+    isSearchingCustomers.value = false
+  }
+})
 
 const showAllProducts = () => {
   showingAll.value = true
@@ -1256,7 +1317,7 @@ const selectProductForCart = (product) => {
   // Kiểm tra tồn kho tổng
   const availableStock = getProductStock(product)
   if (availableStock === 0) {
-    ElMessage.error('Sản phẩm này đã hết hàng')
+    toastService.error('Lỗi','Sản phẩm này đã hết hàng')
     return
   }
   
@@ -1274,7 +1335,7 @@ const selectProductForCart = (product) => {
 // Chọn variant trong modal
 const selectVariant = (variant) => {
   if ((variant.stockQuantity || 0) === 0) {
-    ElMessage.warning('Biến thể này đã hết hàng')
+    toastService.warning('Cảnh báo','Biến thể này đã hết hàng')
     return
   }
   selectedVariant.value = variant
@@ -1290,7 +1351,7 @@ const closeVariantModal = () => {
 // Thêm variant đã chọn vào giỏ
 const addSelectedVariantToCart = () => {
   if (!selectedVariant.value) {
-    ElMessage.warning('Vui lòng chọn biến thể')
+    toastService.warning('Cảnh báo','Vui lòng chọn biến thể')
     return
   }
   addToCartWithVariant(selectedProduct.value, selectedVariant.value)
@@ -1312,12 +1373,12 @@ const addToCartWithVariant = (product, variant) => {
   }
   
   if (productPrice === 0) {
-    ElMessage.warning('Sản phẩm này chưa có giá. Vui lòng kiểm tra lại.')
+    toastService.warning('Cảnh báo','Sản phẩm này chưa có giá. Vui lòng kiểm tra lại.')
     return
   }
   
   if (variantStock === 0) {
-    ElMessage.error('Sản phẩm này đã hết hàng')
+    toastService.error('Lỗi','Sản phẩm này đã hết hàng')
     return
   }
   
@@ -1331,7 +1392,7 @@ const addToCartWithVariant = (product, variant) => {
   
   // Kiểm tra số lượng không vượt quá tồn kho
   if (quantityAfterAdd > variantStock) {
-    ElMessage.warning(
+    toastService.warning('Cảnh báo',
       `Không đủ hàng. Tồn kho: ${variantStock}, Đã có trong giỏ: ${existingItem?.quantity || 0}, Yêu cầu: ${quantityAfterAdd}`
     )
     return
@@ -1339,7 +1400,8 @@ const addToCartWithVariant = (product, variant) => {
   
   if (existingItem) {
     existingItem.quantity += 1
-    ElMessage.success(`Đã thêm ${product.name} vào giỏ hàng (${existingItem.quantity}/${variantStock})`)
+    badgeAnimationKey.value += 1 // Trigger animation
+    toastService.success('Thành công',`Đã thêm ${product.name} vào giỏ hàng (${existingItem.quantity}/${variantStock})`)
   } else {
     cartItems.value.push({
       id: product.id,
@@ -1352,13 +1414,15 @@ const addToCartWithVariant = (product, variant) => {
       size: variant?.size || null,
       color: variant?.color || null
     })
-    ElMessage.success(`Đã thêm ${product.name} vào giỏ hàng (1/${variantStock})`)
+    badgeAnimationKey.value += 1 // Trigger animation
+    toastService.success('Thành công',`Đã thêm ${product.name} vào giỏ hàng (1/${variantStock})`)
   }
 }
 
 const removeFromCart = (index) => {
   cartItems.value.splice(index, 1)
-  ElMessage.info('Đã xóa sản phẩm khỏi giỏ hàng')
+  badgeAnimationKey.value += 1 // Trigger animation
+  toastService.info('Thông tin','Đã xóa sản phẩm khỏi giỏ hàng')
 }
 
 const updateQuantity = (index, quantity) => {
@@ -1372,7 +1436,7 @@ const updateQuantity = (index, quantity) => {
   // Kiểm tra stock nếu tăng số lượng
   if (quantity > item.quantity && item.stockQuantity !== undefined) {
     if (quantity > item.stockQuantity) {
-      ElMessage.warning(
+      toastService.warning('Cảnh báo',
         `Không đủ hàng. Tồn kho: ${item.stockQuantity}, Yêu cầu: ${quantity}`
       )
       // Giữ nguyên số lượng cũ
@@ -1380,12 +1444,18 @@ const updateQuantity = (index, quantity) => {
     }
   }
   
+  const oldQuantity = item.quantity
   cartItems.value[index].quantity = quantity
+  
+  // Trigger animation nếu số lượng thay đổi
+  if (oldQuantity !== quantity) {
+    badgeAnimationKey.value += 1
+  }
 }
 
 const applyDiscount = async () => {
   if (!discountCode.value || !discountCode.value.trim()) {
-    ElMessage.warning('Vui lòng nhập mã giảm giá')
+    toastService.warning('Cảnh báo','Vui lòng nhập mã giảm giá')
     return
   }
   
@@ -1394,14 +1464,14 @@ const applyDiscount = async () => {
     const coupon = await adminStore.validateCoupon(discountCode.value.trim())
     
     if (!coupon || !coupon.isActive) {
-      ElMessage.error('Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa')
+      toastService.error('Lỗi','Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa')
       discountAmount.value = 0
       return
     }
     
     // Kiểm tra minOrderAmount
     if (coupon.minOrderAmount && subtotal.value < coupon.minOrderAmount) {
-      ElMessage.warning(`Đơn hàng tối thiểu ${formatCurrency(coupon.minOrderAmount)} để áp dụng mã giảm giá`)
+      toastService.warning('Cảnh báo',`Đơn hàng tối thiểu ${formatCurrency(coupon.minOrderAmount)} để áp dụng mã giảm giá`)
       discountAmount.value = 0
       return
     }
@@ -1428,7 +1498,7 @@ const applyDiscount = async () => {
     }
     
     discountAmount.value = calculatedDiscount
-    ElMessage.success(`Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${formatCurrency(calculatedDiscount)}`)
+    toastService.success('Thành công',`Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${formatCurrency(calculatedDiscount)}`)
     
   } catch (error) {
     console.error('Error applying discount:', error)
@@ -1444,7 +1514,7 @@ const applyDiscount = async () => {
       errorMessage = error
     }
     
-    ElMessage.error(errorMessage)
+    toastService.error('Lỗi',errorMessage)
     discountAmount.value = 0
   }
 }
@@ -1499,13 +1569,34 @@ const formatDate = (dateString) => {
 
 const getPaymentMethodLabel = (method) => {
   if (!method) return 'Chưa xác định'
-  const labels = {
+  
+  // POS (Admin) - chỉ có Tiền mặt và Thẻ
+  // Backend map: cash -> cod, card -> credit_card
+  const posLabels = {
+    // Giá trị từ frontend POS
     cash: 'Tiền mặt',
     card: 'Thẻ',
-    bank_transfer: 'Chuyển khoản',
-    e_wallet: 'Ví điện tử'
+    // Giá trị từ backend (sau khi map)
+    cod: 'Tiền mặt', // Backend map cash thành cod cho POS (bán tại quầy)
+    credit_card: 'Thẻ' // Backend map card thành credit_card
   }
-  return labels[method] || method
+  
+  // Nếu là giá trị POS, trả về label POS
+  if (posLabels[method]) {
+    return posLabels[method]
+  }
+  
+  // Các phương thức khác (nếu có)
+  const otherLabels = {
+    bank_transfer: 'Chuyển khoản',
+    e_wallet: 'Ví điện tử',
+    vnpay: 'VNPay',
+    momo: 'MoMo',
+    zalopay: 'ZaloPay',
+    bank: 'Chuyển khoản'
+  }
+  
+  return otherLabels[method] || method
 }
 
 const formatCurrency = (value) => {
@@ -1591,7 +1682,7 @@ const loadSalesHistory = async () => {
       errorMessage = error.response.data.message
     }
     
-    ElMessage.error(errorMessage)
+    toastService.error('Lỗi',errorMessage)
     salesHistory.value = []
   } finally {
     loadingHistory.value = false
@@ -1706,7 +1797,7 @@ const loadCartFromLocalStorage = () => {
         selectedCustomerLoyaltyPoints.value = cartData.selectedCustomerLoyaltyPoints || null
         paymentMethod.value = cartData.paymentMethod || 'cash'
         
-        ElMessage.info('Đã khôi phục giỏ hàng từ phiên trước')
+        toastService.info('Thông tin','Đã khôi phục giỏ hàng từ phiên trước')
       } else {
         // Xóa cart cũ
         localStorage.removeItem('pos_cart')
@@ -1799,5 +1890,19 @@ onUnmounted(() => {
 
 .cart-item-move {
   transition: transform 0.3s ease;
+}
+
+/* Badge Animation */
+@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.badge-update {
+  animation: pulse-badge 0.4s ease-in-out;
 }
 </style>

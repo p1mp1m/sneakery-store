@@ -112,7 +112,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import axios from 'axios'
 
 const router = useRouter()
@@ -196,14 +196,14 @@ const updateProfile = async () => {
       localStorage.setItem('user', JSON.stringify(authStore.currentUser))
     }
 
-    ElMessage.success('Cập nhật thông tin thành công')
+    toastService.success('Thành công','Cập nhật thông tin thành công')
     
     // Cập nhật original profile
     originalProfile.fullName = profile.fullName
     originalProfile.phoneNumber = profile.phoneNumber
   } catch (error) {
     console.error('Error updating profile:', error)
-    ElMessage.error(error.response?.data?.message || 'Không thể cập nhật thông tin')
+    toastService.error('Lỗi',error.response?.data?.message || 'Không thể cập nhật thông tin')
   } finally {
     updating.value = false
   }

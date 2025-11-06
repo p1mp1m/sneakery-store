@@ -71,6 +71,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Token đã hết hạn - không set authentication, Spring Security sẽ trả về 401
                 logger.warn("JWT token has expired: " + ex.getMessage());
                 // Không cần làm gì thêm, Spring Security sẽ tự động trả về 401
+            } catch (io.jsonwebtoken.security.SignatureException ex) {
+                // Token được ký bằng secret key khác - có thể do secret key đã thay đổi
+                logger.warn("JWT signature does not match. Token may have been signed with a different secret key. User needs to log in again.");
             } catch (io.jsonwebtoken.MalformedJwtException ex) {
                 logger.warn("Invalid JWT token: " + ex.getMessage());
             } catch (io.jsonwebtoken.UnsupportedJwtException ex) {

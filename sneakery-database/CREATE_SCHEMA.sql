@@ -2,6 +2,7 @@
 -- SNEAKERY E-COMMERCE - SCHEMA V2 (API COMPATIBLE)
 -- =====================================================
 -- Schema được tối ưu để tương thích với Frontend Admin API
+-- Bao gồm: Tables, Indexes, Views, Stored Procedures, Triggers
 -- =====================================================
 
 -- Drop database if exists (BE CAREFUL!)
@@ -290,6 +291,27 @@ CREATE INDEX idx_images_primary ON Product_Images(is_primary);
 GO
 
 -- =====================================================
+-- 9a. VARIANT_IMAGES TABLE
+-- =====================================================
+CREATE TABLE Variant_Images (
+    id BIGINT PRIMARY KEY IDENTITY(1,1),
+    variant_id BIGINT NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    alt_text NVARCHAR(255),
+    is_primary BIT DEFAULT 0,
+    display_order INT DEFAULT 0,
+    cloudinary_public_id VARCHAR(255) NULL,
+    
+    created_at DATETIME2 DEFAULT GETDATE(),
+    
+    CONSTRAINT fk_variant_images_variant FOREIGN KEY (variant_id) REFERENCES Product_Variants(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_variant_images_variant ON Variant_Images(variant_id);
+CREATE INDEX idx_variant_images_primary ON Variant_Images(is_primary);
+GO
+
+-- =====================================================
 -- 10. COUPONS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Coupons (
@@ -385,7 +407,7 @@ CREATE INDEX idx_addresses_default ON Addresses(is_default);
 GO
 
 -- =====================================================
--- 11. CARTS TABLE
+-- 13. CARTS TABLE
 -- =====================================================
 CREATE TABLE Carts (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -404,7 +426,7 @@ CREATE INDEX idx_carts_session ON Carts(session_id);
 GO
 
 -- =====================================================
--- 12. CART_ITEMS TABLE
+-- 14. CART_ITEMS TABLE
 -- =====================================================
 CREATE TABLE Cart_Items (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -423,11 +445,11 @@ CREATE INDEX idx_cart_items_variant ON Cart_Items(variant_id);
 GO
 
 -- =====================================================
--- 13. ORDERS TABLE (Enhanced for Admin)
+-- 15. ORDERS TABLE (Enhanced for Admin)
 -- =====================================================
 CREATE TABLE Orders (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
-    user_id BIGINT NOT NULL,
+    user_id BIGINT NULL, -- NULL cho phép POS orders (khách vãng lai)
     order_number VARCHAR(50) NOT NULL UNIQUE,
     
     address_shipping_id BIGINT NOT NULL,
@@ -460,7 +482,7 @@ CREATE TABLE Orders (
     updated_at DATETIME2 DEFAULT GETDATE(),
     cancelled_at DATETIME2,
     
-    CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES Users(id),
+    CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE SET NULL,
     CONSTRAINT fk_orders_shipping_address FOREIGN KEY (address_shipping_id) REFERENCES Addresses(id),
     CONSTRAINT fk_orders_billing_address FOREIGN KEY (address_billing_id) REFERENCES Addresses(id),
     CONSTRAINT fk_orders_coupon FOREIGN KEY (coupon_id) REFERENCES Coupons(id)
@@ -473,7 +495,7 @@ CREATE INDEX idx_orders_created ON Orders(created_at DESC);
 GO
 
 -- =====================================================
--- 14. ORDER_DETAILS TABLE
+-- 16. ORDER_DETAILS TABLE
 -- =====================================================
 CREATE TABLE Order_Details (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -500,7 +522,7 @@ CREATE INDEX idx_order_details_variant ON Order_Details(variant_id);
 GO
 
 -- =====================================================
--- 15. PAYMENTS TABLE (Admin Management)
+-- 17. PAYMENTS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Payments (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -533,7 +555,7 @@ CREATE INDEX idx_payments_transaction ON Payments(transaction_id);
 GO
 
 -- =====================================================
--- 16. REVIEWS TABLE (Admin Management)
+-- 18. REVIEWS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Reviews (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -581,7 +603,7 @@ CREATE INDEX idx_reviews_rating ON Reviews(rating);
 GO
 
 -- =====================================================
--- 17. NOTIFICATIONS TABLE (Admin Management)
+-- 19. NOTIFICATIONS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Notifications (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -609,7 +631,7 @@ CREATE INDEX idx_notifications_created ON Notifications(created_at DESC);
 GO
 
 -- =====================================================
--- 18. INVENTORY_LOGS TABLE (Admin Management)
+-- 20. INVENTORY_LOGS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Inventory_Logs (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -640,7 +662,7 @@ CREATE INDEX idx_inventory_logs_created ON Inventory_Logs(created_at DESC);
 GO
 
 -- =====================================================
--- 19. ACTIVITY_LOGS TABLE (Admin Management)
+-- 21. ACTIVITY_LOGS TABLE (Admin Management)
 -- =====================================================
 CREATE TABLE Activity_Logs (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -667,7 +689,7 @@ CREATE INDEX idx_activity_logs_created ON Activity_Logs(created_at DESC);
 GO
 
 -- =====================================================
--- 20. WISHLISTS TABLE
+-- 22. WISHLISTS TABLE
 -- =====================================================
 CREATE TABLE Wishlists (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -686,7 +708,7 @@ CREATE INDEX idx_wishlists_product ON Wishlists(product_id);
 GO
 
 -- =====================================================
--- 21. LOYALTY_POINTS TABLE
+-- 23. LOYALTY_POINTS TABLE
 -- =====================================================
 CREATE TABLE Loyalty_Points (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -710,7 +732,7 @@ CREATE INDEX idx_loyalty_expires ON Loyalty_Points(expires_at);
 GO
 
 -- =====================================================
--- 22. RETURN_REQUESTS TABLE
+-- 24. RETURN_REQUESTS TABLE
 -- =====================================================
 CREATE TABLE Return_Requests (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -740,7 +762,7 @@ CREATE INDEX idx_return_status ON Return_Requests(status);
 GO
 
 -- =====================================================
--- 23. WARRANTIES TABLE (Admin Management)
+-- 25. WARRANTIES TABLE (Admin Management)
 -- =====================================================
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Warranties' AND type = 'U')
 BEGIN
@@ -793,7 +815,7 @@ END
 GO
 
 -- =====================================================
--- 24. EMAIL_TEMPLATES TABLE
+-- 26. EMAIL_TEMPLATES TABLE
 -- =====================================================
 CREATE TABLE Email_Templates (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -809,7 +831,7 @@ CREATE TABLE Email_Templates (
 GO
 
 -- =====================================================
--- 25. SYSTEM_SETTINGS TABLE
+-- 27. SYSTEM_SETTINGS TABLE
 -- =====================================================
 CREATE TABLE System_Settings (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -827,7 +849,7 @@ CREATE INDEX idx_system_settings_key ON System_Settings(setting_key);
 GO
 
 -- =====================================================
--- 26. ORDER_STATUS_HISTORIES TABLE
+-- 28. ORDER_STATUS_HISTORIES TABLE
 -- =====================================================
 CREATE TABLE Order_Status_Histories (
     id BIGINT PRIMARY KEY IDENTITY(1,1),
@@ -846,7 +868,7 @@ CREATE INDEX idx_status_history_order ON Order_Status_Histories(order_id);
 GO
 
 -- =====================================================
--- 26. SIZE_CHARTS TABLE
+-- 29. SIZE_CHARTS TABLE
 -- =====================================================
 CREATE TABLE Size_Charts (
     id INT PRIMARY KEY IDENTITY(1,1),
@@ -1017,6 +1039,69 @@ BEGIN
 END;
 GO
 
+-- =====================================================
+-- MIGRATIONS (Cập nhật schema cho các tính năng mới)
+-- =====================================================
+
+PRINT '';
+PRINT '=====================================================';
+PRINT 'DANG CHAY MIGRATIONS...';
+PRINT '=====================================================';
+GO
+
+-- Migration: Allow NULL user_id in Orders table for POS orders
+-- Date: 2025-11-07
+-- Description: Cho phép user_id NULL để hỗ trợ POS orders (khách vãng lai)
+PRINT 'Migration: Allow NULL user_id in Orders table for POS orders...';
+GO
+
+-- Bước 1: Drop foreign key constraint hiện tại nếu tồn tại
+IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_orders_user')
+BEGIN
+    ALTER TABLE Orders DROP CONSTRAINT fk_orders_user;
+    PRINT '  - Dropped foreign key constraint fk_orders_user';
+END
+ELSE
+BEGIN
+    PRINT '  - Foreign key constraint fk_orders_user not found (may be new schema)';
+END
+GO
+
+-- Bước 2: ALTER TABLE để cho phép user_id NULL (nếu chưa NULL)
+IF EXISTS (
+    SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_NAME = 'Orders' 
+    AND COLUMN_NAME = 'user_id' 
+    AND IS_NULLABLE = 'NO'
+)
+BEGIN
+    ALTER TABLE Orders ALTER COLUMN user_id BIGINT NULL;
+    PRINT '  - Altered user_id column to allow NULL';
+END
+ELSE
+BEGIN
+    PRINT '  - user_id column already allows NULL (may be new schema)';
+END
+GO
+
+-- Bước 3: Tạo lại foreign key constraint với ON DELETE SET NULL
+IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'fk_orders_user')
+BEGIN
+    ALTER TABLE Orders
+    ADD CONSTRAINT fk_orders_user 
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE SET NULL;
+    PRINT '  - Created foreign key constraint fk_orders_user with ON DELETE SET NULL';
+END
+ELSE
+BEGIN
+    PRINT '  - Foreign key constraint fk_orders_user already exists';
+END
+GO
+
+PRINT '  - Migration completed successfully!';
+PRINT '  - Orders table now allows NULL user_id for POS orders (walk-in customers)';
+GO
+
 SET NOCOUNT OFF; -- Re-enable row count
 
 PRINT '';
@@ -1025,14 +1110,14 @@ PRINT 'HOAN THANH TAO SCHEMA!';
 PRINT '=====================================================';
 PRINT '';
 PRINT 'Da tao thanh cong:';
-PRINT '  + 27 tables voi indexes (bao gom Materials va Shoe_Soles)';
+PRINT '  + 30 tables voi indexes (bao gom Variant_Images)';
 PRINT '  + 3 views cho admin API';
 PRINT '  + 2 stored procedures';
 PRINT '  + 2 triggers';
+PRINT '  + Migrations applied';
 PRINT '';
-PRINT 'CHUA CO DU LIEU!';
 PRINT 'Bước tiếp theo:';
-PRINT '  1. Chay file 2_INSERT_DATA.sql de them du lieu co ban';
-PRINT '  2. Chay file 3_ADD_MORE_DATA.sql de bo sung du lieu';
+PRINT '  Chay file INSERT_DATA.sql de them du lieu';
 PRINT '=====================================================';
 PRINT '';
+

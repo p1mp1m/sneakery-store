@@ -250,7 +250,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import toastService from '@/utils/toastService';
+import confirmDialogService from '@/utils/confirmDialogService';
 import userService from '@/services/userService';
 
 const router = useRouter();
@@ -295,7 +296,7 @@ const fetchCart = async () => {
     cart.value = await userService.getMyCart();
   } catch (error) {
     console.error('Error fetching cart:', error);
-    ElMessage.error(error.message || 'Không thể tải giỏ hàng');
+    toastService.error('Lỗi',error.message || 'Không thể tải giỏ hàng');
   } finally {
     loading.value = false;
   }
@@ -310,16 +311,16 @@ const updateQuantity = async (item, newQuantity) => {
       quantity: newQuantity,
     });
     await fetchCart();
-    ElMessage.success('Đã cập nhật số lượng');
+    toastService.success('Thành công','Đã cập nhật số lượng');
   } catch (error) {
     console.error('Error updating quantity:', error);
-    ElMessage.error(error.message || 'Không thể cập nhật số lượng');
+    toastService.error('Lỗi',error.message || 'Không thể cập nhật số lượng');
   }
 };
 
 const removeItem = async (item) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       `Bạn có chắc muốn xóa "${item.productName}" khỏi giỏ hàng?`,
       'Xác nhận',
       {
@@ -331,11 +332,11 @@ const removeItem = async (item) => {
 
     await userService.removeItemFromCart(item.variantId);
     await fetchCart();
-    ElMessage.success('Đã xóa sản phẩm khỏi giỏ hàng');
+    toastService.success('Thành công','Đã xóa sản phẩm khỏi giỏ hàng');
   } catch (error) {
     if (error !== 'cancel') {
       console.error('Error removing item:', error);
-      ElMessage.error(error.message || 'Không thể xóa sản phẩm');
+      toastService.error('Lỗi',error.message || 'Không thể xóa sản phẩm');
     }
   }
 };
@@ -360,7 +361,7 @@ const applyCoupon = async () => {
     if (validCoupons[code] !== undefined) {
       couponDiscount.value = validCoupons[code];
       couponApplied.value = true;
-      ElMessage.success(`Đã áp dụng mã giảm giá ${couponDiscount.value}%`);
+      toastService.success('Thành công',`Đã áp dụng mã giảm giá ${couponDiscount.value}%`);
     } else {
       couponError.value = 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
     }
@@ -377,7 +378,7 @@ const removeCoupon = () => {
   couponApplied.value = false;
   couponDiscount.value = 0;
   couponError.value = '';
-  ElMessage.info('Đã xóa mã giảm giá');
+  toastService.info('Thông tin','Đã xóa mã giảm giá');
 };
 
 const proceedToCheckout = () => {

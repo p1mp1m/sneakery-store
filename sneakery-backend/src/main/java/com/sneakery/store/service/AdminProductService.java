@@ -6,8 +6,12 @@ import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.*;
 import com.sneakery.store.util.CodeGenerator;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.*;
-import jakarta.persistence.criteria.Order;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -800,7 +804,7 @@ private AdminProductListDto convertToListDto(Product product) {
     /**
      * Build sort order
      */
-    private Order buildSortOrder(CriteriaBuilder cb, Root<Product> product, 
+    private jakarta.persistence.criteria.Order buildSortOrder(CriteriaBuilder cb, Root<Product> product, 
                                    Join<Product, ProductVariant> variant,
                                    ProductAdvancedFilterDto filter) {
         boolean isAsc = "asc".equalsIgnoreCase(filter.getSortDirection());

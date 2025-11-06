@@ -8,52 +8,40 @@
         </div>
 
         <!-- Forgot Password Form -->
-        <el-form
-          ref="forgotFormRef"
-          :model="forgotForm"
-          :rules="rules"
-          class="login-form"
-          @submit.prevent="handleForgotPassword(forgotFormRef)"
-        >
+        <form class="login-form" @submit.prevent="handleForgotPassword">
           <!-- Error Message -->
-          <el-alert
-            v-if="serverError"
-            :title="serverError"
-            type="error"
-            show-icon
-            :closable="false"
-            class="error-alert"
-          />
+          <div v-if="serverError" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
+            <i class="material-icons text-red-500 mt-0.5">error</i>
+            <p class="text-sm text-red-700 dark:text-red-400 flex-1">{{ serverError }}</p>
+          </div>
 
           <h2 class="login-title">Quên mật khẩu</h2>
           <p class="login-subtitle">Nhập email của bạn để nhận liên kết đặt lại mật khẩu.</p>
 
           <!-- Email Field -->
-          <el-form-item prop="email">
-            <el-input
-              v-model="forgotForm.email"
-              type="email"
-              placeholder="Nhập email của bạn"
-              size="large"
-              :prefix-icon="EmailIcon"
-              clearable
-            />
-          </el-form-item>
+          <div class="mb-4">
+            <div class="relative">
+              <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">email</i>
+              <input
+                v-model="forgotForm.email"
+                type="email"
+                placeholder="Nhập email của bạn"
+                class="w-full pl-11 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all"
+                required
+              />
+            </div>
+            <p v-if="errors.email" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.email }}</p>
+          </div>
 
           <!-- Submit Button -->
-          <el-form-item>
-            <el-button
-              type="primary"
-              size="large"
-              class="login-button"
-              :loading="loading"
-              native-type="submit"
-              block
-            >
-              <span v-if="!loading">Gửi liên kết đặt lại</span>
-              <span v-else>Đang gửi...</span>
-            </el-button>
-          </el-form-item>
+          <button
+            type="submit"
+            :disabled="loading"
+            class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          >
+            <i v-if="loading" class="material-icons animate-spin">refresh</i>
+            <span>{{ loading ? 'Đang gửi...' : 'Gửi liên kết đặt lại' }}</span>
+          </button>
 
           <!-- Back to login -->
           <div style="text-align:center; margin-top:16px;">
@@ -61,7 +49,7 @@
               ← Quay lại đăng nhập
             </a>
           </div>
-        </el-form>
+        </form>
       </div>
 
       <!-- Welcome Section -->
@@ -87,45 +75,19 @@
 </template>
 
 <script setup>
-import { ref, h } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
+import toastService from '@/utils/toastService';
 import axios from 'axios';
 
 const router = useRouter();
-const forgotFormRef = ref(null);
 const loading = ref(false);
 const serverError = ref('');
+const errors = ref({});
 
 const forgotForm = ref({
   email: ''
 });
-
-const rules = {
-  email: [
-    { required: true, message: 'Vui lòng nhập email', trigger: 'blur' },
-    { type: 'email', message: 'Email không hợp lệ', trigger: 'blur' }
-  ]
-};
-
-// Email icon
-const EmailIcon = () =>
-  h('svg', { width: '20', height: '20', viewBox: '0 0 24 24', fill: 'none' }, [
-    h('path', {
-      d: 'M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z',
-      stroke: 'currentColor',
-      'stroke-width': '2',
-      'stroke-linecap': 'round',
-      'stroke-linejoin': 'round'
-    }),
-    h('polyline', {
-      points: '22,6 12,13 2,6',
-      stroke: 'currentColor',
-      'stroke-width': '2',
-      'stroke-linecap': 'round',
-      'stroke-linejoin': 'round'
-    })
-  ]);
 
 const features = [
   'Sản phẩm chính hãng 100%',
@@ -133,25 +95,43 @@ const features = [
   'Hỗ trợ 24/7'
 ];
 
-const handleForgotPassword = async (formEl) => {
-  if (!formEl) return;
-  await formEl.validate(async (valid) => {
-    if (!valid) return;
-    loading.value = true;
-    serverError.value = '';
-    try {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
-        { email: forgotForm.value.email }
-      );
-      ElMessage.success(data?.message || 'Liên kết đặt lại đã được gửi!');
-    } catch (error) {
-      serverError.value = error.response?.data?.message || 'Không thể gửi email, thử lại.';
-      ElMessage.error(serverError.value);
-    } finally {
-      loading.value = false;
-    }
-  });
+// Validation
+const validateForm = () => {
+  errors.value = {};
+  
+  if (!forgotForm.value.email?.trim()) {
+    errors.value.email = 'Vui lòng nhập email';
+    return false;
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(forgotForm.value.email)) {
+    errors.value.email = 'Email không hợp lệ';
+    return false;
+  }
+  
+  return true;
+};
+
+const handleForgotPassword = async () => {
+  if (!validateForm()) return;
+  
+  loading.value = true;
+  serverError.value = '';
+  errors.value = {};
+  
+  try {
+    const { data } = await axios.post(
+      `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+      { email: forgotForm.value.email }
+    );
+    toastService.success('Thành công', data?.message || 'Liên kết đặt lại đã được gửi!');
+  } catch (error) {
+    serverError.value = error.response?.data?.message || 'Không thể gửi email, thử lại.';
+    toastService.error('Lỗi', serverError.value);
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 

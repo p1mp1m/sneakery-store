@@ -132,7 +132,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import axios from 'axios'
 
 const router = useRouter()
@@ -152,12 +152,12 @@ const passwordForm = reactive({
 const changePassword = async () => {
   // Validation
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    ElMessage.error('Mật khẩu xác nhận không khớp')
+    toastService.error('Lỗi','Mật khẩu xác nhận không khớp')
     return
   }
 
   if (passwordForm.newPassword.length < 6) {
-    ElMessage.error('Mật khẩu phải có ít nhất 6 ký tự')
+    toastService.error('Lỗi','Mật khẩu phải có ít nhất 6 ký tự')
     return
   }
 
@@ -177,11 +177,11 @@ const changePassword = async () => {
       }
     )
 
-    ElMessage.success('Đổi mật khẩu thành công!')
+    toastService.success('Thành công','Đổi mật khẩu thành công!')
     resetForm()
   } catch (error) {
     console.error('Error changing password:', error)
-    ElMessage.error(error.response?.data?.message || 'Không thể đổi mật khẩu')
+    toastService.error('Lỗi',error.response?.data?.message || 'Không thể đổi mật khẩu')
   } finally {
     changingPassword.value = false
   }

@@ -727,7 +727,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
 import { storeToRefs } from 'pinia';
-import { ElMessage } from 'element-plus';
+import toastService from '@/utils/toastService';
 import axios from 'axios';
 import userService from '@/services/userService';
 import * as guestCartService from '@/services/guestCartService';
@@ -834,7 +834,7 @@ const fetchData = async () => {
       
       // Check if cart is empty
       if (!cart.value || !cart.value.items || cart.value.items.length === 0) {
-        ElMessage.warning('Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi checkout.');
+        toastService.warning('Cảnh báo','Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi checkout.');
         router.push({ name: 'Cart' });
         return;
       }
@@ -845,7 +845,7 @@ const fetchData = async () => {
 
       // Check if cart is empty
       if (!cart.value || !cart.value.items || cart.value.items.length === 0) {
-        ElMessage.warning('Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi checkout.');
+        toastService.warning('Cảnh báo','Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi checkout.');
         router.push({ name: 'Cart' });
         return;
       }
@@ -866,7 +866,7 @@ const fetchData = async () => {
     }
   } catch (error) {
     console.error('Error fetching data:', error);
-    ElMessage.error(error.response?.data?.message || 'Không thể tải thông tin');
+    toastService.error('Lỗi',error.response?.data?.message || 'Không thể tải thông tin');
     
     // Redirect to cart if error
     if (error.response?.status === 404 || error.response?.status === 400) {
@@ -884,11 +884,11 @@ const applyCoupon = async () => {
     applyingCoupon.value = true;
     // Validate coupon code (có thể gọi API để validate)
     // Tạm thời chấp nhận mọi mã, backend sẽ validate
-    ElMessage.success('Mã giảm giá sẽ được áp dụng khi đặt hàng');
+    toastService.success('Thành công','Mã giảm giá sẽ được áp dụng khi đặt hàng');
     // Note: Backend sẽ tính discount, frontend chỉ hiển thị thông báo
   } catch (error) {
     console.error('Error applying coupon:', error);
-    ElMessage.error('Không thể áp dụng mã giảm giá');
+    toastService.error('Lỗi','Không thể áp dụng mã giảm giá');
   } finally {
     applyingCoupon.value = false;
   }
@@ -902,7 +902,7 @@ const saveAddress = async () => {
     !newAddress.value.district ||
     !newAddress.value.city
   ) {
-    ElMessage.warning('Vui lòng điền đầy đủ các trường bắt buộc');
+    toastService.warning('Cảnh báo','Vui lòng điền đầy đủ các trường bắt buộc');
     return;
   }
 
@@ -923,10 +923,10 @@ const saveAddress = async () => {
       city: '',
     };
 
-    ElMessage.success('Đã thêm địa chỉ mới');
+    toastService.success('Thành công','Đã thêm địa chỉ mới');
   } catch (error) {
     console.error('Error saving address:', error);
-    ElMessage.error('Không thể thêm địa chỉ');
+    toastService.error('Lỗi','Không thể thêm địa chỉ');
   }
 };
 
@@ -941,7 +941,7 @@ const handleCheckout = async () => {
       // Validate guest address form
       if (!newAddress.value.recipientName || !newAddress.value.phone || 
           !newAddress.value.line1 || !newAddress.value.district || !newAddress.value.city) {
-        ElMessage.warning('Vui lòng điền đầy đủ thông tin địa chỉ giao hàng');
+        toastService.warning('Cảnh báo','Vui lòng điền đầy đủ thông tin địa chỉ giao hàng');
         currentStep.value = 1; // Go back to address step
         return;
       }
@@ -966,7 +966,7 @@ const handleCheckout = async () => {
         guestCheckoutData
       );
 
-      ElMessage.success('Đặt hàng thành công!');
+      toastService.success('Thành công','Đặt hàng thành công!');
 
       // Clear guest cart
       guestCartService.clearGuestCart();
@@ -987,7 +987,7 @@ const handleCheckout = async () => {
       };
 
       await userService.checkout(checkoutData);
-      ElMessage.success('Đặt hàng thành công!');
+      toastService.success('Thành công','Đặt hàng thành công!');
 
       // Clear user cart sau khi checkout thành công
       try {
@@ -1005,7 +1005,7 @@ const handleCheckout = async () => {
     }
   } catch (error) {
     console.error('Error during checkout:', error);
-    ElMessage.error(error.message || error.response?.data?.message || 'Không thể đặt hàng');
+    toastService.error('Lỗi',error.message || error.response?.data?.message || 'Không thể đặt hàng');
   } finally {
     processing.value = false;
   }

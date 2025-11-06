@@ -296,7 +296,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { ElMessage } from "element-plus";
+import toastService from "@/utils/toastService";
 import { useAdminStore } from "@/stores/admin";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 
@@ -368,7 +368,7 @@ const fetchMaterials = async () => {
     materials.value = result.content || result || [];
   } catch (error) {
     console.error("Error fetching materials:", error);
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi tải danh sách chất liệu",
       duration: 3000,
     });
@@ -428,7 +428,7 @@ const saveMaterial = async () => {
     }
     await fetchMaterials();
     closeModal();
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: `${
         isEditMode.value ? "Cập nhật" : "Thêm"
       } chất liệu thành công!`,
@@ -436,7 +436,7 @@ const saveMaterial = async () => {
     });
   } catch (error) {
     console.error("Error saving material:", error);
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi lưu chất liệu",
       duration: 3000,
     });
@@ -457,13 +457,13 @@ const deleteMaterial = async () => {
     await fetchMaterials();
     showDeleteModal.value = false;
     materialToDelete.value = null;
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: "Xóa chất liệu thành công!",
       duration: 3000,
     });
   } catch (error) {
     console.error("Error deleting material:", error);
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi xóa chất liệu",
       duration: 3000,
     });

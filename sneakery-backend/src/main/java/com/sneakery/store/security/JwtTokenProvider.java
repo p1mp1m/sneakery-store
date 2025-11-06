@@ -27,6 +27,19 @@ public class JwtTokenProvider {
     private long JWT_EXPIRATION;
 
     /**
+     * PostConstruct để validate và trim secret key sau khi inject
+     */
+    @jakarta.annotation.PostConstruct
+    private void init() {
+        if (JWT_SECRET != null) {
+            JWT_SECRET = JWT_SECRET.trim();
+        }
+        if (JWT_SECRET == null || JWT_SECRET.isEmpty()) {
+            throw new IllegalStateException("JWT secret key is not configured properly in application.properties");
+        }
+    }
+
+    /**
      * Tạo token từ đối tượng Authentication của Spring Security
      */
     public String generateToken(Authentication authentication) {

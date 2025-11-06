@@ -4,12 +4,13 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-4">
-          <el-avatar :size="80" :src="userAvatar" class="border-4 border-purple-500 dark:border-purple-600">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-400">
+          <div class="w-20 h-20 rounded-full border-4 border-purple-500 dark:border-purple-600 overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <img v-if="userAvatar" :src="userAvatar" alt="Avatar" class="w-full h-full object-cover" />
+            <svg v-else width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-gray-400">
               <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </el-avatar>
+          </div>
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
               Chào mừng trở lại, {{ authStore.currentUser?.fullName || 'Người dùng' }}! 👋
@@ -166,7 +167,12 @@
       </div>
 
       <div v-if="loading" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <el-skeleton :rows="3" animated />
+        <div class="space-y-3">
+          <div v-for="i in 3" :key="i" class="space-y-2">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse"></div>
+          </div>
+        </div>
       </div>
 
       <div v-else-if="recentOrders.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
@@ -204,9 +210,17 @@
               </div>
             </div>
             <div>
-              <el-tag :type="getStatusType(order.status)" size="large">
+              <span 
+                :class="[
+                  'px-3 py-1 rounded-full text-sm font-medium',
+                  getStatusType(order.status) === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                  getStatusType(order.status) === 'warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                  getStatusType(order.status) === 'danger' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                ]"
+              >
                 {{ getStatusText(order.status) }}
-              </el-tag>
+              </span>
             </div>
           </div>
         </div>
@@ -277,7 +291,12 @@
         Sản phẩm đề xuất
       </h2>
       <div v-if="recommendedProducts.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <el-skeleton :rows="2" animated />
+        <div class="space-y-3">
+          <div v-for="i in 2" :key="i" class="space-y-2">
+            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse"></div>
+          </div>
+        </div>
       </div>
       <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         <div 
@@ -309,7 +328,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
 import userService from '@/services/userService';
 import ProductService from '@/services/productService';
-import { ElMessage } from 'element-plus';
+import toastService from '@/utils/toastService';
 
 const authStore = useAuthStore();
 const { recentlyViewed, clearAll, removeProduct } = useRecentlyViewed();
@@ -423,7 +442,7 @@ const loadDashboardData = async () => {
       orderStats.value = { totalOrders: 0, pendingOrders: 0, completedOrders: 0, totalSpent: 0 };
       recentOrders.value = [];
       if (error.response?.status !== 401) {
-        ElMessage.warning('Không thể tải thông tin đơn hàng');
+        toastService.warning('Cảnh báo','Không thể tải thông tin đơn hàng');
       }
     }
     
@@ -442,18 +461,18 @@ const loadDashboardData = async () => {
       }));
       
       if (recommendedProducts.value.length === 0) {
-        ElMessage.info('Chưa có sản phẩm đề xuất');
+        toastService.info('Thông tin','Chưa có sản phẩm đề xuất');
       } else {
         console.log('✅ Recommended products loaded from API:', recommendedProducts.value.length, 'products');
       }
     } catch (error) {
       console.error('Error loading recommended products:', error);
       recommendedProducts.value = [];
-      ElMessage.warning('Không thể tải sản phẩm đề xuất');
+      toastService.warning('Cảnh báo','Không thể tải sản phẩm đề xuất');
     }
   } catch (error) {
     console.error('Error loading dashboard data:', error);
-    ElMessage.error('Không thể tải dữ liệu dashboard');
+    toastService.error('Lỗi','Không thể tải dữ liệu dashboard');
   } finally {
     loading.value = false;
   }

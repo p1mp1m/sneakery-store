@@ -439,7 +439,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import adminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 
@@ -513,7 +513,7 @@ const fetchCoupons = async () => {
     updateStats()
   } catch (error) {
     console.error('Lỗi tải coupons:', error)
-    ElMessage.error('Không thể tải danh sách mã giảm giá')
+    toastService.error('Lỗi','Không thể tải danh sách mã giảm giá')
     
     // Set empty array để tránh undefined errors
     coupons.value = []
@@ -589,17 +589,17 @@ const saveCoupon = async () => {
     
     if (editingCoupon.value) {
       await adminStore.updateCoupon(editingCoupon.value.id, couponData)
-      ElMessage.success(`Đã cập nhật mã giảm giá "${couponData.code}" thành công!`)
+      toastService.success('Thành công',`Đã cập nhật mã giảm giá "${couponData.code}" thành công!`)
     } else {
       await adminStore.createCoupon(couponData)
-      ElMessage.success(`Đã tạo mã giảm giá "${couponData.code}" thành công!`)
+      toastService.success('Thành công',`Đã tạo mã giảm giá "${couponData.code}" thành công!`)
     }
     
     closeDialog()
     fetchCoupons()
   } catch (error) {
     console.error('Lỗi lưu coupon:', error)
-    ElMessage.error('Có lỗi xảy ra khi lưu mã giảm giá!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi lưu mã giảm giá!')
   } finally {
     saving.value = false
   }
@@ -609,10 +609,10 @@ const toggleCouponStatus = async (coupon) => {
   try {
     await adminStore.toggleCouponStatus(coupon.id)
     coupon.isActive = !coupon.isActive
-    ElMessage.success(`Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá "${coupon.code}" thành công!`)
+    toastService.success('Thành công',`Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá "${coupon.code}" thành công!`)
   } catch (error) {
     console.error('Lỗi toggle status:', error)
-    ElMessage.error('Không thể thay đổi trạng thái. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể thay đổi trạng thái. Vui lòng thử lại!')
   }
 }
 
@@ -621,24 +621,24 @@ const deleteCoupon = async (coupon) => {
   
   try {
     await adminStore.deleteCoupon(coupon.id)
-    ElMessage.success(`Đã xóa mã giảm giá "${coupon.code}" thành công!`)
+    toastService.success('Thành công',`Đã xóa mã giảm giá "${coupon.code}" thành công!`)
     fetchCoupons()
   } catch (error) {
     console.error('Lỗi xóa coupon:', error)
-    ElMessage.error('Không thể xóa mã giảm giá. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể xóa mã giảm giá. Vui lòng thử lại!')
   }
 }
 
 const copyCouponCode = async (code) => {
   try {
     await navigator.clipboard.writeText(code)
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: `Đã sao chép mã: ${code}`,
       duration: 2000
     })
   } catch (error) {
     console.error('Lỗi copy:', error)
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: 'Không thể sao chép mã!',
       duration: 2000
     })
@@ -728,10 +728,10 @@ const handleExport = (format) => {
   
   if (format === 'csv') {
     downloadCsv(data, `discounts_${Date.now()}.csv`)
-    ElMessage.success('Đã xuất file CSV thành công!')
+    toastService.success('Thành công','Đã xuất file CSV thành công!')
   } else if (format === 'json') {
     downloadJson(data, `discounts_${Date.now()}.json`)
-    ElMessage.success('Đã xuất file JSON thành công!')
+    toastService.success('Thành công','Đã xuất file JSON thành công!')
   }
 }
 

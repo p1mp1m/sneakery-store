@@ -7,14 +7,10 @@ import com.sneakery.store.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-// SỬA LỖI: Đảm bảo import DÒNG NÀY
-import org.springframework.data.domain.Pageable; 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-// XÓA DÒNG "import java.awt.print.Pageable;" NẾU BẠN THẤY NÓ
-// import java.awt.print.Pageable; // <-- XÓA DÒNG NÀY
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -484,19 +480,19 @@ public class AdminOrderService {
         }
         
         // Tạo địa chỉ POS mới nếu chưa có
-        // Lưu ý: Database yêu cầu user_id NOT NULL, nhưng có thể là user khác nhau
-        // Với POS, ta có thể tạo địa chỉ với user đầu tiên hoặc user null (nếu có)
+        // Lưu ý: Address vẫn cần user_id (không thể NULL), nhưng Order có thể NULL user_id
+        // Với POS address, ta cần gán cho một user (có thể dùng user đầu tiên hoặc user đặc biệt)
         Address posAddress = new Address();
-        posAddress.setUser(user); // Có thể null nếu là khách vãng lai, nhưng database yêu cầu NOT NULL
-        // Nếu user null, cần tạo user giả hoặc dùng user nào đó
+        // Nếu user null (khách vãng lai), tìm user đầu tiên để gán cho POS address
+        // Vì Address table vẫn yêu cầu user_id NOT NULL
         if (user == null) {
-            // Tìm user đầu tiên để gán cho POS address (vì user_id NOT NULL)
-            // Hoặc có thể tạo một user đặc biệt cho POS
+            // Tìm user đầu tiên để gán cho POS address
+            // Hoặc có thể tạo một user đặc biệt cho POS trong tương lai
             user = userRepository.findAll().stream().findFirst()
                     .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, 
                             "Không tìm thấy user nào trong hệ thống"));
-            posAddress.setUser(user);
         }
+        posAddress.setUser(user);
         
         posAddress.setRecipientName(user.getFullName() != null ? user.getFullName() : "Khách hàng");
         posAddress.setPhone(user.getPhoneNumber() != null ? user.getPhoneNumber() : "0900000000");

@@ -94,7 +94,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { ElMessage } from 'element-plus';
+import toastService from '@/utils/toastService';
 import axios from 'axios';
 
 const props = defineProps({
@@ -177,7 +177,7 @@ const loadSizeCharts = async () => {
     sizeCharts.value = response.data || [];
   } catch (error) {
     console.error('Error loading size charts:', error);
-    ElMessage.error('Không thể tải bảng size');
+    toastService.error('Lỗi','Không thể tải bảng size');
   } finally {
     loading.value = false;
   }

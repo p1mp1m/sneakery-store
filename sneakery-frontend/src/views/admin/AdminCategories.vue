@@ -340,7 +340,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 
@@ -467,7 +467,7 @@ const fetchCategories = async () => {
     categories.value = result.content || result || []
   } catch (error) {
     console.error('Lỗi khi tải danh sách danh mục:', error)
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: 'Không thể tải danh sách danh mục. Vui lòng thử lại!',
       duration: 5000
     })
@@ -552,7 +552,7 @@ const validateForm = () => {
 
 const handleSubmit = async () => {
   if (!validateForm()) {
-    ElMessage.warning({
+    toastService.warning('Cảnh báo',{
       message: 'Vui lòng kiểm tra lại thông tin form!',
       duration: 3000
     })
@@ -564,13 +564,13 @@ const handleSubmit = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateCategory(formData.value.id, formData.value)
-      ElMessage.success({
+      toastService.success('Thành công',{
         message: `Đã cập nhật danh mục "${formData.value.name}" thành công!`,
         duration: 3000
       })
     } else {
       await adminStore.createCategory(formData.value)
-      ElMessage.success({
+      toastService.success('Thành công',{
         message: `Đã thêm danh mục "${formData.value.name}" thành công!`,
         duration: 3000
       })
@@ -606,7 +606,7 @@ const handleSubmit = async () => {
       errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
     }
     
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: errorMessage,
       duration: 5000
     })
@@ -624,13 +624,13 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteCategory(categoryToDelete.value.id)
-    ElMessage.success(`Đã xóa danh mục "${categoryToDelete.value.name}" thành công!`)
+    toastService.success('Thành công',`Đã xóa danh mục "${categoryToDelete.value.name}" thành công!`)
     await fetchCategories()
     showDeleteModal.value = false
     categoryToDelete.value = null
   } catch (error) {
     console.error('Lỗi khi xóa danh mục:', error)
-    ElMessage.error('Không thể xóa danh mục này. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể xóa danh mục này. Vui lòng thử lại!')
   } finally {
     deleting.value = false
   }
@@ -648,10 +648,10 @@ const handleExport = (format) => {
   
   if (format === 'csv') {
     downloadCsv(data, `categories_${Date.now()}.csv`)
-    ElMessage.success('Đã xuất file CSV thành công!')
+    toastService.success('Thành công','Đã xuất file CSV thành công!')
   } else if (format === 'json') {
     downloadJson(data, `categories_${Date.now()}.json`)
-    ElMessage.success('Đã xuất file JSON thành công!')
+    toastService.success('Thành công','Đã xuất file JSON thành công!')
   }
 }
 
@@ -688,12 +688,12 @@ const handleBulkDelete = async () => {
       await adminStore.deleteCategory(categoryId)
     }
     
-    ElMessage.success(`Đã xóa ${selectedCategories.value.length} danh mục thành công!`)
+    toastService.success('Thành công',`Đã xóa ${selectedCategories.value.length} danh mục thành công!`)
     selectedCategories.value = []
     await fetchCategories()
   } catch (error) {
     console.error('Lỗi khi xóa danh mục:', error)
-    ElMessage.error('Có lỗi xảy ra khi xóa danh mục. Vui lòng thử lại!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi xóa danh mục. Vui lòng thử lại!')
   } finally {
     deleting.value = false
   }

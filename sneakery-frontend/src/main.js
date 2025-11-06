@@ -1,27 +1,16 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia' // 👈 1. Import Pinia
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 
 // Import Tailwind CSS FIRST - before other styles
 import './assets/styles/tailwind.css'
 
 import App from './App.vue'
 import router from './routers/index.js'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
 
 const app = createApp(App)
 const pinia = createPinia() // 👈 2. Tạo một instance của Pinia
-
-// ⚙️ Cấu hình mặc định
-ElMessage.defaults = {
-  offset: 20,      // cách mép trên 20px
-  showClose: true, // có nút đóng
-  grouping: false, // không gộp
-  center: false,
-  customClass: 'aurora-message'
-}
 
 // ============================================
 // 🔐 AXIOS INTERCEPTOR - TỰ ĐỘNG GỬI JWT TOKEN
@@ -71,7 +60,7 @@ axios.interceptors.response.use(
     // Xử lý lỗi network
     if (!error.response) {
       console.error('❌ Network Error:', error.message);
-      ElMessage.error('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
+      toastService.error('Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
     }
     
     return Promise.reject(error);
@@ -79,7 +68,6 @@ axios.interceptors.response.use(
 );
 
 app.use(router)
-app.use(ElementPlus)
 app.use(pinia) // 👈 3. Sử dụng Pinia
 
 // ═══════════════════════════════════════════════════════════════════════

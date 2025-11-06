@@ -428,7 +428,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
 
 // Stores
@@ -567,7 +568,7 @@ const fetchLogs = async () => {
     console.log('📊 Logs sample:', logs.value.slice(0, 3))
   } catch (error) {
     console.error('❌ Error fetching logs:', error)
-    ElMessage.error('Không thể tải nhật ký hoạt động: ' + (error.message || 'Unknown error'))
+    toastService.error('Lỗi','Không thể tải nhật ký hoạt động: ' + (error.message || 'Unknown error'))
   } finally {
     loading.value = false
   }
@@ -607,7 +608,7 @@ const closeDetailModal = () => {
 
 const clearOldLogs = async () => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc chắn muốn xóa các nhật ký cũ hơn 30 ngày? Hành động này không thể hoàn tác.',
       'Xác nhận dọn dẹp',
       {
@@ -621,7 +622,7 @@ const clearOldLogs = async () => {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     logs.value = logs.value.filter(log => new Date(log.createdAt) > thirtyDaysAgo)
     
-    ElMessage.success('Đã dọn dẹp nhật ký cũ thành công')
+    toastService.success('Thành công','Đã dọn dẹp nhật ký cũ thành công')
   } catch {
     // User cancelled
   }
@@ -631,7 +632,7 @@ const exportLogs = (format) => {
   try {
     const dataToExport = filteredLogs.value || []
     if (dataToExport.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -653,14 +654,14 @@ const exportLogs = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'activity-logs.csv')
-      ElMessage.success('Xuất CSV thành công!')
+      toastService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('activity-logs', exportData)
-      ElMessage.success('Xuất JSON thành công!')
+      toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     console.error('Export error:', error)
-    ElMessage.error('Có lỗi xảy ra khi xuất dữ liệu!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 

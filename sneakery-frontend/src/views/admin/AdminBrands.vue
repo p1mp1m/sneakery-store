@@ -362,7 +362,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 
 const adminStore = useAdminStore();
@@ -442,7 +442,7 @@ const fetchBrands = async () => {
   } catch (error) {
     console.error("Error fetching brands:", error);
     // alert("Lỗi khi tải danh sách thương hiệu");
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi tải danh sách thương hiệu",
       duration: 3000,
     });
@@ -507,7 +507,7 @@ const saveBrand = async () => {
     await fetchBrands();
     closeModal();
     // alert(`${isEditMode.value ? "Cập nhật" : "Thêm"} thương hiệu thành công!`);
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: `${
         isEditMode.value ? "Cập nhật" : "Thêm"
       } thương hiệu thành công!`,
@@ -516,7 +516,7 @@ const saveBrand = async () => {
   } catch (error) {
     console.error("Error saving brand:", error);
     // alert("Lỗi khi lưu thương hiệu");
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi lưu thương hiệu",
       duration: 3000,
     });
@@ -538,14 +538,14 @@ const deleteBrand = async () => {
     showDeleteModal.value = false;
     brandToDelete.value = null;
     // alert("Xóa thương hiệu thành công!");
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: "Xóa thương hiệu thành công!",
       duration: 3000,
     });
   } catch (error) {
     console.error("Error deleting brand:", error);
     // alert("Lỗi khi xóa thương hiệu");
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi xóa thương hiệu",
       duration: 3000,
     });

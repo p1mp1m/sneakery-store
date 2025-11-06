@@ -370,7 +370,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
 
 // Stores
@@ -502,7 +503,7 @@ const fetchPoints = async () => {
     console.log('📊 Points sample:', points.value.slice(0, 3))
   } catch (error) {
     console.error('❌ Error fetching loyalty:', error)
-    ElMessage.error('Không thể tải danh sách điểm thưởng: ' + (error.message || 'Unknown error'))
+    toastService.error('Lỗi','Không thể tải danh sách điểm thưởng: ' + (error.message || 'Unknown error'))
   } finally {
     loading.value = false
   }
@@ -534,17 +535,17 @@ const closeSettingsModal = () => {
 }
 
 const saveSettings = () => {
-  ElMessage.success('Đã lưu cài đặt thành công')
+  toastService.success('Thành công','Đã lưu cài đặt thành công')
   closeSettingsModal()
 }
 
 const viewPointDetail = (point) => {
-  ElMessage.info(`Xem chi tiết giao dịch #${point.id}`)
+  toastService.info('Thông tin',`Xem chi tiết giao dịch #${point.id}`)
 }
 
 const extendExpiry = async (point) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc chắn muốn gia hạn điểm này?',
       'Xác nhận gia hạn',
       {
@@ -559,7 +560,7 @@ const extendExpiry = async (point) => {
     newExpiry.setFullYear(newExpiry.getFullYear() + 1)
     point.expiresAt = newExpiry.toISOString()
     
-    ElMessage.success('Đã gia hạn điểm thành công')
+    toastService.success('Thành công','Đã gia hạn điểm thành công')
   } catch {
     // User cancelled
   }
@@ -569,7 +570,7 @@ const exportLoyalty = (format) => {
   try {
     const dataToExport = filteredPoints.value || []
     if (dataToExport.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -588,14 +589,14 @@ const exportLoyalty = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'loyalty-points.csv')
-      ElMessage.success('Xuất CSV thành công!')
+      toastService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('loyalty-points', exportData)
-      ElMessage.success('Xuất JSON thành công!')
+      toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     console.error('Export error:', error)
-    ElMessage.error('Có lỗi xảy ra khi xuất dữ liệu!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 

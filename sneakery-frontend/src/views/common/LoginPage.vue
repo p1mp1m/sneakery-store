@@ -11,71 +11,75 @@
         </div>
 
         <!-- Login Form -->
-        <el-form
-          ref="loginFormRef"
-          :model="loginForm"
-          :rules="rules"
-          @submit.prevent="handleLogin(loginFormRef)"
-        >
+        <form @submit.prevent="handleLogin">
           <!-- Error Message -->
-          <el-alert
-            v-if="serverError"
-            :title="serverError"
-            type="error"
-            show-icon
-            :closable="false"
-            class="mb-6"
-          />
+          <div v-if="serverError" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
+            <i class="material-icons text-red-500 mt-0.5">error</i>
+            <p class="text-sm text-red-700 dark:text-red-400 flex-1">{{ serverError }}</p>
+          </div>
 
           <!-- Email Field -->
-          <el-form-item prop="email" class="mb-4">
-            <el-input
-              v-model="loginForm.email"
-              type="email"
-              placeholder="Nhập email của bạn"
-              size="large"
-              :prefix-icon="EmailIcon"
-              clearable
-            />
-          </el-form-item>
+          <div class="mb-4">
+            <div class="relative">
+              <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">email</i>
+              <input
+                v-model="loginForm.email"
+                type="email"
+                placeholder="Nhập email của bạn"
+                class="w-full pl-11 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all"
+                required
+              />
+            </div>
+            <p v-if="errors.email" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.email }}</p>
+          </div>
 
           <!-- Password Field -->
-          <el-form-item prop="password" class="mb-4">
-            <el-input
-              v-model="loginForm.password"
-              type="password"
-              placeholder="Nhập mật khẩu"
-              size="large"
-              :prefix-icon="LockIcon"
-              show-password
-              clearable
-            />
-          </el-form-item>
+          <div class="mb-4">
+            <div class="relative">
+              <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">lock</i>
+              <input
+                v-model="loginForm.password"
+                :type="showPassword ? 'text' : 'password'"
+                placeholder="Nhập mật khẩu"
+                class="w-full pl-11 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all"
+                required
+              />
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <i class="material-icons text-xl">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
+              </button>
+            </div>
+            <p v-if="errors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.password }}</p>
+          </div>
 
           <!-- Remember Me & Forgot Password -->
           <div class="flex items-center justify-between mb-6">
-            <el-checkbox v-model="rememberMe" size="large">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                v-model="rememberMe"
+                type="checkbox"
+                class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-400 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
               <span class="text-sm text-gray-600 dark:text-gray-400">Ghi nhớ đăng nhập</span>
-            </el-checkbox>
+            </label>
             <a href="#" class="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors" @click.prevent="handleForgotPassword">
               Quên mật khẩu?
             </a>
           </div>
 
           <!-- Submit Button -->
-          <el-form-item>
-            <el-button
-              type="primary"
-              size="large"
-              class="w-full"
-              :loading="loading"
-              native-type="submit"
-            >
-              <span v-if="!loading">Đăng nhập</span>
-              <span v-else>Đang đăng nhập...</span>
-            </el-button>
-          </el-form-item>
-        </el-form>
+          <button
+            type="submit"
+            :disabled="loading"
+            class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+          >
+            <i v-if="loading" class="material-icons animate-spin">refresh</i>
+            <span>{{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}</span>
+          </button>
+        </form>
 
         <!-- Divider -->
         <div class="relative my-6">
@@ -146,118 +150,82 @@
 </template>
 
 <script setup>
-import { ref, h } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import { ElMessage } from 'element-plus';
+import toastService from '@/utils/toastService';
 import GoogleButton from '@/assets/components/common/GoogleButton.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-// Icons
-const EmailIcon = () => h('svg', {
-  width: '20',
-  height: '20',
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  xmlns: 'http://www.w3.org/2000/svg'
-}, [
-  h('path', {
-    d: 'M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z',
-    stroke: 'currentColor',
-    'stroke-width': '2',
-    'stroke-linecap': 'round',
-    'stroke-linejoin': 'round'
-  }),
-  h('polyline', {
-    points: '22,6 12,13 2,6',
-    stroke: 'currentColor',
-    'stroke-width': '2',
-    'stroke-linecap': 'round',
-    'stroke-linejoin': 'round'
-  })
-]);
-
-const LockIcon = () => h('svg', {
-  width: '20',
-  height: '20',
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  xmlns: 'http://www.w3.org/2000/svg'
-}, [
-  h('rect', {
-    x: '3',
-    y: '11',
-    width: '18',
-    height: '11',
-    rx: '2',
-    ry: '2',
-    stroke: 'currentColor',
-    'stroke-width': '2'
-  }),
-  h('circle', {
-    cx: '12',
-    cy: '7',
-    r: '4',
-    stroke: 'currentColor',
-    'stroke-width': '2'
-  })
-]);
-
 // Form state
-const loginFormRef = ref(null);
 const loading = ref(false);
 const serverError = ref('');
 const rememberMe = ref(false);
+const showPassword = ref(false);
+const errors = ref({});
 
 const loginForm = ref({
   email: '',
   password: ''
 });
 
-// Validation rules
-const rules = {
-  email: [
-    { required: true, message: 'Vui lòng nhập email', trigger: 'blur' },
-    { type: 'email', message: 'Email không hợp lệ', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: 'Vui lòng nhập mật khẩu', trigger: 'blur' },
-    { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự', trigger: 'blur' }
-  ]
+// Validation
+const validateForm = () => {
+  errors.value = {};
+  
+  if (!loginForm.value.email) {
+    errors.value.email = 'Vui lòng nhập email';
+    return false;
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(loginForm.value.email)) {
+    errors.value.email = 'Email không hợp lệ';
+    return false;
+  }
+  
+  if (!loginForm.value.password) {
+    errors.value.password = 'Vui lòng nhập mật khẩu';
+    return false;
+  }
+  
+  if (loginForm.value.password.length < 6) {
+    errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    return false;
+  }
+  
+  return true;
 };
 
 // Methods
-const handleLogin = async (formEl) => {
-  if (!formEl) return;
+const handleLogin = async () => {
+  if (!validateForm()) return;
   
-  await formEl.validate(async (valid) => {
-    if (valid) {
-      loading.value = true;
-      serverError.value = '';
-      
-      try {
-        await authStore.login(loginForm.value);
-        
-        // 🔐 PHÂN QUYỀN: Redirect theo role
-        const user = authStore.currentUser;
-        
-        if (user.role === 'ADMIN' || user.role === 'MODERATOR') {
-          ElMessage.success(`Chào mừng Admin ${user.fullName}!`);
-          router.push('/admin/dashboard');
-        } else {
-          ElMessage.success(`Chào mừng ${user.fullName}!`);
-          router.push('/user/dashboard');
-        }
-      } catch (error) {
-        serverError.value = error.response?.data?.message || 'Email hoặc mật khẩu không chính xác.';
-        ElMessage.error(serverError.value);
-      } finally {
-        loading.value = false;
-      }
+  loading.value = true;
+  serverError.value = '';
+  errors.value = {};
+  
+  try {
+    await authStore.login(loginForm.value);
+    
+    // 🔐 PHÂN QUYỀN: Redirect theo role
+    const user = authStore.currentUser;
+    
+    if (user.role === 'ADMIN' || user.role === 'MODERATOR') {
+      toastService.success('Thành công', `Chào mừng Admin ${user.fullName}!`);
+      router.push('/admin/dashboard');
+    } else {
+      toastService.success('Thành công', `Chào mừng ${user.fullName}!`);
+      router.push('/user/dashboard');
     }
-  });
+  } catch (error) {
+    serverError.value = error.response?.data?.message || 'Email hoặc mật khẩu không chính xác.';
+    toastService.error('Lỗi', serverError.value);
+  } finally {
+    loading.value = false;
+  }
 };
 
 const handleForgotPassword = () => {
@@ -265,6 +233,6 @@ const handleForgotPassword = () => {
 };
 
 const handleGoogleLogin = () => {
-  ElMessage.info('Tính năng đăng nhập Google sẽ được cập nhật sớm!');
+  toastService.info('Thông tin','Tính năng đăng nhập Google sẽ được cập nhật sớm!');
 };
 </script>

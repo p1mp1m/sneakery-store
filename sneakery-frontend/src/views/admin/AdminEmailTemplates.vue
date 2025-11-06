@@ -657,7 +657,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import AdminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 
 // Store
 const adminStore = useAdminStore()
@@ -848,7 +849,7 @@ const fetchTemplates = async () => {
     const result = await adminStore.fetchEmailTemplates(currentPage.value, pageSize.value, {})
     templates.value = result.content || []
   } catch (error) {
-    ElMessage.error('Không thể tải danh sách templates')
+    toastService.error('Lỗi','Không thể tải danh sách templates')
   } finally {
     loading.value = false
   }
@@ -899,7 +900,7 @@ const viewTemplate = (template) => {
 
 const duplicateTemplate = async (template) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       `Bạn có chắc chắn muốn sao chép template "${template.name}"?`,
       'Xác nhận sao chép',
       {
@@ -920,7 +921,7 @@ const duplicateTemplate = async (template) => {
     }
     
     templates.value.unshift(newTemplate)
-    ElMessage.success('Đã sao chép template thành công')
+    toastService.success('Thành công','Đã sao chép template thành công')
   } catch {
     // User cancelled
   }
@@ -928,7 +929,7 @@ const duplicateTemplate = async (template) => {
 
 const deleteTemplate = async (template) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       `Bạn có chắc chắn muốn xóa template "${template.name}"? Hành động này không thể hoàn tác.`,
       'Xác nhận xóa',
       {
@@ -939,7 +940,7 @@ const deleteTemplate = async (template) => {
     )
     
     templates.value = templates.value.filter(t => t.id !== template.id)
-    ElMessage.success('Đã xóa template thành công')
+    toastService.success('Thành công','Đã xóa template thành công')
   } catch {
     // User cancelled
   }
@@ -976,17 +977,17 @@ const insertVariable = (variable) => {
 
 const saveTemplate = async () => {
   if (!templateForm.value.name.trim()) {
-    ElMessage.error('Vui lòng nhập tên template')
+    toastService.error('Lỗi','Vui lòng nhập tên template')
     return
   }
   
   if (!templateForm.value.subject.trim()) {
-    ElMessage.error('Vui lòng nhập chủ đề email')
+    toastService.error('Lỗi','Vui lòng nhập chủ đề email')
     return
   }
   
   if (!templateForm.value.body.trim()) {
-    ElMessage.error('Vui lòng nhập nội dung email')
+    toastService.error('Lỗi','Vui lòng nhập nội dung email')
     return
   }
 
@@ -1000,7 +1001,7 @@ const saveTemplate = async () => {
           updatedAt: new Date().toISOString()
         }
       }
-      ElMessage.success('Đã cập nhật template thành công')
+      toastService.success('Thành công','Đã cập nhật template thành công')
     } else {
       // Create new template
       const newTemplate = {
@@ -1012,12 +1013,12 @@ const saveTemplate = async () => {
         updatedAt: new Date().toISOString()
       }
       templates.value.unshift(newTemplate)
-      ElMessage.success('Đã tạo template thành công')
+      toastService.success('Thành công','Đã tạo template thành công')
     }
     
     closeEditorModal()
   } catch (error) {
-    ElMessage.error('Có lỗi xảy ra khi lưu template')
+    toastService.error('Lỗi','Có lỗi xảy ra khi lưu template')
   }
 }
 
@@ -1025,7 +1026,7 @@ const exportTemplates = (format) => {
   try {
     const dataToExport = filteredTemplates.value || []
     if (dataToExport.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -1044,14 +1045,14 @@ const exportTemplates = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'email-templates.csv')
-      ElMessage.success('Xuất CSV thành công!')
+      toastService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('email-templates', exportData)
-      ElMessage.success('Xuất JSON thành công!')
+      toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     console.error('Export error:', error)
-    ElMessage.error('Có lỗi xảy ra khi xuất dữ liệu!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 

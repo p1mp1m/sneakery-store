@@ -510,7 +510,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import * as XLSX from 'xlsx'
 import { printInvoice } from '@/utils/pdfGenerator'
@@ -587,7 +587,7 @@ const clearOrderSelection = () => {
 
 const bulkUpdateStatus = async () => {
   if (!bulkStatus.value) {
-    ElMessage.warning('Vui lòng chọn trạng thái!')
+    toastService.warning('Cảnh báo','Vui lòng chọn trạng thái!')
     return
   }
 
@@ -603,7 +603,7 @@ const bulkUpdateStatus = async () => {
       await adminStore.updateOrderStatus(orderId, bulkStatus.value)
     }
     
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: `Đã cập nhật ${selectedOrders.value.length} đơn hàng thành công!`,
       duration: 3000
     })
@@ -614,7 +614,7 @@ const bulkUpdateStatus = async () => {
     await fetchOrders()
   } catch (error) {
     console.error('Lỗi khi cập nhật hàng loạt:', error)
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: 'Có lỗi xảy ra khi cập nhật đơn hàng!',
       duration: 3000
     })
@@ -651,7 +651,7 @@ const fetchOrders = async () => {
     calculateStats()
   } catch (error) {
     console.error('Lỗi khi tải danh sách đơn hàng:', error)
-    ElMessage.error('Không thể tải danh sách đơn hàng.')
+    toastService.error('Lỗi','Không thể tải danh sách đơn hàng.')
   } finally {
     loading.value = false
   }
@@ -726,13 +726,13 @@ const exportToExcel = () => {
     // Download file
     XLSX.writeFile(workbook, filename)
     
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: `Đã export ${exportData.length} đơn hàng thành công!`,
       duration: 3000
     })
   } catch (error) {
     console.error('Lỗi khi export Excel:', error)
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: 'Không thể export dữ liệu. Vui lòng thử lại!',
       duration: 3000
     })
@@ -783,7 +783,7 @@ const confirmStatusChange = (order, event) => {
     console.log('✅ showStatusConfirm after setting:', showStatusConfirm.value)
   } catch (error) {
     console.error('❌ Error in confirmStatusChange:', error)
-    ElMessage.error('Có lỗi xảy ra khi thay đổi trạng thái')
+    toastService.error('Lỗi','Có lỗi xảy ra khi thay đổi trạng thái')
   }
 }
 
@@ -813,7 +813,7 @@ const handleStatusUpdate = async () => {
     // Refresh danh sách đơn hàng để đảm bảo dữ liệu đồng bộ với backend
     await fetchOrders()
     
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`,
       duration: 3000
     })
@@ -825,7 +825,7 @@ const handleStatusUpdate = async () => {
     
     // Hiển thị lỗi chi tiết hơn
     const errorMessage = error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái. Vui lòng thử lại!'
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: `Lỗi: ${errorMessage}`,
       duration: 5000
     })
@@ -941,45 +941,45 @@ const handleCancelOrder = async (order) => {
   
   try {
     await adminStore.updateOrderStatus(order.id, 'Cancelled')
-    ElMessage.success('Đã hủy đơn hàng thành công!')
+    toastService.success('Thành công','Đã hủy đơn hàng thành công!')
     await fetchOrders()
   } catch (error) {
     console.error('Lỗi khi hủy đơn hàng:', error)
-    ElMessage.error('Không thể hủy đơn hàng. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể hủy đơn hàng. Vui lòng thử lại!')
   }
 }
 
 const exportOrderToPDF = (order) => {
   if (!order) {
-    ElMessage.warning('Không có thông tin đơn hàng để export')
+    toastService.warning('Cảnh báo','Không có thông tin đơn hàng để export')
     return
   }
   
   try {
     handlePrintInvoice(order)
-    ElMessage.success('Đang mở cửa sổ in hóa đơn...')
+    toastService.success('Thành công','Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
     console.error('Error exporting to PDF:', error)
-    ElMessage.error('Không thể export PDF. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể export PDF. Vui lòng thử lại!')
   }
 }
 
 const exportToPDF = () => {
-  ElMessage.info('Tính năng export PDF đang được phát triển...')
+  toastService.info('Thông tin','Tính năng export PDF đang được phát triển...')
 }
 
 const handlePrintInvoice = (order) => {
   if (!order) {
-    ElMessage.warning('Không có thông tin đơn hàng để in')
+    toastService.warning('Cảnh báo','Không có thông tin đơn hàng để in')
     return
   }
   
   try {
     printInvoice(order)
-    ElMessage.success('Đang mở cửa sổ in hóa đơn...')
+    toastService.success('Thành công','Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
     console.error('Error printing invoice:', error)
-    ElMessage.error('Không thể in hóa đơn. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể in hóa đơn. Vui lòng thử lại!')
   }
 }
 

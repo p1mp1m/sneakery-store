@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="fixed top-20 right-4 z-[9999] flex flex-col gap-2 max-w-sm"
+    class="fixed top-20 right-4 z-[10000] flex flex-col gap-2 max-w-sm"
     role="region"
     aria-label="Thông báo"
     aria-live="polite"

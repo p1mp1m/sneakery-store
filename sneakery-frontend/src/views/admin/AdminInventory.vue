@@ -418,7 +418,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
 
 // Stores
@@ -506,7 +507,7 @@ const fetchProducts = async () => {
     const result = await adminStore.fetchProducts(0, 100, { isActive: true })
     products.value = result.content || []
   } catch (error) {
-    ElMessage.error('Không thể tải danh sách sản phẩm')
+    toastService.error('Lỗi','Không thể tải danh sách sản phẩm')
   } finally {
     loading.value = false
   }
@@ -579,17 +580,17 @@ const calculateNewStock = () => {
 
 const confirmAdjustment = async () => {
   if (!adjustmentQuantity.value || adjustmentQuantity.value <= 0) {
-    ElMessage.error('Vui lòng nhập số lượng hợp lệ')
+    toastService.error('Lỗi','Vui lòng nhập số lượng hợp lệ')
     return
   }
 
   if (!adjustmentReason.value.trim()) {
-    ElMessage.error('Vui lòng nhập lý do điều chỉnh')
+    toastService.error('Lỗi','Vui lòng nhập lý do điều chỉnh')
     return
   }
 
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       `Bạn có chắc chắn muốn điều chỉnh tồn kho từ ${formatNumber(selectedProduct.value.stockQuantity)} thành ${formatNumber(calculateNewStock())}?`,
       'Xác nhận điều chỉnh',
       {
@@ -603,7 +604,7 @@ const confirmAdjustment = async () => {
     selectedProduct.value.stockQuantity = calculateNewStock()
     selectedProduct.value.updatedAt = new Date().toISOString()
     
-    ElMessage.success('Đã điều chỉnh tồn kho thành công')
+    toastService.success('Thành công','Đã điều chỉnh tồn kho thành công')
     closeAdjustmentModal()
   } catch {
     // User cancelled
@@ -612,7 +613,7 @@ const confirmAdjustment = async () => {
 
 const restockProduct = async (product) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       `Bạn có chắc chắn muốn nhập hàng cho sản phẩm ${product.name}?`,
       'Xác nhận nhập hàng',
       {
@@ -626,7 +627,7 @@ const restockProduct = async (product) => {
     product.stockQuantity += 10
     product.updatedAt = new Date().toISOString()
     
-    ElMessage.success('Đã nhập hàng thành công')
+    toastService.success('Thành công','Đã nhập hàng thành công')
   } catch {
     // User cancelled
   }
@@ -659,7 +660,7 @@ const exportInventory = (format) => {
   try {
     const dataToExport = filteredProducts.value || []
     if (dataToExport.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -680,14 +681,14 @@ const exportInventory = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'inventory.csv')
-      ElMessage.success('Xuất CSV thành công!')
+      toastService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('inventory', exportData)
-      ElMessage.success('Xuất JSON thành công!')
+      toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     console.error('Export error:', error)
-    ElMessage.error('Có lỗi xảy ra khi xuất dữ liệu!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 

@@ -211,7 +211,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import toastService from '@/utils/toastService';
+import confirmDialogService from '@/utils/confirmDialogService';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useAuthStore } from '@/stores/auth';
 
@@ -232,7 +233,7 @@ onMounted(async () => {
   try {
     await wishlistStore.fetchWishlist();
   } catch (error) {
-    ElMessage.error('Không thể tải danh sách yêu thích');
+    toastService.error('Lỗi','Không thể tải danh sách yêu thích');
   }
 });
 
@@ -253,7 +254,7 @@ const formatDate = (dateString) => {
 
 const removeFromWishlist = async (item) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       `Bạn có chắc chắn muốn xóa "${item.productName}" khỏi danh sách yêu thích?`,
       'Xác nhận',
       {
@@ -264,17 +265,17 @@ const removeFromWishlist = async (item) => {
     );
     
     await wishlistStore.removeFromWishlist(item.productId);
-    ElMessage.success(`Đã xóa "${item.productName}" khỏi danh sách yêu thích`);
+    toastService.success('Thành công',`Đã xóa "${item.productName}" khỏi danh sách yêu thích`);
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('Không thể xóa sản phẩm');
+      toastService.error('Lỗi','Không thể xóa sản phẩm');
     }
   }
 };
 
 const addToCart = (item) => {
   if (!item.isActive) {
-    ElMessage.warning('Sản phẩm này đã ngừng bán');
+    toastService.warning('Cảnh báo','Sản phẩm này đã ngừng bán');
     return;
   }
   
@@ -286,17 +287,17 @@ const addAllToCart = () => {
   const activeItems = wishlistItems.value.filter(item => item.isActive);
   
   if (activeItems.length === 0) {
-    ElMessage.warning('Không có sản phẩm nào khả dụng trong danh sách yêu thích');
+    toastService.warning('Cảnh báo','Không có sản phẩm nào khả dụng trong danh sách yêu thích');
     return;
   }
   
   // Navigate về trang sản phẩm để thêm từng cái
-  ElMessage.info('Vui lòng chọn size cho từng sản phẩm');
+  toastService.info('Thông tin','Vui lòng chọn size cho từng sản phẩm');
 };
 
 const clearWishlist = async () => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc chắn muốn xóa tất cả sản phẩm khỏi danh sách yêu thích?',
       'Xác nhận',
       {
@@ -307,10 +308,10 @@ const clearWishlist = async () => {
     );
     
     await wishlistStore.clearWishlist();
-    ElMessage.success('Đã xóa tất cả sản phẩm khỏi danh sách yêu thích');
+    toastService.success('Thành công','Đã xóa tất cả sản phẩm khỏi danh sách yêu thích');
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('Không thể xóa wishlist');
+      toastService.error('Lỗi','Không thể xóa wishlist');
     }
   }
 };
@@ -325,16 +326,16 @@ const shareWishlist = () => {
     shareLink.value = `${window.location.origin}/wishlist/shared/${userId}`;
     showShareModal.value = true;
   } else {
-    ElMessage.error('Vui lòng đăng nhập để chia sẻ wishlist');
+    toastService.error('Lỗi','Vui lòng đăng nhập để chia sẻ wishlist');
   }
 };
 
 const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(shareLink.value);
-    ElMessage.success('Đã copy link vào clipboard');
+    toastService.success('Thành công','Đã copy link vào clipboard');
   } catch (error) {
-    ElMessage.error('Không thể copy link');
+    toastService.error('Lỗi','Không thể copy link');
   }
 };
 

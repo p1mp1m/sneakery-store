@@ -387,7 +387,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
 
@@ -486,13 +486,13 @@ const loadReviews = async () => {
     totalReviews.value = result.totalElements || 0
     
     if (reviews.value.length === 0) {
-      ElMessage.info('Chưa có đánh giá nào')
+      toastService.info('Thông tin','Chưa có đánh giá nào')
     } else {
       console.log('✅ Reviews loaded from API:', reviews.value.length, 'reviews')
     }
   } catch (error) {
     console.error('Error loading reviews:', error)
-    ElMessage.error('Lỗi khi tải danh sách đánh giá: ' + (error.message || 'Không thể kết nối đến server'))
+    toastService.error('Lỗi','Lỗi khi tải danh sách đánh giá: ' + (error.message || 'Không thể kết nối đến server'))
     reviews.value = []
     totalReviews.value = 0
   } finally {
@@ -504,10 +504,10 @@ const approveReview = async (review) => {
   try {
     await adminStore.approveReview(review.id)
     review.isApproved = true
-    ElMessage.success('Đã duyệt đánh giá thành công!')
+    toastService.success('Thành công','Đã duyệt đánh giá thành công!')
   } catch (error) {
     console.error('Error approving review:', error)
-    ElMessage.error('Lỗi khi duyệt đánh giá')
+    toastService.error('Lỗi','Lỗi khi duyệt đánh giá')
   }
 }
 
@@ -530,10 +530,10 @@ const saveReply = async () => {
     selectedReview.value.replyText = replyText.value
     selectedReview.value.repliedAt = new Date().toISOString()
     closeReplyModal()
-    ElMessage.success('Phản hồi đã được gửi thành công!')
+    toastService.success('Thành công','Phản hồi đã được gửi thành công!')
   } catch (error) {
     console.error('Error saving reply:', error)
-    ElMessage.error('Lỗi khi gửi phản hồi')
+    toastService.error('Lỗi','Lỗi khi gửi phản hồi')
   } finally {
     saving.value = false
   }
@@ -554,10 +554,10 @@ const deleteReview = async () => {
     }
     showDeleteModal.value = false
     reviewToDelete.value = null
-    ElMessage.success('Xóa đánh giá thành công!')
+    toastService.success('Thành công','Xóa đánh giá thành công!')
   } catch (error) {
     console.error('Error deleting review:', error)
-    ElMessage.error('Lỗi khi xóa đánh giá')
+    toastService.error('Lỗi','Lỗi khi xóa đánh giá')
   } finally {
     deleting.value = false
   }
@@ -603,7 +603,7 @@ const exportReviews = () => {
   try {
     const dataToExport = filteredReviews.value || []
     if (dataToExport.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -621,10 +621,10 @@ const exportReviews = () => {
     }))
     
     downloadCsv(exportData, 'reviews.csv')
-    ElMessage.success('Xuất CSV thành công!')
+    toastService.success('Thành công','Xuất CSV thành công!')
   } catch (error) {
     console.error('Export error:', error)
-    ElMessage.error('Có lỗi xảy ra khi xuất dữ liệu!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 

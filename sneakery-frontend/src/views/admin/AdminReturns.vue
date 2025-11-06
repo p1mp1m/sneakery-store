@@ -299,7 +299,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 
 const adminStore = useAdminStore()
 
@@ -339,7 +339,7 @@ const fetchReturns = async () => {
     updateStats()
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
-    ElMessage.error('Lỗi khi tải danh sách yêu cầu trả hàng')
+    toastService.error('Lỗi','Lỗi khi tải danh sách yêu cầu trả hàng')
   } finally {
     loading.value = false
   }
@@ -373,11 +373,11 @@ const approveReturn = async (item) => {
   
   try {
     await adminStore.approveReturn(item.id)
-    ElMessage.success('Đã duyệt yêu cầu trả hàng!')
+    toastService.success('Thành công','Đã duyệt yêu cầu trả hàng!')
     fetchReturns()
   } catch (error) {
     console.error('Lỗi khi duyệt yêu cầu:', error)
-    ElMessage.error('Lỗi khi duyệt yêu cầu trả hàng')
+    toastService.error('Lỗi','Lỗi khi duyệt yêu cầu trả hàng')
   }
 }
 
@@ -387,11 +387,11 @@ const rejectReturn = async (item) => {
   
   try {
     await adminStore.rejectReturn(item.id, reason)
-    ElMessage.success('Đã từ chối yêu cầu trả hàng!')
+    toastService.success('Thành công','Đã từ chối yêu cầu trả hàng!')
     fetchReturns()
   } catch (error) {
     console.error('Lỗi khi từ chối yêu cầu:', error)
-    ElMessage.error('Lỗi khi từ chối yêu cầu trả hàng')
+    toastService.error('Lỗi','Lỗi khi từ chối yêu cầu trả hàng')
   }
 }
 

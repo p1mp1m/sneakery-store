@@ -299,7 +299,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted, onActivated } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import toastService from '@/utils/toastService';
+import confirmDialogService from '@/utils/confirmDialogService';
 import userService from '@/services/userService';
 
 const authStore = useAuthStore();
@@ -354,7 +355,7 @@ const fetchOrders = async (silent = false) => {
   } catch (error) {
     console.error('Error fetching orders:', error);
     if (!silent) {
-      ElMessage.error(error.message || 'Không thể tải danh sách đơn hàng');
+      toastService.error('Lỗi',error.message || 'Không thể tải danh sách đơn hàng');
     }
   } finally {
     if (!silent) loading.value = false;
@@ -377,7 +378,7 @@ const viewOrderDetail = async (orderId) => {
     showDetail.value = true;
   } catch (error) {
     console.error('Error fetching order detail:', error);
-    ElMessage.error(error.message || 'Không thể tải chi tiết đơn hàng');
+    toastService.error('Lỗi',error.message || 'Không thể tải chi tiết đơn hàng');
   }
 };
 
@@ -411,7 +412,7 @@ const stopPolling = () => {
 
 const cancelOrder = async (orderId) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc muốn hủy đơn hàng này?',
       'Xác nhận hủy đơn',
       {
@@ -422,12 +423,12 @@ const cancelOrder = async (orderId) => {
     );
 
     // TODO: Implement cancel order API
-    ElMessage.success('Đã hủy đơn hàng thành công');
+    toastService.success('Thành công','Đã hủy đơn hàng thành công');
     await fetchOrders();
   } catch (error) {
     if (error !== 'cancel') {
       console.error('Error canceling order:', error);
-      ElMessage.error('Không thể hủy đơn hàng');
+      toastService.error('Lỗi','Không thể hủy đơn hàng');
     }
   }
 };
@@ -435,10 +436,10 @@ const cancelOrder = async (orderId) => {
 const reorder = async (orderId) => {
   try {
     // TODO: Implement reorder functionality
-    ElMessage.info('Tính năng đang được phát triển');
+    toastService.info('Thông tin','Tính năng đang được phát triển');
   } catch (error) {
     console.error('Error reordering:', error);
-    ElMessage.error('Không thể đặt lại đơn hàng');
+    toastService.error('Lỗi','Không thể đặt lại đơn hàng');
   }
 };
 

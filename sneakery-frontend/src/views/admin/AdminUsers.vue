@@ -357,7 +357,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import { exportToExcelStyled } from '@/utils/exportHelpers'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import FilterBar from '@/assets/components/admin/FilterBar.vue'
@@ -457,7 +457,7 @@ const clearUserSelection = () => {
 
 const executeBulkAction = async () => {
   if (!bulkAction.value) {
-    ElMessage.warning('Vui lòng chọn hành động!')
+    toastService.warning('Cảnh báo','Vui lòng chọn hành động!')
     return
   }
 
@@ -487,7 +487,7 @@ const executeBulkAction = async () => {
       }
     }
     
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: `Đã ${actionMap[bulkAction.value]} ${selectedUsers.value.length} người dùng thành công!`,
       duration: 3000
     })
@@ -498,7 +498,7 @@ const executeBulkAction = async () => {
     await fetchUsers()
   } catch (error) {
     console.error('Lỗi khi thực hiện hàng loạt:', error)
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: 'Có lỗi xảy ra khi thực hiện hành động!',
       duration: 3000
     })
@@ -523,7 +523,7 @@ const fetchUsers = async () => {
     totalItems.value = result.totalElements || 0
   } catch (error) {
     console.error('Lỗi khi tải danh sách người dùng:', error)
-    ElMessage.error('Không thể tải danh sách người dùng.')
+    toastService.error('Lỗi','Không thể tải danh sách người dùng.')
   } finally {
     loading.value = false
   }
@@ -570,16 +570,16 @@ const exportToExcel = () => {
     }))
 
     if (exportData.length === 0) {
-      ElMessage.warning('Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
 
     // Export to styled Excel file
     exportToExcelStyled(exportData, 'nguoi-dung.xlsx', 'Người dùng')
-    ElMessage.success(`Đã export ${exportData.length} người dùng thành công!`)
+    toastService.success('Thành công',`Đã export ${exportData.length} người dùng thành công!`)
   } catch (error) {
     console.error('Lỗi khi export:', error)
-    ElMessage.error('Không thể export dữ liệu. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể export dữ liệu. Vui lòng thử lại!')
   }
 }
 
@@ -609,13 +609,13 @@ const handleRoleUpdate = async () => {
   try {
     updating.value = true
     await adminStore.updateUserRole(userToUpdate.value.id, newRole.value)
-    ElMessage.success(`Đã cập nhật vai trò của ${userToUpdate.value.fullName} thành công!`)
+    toastService.success('Thành công',`Đã cập nhật vai trò của ${userToUpdate.value.fullName} thành công!`)
     
     userToUpdate.value._originalRole = newRole.value
     showRoleConfirm.value = false
   } catch (error) {
     console.error('Lỗi khi cập nhật vai trò:', error)
-    ElMessage.error('Không thể cập nhật vai trò. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể cập nhật vai trò. Vui lòng thử lại!')
     
     userToUpdate.value.role = oldRole.value
   } finally {
@@ -651,12 +651,12 @@ const handleToggleStatus = async () => {
     await adminStore.updateUserStatus(userToToggle.value.id, newStatus)
     
     userToToggle.value.isActive = newStatus
-    ElMessage.success(`Đã ${newStatus ? 'mở khóa' : 'khóa'} tài khoản ${userToToggle.value.fullName} thành công!`)
+    toastService.success('Thành công',`Đã ${newStatus ? 'mở khóa' : 'khóa'} tài khoản ${userToToggle.value.fullName} thành công!`)
     
     showStatusConfirm.value = false
   } catch (error) {
     console.error('Lỗi khi cập nhật trạng thái:', error)
-    ElMessage.error('Không thể cập nhật trạng thái. Vui lòng thử lại!')
+    toastService.error('Lỗi','Không thể cập nhật trạng thái. Vui lòng thử lại!')
   } finally {
     updating.value = false
   }
@@ -672,14 +672,14 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteUser(userToDelete.value.id)
-    ElMessage.success(`Đã xóa người dùng "${userToDelete.value.fullName}" thành công!`)
+    toastService.success('Thành công',`Đã xóa người dùng "${userToDelete.value.fullName}" thành công!`)
     showDeleteConfirm.value = false
     userToDelete.value = null
     await fetchUsers()
   } catch (error) {
     console.error('Lỗi khi xóa người dùng:', error)
     const errorMsg = error?.message || error?.response?.data?.message || 'Không thể xóa người dùng. Vui lòng thử lại!'
-    ElMessage.error(errorMsg)
+    toastService.error('Lỗi',errorMsg)
   } finally {
     deleting.value = false
   }
@@ -738,20 +738,20 @@ const validateCreateUser = () => {
 
 const handleCreateUser = async () => {
   if (!validateCreateUser()) {
-    ElMessage.warning('Vui lòng kiểm tra lại thông tin form!')
+    toastService.warning('Cảnh báo','Vui lòng kiểm tra lại thông tin form!')
     return
   }
 
   try {
     creating.value = true
     await adminStore.createUser(newUser.value)
-    ElMessage.success(`Đã tạo người dùng "${newUser.value.fullName}" thành công!`)
+    toastService.success('Thành công',`Đã tạo người dùng "${newUser.value.fullName}" thành công!`)
     closeCreateModal()
     await fetchUsers()
   } catch (error) {
     console.error('Lỗi khi tạo người dùng:', error)
     const errorMsg = error?.message || error?.response?.data?.message || 'Không thể tạo người dùng. Vui lòng thử lại!'
-    ElMessage.error(errorMsg)
+    toastService.error('Lỗi',errorMsg)
     
     // Hiển thị lỗi cụ thể nếu có
     if (error?.response?.data?.validationErrors) {

@@ -604,7 +604,8 @@ import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
 import { useTheme } from '@/composables/useTheme';
 import { storeToRefs } from 'pinia';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import toastService from '@/utils/toastService';
+import confirmDialogService from '@/utils/confirmDialogService';
 import userService from '@/services/userService';
 
 const authStore = useAuthStore();
@@ -664,10 +665,10 @@ const updateProfile = async () => {
     //   headers: { Authorization: `Bearer ${authStore.token}` },
     // });
 
-    ElMessage.success('Cập nhật thông tin thành công');
+    toastService.success('Thành công','Cập nhật thông tin thành công');
   } catch (error) {
     console.error('Error updating profile:', error);
-    ElMessage.error('Không thể cập nhật thông tin');
+    toastService.error('Lỗi','Không thể cập nhật thông tin');
   } finally {
     updating.value = false;
   }
@@ -675,12 +676,12 @@ const updateProfile = async () => {
 
 const changePassword = async () => {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    ElMessage.error('Mật khẩu xác nhận không khớp');
+    toastService.error('Lỗi','Mật khẩu xác nhận không khớp');
     return;
   }
 
   if (passwordForm.newPassword.length < 6) {
-    ElMessage.error('Mật khẩu phải có ít nhất 6 ký tự');
+    toastService.error('Lỗi','Mật khẩu phải có ít nhất 6 ký tự');
     return;
   }
 
@@ -695,7 +696,7 @@ const changePassword = async () => {
     //   headers: { Authorization: `Bearer ${authStore.token}` },
     // });
 
-    ElMessage.success('Đổi mật khẩu thành công');
+    toastService.success('Thành công','Đổi mật khẩu thành công');
         
     // Reset form
     passwordForm.currentPassword = '';
@@ -703,7 +704,7 @@ const changePassword = async () => {
     passwordForm.confirmPassword = '';
   } catch (error) {
     console.error('Error changing password:', error);
-    ElMessage.error('Không thể đổi mật khẩu');
+    toastService.error('Lỗi','Không thể đổi mật khẩu');
   } finally {
     changingPassword.value = false;
   }
@@ -715,7 +716,7 @@ const loadAddresses = async () => {
     addresses.value = await userService.getMyAddresses();
   } catch (error) {
     console.error('Error loading addresses:', error);
-    ElMessage.error(error.message || 'Không thể tải danh sách địa chỉ');
+    toastService.error('Lỗi',error.message || 'Không thể tải danh sách địa chỉ');
   } finally {
     loadingAddresses.value = false;
   }
@@ -734,7 +735,7 @@ const editAddress = (addr) => {
 
 const saveAddress = async () => {
   if (!addressForm.recipientName || !addressForm.phone || !addressForm.line1 || !addressForm.city) {
-    ElMessage.warning('Vui lòng điền đầy đủ thông tin bắt buộc');
+    toastService.warning('Cảnh báo','Vui lòng điền đầy đủ thông tin bắt buộc');
     return;
   }
 
@@ -746,24 +747,24 @@ const saveAddress = async () => {
       if (index !== -1) {
         addresses.value[index] = updatedAddress;
       }
-      ElMessage.success('Cập nhật địa chỉ thành công');
+      toastService.success('Thành công','Cập nhật địa chỉ thành công');
     } else {
       // Create new address
       const newAddress = await userService.createAddress(addressForm);
       addresses.value.push(newAddress);
-      ElMessage.success('Thêm địa chỉ thành công');
+      toastService.success('Thành công','Thêm địa chỉ thành công');
     }
 
     closeAddressForm();
   } catch (error) {
     console.error('Error saving address:', error);
-    ElMessage.error(error.message || 'Không thể lưu địa chỉ');
+    toastService.error('Lỗi',error.message || 'Không thể lưu địa chỉ');
   }
 };
 
 const deleteAddress = async (id) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc muốn xóa địa chỉ này?',
       'Xác nhận',
       {
@@ -775,11 +776,11 @@ const deleteAddress = async (id) => {
     
     await userService.deleteAddress(id);
     addresses.value = addresses.value.filter(a => a.id !== id);
-    ElMessage.success('Đã xóa địa chỉ');
+    toastService.success('Thành công','Đã xóa địa chỉ');
   } catch (error) {
     if (error !== 'cancel') {
       console.error('Error deleting address:', error);
-      ElMessage.error('Không thể xóa địa chỉ');
+      toastService.error('Lỗi','Không thể xóa địa chỉ');
     }
   }
 };
@@ -837,7 +838,7 @@ const handleThemeChange = (newTheme) => {
 
 const saveThemeSettings = () => {
   // Theme is already saved when changed via handleThemeChange
-  ElMessage.success('Đã lưu cài đặt giao diện thành công!');
+  toastService.success('Thành công','Đã lưu cài đặt giao diện thành công!');
 };
 
 onMounted(() => {

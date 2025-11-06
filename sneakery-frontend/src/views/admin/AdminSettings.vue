@@ -574,7 +574,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { useTheme } from '@/composables/useTheme'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 import { downloadJson } from '@/utils/exportHelpers'
 
 const adminStore = useAdminStore()
@@ -723,45 +724,45 @@ const loadSettings = async () => {
 const saveStoreSettings = async () => {
   try {
     await adminStore.updateSettings({ store: storeSettings.value })
-    ElMessage.success('Đã lưu thông tin cửa hàng thành công!')
+    toastService.success('Thành công','Đã lưu thông tin cửa hàng thành công!')
   } catch (error) {
     console.error('Error saving store settings:', error)
-    ElMessage.error('Không thể lưu thông tin cửa hàng')
+    toastService.error('Lỗi','Không thể lưu thông tin cửa hàng')
   }
 }
 
 const saveGeneralSettings = async () => {
   try {
     await adminStore.updateSettings({ general: generalSettings.value })
-    ElMessage.success('Đã lưu cài đặt chung thành công!')
+    toastService.success('Thành công','Đã lưu cài đặt chung thành công!')
   } catch (error) {
     console.error('Error saving general settings:', error)
-    ElMessage.error('Không thể lưu cài đặt chung')
+    toastService.error('Lỗi','Không thể lưu cài đặt chung')
   }
 }
 
 const saveEmailSettings = async () => {
   try {
     await adminStore.updateSettings({ email: emailSettings.value })
-    ElMessage.success('Đã lưu cài đặt email thành công!')
+    toastService.success('Thành công','Đã lưu cài đặt email thành công!')
   } catch (error) {
     console.error('Error saving email settings:', error)
-    ElMessage.error('Không thể lưu cài đặt email')
+    toastService.error('Lỗi','Không thể lưu cài đặt email')
   }
 }
 
 const savePaymentSettings = async () => {
   try {
     await adminStore.updateSettings({ payment: paymentSettings.value })
-    ElMessage.success('Đã lưu cài đặt thanh toán thành công!')
+    toastService.success('Thành công','Đã lưu cài đặt thanh toán thành công!')
   } catch (error) {
     console.error('Error saving payment settings:', error)
-    ElMessage.error('Không thể lưu cài đặt thanh toán')
+    toastService.error('Lỗi','Không thể lưu cài đặt thanh toán')
   }
 }
 
 const testEmail = () => {
-  ElMessage.info('Tính năng gửi email test đang được phát triển...')
+  toastService.info('Thông tin','Tính năng gửi email test đang được phát triển...')
 }
 
 // Search functionality
@@ -788,7 +789,7 @@ const goToSetting = (result) => {
   searchQuery.value = ''
   searchResults.value = []
   showSearch.value = false
-  ElMessage.success(`Đã chuyển đến: ${result.title}`)
+  toastService.success('Thành công',`Đã chuyển đến: ${result.title}`)
 }
 
 // Export/Import Settings
@@ -803,10 +804,10 @@ const exportSettings = async () => {
     }
     
     downloadJson(allSettings, `sneakery-settings-${new Date().toISOString().split('T')[0]}.json`)
-    ElMessage.success('Đã xuất cấu hình thành công!')
+    toastService.success('Thành công','Đã xuất cấu hình thành công!')
   } catch (error) {
     console.error('Error exporting settings:', error)
-    ElMessage.error('Không thể xuất cấu hình')
+    toastService.error('Lỗi','Không thể xuất cấu hình')
   }
 }
 
@@ -829,7 +830,7 @@ const importSettings = () => {
           throw new Error('Invalid settings file structure')
         }
         
-        ElMessageBox.confirm(
+        confirmDialogService.confirm(
           'Bạn có chắc muốn nhập cấu hình này? Các cài đặt hiện tại sẽ bị ghi đè.',
           'Xác nhận nhập cấu hình',
           {
@@ -852,13 +853,13 @@ const importSettings = () => {
             payment: paymentSettings.value
           })
           
-          ElMessage.success('Đã nhập cấu hình thành công!')
+          toastService.success('Thành công','Đã nhập cấu hình thành công!')
         }).catch(() => {
-          ElMessage.info('Đã hủy nhập cấu hình')
+          toastService.info('Thông tin','Đã hủy nhập cấu hình')
         })
       } catch (error) {
         console.error('Error importing settings:', error)
-        ElMessage.error('Lỗi khi nhập cấu hình. Vui lòng kiểm tra file JSON.')
+        toastService.error('Lỗi','Lỗi khi nhập cấu hình. Vui lòng kiểm tra file JSON.')
       }
     }
     reader.readAsText(file)
@@ -870,7 +871,7 @@ const importSettings = () => {
 // Reset to defaults
 const resetToDefaults = async () => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc muốn khôi phục tất cả cài đặt về mặc định? Hành động này không thể hoàn tác.',
       'Xác nhận khôi phục',
       {
@@ -924,11 +925,11 @@ const resetToDefaults = async () => {
     // Save to database
     await adminStore.updateSettings(defaultSettings)
     
-    ElMessage.success('Đã khôi phục cài đặt mặc định thành công!')
+    toastService.success('Thành công','Đã khôi phục cài đặt mặc định thành công!')
   } catch (error) {
     if (error !== 'cancel') {
       console.error('Error resetting settings:', error)
-      ElMessage.error('Không thể khôi phục cài đặt mặc định')
+      toastService.error('Lỗi','Không thể khôi phục cài đặt mặc định')
     }
   }
 }
@@ -940,7 +941,7 @@ const handleThemeChange = (newTheme) => {
 
 const saveThemeSettings = () => {
   // Theme is already saved when changed via handleThemeChange
-  ElMessage.success('Đã lưu cài đặt giao diện thành công!')
+  toastService.success('Thành công','Đã lưu cài đặt giao diện thành công!')
 }
 
 onMounted(() => {

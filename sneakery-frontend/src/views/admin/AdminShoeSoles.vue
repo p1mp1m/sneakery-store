@@ -294,7 +294,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { ElMessage } from "element-plus";
+import toastService from "@/utils/toastService";
 import { useAdminStore } from "@/stores/admin";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 
@@ -374,7 +374,7 @@ const fetchSoles = async () => {
     shoeSoles.value = result.content || result || [];
   } catch (error) {
     console.error("Error fetching shoe soles:", error);
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi tải danh sách loại đế",
       duration: 3000,
     });
@@ -437,7 +437,7 @@ const saveShoeSole = async () => {
     }
     await fetchSoles();
     closeModal();
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: `${isEditMode.value ? "Cập nhật" : "Thêm"} loại đế thành công!`,
       duration: 3000,
     });
@@ -447,7 +447,7 @@ const saveShoeSole = async () => {
     // Nếu BE trả về lỗi validate, bạn có thể map vào formErrors
     // ví dụ: if (error.response?.data?.validationErrors) { ... }
 
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi lưu loại đế",
       duration: 3000,
     });
@@ -468,13 +468,13 @@ const deleteShoeSole = async () => {
     await fetchSoles();
     showDeleteModal.value = false;
     shoeSoleToDelete.value = null;
-    ElMessage.success({
+    toastService.success('Thành công',{
       message: "Xóa loại đế thành công!",
       duration: 3000,
     });
   } catch (error) {
     console.error("Error deleting shoe sole:", error);
-    ElMessage.error({
+    toastService.error('Lỗi',{
       message: "Lỗi khi xóa loại đế",
       duration: 3000,
     });

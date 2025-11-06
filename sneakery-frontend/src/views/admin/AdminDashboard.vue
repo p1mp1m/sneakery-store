@@ -4,7 +4,7 @@
     <transition-group 
       name="toast" 
       tag="div" 
-      class="fixed top-20 right-4 z-[9999] flex flex-col gap-2 max-w-sm"
+      class="fixed top-20 right-4 z-[10000] flex flex-col gap-2 max-w-sm"
       enter-active-class="transition-all duration-300 ease-out"
       leave-active-class="transition-all duration-300 ease-in"
       enter-from-class="opacity-0 translate-x-20"
@@ -362,7 +362,15 @@
         </button>
       </div>
       <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <el-skeleton v-if="loading" :rows="5" animated />
+        <div v-if="loading" class="space-y-3">
+          <div v-for="i in 5" :key="i" class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-md bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse"></div>
+            </div>
+          </div>
+        </div>
         <div v-else class="flex flex-col gap-2">
           <div 
             v-for="activity in recentActivities" 

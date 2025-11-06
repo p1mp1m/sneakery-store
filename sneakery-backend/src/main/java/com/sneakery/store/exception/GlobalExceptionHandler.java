@@ -50,7 +50,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * 2. Bắt lỗi 'MethodArgumentNotValidException' (lỗi validation @Valid)
+     * 2. Bắt lỗi 'BadCredentialsException' (lỗi xác thực - email/password sai)
+     * Security: Không expose chi tiết lỗi để tránh user enumeration attack
+     */
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<ErrorResponseDto> handleBadCredentialsException(
+            org.springframework.security.authentication.BadCredentialsException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Bad credentials attempt at {}: {}", request.getRequestURI(), ex.getMessage());
+        
+        ErrorResponseDto errorDto = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .message("Email hoặc mật khẩu không đúng")
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
+     * 3. Bắt lỗi 'MethodArgumentNotValidException' (lỗi validation @Valid)
      * Đây là lỗi khi DTO (ví dụ: RegisterDto) không hợp lệ
      * (ví dụ: email trống, password < 6 ký tự)
      */
@@ -82,7 +104,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * 3. Bắt tất cả các lỗi 500 (lỗi server) khác
+     * 4. Bắt tất cả các lỗi 500 (lỗi server) khác
      * (Ví dụ: NullPointerException, lỗi CSDL...)
      * 
      * Security: Không expose internal error details ra ngoài.

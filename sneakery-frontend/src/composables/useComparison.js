@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue';
-import { ElMessage } from 'element-plus';
+import toastService from '@/utils/toastService';
 
 const MAX_COMPARE_PRODUCTS = 3;
 const STORAGE_KEY = 'sneakery_compare_products';
@@ -36,20 +36,20 @@ export function useComparison() {
   const addProduct = (product) => {
     // Check if already exists
     if (comparisonProducts.value.some(p => p.id === product.id)) {
-      ElMessage.warning('Sản phẩm đã có trong danh sách so sánh');
+      toastService.warning('Cảnh báo', 'Sản phẩm đã có trong danh sách so sánh');
       return;
     }
 
     // Check max limit
     if (comparisonProducts.value.length >= MAX_COMPARE_PRODUCTS) {
-      ElMessage.warning(`Chỉ có thể so sánh tối đa ${MAX_COMPARE_PRODUCTS} sản phẩm`);
+      toastService.warning('Cảnh báo', `Chỉ có thể so sánh tối đa ${MAX_COMPARE_PRODUCTS} sản phẩm`);
       return;
     }
 
     // Add product
     comparisonProducts.value.push(product);
     saveToStorage();
-    ElMessage.success('Đã thêm vào danh sách so sánh');
+    toastService.success('Thành công', 'Đã thêm vào danh sách so sánh');
   };
 
   const removeProduct = (productId) => {
@@ -57,14 +57,14 @@ export function useComparison() {
     if (index > -1) {
       comparisonProducts.value.splice(index, 1);
       saveToStorage();
-      ElMessage.success('Đã xóa khỏi danh sách so sánh');
+      toastService.success('Thành công', 'Đã xóa khỏi danh sách so sánh');
     }
   };
 
   const clearAll = () => {
     comparisonProducts.value = [];
     saveToStorage();
-    ElMessage.success('Đã xóa tất cả sản phẩm khỏi danh sách so sánh');
+    toastService.success('Thành công', 'Đã xóa tất cả sản phẩm khỏi danh sách so sánh');
   };
 
   const getProducts = () => {

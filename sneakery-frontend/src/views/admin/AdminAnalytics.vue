@@ -280,7 +280,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import AdminService from '@/services/adminService'
-import { ElMessage } from 'element-plus'
+import toastService from '@/utils/toastService'
 import LineChart from '@/assets/components/charts/LineChart.vue'
 import BarChart from '@/assets/components/charts/BarChart.vue'
 import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue'
@@ -668,13 +668,13 @@ const loadAnalytics = async () => {
     
     // Nếu không có dữ liệu từ API, hiển thị empty state
     if (revenueData.value.length === 0 && orderData.value.length === 0) {
-      ElMessage.warning('Chưa có dữ liệu phân tích cho kỳ này. Vui lòng thử lại sau.')
+      toastService.warning('Cảnh báo','Chưa có dữ liệu phân tích cho kỳ này. Vui lòng thử lại sau.')
     } else {
       console.log('✅ Analytics data loaded successfully from API')
     }
   } catch (error) {
     console.error('Error loading analytics:', error)
-    ElMessage.error('Không thể tải dữ liệu phân tích')
+    toastService.error('Lỗi','Không thể tải dữ liệu phân tích')
   } finally {
     loading.value = false
   }

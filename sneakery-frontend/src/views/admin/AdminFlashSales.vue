@@ -392,7 +392,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 
 const adminStore = useAdminStore()
 
@@ -528,7 +529,7 @@ const loadFlashSales = async () => {
     console.log('✅ Flash sales loaded from API')
   } catch (error) {
     console.error('Lỗi khi tải danh sách flash sales:', error)
-    ElMessage.error('Không thể tải danh sách flash sales')
+    toastService.error('Lỗi','Không thể tải danh sách flash sales')
   } finally {
     loading.value = false
   }
@@ -618,17 +619,17 @@ const saveFlashSale = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateFlashSale(formData.value.id, flashSaleData)
-      ElMessage.success('Cập nhật Flash Sale thành công!')
+      toastService.success('Thành công','Cập nhật Flash Sale thành công!')
     } else {
       await adminStore.createFlashSale(flashSaleData)
-      ElMessage.success('Tạo Flash Sale thành công!')
+      toastService.success('Thành công','Tạo Flash Sale thành công!')
     }
     
     closeModal()
     loadFlashSales()
   } catch (error) {
     console.error('Error saving flash sale:', error)
-    ElMessage.error('Lỗi khi lưu Flash Sale')
+    toastService.error('Lỗi','Lỗi khi lưu Flash Sale')
   } finally {
     saving.value = false
   }
@@ -645,11 +646,11 @@ const deleteFlashSale = async () => {
     await adminStore.deleteFlashSale(saleToDelete.value.id)
     showDeleteModal.value = false
     saleToDelete.value = null
-    ElMessage.success('Xóa Flash Sale thành công!')
+    toastService.success('Thành công','Xóa Flash Sale thành công!')
     loadFlashSales()
   } catch (error) {
     console.error('Error deleting flash sale:', error)
-    ElMessage.error('Lỗi khi xóa Flash Sale')
+    toastService.error('Lỗi','Lỗi khi xóa Flash Sale')
   } finally {
     deleting.value = false
   }

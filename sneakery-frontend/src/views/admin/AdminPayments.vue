@@ -385,7 +385,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 
 const adminStore = useAdminStore()
 
@@ -482,13 +483,13 @@ const fetchPayments = async () => {
     payments.value = result.content || []
     
     if (payments.value.length === 0) {
-      ElMessage.info('Chưa có giao dịch thanh toán nào')
+      toastService.info('Thông tin','Chưa có giao dịch thanh toán nào')
     } else {
       console.log('✅ Payments loaded from API:', payments.value.length, 'payments')
     }
   } catch (error) {
     console.error('Error loading payments:', error)
-    ElMessage.error('Không thể tải danh sách giao dịch: ' + (error.message || 'Không thể kết nối đến server'))
+    toastService.error('Lỗi','Không thể tải danh sách giao dịch: ' + (error.message || 'Không thể kết nối đến server'))
     payments.value = []
   } finally {
     loading.value = false
@@ -497,7 +498,7 @@ const fetchPayments = async () => {
 
 const refreshPayments = () => {
   fetchPayments()
-  ElMessage.success('Đã làm mới danh sách giao dịch')
+  toastService.success('Thành công','Đã làm mới danh sách giao dịch')
 }
 
 const clearSearch = () => {
@@ -529,7 +530,7 @@ const closeDetailModal = () => {
 
 const retryPayment = async (payment) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc chắn muốn thử lại giao dịch này?',
       'Xác nhận thử lại',
       {
@@ -541,7 +542,7 @@ const retryPayment = async (payment) => {
     
     // Simulate retry
     payment.status = 'pending'
-    ElMessage.success('Đã gửi yêu cầu thử lại giao dịch')
+    toastService.success('Thành công','Đã gửi yêu cầu thử lại giao dịch')
   } catch {
     // User cancelled
   }
@@ -549,7 +550,7 @@ const retryPayment = async (payment) => {
 
 const refundPayment = async (payment) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc chắn muốn hoàn tiền cho giao dịch này?',
       'Xác nhận hoàn tiền',
       {
@@ -562,7 +563,7 @@ const refundPayment = async (payment) => {
     // Simulate refund
     payment.status = 'refunded'
     payment.refundedAt = new Date().toISOString()
-    ElMessage.success('Đã hoàn tiền thành công')
+    toastService.success('Thành công','Đã hoàn tiền thành công')
   } catch {
     // User cancelled
   }
@@ -583,14 +584,14 @@ const exportPayments = (format) => {
 
     if (format === 'csv') {
       downloadCsv('payments', exportData)
-      ElMessage.success('Xuất CSV thành công!')
+      toastService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('payments', exportData)
-      ElMessage.success('Xuất JSON thành công!')
+      toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     console.error('Export error:', error)
-    ElMessage.error('Có lỗi xảy ra khi xuất dữ liệu!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 

@@ -9,6 +9,20 @@
           <span v-if="!product.inStock" class="badge badge-out-of-stock">Hết hàng</span>
         </div>
 
+        <!-- Stock Badge -->
+        <div v-if="product.totalStock !== null && product.totalStock !== undefined" class="stock-badge">
+          <span 
+            class="stock-badge-number"
+            :class="{
+              'stock-low': product.totalStock > 0 && product.totalStock < 10,
+              'stock-out': product.totalStock === 0,
+              'stock-ok': product.totalStock >= 10
+            }"
+          >
+            {{ product.totalStock }}
+          </span>
+        </div>
+
         <!-- Flash Sale Badge -->
         <FlashSaleBadge
           v-if="productFlashSale"
@@ -220,6 +234,39 @@ const openQuickView = (event) => {
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.stock-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
+}
+
+.stock-badge-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+.stock-badge-number.stock-ok {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.stock-badge-number.stock-low {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stock-badge-number.stock-out {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
 .product-overlay {

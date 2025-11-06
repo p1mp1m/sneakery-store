@@ -398,7 +398,8 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
 import { useAdminStore } from '@/stores/admin'
@@ -471,13 +472,13 @@ const fetchWarranties = async () => {
     updateStats()
     
     if (warranties.value.length === 0) {
-      ElMessage.info('Chưa có yêu cầu bảo hành nào')
+      toastService.info('Thông tin','Chưa có yêu cầu bảo hành nào')
     } else {
       console.log('✅ Warranties loaded from API:', warranties.value.length, 'warranties')
     }
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
-    ElMessage.error('Không thể tải danh sách bảo hành: ' + (error.message || 'Không thể kết nối đến server'))
+    toastService.error('Lỗi','Không thể tải danh sách bảo hành: ' + (error.message || 'Không thể kết nối đến server'))
     warranties.value = []
     updateStats()
   } finally {
@@ -532,7 +533,7 @@ const clearSelection = () => {
 // Execute bulk action based on selected action
 const executeBulkAction = async () => {
   if (!bulkAction.value) {
-    ElMessage.warning('Vui lòng chọn hành động!')
+    toastService.warning('Cảnh báo','Vui lòng chọn hành động!')
     return
   }
 
@@ -551,7 +552,7 @@ const executeBulkAction = async () => {
 
 // Bulk Actions
 const bulkApprove = async () => {
-  ElMessageBox.confirm(
+  confirmDialogService.confirm(
     `Bạn có chắc muốn chấp nhận ${selectedWarranties.value.length} yêu cầu bảo hành?`,
     'Xác nhận',
     {
@@ -562,20 +563,20 @@ const bulkApprove = async () => {
   ).then(async () => {
     try {
       await adminStore.bulkApproveWarranties(selectedWarranties.value)
-      ElMessage.success(`Đã chấp nhận ${selectedWarranties.value.length} yêu cầu!`)
+      toastService.success('Thành công',`Đã chấp nhận ${selectedWarranties.value.length} yêu cầu!`)
       clearSelection()
       fetchWarranties()
     } catch (error) {
       console.error('Lỗi khi chấp nhận hàng loạt:', error)
-      ElMessage.error('Lỗi khi chấp nhận yêu cầu bảo hành')
+      toastService.error('Lỗi','Lỗi khi chấp nhận yêu cầu bảo hành')
     }
   }).catch(() => {
-    ElMessage.info('Đã hủy')
+    toastService.info('Thông tin','Đã hủy')
   })
 }
 
 const bulkReject = async () => {
-  ElMessageBox.confirm(
+  confirmDialogService.confirm(
     `Bạn có chắc muốn từ chối ${selectedWarranties.value.length} yêu cầu bảo hành?`,
     'Xác nhận',
     {
@@ -586,15 +587,15 @@ const bulkReject = async () => {
   ).then(async () => {
     try {
       await adminStore.bulkRejectWarranties(selectedWarranties.value)
-      ElMessage.success(`Đã từ chối ${selectedWarranties.value.length} yêu cầu!`)
+      toastService.success('Thành công',`Đã từ chối ${selectedWarranties.value.length} yêu cầu!`)
       clearSelection()
       fetchWarranties()
     } catch (error) {
       console.error('Lỗi khi từ chối hàng loạt:', error)
-      ElMessage.error('Lỗi khi từ chối yêu cầu bảo hành')
+      toastService.error('Lỗi','Lỗi khi từ chối yêu cầu bảo hành')
     }
   }).catch(() => {
-    ElMessage.info('Đã hủy')
+    toastService.info('Thông tin','Đã hủy')
   })
 }
 
@@ -617,10 +618,10 @@ const exportWarranties = (format) => {
   
   if (format === 'csv') {
     downloadCsv(data, `${filename}.csv`)
-    ElMessage.success('Đã xuất file CSV!')
+    toastService.success('Thành công','Đã xuất file CSV!')
   } else {
     downloadJson(data, `${filename}.json`)
-    ElMessage.success('Đã xuất file JSON!')
+    toastService.success('Thành công','Đã xuất file JSON!')
   }
 }
 
@@ -639,7 +640,7 @@ const handleFileUpload = (event) => {
   const files = Array.from(event.target.files)
   files.forEach(file => {
     if (file.size > 10 * 1024 * 1024) {
-      ElMessage.error(`File ${file.name} quá lớn (> 10MB)`)
+      toastService.error('Lỗi',`File ${file.name} quá lớn (> 10MB)`)
       return
     }
     uploadedFiles.value.push(file)
@@ -652,12 +653,12 @@ const removeFile = (index) => {
 
 const saveDocuments = () => {
   if (uploadedFiles.value.length === 0) {
-    ElMessage.warning('Vui lòng chọn ít nhất 1 file!')
+    toastService.warning('Cảnh báo','Vui lòng chọn ít nhất 1 file!')
     return
   }
   
   // TODO: Upload to server
-  ElMessage.success(`Đã tải lên ${uploadedFiles.value.length} tài liệu!`)
+  toastService.success('Thành công',`Đã tải lên ${uploadedFiles.value.length} tài liệu!`)
   showUploadModal.value = false
   uploadedFiles.value = []
 }
@@ -668,7 +669,7 @@ const viewWarrantyDetail = (item) => {
 }
 
 const approveWarranty = async (item) => {
-  ElMessageBox.confirm(
+  confirmDialogService.confirm(
     'Bạn có chắc muốn chấp nhận yêu cầu bảo hành này?',
     'Xác nhận',
     {
@@ -679,14 +680,14 @@ const approveWarranty = async (item) => {
   ).then(async () => {
     try {
       await adminStore.approveWarranty(item.id)
-      ElMessage.success('Đã chấp nhận yêu cầu!')
+      toastService.success('Thành công','Đã chấp nhận yêu cầu!')
       fetchWarranties()
     } catch (error) {
       console.error('Lỗi khi chấp nhận:', error)
-      ElMessage.error('Lỗi khi chấp nhận yêu cầu bảo hành')
+      toastService.error('Lỗi','Lỗi khi chấp nhận yêu cầu bảo hành')
     }
   }).catch(() => {
-    ElMessage.info('Đã hủy')
+    toastService.info('Thông tin','Đã hủy')
   })
 }
 
@@ -696,7 +697,7 @@ const updateStatus = async (item, newStatus) => {
     completed: 'Đánh dấu là hoàn thành?'
   }
   
-  ElMessageBox.confirm(
+  confirmDialogService.confirm(
     messages[newStatus],
     'Xác nhận',
     {
@@ -707,14 +708,14 @@ const updateStatus = async (item, newStatus) => {
   ).then(async () => {
     try {
       await adminStore.updateWarrantyStatus(item.id, newStatus)
-      ElMessage.success('Đã cập nhật trạng thái!')
+      toastService.success('Thành công','Đã cập nhật trạng thái!')
       fetchWarranties()
     } catch (error) {
       console.error('Lỗi khi cập nhật trạng thái:', error)
-      ElMessage.error('Lỗi khi cập nhật trạng thái bảo hành')
+      toastService.error('Lỗi','Lỗi khi cập nhật trạng thái bảo hành')
     }
   }).catch(() => {
-    ElMessage.info('Đã hủy')
+    toastService.info('Thông tin','Đã hủy')
   })
 }
 

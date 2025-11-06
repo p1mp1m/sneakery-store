@@ -415,7 +415,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
-import { ElMessage } from 'element-plus';
+import toastService from '@/utils/toastService';
 import axios from 'axios';
 
 const route = useRoute();
@@ -600,13 +600,13 @@ const closeZoom = () => {
 
 const addToCart = async () => {
   if (!authStore.isAuthenticated) {
-    ElMessage.warning('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+    toastService.warning('Cảnh báo','Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
     router.push('/login');
     return;
   }
 
   if (!canAddToCart.value) {
-    ElMessage.error('Sản phẩm này hiện không có sẵn');
+    toastService.error('Lỗi','Sản phẩm này hiện không có sẵn');
     return;
   }
 
@@ -624,10 +624,10 @@ const addToCart = async () => {
       }
     );
 
-    ElMessage.success(`Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
+    toastService.success('Thành công',`Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
   } catch (err) {
     console.error('Error adding to cart:', err);
-    ElMessage.error(err.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+    toastService.error('Lỗi',err.response?.data?.message || 'Không thể thêm vào giỏ hàng');
   }
 };
 

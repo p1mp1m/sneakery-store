@@ -8,15 +8,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-// SỬA LỖI: Đảm bảo import DÒNG NÀY
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-// XÓA DÒNG "import java.awt.print.Pageable;" NẾU BẠN THẤY NÓ
-// import java.awt.print.Pageable; // <-- XÓA DÒNG NÀY
 
 @RestController
 @RequestMapping("/api/admin/orders")

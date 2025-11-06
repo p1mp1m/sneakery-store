@@ -17,8 +17,9 @@ public class Order {
     private Long id;
 
     // Quan hệ với User (Nhiều Order thuộc về 1 User)
+    // nullable = true để hỗ trợ POS orders (khách vãng lai không có user_id)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     // Tùy chọn: Quan hệ với Coupon

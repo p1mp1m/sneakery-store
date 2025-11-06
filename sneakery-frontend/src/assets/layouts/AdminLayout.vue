@@ -259,7 +259,7 @@ import { useAdminStore } from "@/stores/admin";
 import { useAuthStore } from "@/stores/auth";
 import { useTheme } from "@/composables/useTheme";
 import ToastContainer from "@/components/ToastContainer.vue";
-import { ElMessage } from "element-plus";
+import toastService from "@/utils/toastService";
 
 const route = useRoute();
 const router = useRouter();
@@ -347,7 +347,7 @@ const handleChangePassword = () => {
 
 const handleLogout = () => {
   showProfileMenu.value = false;
-  ElMessage.success('Đang đăng xuất...');
+  toastService.success('Đang đăng xuất...', '');
   setTimeout(() => {
     authStore.logout();
     adminStore.reset();

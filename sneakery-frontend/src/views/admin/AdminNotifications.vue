@@ -449,7 +449,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import toastService from '@/utils/toastService'
+import confirmDialogService from '@/utils/confirmDialogService'
 
 const adminStore = useAdminStore()
 
@@ -514,13 +515,13 @@ const fetchNotifications = async () => {
     updateStats()
     
     if (notifications.value.length === 0) {
-      ElMessage.info('Chưa có thông báo nào')
+      toastService.info('Thông tin','Chưa có thông báo nào')
     } else {
       console.log('✅ Notifications loaded from API:', notifications.value.length, 'notifications')
     }
   } catch (error) {
     console.error('Lỗi tải dữ liệu:', error)
-    ElMessage.error('Không thể tải danh sách thông báo: ' + (error.message || 'Không thể kết nối đến server'))
+    toastService.error('Lỗi','Không thể tải danh sách thông báo: ' + (error.message || 'Không thể kết nối đến server'))
     notifications.value = []
     updateStats()
   } finally {
@@ -584,17 +585,17 @@ const saveNotification = async () => {
     
     if (editingNotification.value) {
       await adminStore.updateNotification(editingNotification.value.id, notificationData)
-      ElMessage.success('Cập nhật thông báo thành công!')
+      toastService.success('Thành công','Cập nhật thông báo thành công!')
     } else {
       await adminStore.createNotification(notificationData)
-      ElMessage.success('Tạo thông báo thành công!')
+      toastService.success('Thành công','Tạo thông báo thành công!')
     }
     
     closeDialog()
     fetchNotifications()
   } catch (error) {
     console.error('Lỗi lưu:', error)
-    ElMessage.error('Có lỗi xảy ra khi lưu thông báo!')
+    toastService.error('Lỗi','Có lỗi xảy ra khi lưu thông báo!')
   } finally {
     saving.value = false
   }
@@ -602,7 +603,7 @@ const saveNotification = async () => {
 
 const deleteNotification = async (item) => {
   try {
-    await ElMessageBox.confirm(
+    await confirmDialogService.confirm(
       'Bạn có chắc muốn xóa thông báo này?',
       'Xác nhận xóa',
       {
@@ -613,12 +614,12 @@ const deleteNotification = async (item) => {
     )
     
     await adminStore.deleteNotification(item.id)
-    ElMessage.success('Đã xóa thông báo!')
+    toastService.success('Thành công','Đã xóa thông báo!')
     fetchNotifications()
   } catch (error) {
     if (error !== 'cancel') {
       console.error('Lỗi xóa:', error)
-      ElMessage.error('Có lỗi xảy ra khi xóa thông báo!')
+      toastService.error('Lỗi','Có lỗi xảy ra khi xóa thông báo!')
     }
   }
 }
