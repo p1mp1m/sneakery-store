@@ -1210,6 +1210,19 @@
       :loading="deleting"
       @confirm="handleDelete"
     />
+
+    <!-- 🆕 Action Loading Overlay - Không block toàn bộ UI -->
+    <Teleport to="body">
+      <div 
+        v-if="actionLoading" 
+        class="fixed top-4 right-4 z-[9999] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-purple-200 dark:border-purple-700 px-4 py-3 flex items-center gap-3"
+      >
+        <div class="w-5 h-5 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Đang xử lý...
+        </span>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -1224,6 +1237,8 @@ import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 import ProductFilters from "@/assets/components/admin/ProductFilters.vue";
 import ProductFormModal from "@/assets/components/admin/ProductFormModal.vue";
 import * as XLSX from "xlsx";
+import { MAX_IMAGES_PER_PRODUCT } from "@/utils/productConstants";
+import { generateSlug as generateSlugUtil } from "@/utils/slugGenerator";
 
 const adminStore = useAdminStore();
 
@@ -1235,6 +1250,7 @@ const materials = ref([]); // Danh sách chất liệu
 const soles = ref([]); // Danh sách loại đế giày
 const stats = ref(null);
 const loading = ref(false);
+const actionLoading = ref(false); // 🆕 Loading riêng cho duplicate/delete actions
 const currentPage = ref(0);
 const sortBy = ref("id"); // Default sort column
 const sortOrder = ref("desc"); // 'asc' or 'desc'
@@ -1555,14 +1571,6 @@ const fetchProducts = async () => {
     );
     products.value = result.content || [];
     totalItems.value = result.totalElements || 0;
-
-    // Apply current sort after fetching
-    if (sortBy.value) {
-      sortColumn(sortBy.value);
-      // Reset sort order to maintain current state
-      sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
-      sortColumn(sortBy.value);
-    }
   } catch (error) {
     console.error("Lỗi khi tải danh sách sản phẩm:", error);
     ElMessage.error("Không thể tải danh sách sản phẩm!");
@@ -1697,7 +1705,7 @@ const bulkDelete = async () => {
   }
 
   try {
-    loading.value = true;
+    actionLoading.value = true; // ✅ Dùng loading riêng
 
     for (const productId of selectedProducts.value) {
       await adminStore.deleteProduct(productId);
@@ -1713,7 +1721,7 @@ const bulkDelete = async () => {
     console.error("Lỗi khi xóa hàng loạt:", error);
     ElMessage.error("Có lỗi xảy ra khi xóa sản phẩm!");
   } finally {
-    loading.value = false;
+    actionLoading.value = false;
   }
 };
 
@@ -1785,29 +1793,36 @@ const openEditModal = async (product) => {
       })
     );
 
-    // 🟢 Chỉ mở modal sau khi gán xong object mới
-    showModal.value = true;
-
-    // 🖼️ Load ảnh (song song, không ảnh hưởng render)
+    // 🟢 Bổ sung phần LOAD ẢNH từ API
     const { data: imageData } = await axios.get(
       `/api/admin/products/${product.id}/images`
     );
-    initialProductImages.value = (imageData || []).map((img, idx) => ({
+
+    // Chuẩn hóa về format UploadGallery hiểu được
+    initialProductImages.value = (imageData || []).map((img) => ({
       id: img.id,
-      previewUrl: img.imageUrl.startsWith("http")
+      previewUrl: img.imageUrl.startsWith("http") || img.imageUrl.startsWith("blob:")
         ? img.imageUrl
-        : `${window.location.origin}${img.imageUrl}`,
+        : `http://localhost:8080${img.imageUrl}`, // Backend serve static files từ port 8080
       isPrimary: !!img.isPrimary,
-      displayOrder: img.displayOrder ?? idx,
+      displayOrder: img.displayOrder ?? 0, // 🆕 giữ nguyên thứ tự từ BE
       file: null,
-      type: "db",
+      type: "db", // ✅ phân biệt ảnh từ DB
     }));
-    productImages.value = [...initialProductImages.value];
+
+    // 🧠 Thêm snapshot ban đầu để so sánh sau
     originalImagesSnapshot.value = initialProductImages.value.map((img) => ({
       id: img.id,
       isPrimary: !!img.isPrimary,
       displayOrder: img.displayOrder ?? 0,
     }));
+
+    // Gán cho UploadGallery
+    productImages.value = [...initialProductImages.value];
+    formData.value.images = [...initialProductImages.value];
+
+    // 🟢 Chỉ mở modal sau khi gán xong object mới
+    showModal.value = true;
   } catch (error) {
     console.error("❌ Lỗi khi tải chi tiết sản phẩm:", error);
     editingProduct.value = {
@@ -2717,7 +2732,7 @@ const handleBulkUpdate = async () => {
 // ===== DUPLICATE PRODUCT =====
 const duplicateProduct = async (productId) => {
   try {
-    loading.value = true;
+    actionLoading.value = true; // ✅ Dùng loading riêng
     const duplicated = await adminStore.duplicateProduct(productId);
     ElMessage.success(`Đã nhân bản sản phẩm "${duplicated.name}" thành công!`);
     await fetchProducts();
@@ -2726,7 +2741,7 @@ const duplicateProduct = async (productId) => {
     console.error("Lỗi khi nhân bản sản phẩm:", error);
     ElMessage.error("Không thể nhân bản sản phẩm. Vui lòng thử lại!");
   } finally {
-    loading.value = false;
+    actionLoading.value = false;
   }
 };
 

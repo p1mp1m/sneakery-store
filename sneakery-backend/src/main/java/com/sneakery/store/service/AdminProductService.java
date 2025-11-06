@@ -36,6 +36,13 @@ public class AdminProductService {
     private final MaterialRepository materialRepository;
     private final ShoeSoleRepository shoeSoleRepository;
     private final com.sneakery.store.util.ProductValidationUtil productValidationUtil;
+    private final ReviewRepository reviewRepository;
+    private final WishlistRepository wishlistRepository;
+    private final WarrantyRepository warrantyRepository;
+    private final FlashSaleRepository flashSaleRepository;
+    private final ProductImageRepository productImageRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final InventoryLogRepository inventoryLogRepository;
 
 
 
@@ -182,27 +189,18 @@ public class AdminProductService {
  */
 @Transactional(readOnly = true)
 public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
-    // 1️⃣ Bước 1: Lấy Page cơ bản (chỉ ID)
-    Page<Product> page = productRepository.findAll(pageable);
+    // Use the optimized query that already excludes soft-deleted products
+    Page<Product> page = productRepository.findAllWithDetails(pageable);
 
     if (page.isEmpty()) {
         return Page.empty(pageable);
     }
 
-    // 2️⃣ Bước 2: Lấy danh sách ID trong trang hiện tại
-    List<Long> ids = page.getContent().stream()
-            .map(Product::getId)
-            .toList();
-
-    // 3️⃣ Bước 3: Fetch join Brand + Categories cho đúng các ID đó
-    List<Product> fullProducts = productRepository.findByIdInWithBrandAndCategories(ids);
-
-    // 4️⃣ Bước 4: Convert sang DTO
-    List<AdminProductListDto> dtoList = fullProducts.stream()
+    // Convert to DTO
+    List<AdminProductListDto> dtoList = page.getContent().stream()
             .map(this::convertToListDto)
             .toList();
 
-    // 5️⃣ Bước 5: Tạo PageImpl để giữ nguyên thông tin phân trang
     return new PageImpl<>(dtoList, pageable, page.getTotalElements());
 }
 
@@ -243,14 +241,121 @@ private AdminProductListDto convertToListDto(Product product) {
 
 
     /**
-     * API 5: Xóa sản phẩm
+     * API 5: Xóa sản phẩm (hard delete)
+     * 
+     * <p>Thực hiện hard delete bằng cách xóa tất cả các bản ghi liên quan trước:
+     * <ul>
+     *   <li>1. Xóa InventoryLogs (theo variant)</li>
+     *   <li>2. Xóa CartItems (theo variant) - sử dụng native query</li>
+     *   <li>3. Xóa OrderDetails (theo variant) - lưu ý: có thể ảnh hưởng đến lịch sử đơn hàng</li>
+     *   <li>4. Xóa ProductImages (theo product)</li>
+     *   <li>5. Xóa Reviews (theo product)</li>
+     *   <li>6. Xóa Wishlists (theo product)</li>
+     *   <li>7. Xóa Warranties (theo product)</li>
+     *   <li>8. Xóa FlashSales (theo product)</li>
+     *   <li>9. Xóa ProductVariants (cascade delete hoặc manual)</li>
+     *   <li>10. Xóa Product (hard delete)</li>
+     * </ul>
+     * 
+     * <p><b>Cảnh báo:</b> Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
      */
     @Transactional
     public void deleteProduct(Long productId) {
-        if (!productRepository.existsById(productId)) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
+        // Load product với variants để tránh LazyInitializationException
+        Product product = productRepository.findByIdWithDetails(productId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
+        
+        log.info("Bắt đầu xóa product ID: {} và tất cả dữ liệu liên quan", productId);
+        
+        // 1. Lấy danh sách variant IDs của product
+        List<Long> variantIds = product.getVariants() != null 
+                ? product.getVariants().stream().map(ProductVariant::getId).collect(Collectors.toList())
+                : Collections.emptyList();
+        
+        log.info("Tìm thấy {} variants cần xóa", variantIds.size());
+        
+        // 2. Xóa InventoryLogs (theo variant) - sử dụng native query
+        if (!variantIds.isEmpty()) {
+            for (Long variantId : variantIds) {
+                int deletedLogs = entityManager.createNativeQuery(
+                        "DELETE FROM Inventory_Logs WHERE variant_id = :variantId")
+                        .setParameter("variantId", variantId)
+                        .executeUpdate();
+                log.info("Đã xóa {} inventory logs cho variant ID: {}", deletedLogs, variantId);
+            }
         }
-        productRepository.deleteById(productId); // Sẽ cascade-delete variants
+        
+        // 3. Xóa CartItems (theo variant) - sử dụng native query
+        if (!variantIds.isEmpty()) {
+            for (Long variantId : variantIds) {
+                int deletedCartItems = entityManager.createNativeQuery(
+                        "DELETE FROM Cart_Items WHERE variant_id = :variantId")
+                        .setParameter("variantId", variantId)
+                        .executeUpdate();
+                log.info("Đã xóa {} cart items cho variant ID: {}", deletedCartItems, variantId);
+            }
+        }
+        
+        // 4. Xóa OrderDetails (theo variant) - CẢNH BÁO: Có thể ảnh hưởng đến lịch sử đơn hàng
+        // Tuy nhiên, user yêu cầu xóa hết, nên sẽ xóa
+        if (!variantIds.isEmpty()) {
+            for (Long variantId : variantIds) {
+                int deletedOrderDetails = entityManager.createNativeQuery(
+                        "DELETE FROM Order_Details WHERE variant_id = :variantId")
+                        .setParameter("variantId", variantId)
+                        .executeUpdate();
+                log.info("Đã xóa {} order details cho variant ID: {}", deletedOrderDetails, variantId);
+            }
+        }
+        
+        // 5. Xóa ProductImages (theo product)
+        productImageRepository.deleteByProductId(productId);
+        log.info("Đã xóa tất cả product images cho product ID: {}", productId);
+        
+        // 6. Xóa Reviews (theo product) - sử dụng native query
+        int deletedReviews = entityManager.createNativeQuery(
+                "DELETE FROM Reviews WHERE product_id = :productId")
+                .setParameter("productId", productId)
+                .executeUpdate();
+        log.info("Đã xóa {} reviews cho product ID: {}", deletedReviews, productId);
+        
+        // 7. Xóa Wishlists (theo product) - sử dụng native query
+        int deletedWishlists = entityManager.createNativeQuery(
+                "DELETE FROM Wishlists WHERE product_id = :productId")
+                .setParameter("productId", productId)
+                .executeUpdate();
+        log.info("Đã xóa {} wishlist items cho product ID: {}", deletedWishlists, productId);
+        
+        // 8. Xóa Warranties (theo product) - sử dụng native query
+        int deletedWarranties = entityManager.createNativeQuery(
+                "DELETE FROM Warranties WHERE product_id = :productId")
+                .setParameter("productId", productId)
+                .executeUpdate();
+        log.info("Đã xóa {} warranties cho product ID: {}", deletedWarranties, productId);
+        
+        // 9. Xóa FlashSales (theo product) - sử dụng native query
+        int deletedFlashSales = entityManager.createNativeQuery(
+                "DELETE FROM Flash_Sales WHERE product_id = :productId")
+                .setParameter("productId", productId)
+                .executeUpdate();
+        log.info("Đã xóa {} flash sales cho product ID: {}", deletedFlashSales, productId);
+        
+        // 10. Xóa Product_Categories join table (many-to-many relationship)
+        int deletedProductCategories = entityManager.createNativeQuery(
+                "DELETE FROM Product_Categories WHERE product_id = :productId")
+                .setParameter("productId", productId)
+                .executeUpdate();
+        log.info("Đã xóa {} product-category relationships cho product ID: {}", deletedProductCategories, productId);
+        
+        // 11. Xóa ProductVariants (manual delete để đảm bảo)
+        if (!variantIds.isEmpty()) {
+            variantRepository.deleteAllById(variantIds);
+            log.info("Đã xóa {} variants cho product ID: {}", variantIds.size(), productId);
+        }
+        
+        // 12. Xóa Product (hard delete)
+        productRepository.delete(product);
+        log.info("Đã xóa product ID: {} thành công", productId);
     }
 
 
@@ -751,13 +856,10 @@ private AdminProductListDto convertToListDto(Product product) {
                                                     ProductAdvancedFilterDto filter) {
         List<Predicate> predicates = new ArrayList<>();
 
-        // Search
+        // Search - chỉ tìm trong tên sản phẩm
         if (filter.getSearch() != null && !filter.getSearch().trim().isEmpty()) {
             String searchPattern = "%" + filter.getSearch().toLowerCase() + "%";
-            predicates.add(cb.or(
-                    cb.like(cb.lower(product.get("name")), searchPattern),
-                    cb.like(cb.lower(product.get("slug")), searchPattern)
-            ));
+            predicates.add(cb.like(cb.lower(product.get("name")), searchPattern));
         }
 
         // Brand
@@ -765,6 +867,9 @@ private AdminProductListDto convertToListDto(Product product) {
             predicates.add(cb.equal(brand.get("id"), filter.getBrandId()));
         }
 
+        // Exclude soft deleted products
+        predicates.add(cb.isNull(product.get("deletedAt")));
+        
         // Status
         if (filter.getStatus() != null && !filter.getStatus().equals("all")) {
             predicates.add(cb.equal(product.get("isActive"), filter.getStatus().equals("active")));

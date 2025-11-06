@@ -667,10 +667,10 @@ const deleteSole = async (id) => {
   }
 
   // ===== PRODUCT VARIANTS =====
-  const fetchProductVariants = async (page = 0, size = 10, filters = {}) => {
+  const fetchProductVariants = async (page = 0, size = 10, filters = {}, sortBy = null, sortDirection = 'asc') => {
     try {
       loading.value = true
-      const result = await AdminService.getProductVariants(page, size, filters)
+      const result = await AdminService.getProductVariants(page, size, filters, sortBy, sortDirection)
       return result
     } catch (error) {
       console.error('Error fetching product variants:', error)

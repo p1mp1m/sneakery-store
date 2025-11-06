@@ -36,7 +36,7 @@
         @dragover.prevent
         @drop="drop(idx)"
       >
-        <img :src="img.previewUrl" alt="preview" class="w-full h-full object-cover" />
+        <img :src="getImageUrl(img.previewUrl)" alt="preview" class="w-full h-full object-cover" />
         <div class="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
@@ -123,6 +123,23 @@ const mode = ref("local");
 const imageUrlInput = ref("");
 const images = ref([]);
 const dragIndex = ref(null);
+
+// Helper function để convert relative URL thành absolute URL
+const getImageUrl = (url) => {
+  if (!url) return '';
+  
+  // Nếu đã là absolute URL (http/https) hoặc blob URL, trả về nguyên
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) {
+    return url;
+  }
+  
+  // Nếu là relative URL (bắt đầu bằng /), prefix với backend URL
+  if (url.startsWith('/')) {
+    return `http://localhost:8080${url}`;
+  }
+  
+  return url;
+};
 
 // ✳️ hàm dùng lại để nạp initialImages
 const loadFromInitial = () => {

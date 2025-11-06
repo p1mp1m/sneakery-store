@@ -7,13 +7,20 @@ import com.sneakery.store.constants.ProductConstants;
 import com.sneakery.store.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Service xử lý upload và quản lý file với Cloudinary.
@@ -27,10 +34,17 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class FileStorageService {
 
     private final Cloudinary cloudinary;
+    
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
+    
+    // Constructor với @Autowired(required = false) để cho phép cloudinary null
+    public FileStorageService(@Autowired(required = false) Cloudinary cloudinary) {
+        this.cloudinary = cloudinary;
+    }
 
     /**
      * Kết quả upload Cloudinary (URL + PublicId)
@@ -86,38 +100,99 @@ public class FileStorageService {
             }
         }
 
-        // 5. Upload lên Cloudinary
-        try {
-            Map<?, ?> res = cloudinary.uploader().upload(
-                    file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", "uploads/sanpham/" + productId,
-                            "use_filename", true,
-                            "unique_filename", true,
-                            "resource_type", "image"
-                    )
-            );
-            String url = res.get("secure_url").toString();
-            String publicId = res.get("public_id").toString();
-            log.info("✅ Uploaded Cloudinary: url={}, publicId={}", url, publicId);
-            return new CloudinaryUploadResult(url, publicId);
-        } catch (IOException e) {
-            log.error("❌ Upload Cloudinary lỗi: {}", e.getMessage(), e);
-            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, 
-                "Không thể upload file: " + e.getMessage());
+        // 5. Upload lên Cloudinary hoặc lưu local
+        if (cloudinary != null) {
+            try {
+                Map<?, ?> res = cloudinary.uploader().upload(
+                        file.getBytes(),
+                        ObjectUtils.asMap(
+                                "folder", "uploads/sanpham/" + productId,
+                                "use_filename", true,
+                                "unique_filename", true,
+                                "resource_type", "image"
+                        )
+                );
+                String url = res.get("secure_url").toString();
+                String publicId = res.get("public_id").toString();
+                log.info("✅ Uploaded Cloudinary: url={}, publicId={}", url, publicId);
+                return new CloudinaryUploadResult(url, publicId);
+            } catch (IOException e) {
+                log.error("❌ Upload Cloudinary lỗi: {}", e.getMessage(), e);
+                throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                    "Không thể upload file: " + e.getMessage());
+            }
+        } else {
+            // Fallback: Lưu file local
+            log.warn("⚠️ Cloudinary chưa được cấu hình, sử dụng local storage");
+            try {
+                return storeProductImageLocal(productId, file);
+            } catch (IOException e) {
+                log.error("❌ Upload local file lỗi: {}", e.getMessage(), e);
+                throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                    "Không thể upload file: " + e.getMessage());
+            }
         }
     }
 
+    /**
+     * Lưu file local (fallback khi không có Cloudinary)
+     */
+    private CloudinaryUploadResult storeProductImageLocal(Long productId, MultipartFile file) throws IOException {
+        // Tạo thư mục nếu chưa có
+        Path productDir = Paths.get(uploadDir, "sanpham", productId.toString());
+        Files.createDirectories(productDir);
+        
+        // Tạo tên file unique
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        String filename = UUID.randomUUID().toString() + extension;
+        Path filePath = productDir.resolve(filename);
+        
+        // Lưu file
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        
+        // Tạo URL (relative path)
+        String url = "/" + uploadDir + "/sanpham/" + productId + "/" + filename;
+        String publicId = uploadDir + "/sanpham/" + productId + "/" + filename;
+        
+        log.info("✅ Uploaded local file: url={}, path={}", url, filePath);
+        return new CloudinaryUploadResult(url, publicId);
+    }
+    
     /**
      * Xoá asset Cloudinary bằng public_id (chính xác 100%).
      */
     public void deleteByPublicId(String publicId) {
         if (publicId == null || publicId.isBlank()) return;
-        try {
-            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
-            log.info("🗑️ Đã xoá Cloudinary asset: {}", publicId);
-        } catch (Exception e) {
-            log.warn("⚠️ Không thể xoá Cloudinary asset {}: {}", publicId, e.getMessage());
+        
+        if (cloudinary != null) {
+            try {
+                cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+                log.info("🗑️ Đã xoá Cloudinary asset: {}", publicId);
+            } catch (Exception e) {
+                log.warn("⚠️ Không thể xoá Cloudinary asset {}: {}", publicId, e.getMessage());
+            }
+        } else {
+            // Fallback: Xóa file local
+            try {
+                // publicId có thể là relative path như "uploads/sanpham/2/abc.jpg"
+                Path filePath = Paths.get(publicId);
+                if (!Files.exists(filePath)) {
+                    // Thử với absolute path từ project root
+                    filePath = Paths.get(System.getProperty("user.dir"), publicId);
+                }
+                if (Files.exists(filePath)) {
+                    Files.delete(filePath);
+                    log.info("🗑️ Đã xoá local file: {}", filePath);
+                } else {
+                    log.warn("⚠️ Không tìm thấy file để xóa: {}", publicId);
+                }
+            } catch (Exception e) {
+                log.warn("⚠️ Không thể xoá local file {}: {}", publicId, e.getMessage());
+            }
         }
     }
 

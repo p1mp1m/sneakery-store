@@ -49,6 +49,9 @@ public class SecurityConfig {
 
                         // ✅ Cho phép Guest APIs (không cần authentication)
                         .requestMatchers("/api/guest/**").permitAll()
+                        
+                        // ✅ Cho phép truy cập static files (uploads)
+                        .requestMatchers("/uploads/**").permitAll()
 
                         // ❌ Các request khác yêu cầu xác thực
                         .anyRequest().authenticated()

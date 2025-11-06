@@ -904,7 +904,7 @@ class AdminService {
   }
 
   // ===== PRODUCT VARIANTS =====
-  async getProductVariants(page = 0, size = 10, filters = {}) {
+  async getProductVariants(page = 0, size = 10, filters = {}, sortBy = null, sortDirection = 'asc') {
     try {
       const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
@@ -918,6 +918,13 @@ class AdminService {
         size: size.toString(),
         ...cleanFilters
       })
+      
+      // Thêm sort params nếu có
+      if (sortBy) {
+        params.append('sortBy', sortBy)
+        params.append('sortDirection', sortDirection)
+      }
+      
       const response = await adminApi.get(`/product-variants?${params}`)
       return response.data
     } catch (error) {
