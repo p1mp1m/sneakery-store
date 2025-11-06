@@ -35,7 +35,14 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             "AND (:search IS NULL OR :search = '' OR " +
             "   LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
             "AND (:color IS NULL OR :color = '' OR LOWER(v.color) = LOWER(:color)) " +
-            "AND (:size IS NULL OR :size = '' OR LOWER(v.size) = LOWER(:size)) " +
+            "AND (:size IS NULL OR :size = '' OR " +
+            "   LOWER(v.size) = LOWER(:size) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT(:size, ', %')) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT('%, ', :size, ', %')) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT('%, ', :size)) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT(:size, ',')) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT(',', :size, ',')) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT(',', :size))) " +
             "AND (:productId IS NULL OR v.product.id = :productId) " +
             "AND (:stockStatus IS NULL OR :stockStatus = '' OR " +
             "   (:stockStatus = 'out_of_stock' AND v.stockQuantity = 0) OR " +
