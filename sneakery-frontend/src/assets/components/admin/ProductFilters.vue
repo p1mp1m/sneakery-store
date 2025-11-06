@@ -8,7 +8,7 @@
           :value="filters.search"
           @input="handleSearchInput"
           type="text"
-          placeholder="Tìm theo tên hoặc slug..."
+          placeholder="Tìm theo tên sản phẩm..."
           class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
       </div>
@@ -112,7 +112,7 @@
         >
           <option value="">Mặc định</option>
           <option value="name">Tên A-Z</option>
-          <option value="price">Giá thấp → cao</option>
+          <!-- <option value="price">Giá thấp → cao</option> -->
           <option value="stock">Tồn kho thấp → cao</option>
         </select>
       </div>

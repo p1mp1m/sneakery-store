@@ -98,12 +98,28 @@
                 <input
                   v-model="formData.size"
                   type="text"
-                  class="px-3 py-2 pr-10 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent cursor-pointer"
+                  :class="[
+                    'px-3 py-2 pr-10 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent cursor-pointer',
+                    sizeError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  ]"
                   readonly
                   placeholder="Chọn kích thước"
+                  @blur="validateSize"
                 />
                 <i class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">straighten</i>
               </div>
+              <transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-y-1"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 -translate-y-1"
+              >
+                <p v-if="sizeError" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                  {{ sizeError }}
+                </p>
+              </transition>
             </div>
             <!-- Popup chọn màu -->
             <div
@@ -132,11 +148,19 @@
             <div
               v-if="showSizePopup"
               class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-              @click.self="showSizePopup = false"
+              @click.self="handleSizePopupClose"
             >
               <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                   <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">Chọn kích thước</h4>
+                  <button
+                    type="button"
+                    class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    @click="handleSizePopupClose"
+                    title="Đóng (ESC)"
+                  >
+                    <i class="material-icons text-base">close</i>
+                  </button>
                 </div>
                 <div class="p-4 grid grid-cols-5 gap-2">
                   <button
@@ -152,11 +176,22 @@
                     {{ s }}
                   </button>
                 </div>
-                <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                <div v-if="selectedSizes.length === 0" class="px-4 pb-2">
+                  <p class="text-xs text-red-500 dark:text-red-400">Vui lòng chọn ít nhất một kích thước</p>
+                </div>
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
                   <button
                     type="button"
-                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+                    class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 text-sm font-medium"
+                    @click="handleSizePopupClose"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     @click="confirmSizes"
+                    :disabled="selectedSizes.length === 0"
                   >
                     Xác nhận
                   </button>
@@ -270,6 +305,7 @@ import {
   reactive,
   watch,
   onMounted,
+  onUnmounted,
   computed,
   onErrorCaptured,
 } from "vue";
@@ -330,6 +366,8 @@ const resetKey = ref(0);
 // ✅ cho UploadGallery
 const galleryInitial = ref([]); // danh sách ảnh khởi tạo: [{ previewUrl, isPrimary, type }]
 const removedImageUrls = ref([]); // lưu các URL bị xóa (ảnh DB)
+const sizeError = ref(""); // Error message cho size field
+const previousSizeValue = ref(""); // Lưu giá trị size trước khi mở popup
 
 const formData = reactive({
   productId: "",
@@ -349,6 +387,42 @@ const formData = reactive({
 // ===== Popup chọn màu & kích thước =====
 const showColorPopup = ref(false);
 const showSizePopup = ref(false);
+
+// Watch để lưu giá trị size trước khi mở popup
+watch(showSizePopup, (isOpen) => {
+  if (isOpen) {
+    // Lưu giá trị hiện tại trước khi mở popup
+    previousSizeValue.value = formData.size || "";
+    // Parse size hiện tại thành array nếu có
+    if (formData.size) {
+      selectedSizes.value = formData.size.split(",").map(s => parseInt(s.trim())).filter(s => !isNaN(s));
+    } else {
+      selectedSizes.value = [];
+    }
+  }
+});
+
+// Xử lý ESC key để đóng popup
+const handleEscKey = (event) => {
+  if (event.key === "Escape") {
+    if (showSizePopup.value) {
+      handleSizePopupClose();
+    }
+    if (showColorPopup.value) {
+      showColorPopup.value = false;
+    }
+  }
+};
+
+// Thêm event listener khi component mount
+onMounted(() => {
+  document.addEventListener("keydown", handleEscKey);
+});
+
+// Remove event listener khi component unmount
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleEscKey);
+});
 
 const availableColors = [
   { name: "Black", hex: "#000000" },
@@ -375,14 +449,40 @@ const toggleSize = (size) => {
   const i = selectedSizes.value.indexOf(size);
   if (i > -1) selectedSizes.value.splice(i, 1);
   else selectedSizes.value.push(size);
+  // Clear error khi user chọn size
+  if (selectedSizes.value.length > 0) {
+    sizeError.value = "";
+  }
+};
+
+const validateSize = () => {
+  if (!formData.size || formData.size.trim() === "") {
+    sizeError.value = "Vui lòng chọn kích thước";
+    return false;
+  }
+  sizeError.value = "";
+  return true;
+};
+
+const handleSizePopupClose = () => {
+  // Nếu đóng popup mà không chọn size (hoặc bỏ hết chọn), reset về giá trị cũ
+  if (selectedSizes.value.length === 0) {
+    formData.size = previousSizeValue.value;
+    // Validate sau khi đóng
+    if (!formData.size || formData.size.trim() === "") {
+      sizeError.value = "Vui lòng chọn kích thước";
+    }
+  }
+  showSizePopup.value = false;
 };
 
 const confirmSizes = () => {
   if (selectedSizes.value.length === 0) {
-    ElMessage.warning("Vui lòng chọn ít nhất một kích thước");
+    sizeError.value = "Vui lòng chọn ít nhất một kích thước";
     return;
   }
   formData.size = selectedSizes.value.join(", ");
+  sizeError.value = ""; // Clear error khi confirm thành công
   showSizePopup.value = false;
 };
 
@@ -445,12 +545,13 @@ const resetForm = () => {
   });
   // ✅ Đồng thời reset các lựa chọn popup
   selectedSizes.value = [];
-  selectColor.value = null;
   showColorPopup.value = false;
   showSizePopup.value = false;
   galleryInitial.value = [];
   resetKey.value++; // ép component con reset lại gallery
   removedImageUrls.value = [];
+  sizeError.value = ""; // Reset error
+  previousSizeValue.value = ""; // Reset previous value
 };
 
 const populateForm = (variant) => {
@@ -548,12 +649,22 @@ const handleSubmit = async () => {
     isSubmitting.value = true;
 
     // ==== validate cơ bản ====
-    if (!formData.productId) return ElMessage.warning("Vui lòng chọn sản phẩm");
-    if (!formData.color) return ElMessage.warning("Vui lòng chọn màu");
-    if (!formData.size && selectedSizes.value.length === 0)
-      return ElMessage.warning("Vui lòng chọn kích thước");
-    if (selectedImages.value.length > 10)
-      return ElMessage.warning("Tối đa 10 ảnh");
+    if (!formData.productId) {
+      ElMessage.warning("Vui lòng chọn sản phẩm");
+      return;
+    }
+    if (!formData.color) {
+      ElMessage.warning("Vui lòng chọn màu");
+      return;
+    }
+    if (!validateSize()) {
+      ElMessage.warning("Vui lòng chọn kích thước");
+      return;
+    }
+    if (selectedImages.value.length > 10) {
+      ElMessage.warning("Tối đa 10 ảnh");
+      return;
+    }
 
     // ==== xóa ảnh đã đánh dấu xóa (nếu có) ====
     if (removedImageUrls.value.length > 0) {

@@ -83,9 +83,9 @@
           <input
             type="text"
             v-model="filters.search"
-            placeholder="Tìm theo tên sản phẩm, SKU, màu sắc..."
+            placeholder="Tìm theo tên sản phẩm..."
             class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            @input="handleSearch"
+            @input="debouncedSearch"
           />
         </div>
 
@@ -100,11 +100,11 @@
             @change="handleFilter"
           >
             <option value="">Tất cả màu</option>
-            <option value="black">Đen</option>
-            <option value="white">Trắng</option>
-            <option value="red">Đỏ</option>
-            <option value="blue">Xanh dương</option>
-            <option value="green">Xanh lá</option>
+            <option value="Đen">Đen</option>
+            <option value="Trắng">Trắng</option>
+            <option value="Đỏ">Đỏ</option>
+            <option value="Xanh dương">Xanh dương</option>
+            <option value="Xanh lá">Xanh lá</option>
           </select>
         </div>
 
@@ -183,7 +183,26 @@
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">SKU</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Màu sắc</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Kích thước</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Giá</th>
+              <th 
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                @click="handleSort('price')"
+              >
+                <div class="flex items-center gap-1">
+                  Giá
+                  <i 
+                    v-if="sortBy === 'price'"
+                    class="material-icons text-sm text-purple-600 dark:text-purple-400"
+                  >
+                    {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </i>
+                  <i 
+                    v-else
+                    class="material-icons text-sm text-gray-400 opacity-0 group-hover:opacity-50"
+                  >
+                    swap_vert
+                  </i>
+                </div>
+              </th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tồn kho</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
@@ -329,6 +348,7 @@ import { useAdminStore } from "@/stores/admin";
 import { ElMessage } from "element-plus";
 import VariantModal from "@/assets/components/admin/VariantModal.vue";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
+import { debounce } from "@/utils/debounce";
 
 // ===== STORES =====
 const adminStore = useAdminStore();
@@ -354,6 +374,10 @@ const filters = reactive({
   size: "",
   stockStatus: "",
 });
+
+// ===== SORT STATE =====
+const sortBy = ref(null); // null, "price", "stock", "sku", etc.
+const sortDirection = ref("asc"); // "asc" or "desc"
 
 // ===== MODAL STATE =====
 const isModalOpen = ref(false);
@@ -381,7 +405,9 @@ const loadVariants = async () => {
     const result = await adminStore.fetchProductVariants(
       currentPage.value,
       pageSize.value,
-      filters
+      filters,
+      sortBy.value,
+      sortDirection.value
     );
 
     variants.value = result.content || [];
@@ -396,6 +422,26 @@ const loadVariants = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleSort = (field) => {
+  if (sortBy.value === field) {
+    // Đang sort cùng field, toggle direction hoặc reset về không sort
+    if (sortDirection.value === "asc") {
+      // Từ asc -> desc
+      sortDirection.value = "desc";
+    } else if (sortDirection.value === "desc") {
+      // Từ desc -> không sort (reset)
+      sortBy.value = null;
+      sortDirection.value = "asc";
+    }
+  } else {
+    // Set field mới và mặc định là asc
+    sortBy.value = field;
+    sortDirection.value = "asc";
+  }
+  currentPage.value = 0; // Reset về trang đầu
+  loadVariants();
 };
 
 const loadStats = async () => {
@@ -425,6 +471,9 @@ const handleSearch = async () => {
   currentPage.value = 0;
   await loadVariants();
 };
+
+// Debounce search để tránh gọi API quá nhiều khi user đang gõ
+const debouncedSearch = debounce(handleSearch, 500);
 
 const handleFilter = async () => {
   currentPage.value = 0;
