@@ -85,7 +85,7 @@ public class LoyaltyService {
         loyaltyPoint.setUser(order.getUser());
         loyaltyPoint.setPoints(points);
         loyaltyPoint.setTransactionType("earn");
-        loyaltyPoint.setEarnedFromOrderId(order.getId());
+        loyaltyPoint.setEarnedFromOrder(order);
         loyaltyPoint.setDescription(String.format("Tích điểm từ đơn hàng %s", order.getOrderNumber()));
         loyaltyPoint.setExpiresAt(LocalDateTime.now().plusYears(1)); // Hết hạn sau 1 năm
         
@@ -134,7 +134,7 @@ public class LoyaltyService {
         redemption.setUser(user);
         redemption.setPoints(pointsToUse);
         redemption.setTransactionType("redeem");
-        redemption.setRedeemedInOrderId(order.getId());
+        redemption.setRedeemedInOrder(order);
         redemption.setDescription(String.format("Đổi điểm cho đơn hàng %s", order.getOrderNumber()));
         
         loyaltyPointRepository.save(redemption);

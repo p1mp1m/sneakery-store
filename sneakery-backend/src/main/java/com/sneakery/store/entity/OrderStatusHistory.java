@@ -24,6 +24,17 @@ public class OrderStatusHistory {
     @Column(name = "status", nullable = false)
     private String status;
 
+    @Column(name = "note", columnDefinition = "NVARCHAR(MAX)")
+    private String note; // Ghi chú về thay đổi trạng thái
+
+    // Người thay đổi trạng thái (có thể là admin hoặc system)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "changed_by")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private User changedBy;
+
+    // Thời điểm thay đổi (mapped từ created_at trong database)
     @Column(name = "created_at")
-    private LocalDateTime changedAt; // Database dùng created_at nhưng tên field vẫn là changedAt để dễ hiểu
+    private LocalDateTime changedAt;
 }

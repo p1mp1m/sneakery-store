@@ -7,37 +7,37 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * Entity: ProductImage
+ * Entity: VariantImage
  * --------------------
- * Đại diện cho 1 hình ảnh thuộc về sản phẩm.
- * Một sản phẩm có thể có nhiều hình ảnh (gallery),
+ * Đại diện cho 1 hình ảnh thuộc về product variant.
+ * Một variant có thể có nhiều hình ảnh (gallery),
  * trong đó có thể có 1 ảnh được đánh dấu là ảnh chính (primary).
  */
 @Data
 @Entity
-@Table(name = "Product_Images")
+@Table(name = "Variant_Images")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(description = "Ảnh sản phẩm trong hệ thống Sneakery Store")
-public class ProductImage {
+@Schema(description = "Ảnh variant sản phẩm trong hệ thống Sneakery Store")
+public class VariantImage {
 
-    /** ID tự tăng của ảnh sản phẩm */
+    /** ID tự tăng của ảnh variant */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Schema(description = "ID tự tăng của ảnh sản phẩm")
+    @Schema(description = "ID tự tăng của ảnh variant")
     private Long id;
 
-    /** Liên kết tới sản phẩm chứa ảnh này (nhiều ảnh thuộc 1 sản phẩm) */
+    /** Liên kết tới variant chứa ảnh này (nhiều ảnh thuộc 1 variant) */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "variant_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @Schema(description = "Sản phẩm mà ảnh này thuộc về")
-    private Product product;
+    @Schema(description = "Variant mà ảnh này thuộc về")
+    private ProductVariant variant;
 
-    /** Đường dẫn ảnh (có thể là local hoặc URL ngoài như Unsplash) */
+    /** Đường dẫn ảnh (có thể là local hoặc URL ngoài như Cloudinary) */
     @Column(name = "image_url", nullable = false, length = 500)
     @Schema(description = "Đường dẫn ảnh (local hoặc URL ngoài)")
     private String imageUrl;
@@ -47,17 +47,17 @@ public class ProductImage {
     @Schema(description = "Mô tả ngắn cho ảnh (alt text)")
     private String altText;
 
-    /** Cờ đánh dấu ảnh đại diện (primary) của sản phẩm */
+    /** Cờ đánh dấu ảnh đại diện (primary) của variant */
     @Builder.Default
     @Column(name = "is_primary", nullable = false)
-    @Schema(description = "Đánh dấu ảnh chính của sản phẩm")
+    @Schema(description = "Đánh dấu ảnh chính của variant")
     private Boolean isPrimary = false;
 
     /** Thứ tự hiển thị trong gallery (1 = đầu tiên) */
     @Builder.Default
     @Column(name = "display_order", nullable = false)
     @Schema(description = "Thứ tự hiển thị trong gallery (1 = đầu tiên)")
-    private Integer displayOrder = 1;
+    private Integer displayOrder = 0;
 
     /** Thời điểm tạo bản ghi */
     @Column(name = "created_at", updatable = false)
@@ -77,3 +77,4 @@ public class ProductImage {
         if (displayOrder == null) displayOrder = 0;
     }
 }
+

@@ -1,5 +1,6 @@
 package com.sneakery.store.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -7,6 +8,7 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "Product_Variants")
@@ -82,4 +84,9 @@ public class ProductVariant {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    // Quan hệ với VariantImages (Một Variant có nhiều ảnh)
+    @OneToMany(mappedBy = "variant", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<VariantImage> images;
 }

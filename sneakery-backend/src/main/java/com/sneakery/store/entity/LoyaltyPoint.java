@@ -37,13 +37,19 @@ public class LoyaltyPoint {
     @Column(name = "transaction_type", nullable = false, length = 20)
     private String transactionType; // earn, redeem, expire
 
-    // Order ID khi earn điểm (từ đơn hàng)
-    @Column(name = "earned_from_order_id")
-    private Long earnedFromOrderId;
+    // Quan hệ với Order khi earn điểm (từ đơn hàng) - optional
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "earned_from_order_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Order earnedFromOrder;
 
-    // Order ID khi redeem điểm (dùng điểm)
-    @Column(name = "redeemed_in_order_id")
-    private Long redeemedInOrderId;
+    // Quan hệ với Order khi redeem điểm (dùng điểm) - optional
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "redeemed_in_order_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Order redeemedInOrder;
 
     @Column(name = "description")
     private String description;
