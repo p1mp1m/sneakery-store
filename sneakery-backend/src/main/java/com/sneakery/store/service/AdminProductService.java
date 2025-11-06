@@ -152,6 +152,8 @@ public class AdminProductService {
         product.setCategories(categories);
         product.setMaterial(material);
         product.setShoeSole(shoeSole);
+        product.setMainImageUrl(requestDto.getMainImageUrl());
+
 
         // 7️⃣ Cập nhật variants
         updateProductVariants(product, requestDto.getVariants());
@@ -215,6 +217,13 @@ private AdminProductListDto convertToListDto(Product product) {
                 .map(cat -> new SimpleCategoryDto(cat.getId(), cat.getName()))
                 .toList()
             : List.of();
+    // ✅ Tính tổng tồn kho (sum của tất cả stockQuantity)
+    int totalStock = 0;
+    if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+        totalStock = product.getVariants().stream()
+                .mapToInt(v -> Optional.ofNullable(v.getStockQuantity()).orElse(0))
+                .sum();
+    }
     return AdminProductListDto.builder()
             .id(product.getId())
             .code(product.getCode()) // 🆕 Thêm dòng này để hiển thị mã sản phẩm
@@ -224,9 +233,11 @@ private AdminProductListDto convertToListDto(Product product) {
             .brandName(product.getBrand() != null ? product.getBrand().getName() : "N/A")
             .isActive(product.getIsActive())
             .variantCount(product.getVariants() != null ? product.getVariants().size() : 0)
+            .totalStock(totalStock)
             .categories(categoryDtos)
             .materialId(product.getMaterial() != null ? product.getMaterial().getId() : null)
             .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
+            .mainImageUrl(product.getMainImageUrl())
             .build();
 }
 
@@ -382,6 +393,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
                 .categories(categoryDtos)
                 .variants(variantDtos)
+                .mainImageUrl(product.getMainImageUrl()) // ✅ Trả về ảnh bìa chính
                 .build();
     }
 

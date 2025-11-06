@@ -91,4 +91,7 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     @Query("SELECT COALESCE(MIN(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
            "FROM ProductVariant v WHERE v.priceBase IS NOT NULL")
     java.math.BigDecimal getMinPrice();
+
+    boolean existsBySkuAndProductIdNot(String sku, Long productId);
+
 }

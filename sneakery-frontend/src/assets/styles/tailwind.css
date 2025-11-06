@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@charset "UTF-8";
 
 /* Import Design Tokens */
 @import './_design-tokens.css';
@@ -13,6 +11,10 @@
 
 /* Import Accessibility Styles */
 @import './_accessibility.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Custom utilities */
 @layer utilities {
