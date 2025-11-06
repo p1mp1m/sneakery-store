@@ -270,30 +270,32 @@
           <div v-if="activeTab === 'specs'">
             <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Thông tin chi tiết</h3>
             <table class="w-full">
-              <tr class="border-b border-gray-200 dark:border-gray-700">
-                <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Thương hiệu</td>
-                <td class="py-3 text-gray-900 dark:text-gray-100">{{ product.brandName }}</td>
-              </tr>
-              <tr class="border-b border-gray-200 dark:border-gray-700">
-                <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Danh mục</td>
-                <td class="py-3 text-gray-900 dark:text-gray-100">{{ formatCategories(product.categories) }}</td>
-              </tr>
-              <tr class="border-b border-gray-200 dark:border-gray-700">
-                <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Màu sắc</td>
-                <td class="py-3 text-gray-900 dark:text-gray-100">{{ availableColors.join(', ') }}</td>
-              </tr>
-              <tr class="border-b border-gray-200 dark:border-gray-700">
-                <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Kích cỡ</td>
-                <td class="py-3 text-gray-900 dark:text-gray-100">{{ availableSizes.join(', ') }}</td>
-              </tr>
-              <tr class="border-b border-gray-200 dark:border-gray-700">
-                <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Chất liệu</td>
-                <td class="py-3 text-gray-900 dark:text-gray-100">Canvas, Rubber Sole</td>
-              </tr>
-              <tr>
-                <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Xuất xứ</td>
-                <td class="py-3 text-gray-900 dark:text-gray-100">Chính hãng 100%</td>
-              </tr>
+              <tbody>
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                  <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Thương hiệu</td>
+                  <td class="py-3 text-gray-900 dark:text-gray-100">{{ product.brandName }}</td>
+                </tr>
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                  <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Danh mục</td>
+                  <td class="py-3 text-gray-900 dark:text-gray-100">{{ formatCategories(product.categories) }}</td>
+                </tr>
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                  <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Màu sắc</td>
+                  <td class="py-3 text-gray-900 dark:text-gray-100">{{ availableColors.join(', ') }}</td>
+                </tr>
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                  <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Kích cỡ</td>
+                  <td class="py-3 text-gray-900 dark:text-gray-100">{{ availableSizes.join(', ') }}</td>
+                </tr>
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                  <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Chất liệu</td>
+                  <td class="py-3 text-gray-900 dark:text-gray-100">Canvas, Rubber Sole</td>
+                </tr>
+                <tr>
+                  <td class="py-3 text-gray-600 dark:text-gray-400 font-medium">Xuất xứ</td>
+                  <td class="py-3 text-gray-900 dark:text-gray-100">Chính hãng 100%</td>
+                </tr>
+              </tbody>
             </table>
           </div>
 

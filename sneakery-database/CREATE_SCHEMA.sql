@@ -181,6 +181,8 @@ CREATE TABLE Products (
     avg_rating DECIMAL(3,2) DEFAULT 0.00,
     review_count INT DEFAULT 0,
     
+    main_image_url NVARCHAR(500),
+    
     published_at DATETIME2,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
@@ -1100,6 +1102,30 @@ GO
 
 PRINT '  - Migration completed successfully!';
 PRINT '  - Orders table now allows NULL user_id for POS orders (walk-in customers)';
+GO
+
+-- Migration: Add main_image_url column to Products table
+-- Date: 2025-11-07
+-- Description: Thêm cột main_image_url vào bảng Products nếu chưa tồn tại
+PRINT 'Migration: Add main_image_url column to Products table...';
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+    WHERE TABLE_NAME = 'Products' 
+    AND COLUMN_NAME = 'main_image_url'
+)
+BEGIN
+    ALTER TABLE Products ADD main_image_url NVARCHAR(500) NULL;
+    PRINT '  - Added main_image_url column to Products table';
+END
+ELSE
+BEGIN
+    PRINT '  - main_image_url column already exists in Products table';
+END
+GO
+
+PRINT '  - Migration completed successfully!';
 GO
 
 SET NOCOUNT OFF; -- Re-enable row count

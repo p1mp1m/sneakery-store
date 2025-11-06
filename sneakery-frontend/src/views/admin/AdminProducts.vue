@@ -229,7 +229,6 @@
       >
         <div class="overflow-x-auto">
           <table class="w-full">
-<<<<<<< HEAD
           <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10">
@@ -339,111 +338,52 @@
                     'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getStockClass(product) === 'out-of-stock'
                   }"
                 >
+                  <i class="material-icons text-sm">{{ getStockIcon(product) }}</i>
                   {{ getStockStatusText(product) }}
+                  <small style="margin-left: 4px; opacity: 0.8">
+                    ({{ getTotalStock(product) }})
+                  </small>
                 </span>
               </td>
 
-                <!-- 🆕 Cột mã sản phẩm -->
-                <td class="px-4 py-4">
-                  <code
-                    class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100"
-                    >{{ product.code || "—" }}</code
+              <td class="px-4 py-4">
+                <span
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                  :class="
+                    product.isActive
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                  "
+                >
+                  {{ product.isActive ? "Đang bán" : "Ngừng bán" }}
+                </span>
+              </td>
+
+              <td class="px-4 py-4 text-center">
+                <div class="flex items-center justify-center gap-2">
+                  <button
+                    @click="duplicateProduct(product.id)"
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Nhân bản"
                   >
-                </td>
-
-                <td class="px-4 py-4">
-                  <div
-                    class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                    <i class="material-icons text-base">content_copy</i>
+                  </button>
+                  <button
+                    @click="openEditModal(product)"
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Chỉnh sửa"
                   >
-                    {{ product.name }}
-                  </div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ product.slug }}
-                  </div>
-                </td>
-
-                <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
-                  {{ product.brandName || "N/A" }}
-                </td>
-
-                <!-- 🆕 Cột danh mục -->
-                <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
-                  <span
-                    v-if="product.categories && product.categories.length > 0"
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+                  <button
+                    @click="confirmDelete(product)"
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    title="Xóa"
                   >
-                    {{ product.categories.map((c) => c.name).join(", ") }}
-                  </span>
-                  <span v-else class="text-gray-400 dark:text-gray-500">—</span>
-                </td>
-
-                <td class="px-4 py-4">
-                  <span
-                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                  >
-                    {{ product.variantCount || 0 }} variants
-                  </span>
-                </td>
-
-                <td class="px-4 py-4">
-                  <span
-                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full"
-                    :class="{
-                      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400':
-                        getStockClass(product) === 'in-stock',
-                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400':
-                        getStockClass(product) === 'low-stock',
-                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400':
-                        getStockClass(product) === 'out-of-stock',
-                    }"
-                  >
-                    <i class="material-icons text-sm">{{
-                      getStockIcon(product)
-                    }}</i>
-                    {{ getStockText(product) }}
-                    <small style="margin-left: 4px; opacity: 0.8">
-                      ({{ getTotalStock(product) }})
-                    </small>
-                  </span>
-                </td>
-
-                <td class="px-4 py-4">
-                  <span
-                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
-                    :class="
-                      product.isActive
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                    "
-                  >
-                    {{ product.isActive ? "Đang bán" : "Ngừng bán" }}
-                  </span>
-                </td>
-
-                <td class="px-4 py-4 text-center">
-                  <div class="flex items-center justify-center gap-2">
-                    <button
-                      @click="duplicateProduct(product.id)"
-                      class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                      title="Nhân bản"
-                    >
-                      <i class="material-icons text-base">content_copy</i>
-                    </button>
-                    <button
-                      @click="openEditModal(product)"
-                      class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                      title="Chỉnh sửa"
-                    >
-                      <i class="material-icons text-base">edit</i>
-                    </button>
-                    <button
-                      @click="confirmDelete(product)"
-                      class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                      title="Xóa"
-                    >
-                      <i class="material-icons text-base">delete</i>
-                    </button>
-                  </div>
-                </td>
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
+              </td>
               </tr>
             </tbody>
           </table>
@@ -1265,7 +1205,6 @@ const originalImagesSnapshot = ref([]); // 🆕 lưu trạng thái ảnh DB ban 
 // ================== STATE ==================
 const showCategoryModal = ref(false);
 const submittingCategory = ref(false);
-const MAX_IMAGES_PER_PRODUCT = 10;
 
 const newCategory = ref({
   name: "",
@@ -1488,6 +1427,10 @@ const getStockText = (product) => {
   if (stockClass === "out-of-stock") return "Hết hàng";
   if (stockClass === "low-stock") return "Sắp hết";
   return "Còn hàng";
+};
+
+const getStockStatusText = (product) => {
+  return getStockText(product);
 };
 
 // ===== SORT FUNCTIONALITY =====
@@ -2511,16 +2454,6 @@ const closeQuickAddSole = () => {
 const generateSoleSlug = () => {
   quickSoleData.value.slug = generateSlugUtil(quickSoleData.value.name);
 };
-
-function generateSlugUtil(text) {
-  return text
-    .toLowerCase()
-    .normalize("NFD") // loại bỏ dấu tiếng Việt
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-}
 
 const saveQuickSole = async () => {
   if (!quickSoleData.value.name.trim()) {

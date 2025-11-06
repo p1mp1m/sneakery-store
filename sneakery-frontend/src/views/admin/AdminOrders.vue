@@ -509,6 +509,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
@@ -517,6 +518,7 @@ import { printInvoice } from '@/utils/pdfGenerator'
 import { downloadCsv, prepareOrdersForExport } from '@/utils/exportHelpers'
 import AdminService from '@/services/adminService'
 
+const router = useRouter()
 const adminStore = useAdminStore()
 
 const orders = ref([])
@@ -909,29 +911,9 @@ const getStatusLabel = (status) => {
 }
 
 
-const viewOrderDetail = async (order) => {
-  try {
-    loading.value = true
-    // Fetch full order details from API
-    try {
-      const orderDetail = await AdminService.getOrderById(order.id)
-      if (orderDetail) {
-        selectedOrder.value = orderDetail
-      } else {
-        selectedOrder.value = order
-      }
-    } catch (apiError) {
-      console.warn('Không thể tải chi tiết từ API, sử dụng dữ liệu cơ bản:', apiError)
-      selectedOrder.value = order
-    }
-    showDetailModal.value = true
-  } catch (error) {
-    console.error('Lỗi khi tải chi tiết đơn hàng:', error)
-    selectedOrder.value = order
-    showDetailModal.value = true
-  } finally {
-    loading.value = false
-  }
+const viewOrderDetail = (order) => {
+  // Navigate to order detail page
+  router.push(`/admin/orders/${order.id}`)
 }
 
 const handleCancelOrder = async (order) => {

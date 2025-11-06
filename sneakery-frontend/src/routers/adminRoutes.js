@@ -10,6 +10,7 @@ const AdminSales = () => import('@/views/admin/AdminSales.vue')
 const AdminProducts = () => import('@/views/admin/AdminProducts.vue')
 const AdminProductVariants = () => import('@/views/admin/AdminProductVariants.vue')
 const AdminOrders = () => import('@/views/admin/AdminOrders.vue')
+const AdminOrderDetail = () => import('@/views/admin/AdminOrderDetail.vue')
 const AdminUsers = () => import('@/views/admin/AdminUsers.vue')
 const AdminBrands = () => import('@/views/admin/AdminBrands.vue')
 const AdminCategories = () => import('@/views/admin/AdminCategories.vue')
@@ -66,6 +67,16 @@ const adminRoutes = [
           requiresAdmin: true,
           title: 'Quản lý đơn hàng',
           icon: 'receipt'
+        }
+      },
+      {
+        path: 'orders/:id',
+        name: 'AdminOrderDetail',
+        component: AdminOrderDetail,
+        meta: { 
+          requiresAdmin: true,
+          title: 'Chi tiết đơn hàng',
+          icon: 'receipt_long'
         }
       },
       {
