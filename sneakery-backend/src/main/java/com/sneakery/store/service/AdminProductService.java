@@ -40,13 +40,7 @@ public class AdminProductService {
     private final MaterialRepository materialRepository;
     private final ShoeSoleRepository shoeSoleRepository;
     private final com.sneakery.store.util.ProductValidationUtil productValidationUtil;
-    private final ReviewRepository reviewRepository;
-    private final WishlistRepository wishlistRepository;
-    private final WarrantyRepository warrantyRepository;
-    private final FlashSaleRepository flashSaleRepository;
     private final ProductImageRepository productImageRepository;
-    private final OrderDetailRepository orderDetailRepository;
-    private final InventoryLogRepository inventoryLogRepository;
 
 
 

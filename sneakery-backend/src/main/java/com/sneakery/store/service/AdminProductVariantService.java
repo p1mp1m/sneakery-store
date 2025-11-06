@@ -7,8 +7,6 @@ import com.sneakery.store.entity.ProductImage; // ✅ Added: import ProductImage
 import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
 import com.sneakery.store.repository.ProductImageRepository; // ✅ Added: import ProductImageRepository
-import com.sneakery.store.repository.OrderDetailRepository;
-import com.sneakery.store.repository.InventoryLogRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +32,7 @@ public class AdminProductVariantService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository; // ✅ Added
     private final ActivityLogService activityLogService;
-    private final OrderDetailRepository orderDetailRepository;
-    private final InventoryLogRepository inventoryLogRepository;
+
     private final EntityManager entityManager;
 
     /**
