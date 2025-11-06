@@ -1,21 +1,27 @@
 <template>
-  <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+  <div
+    class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+  >
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
       <!-- Search -->
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tìm kiếm</label>
+        <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
+          >Tìm kiếm</label
+        >
         <input
           :value="filters.search"
           @input="handleSearchInput"
           type="text"
-          placeholder="Tìm theo tên hoặc slug..."
+          placeholder="Tìm theo tên sản phẩm..."
           class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
       </div>
 
       <!-- Brand -->
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Thương hiệu</label>
+        <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
+          >Thương hiệu</label
+        >
         <select
           :value="filters.brandId"
           @change="handleBrandChange"
@@ -30,7 +36,9 @@
 
       <!-- Category -->
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Danh mục</label>
+        <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
+          >Danh mục</label
+        >
         <select
           :value="filters.categoryId"
           @change="handleCategoryChange"
@@ -49,7 +57,9 @@
 
       <!-- Status -->
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Trạng thái</label>
+        <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
+          >Trạng thái</label
+        >
         <select
           :value="filters.status"
           @change="handleStatusChange"
@@ -64,7 +74,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       <!-- Min Price -->
-      <div class="flex flex-col gap-1">
+      <!-- <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá từ (VNĐ)</label>
         <input
           :value="filters.minPrice"
@@ -73,10 +83,10 @@
           placeholder="0"
           class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
-      </div>
+      </div> -->
 
       <!-- Max Price -->
-      <div class="flex flex-col gap-1">
+      <!-- <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá đến (VNĐ)</label>
         <input
           :value="filters.maxPrice"
@@ -85,11 +95,13 @@
           placeholder="10,000,000"
           class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
-      </div>
+      </div> -->
 
       <!-- Stock Level -->
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tồn kho</label>
+        <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
+          >Tồn kho</label
+        >
         <select
           :value="filters.stockLevel"
           @change="handleStockLevelChange"
@@ -104,7 +116,9 @@
 
       <!-- Sort -->
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Sắp xếp</label>
+        <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
+          >Sắp xếp</label
+        >
         <select
           :value="filters.sortBy"
           @change="handleSortChange"
@@ -112,7 +126,7 @@
         >
           <option value="">Mặc định</option>
           <option value="name">Tên A-Z</option>
-          <option value="price">Giá thấp → cao</option>
+          <!-- <option value="price">Giá thấp → cao</option> -->
           <option value="stock">Tồn kho thấp → cao</option>
         </select>
       </div>
@@ -132,109 +146,108 @@
 </template>
 
 <script setup>
-import { useProductFilters } from '@/composables/useProductFilters'
-import { Status, StockLevel } from '@/utils/productConstants'
+import { useProductFilters } from "@/composables/useProductFilters";
+import { Status, StockLevel } from "@/utils/productConstants";
 
 const props = defineProps({
   filters: {
     type: Object,
-    required: true
+    required: true,
   },
   brands: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   categories: {
     type: Array,
-    default: () => []
-  }
-})
+    default: () => [],
+  },
+});
 
-const emit = defineEmits(['update:filters', 'apply', 'reset'])
+const emit = defineEmits(["update:filters", "apply", "reset"]);
 
 // Use composable for debounced search
-const { debouncedSearch } = useProductFilters()
+const { debouncedSearch } = useProductFilters();
 
 // Handlers
 const handleSearchInput = (event) => {
   const newFilters = {
     ...props.filters,
-    search: event.target.value
-  }
-  emit('update:filters', newFilters)
-  
+    search: event.target.value,
+  };
+  emit("update:filters", newFilters);
+
   // Debounce search
   debouncedSearch(() => {
-    emit('apply')
-  })
-}
+    emit("apply");
+  });
+};
 
 const handleBrandChange = (event) => {
   const newFilters = {
     ...props.filters,
-    brandId: event.target.value ? Number(event.target.value) : null
-  }
-  emit('update:filters', newFilters)
-  emit('apply')
-}
+    brandId: event.target.value ? Number(event.target.value) : null,
+  };
+  emit("update:filters", newFilters);
+  emit("apply");
+};
 
 const handleCategoryChange = (event) => {
   const newFilters = {
     ...props.filters,
-    categoryId: event.target.value ? Number(event.target.value) : null
-  }
-  emit('update:filters', newFilters)
-  emit('apply')
-}
+    categoryId: event.target.value ? Number(event.target.value) : null,
+  };
+  emit("update:filters", newFilters);
+  emit("apply");
+};
 
 const handleStatusChange = (event) => {
   const newFilters = {
     ...props.filters,
-    status: event.target.value
-  }
-  emit('update:filters', newFilters)
-  emit('apply')
-}
+    status: event.target.value,
+  };
+  emit("update:filters", newFilters);
+  emit("apply");
+};
 
-const handleMinPriceChange = (event) => {
-  const newFilters = {
-    ...props.filters,
-    minPrice: event.target.value ? Number(event.target.value) : null
-  }
-  emit('update:filters', newFilters)
-  emit('apply')
-}
+// const handleMinPriceChange = (event) => {
+//   const newFilters = {
+//     ...props.filters,
+//     minPrice: event.target.value ? Number(event.target.value) : null,
+//   };
+//   emit("update:filters", newFilters);
+//   emit("apply");
+// };
 
-const handleMaxPriceChange = (event) => {
-  const newFilters = {
-    ...props.filters,
-    maxPrice: event.target.value ? Number(event.target.value) : null
-  }
-  emit('update:filters', newFilters)
-  emit('apply')
-}
+// const handleMaxPriceChange = (event) => {
+//   const newFilters = {
+//     ...props.filters,
+//     maxPrice: event.target.value ? Number(event.target.value) : null,
+//   };
+//   emit("update:filters", newFilters);
+//   emit("apply");
+// };
 
 const handleStockLevelChange = (event) => {
   const newFilters = {
     ...props.filters,
-    stockLevel: event.target.value
-  }
-  emit('update:filters', newFilters)
-  emit('apply')
-}
+    stockLevel: event.target.value,
+  };
+  emit("update:filters", newFilters);
+  emit("apply");
+};
 
 const handleSortChange = (event) => {
   const newFilters = {
     ...props.filters,
-    sortBy: event.target.value || '',
-    sortDirection: event.target.value ? 'asc' : ''
-  }
-  emit('update:filters', newFilters)
-  emit('apply')
-}
+    sortBy: event.target.value || "",
+    sortDirection: event.target.value ? "asc" : "",
+  };
+  emit("update:filters", newFilters);
+  emit("apply");
+};
 
 const handleReset = () => {
-  emit('reset')
-}
+  emit("reset");
+};
 </script>
-

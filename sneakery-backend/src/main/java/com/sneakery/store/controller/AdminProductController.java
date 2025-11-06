@@ -35,7 +35,7 @@ import java.util.List;
 @RequestMapping("/api/admin/products")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')") // Bảo vệ tất cả API
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
 public class AdminProductController {
 
     private final AdminProductService adminProductService;

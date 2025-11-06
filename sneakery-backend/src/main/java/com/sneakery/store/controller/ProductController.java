@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController // QUAN TRỌNG: Đảm bảo bạn có dòng này
 @RequestMapping("/api/products") // QUAN TRỌNG: Và dòng này
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
 public class ProductController {
 
     @Autowired

@@ -165,8 +165,9 @@
               <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ user.phoneNumber || 'N/A' }}</td>
               <td class="px-4 py-3">
                 <select v-model="user.role" @change="confirmRoleChange(user, $event)" class="px-2 py-1 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                  <option value="USER">User</option>
+                  <option value="USER">Người dùng</option>
                   <option value="ADMIN">Admin</option>
+                  <option value="MODERATOR">Điều hành viên</option>
                 </select>
               </td>
               <td class="px-4 py-3">

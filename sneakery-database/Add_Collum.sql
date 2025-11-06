@@ -1,0 +1,1 @@
+ALTER TABLE Products ADD main_image_url NVARCHAR(1000) NULL;

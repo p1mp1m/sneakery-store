@@ -80,6 +80,9 @@ public class Product {
     @Column(name = "review_count")
     private Integer reviewCount;
 
+    @Column(name = "main_image_url", length = 500)
+    private String mainImageUrl;
+
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 

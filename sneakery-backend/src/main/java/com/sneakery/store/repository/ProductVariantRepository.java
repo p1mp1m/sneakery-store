@@ -18,7 +18,9 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     @Query("SELECT v FROM ProductVariant v " +
             "LEFT JOIN FETCH v.product p " +
             "LEFT JOIN FETCH p.brand " +
-            "WHERE v.id = :variantId")
+            "WHERE v.id = :variantId " +
+            "AND v.deletedAt IS NULL " +
+            "AND p.deletedAt IS NULL")
     Optional<ProductVariant> findByIdWithDetails(Long variantId);
 
     @EntityGraph("ProductVariant.withProductAndBrand")
@@ -28,13 +30,19 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     @EntityGraph("ProductVariant.withProductAndBrand")
     @Query("SELECT v FROM ProductVariant v " +
             "LEFT JOIN v.product p " +
-            "WHERE (:search IS NULL OR " +
-            "   LOWER(v.sku) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "   LOWER(v.color) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "   LOWER(v.size) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "WHERE v.deletedAt IS NULL " +
+            "AND p.deletedAt IS NULL " +
+            "AND (:search IS NULL OR :search = '' OR " +
             "   LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-            "AND (:color IS NULL OR LOWER(v.color) = LOWER(:color)) " +
-            "AND (:size IS NULL OR LOWER(v.size) = LOWER(:size)) " +
+            "AND (:color IS NULL OR :color = '' OR LOWER(v.color) = LOWER(:color)) " +
+            "AND (:size IS NULL OR :size = '' OR " +
+            "   LOWER(v.size) = LOWER(:size) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT(:size, ', %')) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT('%, ', :size, ', %')) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT('%, ', :size)) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT(:size, ',')) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT(',', :size, ',')) OR " +
+            "   LOWER(v.size) LIKE LOWER(CONCAT(',', :size))) " +
             "AND (:productId IS NULL OR v.product.id = :productId) " +
             "AND (:stockStatus IS NULL OR :stockStatus = '' OR " +
             "   (:stockStatus = 'out_of_stock' AND v.stockQuantity = 0) OR " +
@@ -48,47 +56,52 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             @Param("stockStatus") String stockStatus,
             Pageable pageable
     );
-    Optional<ProductVariant> findBySku(String sku);
+    @Query("SELECT v FROM ProductVariant v WHERE v.sku = :sku AND v.deletedAt IS NULL")
+    Optional<ProductVariant> findBySku(@Param("sku") String sku);
 
     // ✅ Có thể thêm nếu chưa có
-    boolean existsBySku(String sku);
+    @Query("SELECT CASE WHEN COUNT(v) > 0 THEN true ELSE false END FROM ProductVariant v WHERE v.sku = :sku AND v.deletedAt IS NULL")
+    boolean existsBySku(@Param("sku") String sku);
 
     /**
-     * Sum total stock quantity (optimized aggregation query)
+     * Sum total stock quantity (optimized aggregation query) - excludes soft deleted
      */
-    @Query("SELECT COALESCE(SUM(v.stockQuantity), 0) FROM ProductVariant v WHERE v.stockQuantity IS NOT NULL")
+    @Query("SELECT COALESCE(SUM(v.stockQuantity), 0) FROM ProductVariant v WHERE v.stockQuantity IS NOT NULL AND v.deletedAt IS NULL")
     Long sumTotalStockQuantity();
 
     /**
-     * Count variants with low stock (quantity > 0 and <= threshold)
+     * Count variants with low stock (quantity > 0 and <= threshold) - excludes soft deleted
      */
-    @Query("SELECT COUNT(v) FROM ProductVariant v WHERE v.stockQuantity > 0 AND v.stockQuantity <= :threshold")
+    @Query("SELECT COUNT(v) FROM ProductVariant v WHERE v.stockQuantity > 0 AND v.stockQuantity <= :threshold AND v.deletedAt IS NULL")
     Long countLowStockVariants(@Param("threshold") Integer threshold);
 
     /**
-     * Count variants with out of stock (quantity = 0)
+     * Count variants with out of stock (quantity = 0) - excludes soft deleted
      */
-    @Query("SELECT COUNT(v) FROM ProductVariant v WHERE v.stockQuantity = 0 OR v.stockQuantity IS NULL")
+    @Query("SELECT COUNT(v) FROM ProductVariant v WHERE (v.stockQuantity = 0 OR v.stockQuantity IS NULL) AND v.deletedAt IS NULL")
     Long countOutOfStockVariants();
 
     /**
-     * Calculate average price (using priceSale if available, else priceBase)
+     * Calculate average price (using priceSale if available, else priceBase) - excludes soft deleted
      */
     @Query("SELECT COALESCE(AVG(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
-           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL")
+           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL AND v.deletedAt IS NULL")
     java.math.BigDecimal calculateAveragePrice();
 
     /**
-     * Get maximum price (using priceSale if available, else priceBase)
+     * Get maximum price (using priceSale if available, else priceBase) - excludes soft deleted
      */
     @Query("SELECT COALESCE(MAX(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
-           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL")
+           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL AND v.deletedAt IS NULL")
     java.math.BigDecimal getMaxPrice();
 
     /**
-     * Get minimum price (using priceSale if available, else priceBase)
+     * Get minimum price (using priceSale if available, else priceBase) - excludes soft deleted
      */
     @Query("SELECT COALESCE(MIN(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
-           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL")
+           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL AND v.deletedAt IS NULL")
     java.math.BigDecimal getMinPrice();
+
+    boolean existsBySkuAndProductIdNot(String sku, Long productId);
+
 }

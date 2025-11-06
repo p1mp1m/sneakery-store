@@ -904,20 +904,29 @@ class AdminService {
   }
 
   // ===== PRODUCT VARIANTS =====
-  async getProductVariants(page = 0, size = 10, filters = {}) {
+  async getProductVariants(page = 0, size = 10, filters = {}, sortBy = null, sortDirection = 'asc') {
     try {
       const cleanFilters = Object.entries(filters).reduce((acc, [key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
-          acc[key] = value
+          // ✅ Đổi tên 'size' filter thành 'variantSize' để tránh conflict với pagination size
+          const paramName = key === 'size' ? 'variantSize' : key
+          acc[paramName] = value
         }
         return acc
       }, {})
       
       const params = new URLSearchParams({
         page: page.toString(),
-        size: size.toString(),
+        ...(size ? { size: size.toString() } : {}), // ✅ Chỉ thêm size nếu có giá trị
         ...cleanFilters
       })
+      
+      // Thêm sort params nếu có
+      if (sortBy) {
+        params.append('sortBy', sortBy)
+        params.append('sortDirection', sortDirection)
+      }
+      
       const response = await adminApi.get(`/product-variants?${params}`)
       return response.data
     } catch (error) {

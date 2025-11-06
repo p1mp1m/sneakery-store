@@ -25,7 +25,7 @@ import java.util.Map;
 @RequestMapping("/api/admin/notifications")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
 public class AdminNotificationController {
 
     private final NotificationRepository notificationRepository;

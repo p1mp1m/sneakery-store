@@ -7,8 +7,13 @@ import com.sneakery.store.entity.ProductImage; // ✅ Added: import ProductImage
 import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
 import com.sneakery.store.repository.ProductImageRepository; // ✅ Added: import ProductImageRepository
+import com.sneakery.store.repository.OrderDetailRepository;
+import com.sneakery.store.repository.InventoryLogRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,20 +34,77 @@ public class AdminProductVariantService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository; // ✅ Added
     private final ActivityLogService activityLogService;
+    private final OrderDetailRepository orderDetailRepository;
+    private final InventoryLogRepository inventoryLogRepository;
+    private final EntityManager entityManager;
 
     /**
      * Lấy danh sách biến thể với filter
      */
     @Transactional(readOnly = true)
     public Page<AdminProductVariantDto> getVariantsWithFilter(ProductVariantFilterDto filter, Pageable pageable) {
+        // Nếu sort theo color hoặc size, cần custom sort logic
+        // Lấy tất cả data trước (không sort trong query)
+        Pageable customPageable = pageable;
+        if (filter.getSortBy() != null && (filter.getSortBy().equalsIgnoreCase("color") || filter.getSortBy().equalsIgnoreCase("size"))) {
+            // Lấy tất cả data không sort
+            customPageable = PageRequest.of(0, Integer.MAX_VALUE);
+        }
+        
         Page<ProductVariant> variants = productVariantRepository.findWithFilters(
                 filter.getSearch(),
                 filter.getColor(),
                 filter.getSize(),
                 filter.getProductId(),
                 filter.getStockStatus(),
-                pageable
+                customPageable
         );
+        
+        // Nếu sort theo color hoặc size, sort thủ công rồi paginate
+        if (filter.getSortBy() != null && (filter.getSortBy().equalsIgnoreCase("color") || filter.getSortBy().equalsIgnoreCase("size"))) {
+            List<ProductVariant> variantList = new ArrayList<>(variants.getContent());
+            boolean isAsc = filter.getSortDirection() == null || filter.getSortDirection().equalsIgnoreCase("asc");
+            
+            variantList.sort((v1, v2) -> {
+                if (filter.getSortBy().equalsIgnoreCase("color")) {
+                    // Sort màu case-insensitive
+                    String color1 = v1.getColor() != null ? v1.getColor().toLowerCase() : "";
+                    String color2 = v2.getColor() != null ? v2.getColor().toLowerCase() : "";
+                    int compare = color1.compareTo(color2);
+                    return isAsc ? compare : -compare;
+                } else if (filter.getSortBy().equalsIgnoreCase("size")) {
+                    // Sort size theo số
+                    try {
+                        int size1 = Integer.parseInt(v1.getSize() != null ? v1.getSize() : "0");
+                        int size2 = Integer.parseInt(v2.getSize() != null ? v2.getSize() : "0");
+                        int compare = Integer.compare(size1, size2);
+                        return isAsc ? compare : -compare;
+                    } catch (NumberFormatException e) {
+                        // Nếu không parse được, sort theo string
+                        String size1 = v1.getSize() != null ? v1.getSize() : "";
+                        String size2 = v2.getSize() != null ? v2.getSize() : "";
+                        int compare = size1.compareTo(size2);
+                        return isAsc ? compare : -compare;
+                    }
+                }
+                return 0;
+            });
+            
+            // Paginate sau khi sort
+            int page = pageable.getPageNumber();
+            int size = pageable.getPageSize();
+            int start = page * size;
+            int end = Math.min(start + size, variantList.size());
+            List<ProductVariant> pagedList = start < variantList.size() ? variantList.subList(start, end) : new ArrayList<>();
+            
+            // Tạo Page mới với data đã sort và paginate
+            return new org.springframework.data.domain.PageImpl<>(
+                    pagedList.stream().map(this::convertToDto).collect(java.util.stream.Collectors.toList()),
+                    pageable,
+                    variantList.size()
+            );
+        }
+        
         return variants.map(this::convertToDto);
     }
 
@@ -191,12 +254,57 @@ public class AdminProductVariantService {
     }
 
     /**
-     * Xóa biến thể
+     * Xóa biến thể (hard delete)
+     * 
+     * <p>Thực hiện hard delete bằng cách xóa tất cả các bản ghi liên quan trước:
+     * <ul>
+     *   <li>1. Xóa Warranties (theo variant_id)</li>
+     *   <li>2. Xóa InventoryLogs (theo variant_id)</li>
+     *   <li>3. Xóa CartItems (theo variant_id)</li>
+     *   <li>4. Xóa OrderDetails (theo variant_id) - lưu ý: có thể ảnh hưởng đến lịch sử đơn hàng</li>
+     *   <li>5. Xóa ProductVariant (hard delete)</li>
+     * </ul>
+     * 
+     * <p><b>Cảnh báo:</b> Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
      */
     public void deleteVariant(Long id) {
         ProductVariant variant = productVariantRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể với ID: " + id));
+        
+        log.info("Bắt đầu xóa variant ID: {} (SKU: {}) và tất cả dữ liệu liên quan", id, variant.getSku());
+        
+        // 1. Xóa Warranties (theo variant_id) - sử dụng native query
+        int deletedWarranties = entityManager.createNativeQuery(
+                "DELETE FROM Warranties WHERE variant_id = :variantId")
+                .setParameter("variantId", id)
+                .executeUpdate();
+        log.info("Đã xóa {} warranties cho variant ID: {}", deletedWarranties, id);
+        
+        // 2. Xóa InventoryLogs (theo variant_id) - sử dụng native query
+        int deletedLogs = entityManager.createNativeQuery(
+                "DELETE FROM Inventory_Logs WHERE variant_id = :variantId")
+                .setParameter("variantId", id)
+                .executeUpdate();
+        log.info("Đã xóa {} inventory logs cho variant ID: {}", deletedLogs, id);
+        
+        // 3. Xóa CartItems (theo variant_id) - sử dụng native query
+        int deletedCartItems = entityManager.createNativeQuery(
+                "DELETE FROM Cart_Items WHERE variant_id = :variantId")
+                .setParameter("variantId", id)
+                .executeUpdate();
+        log.info("Đã xóa {} cart items cho variant ID: {}", deletedCartItems, id);
+        
+        // 4. Xóa OrderDetails (theo variant_id) - CẢNH BÁO: Có thể ảnh hưởng đến lịch sử đơn hàng
+        // Tuy nhiên, user yêu cầu xóa hết, nên sẽ xóa
+        int deletedOrderDetails = entityManager.createNativeQuery(
+                "DELETE FROM Order_Details WHERE variant_id = :variantId")
+                .setParameter("variantId", id)
+                .executeUpdate();
+        log.info("Đã xóa {} order details cho variant ID: {}", deletedOrderDetails, id);
+        
+        // 5. Xóa ProductVariant (hard delete)
         productVariantRepository.delete(variant);
+        log.info("Đã xóa variant ID: {} (SKU: {}) thành công", id, variant.getSku());
     }
 
     /**

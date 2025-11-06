@@ -1,28 +1,47 @@
 <template>
   <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div
+      class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      >
         <div>
-          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <i class="material-icons text-purple-600 dark:text-purple-400">inventory_2</i>
+          <h1
+            class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+          >
+            <i class="material-icons text-purple-600 dark:text-purple-400"
+              >inventory_2</i
+            >
             Quản lý sản phẩm
           </h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+          <p
+            class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1"
+          >
             <i class="material-icons text-xs">info</i>
             Quản lý sản phẩm và các biến thể (variants) - Nâng cao
           </p>
         </div>
         <div class="flex items-center gap-2">
-          <button @click="openImportModal" class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium">
+          <button
+            @click="openImportModal"
+            class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+          >
             <i class="material-icons text-base">file_upload</i>
             Import Excel
           </button>
-          <button @click="exportToExcel" class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium">
+          <button
+            @click="exportToExcel"
+            class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+          >
             <i class="material-icons text-base">download</i>
             Export Excel
           </button>
-          <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+          <button
+            @click="openCreateModal"
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+          >
             <i class="material-icons text-base">add</i>
             Thêm sản phẩm
           </button>
@@ -31,48 +50,77 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div v-if="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+    <div
+      v-if="stats"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"
+    >
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
         <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center"
+          >
             <i class="material-icons text-white text-lg">inventory</i>
           </div>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.totalProducts }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ stats.totalProducts }}
+          </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Tổng sản phẩm</p>
         </div>
       </div>
-      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
         <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center"
+          >
             <i class="material-icons text-white text-lg">style</i>
           </div>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.totalVariants }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ stats.totalVariants }}
+          </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Tổng biến thể</p>
         </div>
       </div>
-      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
         <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center"
+          >
             <i class="material-icons text-white text-lg">warning</i>
           </div>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.lowStockCount }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ stats.lowStockCount }}
+          </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Sắp hết hàng</p>
         </div>
       </div>
-      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
         <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
-            <i class="material-icons text-white text-lg">remove_shopping_cart</i>
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center"
+          >
+            <i class="material-icons text-white text-lg"
+              >remove_shopping_cart</i
+            >
           </div>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.outOfStockCount }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ stats.outOfStockCount }}
+          </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Hết hàng</p>
         </div>
       </div>
@@ -91,20 +139,39 @@
     <!-- =================================================================
          LOADING & EMPTY STATES
          ================================================================= -->
-    <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải danh sách sản phẩm...</p>
+    <div
+      v-if="loading"
+      class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div
+        class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"
+      ></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        Đang tải danh sách sản phẩm...
+      </p>
     </div>
 
-    <div v-else-if="products.length === 0" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
-        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">inventory_2</i>
+    <div
+      v-else-if="products.length === 0"
+      class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div
+        class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4"
+      >
+        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl"
+          >inventory_2</i
+        >
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Chưa có sản phẩm nào</h3>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        Chưa có sản phẩm nào
+      </h3>
       <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
         Nhấn "Thêm sản phẩm" hoặc "Import Excel" để tạo sản phẩm đầu tiên
       </p>
-      <button @click="openCreateModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+      <button
+        @click="openCreateModal"
+        class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+      >
         <i class="material-icons text-base">add</i>
         Thêm sản phẩm
       </button>
@@ -119,27 +186,35 @@
         v-if="selectedProducts.length > 0"
         class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800 mb-4"
       >
-        <div class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-          <i class="material-icons text-purple-600 dark:text-purple-400">check_circle</i>
-          <span>Đã chọn <strong class="font-semibold">{{ selectedProducts.length }}</strong> sản phẩm</span>
+        <div
+          class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400"
+            >check_circle</i
+          >
+          <span
+            >Đã chọn
+            <strong class="font-semibold">{{ selectedProducts.length }}</strong>
+            sản phẩm</span
+          >
         </div>
         <div class="flex items-center gap-2">
-          <button 
-            @click="openBulkUpdateModal" 
+          <button
+            @click="openBulkUpdateModal"
             class="flex items-center gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"
           >
             <i class="material-icons text-base">edit</i>
             Cập nhật hàng loạt
           </button>
-          <button 
-            @click="bulkDelete" 
+          <button
+            @click="bulkDelete"
             class="flex items-center gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium"
           >
             <i class="material-icons text-base">delete</i>
             Xóa {{ selectedProducts.length }} sản phẩm
           </button>
-          <button 
-            @click="clearSelection" 
+          <button
+            @click="clearSelection"
             class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
           >
             <i class="material-icons text-base">clear</i>
@@ -149,9 +224,12 @@
       </div>
 
       <!-- Products Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+      >
         <div class="overflow-x-auto">
           <table class="w-full">
+<<<<<<< HEAD
           <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10">
@@ -261,55 +339,125 @@
                     'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getStockClass(product) === 'out-of-stock'
                   }"
                 >
-                  <i class="material-icons text-sm">{{ getStockIcon(product) }}</i>
-                  {{ getStockText(product) }}
+                  {{ getStockStatusText(product) }}
                 </span>
               </td>
 
-              <td class="px-4 py-4">
-                <span
-                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
-                  :class="product.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'"
-                >
-                  {{ product.isActive ? "Đang bán" : "Ngừng bán" }}
-                </span>
-              </td>
+                <!-- 🆕 Cột mã sản phẩm -->
+                <td class="px-4 py-4">
+                  <code
+                    class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100"
+                    >{{ product.code || "—" }}</code
+                  >
+                </td>
 
-              <td class="px-4 py-4 text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <button
-                    @click="duplicateProduct(product.id)"
-                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    title="Nhân bản"
+                <td class="px-4 py-4">
+                  <div
+                    class="text-sm font-medium text-gray-900 dark:text-gray-100"
                   >
-                    <i class="material-icons text-base">content_copy</i>
-                  </button>
-                  <button
-                    @click="openEditModal(product)"
-                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    title="Chỉnh sửa"
+                    {{ product.name }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ product.slug }}
+                  </div>
+                </td>
+
+                <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  {{ product.brandName || "N/A" }}
+                </td>
+
+                <!-- 🆕 Cột danh mục -->
+                <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  <span
+                    v-if="product.categories && product.categories.length > 0"
                   >
-                    <i class="material-icons text-base">edit</i>
-                  </button>
-                  <button
-                    @click="confirmDelete(product)"
-                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Xóa"
+                    {{ product.categories.map((c) => c.name).join(", ") }}
+                  </span>
+                  <span v-else class="text-gray-400 dark:text-gray-500">—</span>
+                </td>
+
+                <td class="px-4 py-4">
+                  <span
+                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
                   >
-                    <i class="material-icons text-base">delete</i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    {{ product.variantCount || 0 }} variants
+                  </span>
+                </td>
+
+                <td class="px-4 py-4">
+                  <span
+                    class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full"
+                    :class="{
+                      'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400':
+                        getStockClass(product) === 'in-stock',
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400':
+                        getStockClass(product) === 'low-stock',
+                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400':
+                        getStockClass(product) === 'out-of-stock',
+                    }"
+                  >
+                    <i class="material-icons text-sm">{{
+                      getStockIcon(product)
+                    }}</i>
+                    {{ getStockText(product) }}
+                    <small style="margin-left: 4px; opacity: 0.8">
+                      ({{ getTotalStock(product) }})
+                    </small>
+                  </span>
+                </td>
+
+                <td class="px-4 py-4">
+                  <span
+                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                    :class="
+                      product.isActive
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                    "
+                  >
+                    {{ product.isActive ? "Đang bán" : "Ngừng bán" }}
+                  </span>
+                </td>
+
+                <td class="px-4 py-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <button
+                      @click="duplicateProduct(product.id)"
+                      class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      title="Nhân bản"
+                    >
+                      <i class="material-icons text-base">content_copy</i>
+                    </button>
+                    <button
+                      @click="openEditModal(product)"
+                      class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      title="Chỉnh sửa"
+                    >
+                      <i class="material-icons text-base">edit</i>
+                    </button>
+                    <button
+                      @click="confirmDelete(product)"
+                      class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Xóa"
+                    >
+                      <i class="material-icons text-base">delete</i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
       <!-- Pagination -->
-      <div class="flex items-center justify-between gap-4 px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div
+        class="flex items-center justify-between gap-4 px-4 py-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
         <div class="text-sm text-gray-600 dark:text-gray-400">
-          Hiển thị {{ currentPage * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalItems) }} trong tổng số {{ totalItems }} sản phẩm
+          Hiển thị {{ currentPage * pageSize + 1 }} -
+          {{ Math.min((currentPage + 1) * pageSize, totalItems) }} trong tổng số
+          {{ totalItems }} sản phẩm
         </div>
         <div class="flex items-center gap-2">
           <button
@@ -341,10 +489,10 @@
 
     <!-- Create/Edit Modal -->
     <ProductFormModal
-      v-if="showModal"
-      :visible="showModal"
+      v-model:visible="showModal"
+      v-model:formData="formData"
       :isEditMode="isEditMode"
-      :initialProduct="editingProduct"
+      :initialProduct="isEditMode ? editingProduct : null"
       :brands="brands"
       :categories="categories"
       :materials="materials"
@@ -365,332 +513,352 @@
       @image-remove="onProductImageRemove"
     />
 
-
-    <!-- Modal Thêm Thương hiệu mới -->
+    <!-- =============================
+     🎨 TẤT CẢ POPUP THÊM NHANH
+     ============================= -->
     <Teleport to="body">
+      <!-- Modal: Thêm Thương hiệu -->
       <div
         v-if="showQuickAddBrand"
-        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        class="modal-backdrop"
         @click="closeQuickAddBrand"
       >
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
-          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <i class="material-icons text-purple-600 dark:text-purple-400">add</i>
+        <div class="modal-container" @click.stop>
+          <div class="modal-header">
+            <h2 class="modal-title">
+              <i class="material-icons text-purple-600 dark:text-purple-400"
+                >add</i
+              >
               Thêm Thương hiệu mới
             </h2>
-            <button @click="closeQuickAddBrand" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button @click="closeQuickAddBrand" class="modal-close-btn">
               <i class="material-icons text-base">close</i>
             </button>
           </div>
 
-          <div class="p-6">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Tên thương hiệu *</label>
+          <div class="modal-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Tên thương hiệu *</label>
+                <input
+                  v-model="quickBrandData.name"
+                  @input="generateBrandSlug"
+                  type="text"
+                  class="form-control"
+                  placeholder="VD: Nike, Adidas..."
+                />
+              </div>
+              <div>
+                <label class="form-label">Slug *</label>
+                <input
+                  v-model="quickBrandData.slug"
+                  type="text"
+                  class="form-control"
+                  placeholder="VD: nike, adidas..."
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label">URL Logo</label>
               <input
-                v-model="quickBrandData.name"
-                @input="generateBrandSlug"
+                v-model="quickBrandData.logoUrl"
                 type="text"
                 class="form-control"
-                placeholder="VD: Nike, Adidas..."
+                placeholder="/placeholder-image.png"
               />
             </div>
-            <div class="form-group">
-              <label class="form-label">Slug *</label>
+
+            <div>
+              <label class="form-label">Website</label>
               <input
-                v-model="quickBrandData.slug"
-                type="text"
+                v-model="quickBrandData.websiteUrl"
+                type="url"
                 class="form-control"
-                placeholder="VD: nike, adidas..."
+                placeholder="https://example.com"
               />
             </div>
+
+            <div>
+              <label class="form-label">Mô tả</label>
+              <textarea
+                v-model="quickBrandData.description"
+                class="form-control"
+                rows="3"
+                placeholder="Nhập mô tả về thương hiệu..."
+              ></textarea>
+            </div>
+
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                v-model="quickBrandData.isActive"
+                class="accent-purple-500"
+              />
+              <span class="text-sm text-gray-700 dark:text-gray-300"
+                >Kích hoạt thương hiệu</span
+              >
+            </label>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">URL Logo</label>
-            <input
-              v-model="quickBrandData.logoUrl"
-              type="text"
-              class="form-control"
-              placeholder="/placeholder-image.png"
-            />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Website</label>
-            <input
-              v-model="quickBrandData.websiteUrl"
-              type="url"
-              class="form-control"
-              placeholder="https://example.com"
-            />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Mô tả</label>
-            <textarea
-              v-model="quickBrandData.description"
-              class="form-control"
-              rows="3"
-              placeholder="Nhập mô tả về thương hiệu..."
-            ></textarea>
-          </div>
-
-          <div class="form-check">
-            <input
-              type="checkbox"
-              v-model="quickBrandData.isActive"
-              id="isActiveBrand"
-            />
-            <label for="isActiveBrand">Kích hoạt thương hiệu</label>
-          </div>
-          </div>
-
-          <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
-            <button @click="closeQuickAddBrand" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium">
+          <div class="modal-footer">
+            <button @click="closeQuickAddBrand" class="btn-secondary">
               Hủy
             </button>
             <button
               @click="saveQuickBrand"
-              class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               :disabled="savingQuickBrand"
+              class="btn-primary"
             >
-              <i class="material-icons text-base" v-if="!savingQuickBrand">save</i>
+              <i class="material-icons text-base" v-if="!savingQuickBrand"
+                >save</i
+              >
               {{ savingQuickBrand ? "Đang lưu..." : "Lưu" }}
             </button>
           </div>
         </div>
       </div>
-    </Teleport>
-    
-    <!-- Modal Thêm Chất liệu mới -->
-    <Teleport to="body">
+
+      <!-- Modal: Thêm Chất liệu -->
       <div
         v-if="showQuickAddMaterial"
-        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        class="modal-backdrop"
         @click="closeQuickAddMaterial"
       >
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
-          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <i class="material-icons text-purple-600 dark:text-purple-400">add</i>
+        <div class="modal-container" @click.stop>
+          <div class="modal-header">
+            <h2 class="modal-title">
+              <i class="material-icons text-purple-600 dark:text-purple-400"
+                >add</i
+              >
               Thêm Chất liệu mới
             </h2>
-            <button @click="closeQuickAddMaterial" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button @click="closeQuickAddMaterial" class="modal-close-btn">
               <i class="material-icons text-base">close</i>
             </button>
           </div>
 
-          <div class="p-6">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Tên chất liệu *</label>
-              <input
-                v-model="quickMaterialData.name"
-                @input="generateMaterialSlug"
-                type="text"
-                class="form-control"
-                placeholder="VD: Da tổng hợp, Vải canvas..."
-              />
+          <div class="modal-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Tên chất liệu *</label>
+                <input
+                  v-model="quickMaterialData.name"
+                  @input="generateMaterialSlug"
+                  type="text"
+                  class="form-control"
+                  placeholder="VD: Da tổng hợp, Vải canvas..."
+                />
+              </div>
+              <div>
+                <label class="form-label">Slug *</label>
+                <input
+                  v-model="quickMaterialData.slug"
+                  type="text"
+                  class="form-control"
+                  placeholder="VD: da-tong-hop, vai-canvas..."
+                />
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Slug *</label>
-              <input
-                v-model="quickMaterialData.slug"
-                type="text"
+
+            <div>
+              <label class="form-label">Mô tả</label>
+              <textarea
+                v-model="quickMaterialData.description"
                 class="form-control"
-                placeholder="VD: da-tong-hop, vai-canvas..."
-              />
+                rows="3"
+                placeholder="Nhập mô tả về chất liệu..."
+              ></textarea>
             </div>
+
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                v-model="quickMaterialData.isActive"
+                class="accent-purple-500"
+              />
+              <span class="text-sm text-gray-700 dark:text-gray-300"
+                >Kích hoạt chất liệu</span
+              >
+            </label>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Mô tả</label>
-            <textarea
-              v-model="quickMaterialData.description"
-              class="form-control"
-              rows="3"
-              placeholder="Nhập mô tả về chất liệu..."
-            ></textarea>
-          </div>
-
-          <div class="form-check">
-            <input
-              type="checkbox"
-              v-model="quickMaterialData.isActive"
-              id="activeMaterial"
-            />
-            <label for="activeMaterial">Kích hoạt chất liệu</label>
-          </div>
-          </div>
-
-          <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
-            <button @click="closeQuickAddMaterial" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium">
+          <div class="modal-footer">
+            <button @click="closeQuickAddMaterial" class="btn-secondary">
               Hủy
             </button>
             <button
               @click="saveQuickMaterial"
-              class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               :disabled="savingQuickMaterial"
+              class="btn-primary"
             >
-              <i class="material-icons text-base" v-if="!savingQuickMaterial">save</i>
+              <i class="material-icons text-base" v-if="!savingQuickMaterial"
+                >save</i
+              >
               {{ savingQuickMaterial ? "Đang lưu..." : "Lưu" }}
             </button>
           </div>
         </div>
       </div>
-    </Teleport>
-    
-    <!-- Modal Thêm Loại đế giày mới -->
-    <Teleport to="body">
+
+      <!-- Modal: Thêm Loại đế giày -->
       <div
         v-if="showQuickAddSole"
-        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        class="modal-backdrop"
         @click="closeQuickAddSole"
       >
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
-          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <i class="material-icons text-purple-600 dark:text-purple-400">add</i>
+        <div class="modal-container" @click.stop>
+          <div class="modal-header">
+            <h2 class="modal-title">
+              <i class="material-icons text-purple-600 dark:text-purple-400"
+                >add</i
+              >
               Thêm Loại đế giày mới
             </h2>
-            <button @click="closeQuickAddSole" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button @click="closeQuickAddSole" class="modal-close-btn">
               <i class="material-icons text-base">close</i>
             </button>
           </div>
 
-          <div class="p-6">
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Tên loại đế *</label>
-              <input
-                v-model="quickSoleData.name"
-                @input="generateSoleSlug"
-                type="text"
-                class="form-control"
-                placeholder="VD: Cao su, Foam, EVA..."
-              />
+          <div class="modal-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="form-label">Tên loại đế *</label>
+                <input
+                  v-model="quickSoleData.name"
+                  @input="generateSoleSlug"
+                  type="text"
+                  class="form-control"
+                  placeholder="VD: Cao su, EVA..."
+                />
+              </div>
+              <div>
+                <label class="form-label">Slug *</label>
+                <input
+                  v-model="quickSoleData.slug"
+                  type="text"
+                  class="form-control"
+                  placeholder="VD: cao-su, eva..."
+                />
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Slug *</label>
-              <input
-                v-model="quickSoleData.slug"
-                type="text"
+
+            <div>
+              <label class="form-label">Mô tả</label>
+              <textarea
+                v-model="quickSoleData.description"
                 class="form-control"
-                placeholder="VD: cao-su, eva..."
-              />
+                rows="3"
+                placeholder="Nhập mô tả về loại đế giày..."
+              ></textarea>
             </div>
+
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                v-model="quickSoleData.isActive"
+                class="accent-purple-500"
+              />
+              <span class="text-sm text-gray-700 dark:text-gray-300"
+                >Kích hoạt loại đế giày</span
+              >
+            </label>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Mô tả</label>
-            <textarea
-              v-model="quickSoleData.description"
-              class="form-control"
-              rows="3"
-              placeholder="Nhập mô tả về loại đế giày..."
-            ></textarea>
-          </div>
-
-          <div class="form-check">
-            <input
-              type="checkbox"
-              v-model="quickSoleData.isActive"
-              id="activeSole"
-            />
-            <label for="activeSole">Kích hoạt loại đế giày</label>
-          </div>
-          </div>
-
-          <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
-            <button @click="closeQuickAddSole" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium">
+          <div class="modal-footer">
+            <button @click="closeQuickAddSole" class="btn-secondary">
               Hủy
             </button>
             <button
               @click="saveQuickSole"
-              class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               :disabled="savingQuickSole"
+              class="btn-primary"
             >
-              <i class="material-icons text-base" v-if="!savingQuickSole">save</i>
+              <i class="material-icons text-base" v-if="!savingQuickSole"
+                >save</i
+              >
               {{ savingQuickSole ? "Đang lưu..." : "Lưu" }}
             </button>
           </div>
         </div>
       </div>
-    </Teleport>
 
-    <!-- 🔹 Popup thêm danh mục mới -->
-    <Teleport to="body">
+      <!-- Modal: Thêm Danh mục -->
       <div
         v-if="showCategoryModal"
-        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        class="modal-backdrop"
         @click="closeCategoryModal"
       >
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
-          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <i class="material-icons text-purple-600 dark:text-purple-400">add</i>
+        <div class="modal-container" @click.stop>
+          <div class="modal-header">
+            <h2 class="modal-title">
+              <i class="material-icons text-purple-600 dark:text-purple-400"
+                >add</i
+              >
               Thêm danh mục mới
             </h2>
-            <button @click="closeCategoryModal" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button @click="closeCategoryModal" class="modal-close-btn">
               <i class="material-icons text-base">close</i>
             </button>
           </div>
 
-          <div class="p-6">
-          <div class="form-group">
-            <label class="form-label required">Tên danh mục</label>
-            <input
-              v-model="newCategory.name"
-              type="text"
-              class="form-control"
-              placeholder="Ví dụ: Giày chạy bộ, Giày bóng rổ..."
-              @input="generateCategorySlug"
-            />
-            <span v-if="categoryErrors.name" class="form-error">{{
-              categoryErrors.name
-            }}</span>
+          <div class="modal-body">
+            <div>
+              <label class="form-label">Tên danh mục *</label>
+              <input
+                v-model="newCategory.name"
+                type="text"
+                class="form-control"
+                placeholder="Giày chạy bộ, Giày bóng rổ..."
+                @input="generateCategorySlug"
+              />
+              <span v-if="categoryErrors.name" class="form-error">{{
+                categoryErrors.name
+              }}</span>
+            </div>
+
+            <div>
+              <label class="form-label">Slug *</label>
+              <input
+                v-model="newCategory.slug"
+                type="text"
+                class="form-control"
+                placeholder="giay-chay-bo, giay-bong-ro..."
+              />
+              <span v-if="categoryErrors.slug" class="form-error">{{
+                categoryErrors.slug
+              }}</span>
+              <p class="text-xs text-gray-500 mt-1">
+                URL thân thiện (tự động tạo từ tên)
+              </p>
+            </div>
+
+            <div>
+              <label class="form-label">Danh mục cha</label>
+              <select v-model="newCategory.parentId" class="form-control">
+                <option :value="null">-- Không có (danh mục gốc) --</option>
+                <option
+                  v-for="cat in rootCategories"
+                  :key="cat.id"
+                  :value="cat.id"
+                >
+                  {{ cat.name }}
+                </option>
+              </select>
+              <p class="text-xs text-gray-500 mt-1">
+                Để trống nếu đây là danh mục gốc
+              </p>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label required">Slug</label>
-            <input
-              v-model="newCategory.slug"
-              type="text"
-              class="form-control"
-              placeholder="giay-chay-bo, giay-bong-ro..."
-            />
-            <span v-if="categoryErrors.slug" class="form-error">{{
-              categoryErrors.slug
-            }}</span>
-            <span class="form-help">URL thân thiện (tự động tạo từ tên)</span>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Danh mục cha</label>
-            <select v-model="newCategory.parentId" class="form-control">
-              <option :value="null">-- Không có (danh mục gốc) --</option>
-              <option
-                v-for="cat in rootCategories"
-                :key="cat.id"
-                :value="cat.id"
-              >
-                {{ cat.name }}
-              </option>
-            </select>
-            <span class="form-help">Để trống nếu đây là danh mục gốc</span>
-          </div>
-          </div>
-
-          <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
-            <button @click="closeCategoryModal" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium">
+          <div class="modal-footer">
+            <button @click="closeCategoryModal" class="btn-secondary">
               Hủy
             </button>
             <button
               @click="handleCreateCategory"
-              class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="submittingCategory"
+              class="btn-primary"
             >
               {{ submittingCategory ? "Đang lưu..." : "Thêm mới" }}
             </button>
@@ -701,33 +869,58 @@
 
     <!-- Import Excel Modal -->
     <Teleport to="body">
-      <div v-if="showImportModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="closeImportModal">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
-          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <i class="material-icons text-purple-600 dark:text-purple-400">file_upload</i>
+      <div
+        v-if="showImportModal"
+        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        @click="closeImportModal"
+      >
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+          @click.stop
+        >
+          <div
+            class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10"
+          >
+            <h2
+              class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+            >
+              <i class="material-icons text-purple-600 dark:text-purple-400"
+                >file_upload</i
+              >
               Import sản phẩm từ Excel
             </h2>
-            <button @click="closeImportModal" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button
+              @click="closeImportModal"
+              class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
               <i class="material-icons text-base">close</i>
             </button>
           </div>
 
           <div class="p-6 space-y-6">
             <!-- Instructions Section -->
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-              <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
-                <i class="material-icons text-blue-600 dark:text-blue-400 text-lg">info</i>
+            <div
+              class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800"
+            >
+              <h3
+                class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2"
+              >
+                <i
+                  class="material-icons text-blue-600 dark:text-blue-400 text-lg"
+                  >info</i
+                >
                 Hướng dẫn Import
               </h3>
-              <ol class="space-y-2 text-sm text-gray-700 dark:text-gray-300 ml-6 list-decimal">
+              <ol
+                class="space-y-2 text-sm text-gray-700 dark:text-gray-300 ml-6 list-decimal"
+              >
                 <li>Tải file mẫu Excel (nếu chưa có)</li>
                 <li>Điền thông tin sản phẩm theo đúng format</li>
                 <li>Upload file và xem preview</li>
                 <li>Nhấn "Import" để thêm sản phẩm</li>
               </ol>
-              <button 
-                @click="downloadTemplate" 
+              <button
+                @click="downloadTemplate"
                 class="mt-4 flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium"
               >
                 <i class="material-icons text-base">download</i>
@@ -737,7 +930,9 @@
 
             <!-- File Upload Section -->
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Chọn file Excel:
               </label>
               <div class="relative">
@@ -752,33 +947,104 @@
 
             <!-- Preview Section -->
             <div v-if="importPreview.length > 0" class="space-y-3">
-              <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <i class="material-icons text-green-600 dark:text-green-400 text-lg">preview</i>
+              <h3
+                class="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+              >
+                <i
+                  class="material-icons text-green-600 dark:text-green-400 text-lg"
+                  >preview</i
+                >
                 Preview: {{ importPreview.length }} sản phẩm
               </h3>
-              <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+              <div
+                class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+              >
                 <div class="overflow-x-auto max-h-[400px]">
-                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <table
+                    class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                  >
                     <thead class="bg-gray-50 dark:bg-gray-900 sticky top-0">
                       <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tên SP</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Brand</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">SKU</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Size</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Màu</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Giá</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tồn kho</th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          Tên SP
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          Brand
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          SKU
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          Size
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          Màu
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          Giá
+                        </th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          Tồn kho
+                        </th>
                       </tr>
                     </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      <tr v-for="(item, index) in importPreview" :key="index" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ item.productName }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ item.brandName }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-700 dark:text-gray-300">{{ item.sku }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ item.size }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ item.color }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(item.priceBase) }}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ item.stockQuantity }}</td>
+                    <tbody
+                      class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+                    >
+                      <tr
+                        v-for="(item, index) in importPreview"
+                        :key="index"
+                        class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                      >
+                        <td
+                          class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
+                        >
+                          {{ item.productName }}
+                        </td>
+                        <td
+                          class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          {{ item.brandName }}
+                        </td>
+                        <td
+                          class="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-700 dark:text-gray-300"
+                        >
+                          {{ item.sku }}
+                        </td>
+                        <td
+                          class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          {{ item.size }}
+                        </td>
+                        <td
+                          class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          {{ item.color }}
+                        </td>
+                        <td
+                          class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100"
+                        >
+                          {{ formatCurrency(item.priceBase) }}
+                        </td>
+                        <td
+                          class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          {{ item.stockQuantity }}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -787,8 +1053,13 @@
             </div>
           </div>
 
-          <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
-            <button @click="closeImportModal" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium">
+          <div
+            class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800"
+          >
+            <button
+              @click="closeImportModal"
+              class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium"
+            >
               Hủy
             </button>
             <button
@@ -814,70 +1085,91 @@
         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
         @click="closeBulkUpdateModal"
       >
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
-          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <i class="material-icons text-purple-600 dark:text-purple-400">edit</i>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+          @click.stop
+        >
+          <div
+            class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10"
+          >
+            <h2
+              class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+            >
+              <i class="material-icons text-purple-600 dark:text-purple-400"
+                >edit</i
+              >
               Cập nhật hàng loạt {{ selectedProducts.length }} sản phẩm
             </h2>
-            <button @click="closeBulkUpdateModal" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button
+              @click="closeBulkUpdateModal"
+              class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
               <i class="material-icons text-base">close</i>
             </button>
           </div>
 
           <div class="p-6">
-          <div class="form-group">
-            <label class="form-label required">Chọn hành động:</label>
-            <select v-model="bulkUpdateAction" class="form-control">
-              <option value="">-- Chọn hành động --</option>
-              <option value="UPDATE_STATUS">Cập nhật trạng thái</option>
-              <option value="UPDATE_BRAND">Đổi thương hiệu</option>
-              <option value="ADD_CATEGORY">Thêm danh mục</option>
-              <option value="REMOVE_CATEGORY">Xóa danh mục</option>
-            </select>
-          </div>
+            <div class="form-group">
+              <label class="form-label required">Chọn hành động:</label>
+              <select v-model="bulkUpdateAction" class="form-control">
+                <option value="">-- Chọn hành động --</option>
+                <option value="UPDATE_STATUS">Cập nhật trạng thái</option>
+                <option value="UPDATE_BRAND">Đổi thương hiệu</option>
+                <option value="ADD_CATEGORY">Thêm danh mục</option>
+                <option value="REMOVE_CATEGORY">Xóa danh mục</option>
+              </select>
+            </div>
 
-          <div v-if="bulkUpdateAction === 'UPDATE_STATUS'" class="form-group">
-            <label class="form-label">Trạng thái mới:</label>
-            <select v-model="bulkUpdateValue.isActive" class="form-control">
-              <option :value="true">Đang bán</option>
-              <option :value="false">Ngừng bán</option>
-            </select>
-          </div>
+            <div v-if="bulkUpdateAction === 'UPDATE_STATUS'" class="form-group">
+              <label class="form-label">Trạng thái mới:</label>
+              <select v-model="bulkUpdateValue.isActive" class="form-control">
+                <option :value="true">Đang bán</option>
+                <option :value="false">Ngừng bán</option>
+              </select>
+            </div>
 
-          <div v-if="bulkUpdateAction === 'UPDATE_BRAND'" class="form-group">
-            <label class="form-label">Thương hiệu mới:</label>
-            <select v-model="bulkUpdateValue.brandId" class="form-control">
-              <option value="">Chọn thương hiệu</option>
-              <option v-for="brand in brands" :key="brand.id" :value="brand.id">
-                {{ brand.name }}
-              </option>
-            </select>
+            <div v-if="bulkUpdateAction === 'UPDATE_BRAND'" class="form-group">
+              <label class="form-label">Thương hiệu mới:</label>
+              <select v-model="bulkUpdateValue.brandId" class="form-control">
+                <option value="">Chọn thương hiệu</option>
+                <option
+                  v-for="brand in brands"
+                  :key="brand.id"
+                  :value="brand.id"
+                >
+                  {{ brand.name }}
+                </option>
+              </select>
+            </div>
+
+            <div
+              v-if="
+                bulkUpdateAction === 'ADD_CATEGORY' ||
+                bulkUpdateAction === 'REMOVE_CATEGORY'
+              "
+              class="form-group"
+            >
+              <label class="form-label">Danh mục:</label>
+              <select v-model="bulkUpdateValue.categoryId" class="form-control">
+                <option value="">Chọn danh mục</option>
+                <option
+                  v-for="category in categories"
+                  :key="category.id"
+                  :value="category.id"
+                >
+                  {{ category.name }}
+                </option>
+              </select>
+            </div>
           </div>
 
           <div
-            v-if="
-              bulkUpdateAction === 'ADD_CATEGORY' ||
-              bulkUpdateAction === 'REMOVE_CATEGORY'
-            "
-            class="form-group"
+            class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800"
           >
-            <label class="form-label">Danh mục:</label>
-            <select v-model="bulkUpdateValue.categoryId" class="form-control">
-              <option value="">Chọn danh mục</option>
-              <option
-                v-for="category in categories"
-                :key="category.id"
-                :value="category.id"
-              >
-                {{ category.name }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-          <div class="flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
-            <button @click="closeBulkUpdateModal" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium">
+            <button
+              @click="closeBulkUpdateModal"
+              class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors font-medium"
+            >
               Hủy
             </button>
             <button
@@ -904,19 +1196,35 @@
       :loading="deleting"
       @confirm="handleDelete"
     />
+
+    <!-- 🆕 Action Loading Overlay - Không block toàn bộ UI -->
+    <Teleport to="body">
+      <div 
+        v-if="actionLoading" 
+        class="fixed top-4 right-4 z-[9999] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-purple-200 dark:border-purple-700 px-4 py-3 flex items-center gap-3"
+      >
+        <div class="w-5 h-5 border-3 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Đang xử lý...
+        </span>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { nextTick } from "vue";
 import axios from "axios";
 import { useAdminStore } from "@/stores/admin";
 import toastService from "@/utils/toastService";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
-import UploadGallery from "@/assets/components/admin/UploadGallery.vue";
+// import UploadGallery from "@/assets/components/admin/UploadGallery.vue";
 import ProductFilters from "@/assets/components/admin/ProductFilters.vue";
 import ProductFormModal from "@/assets/components/admin/ProductFormModal.vue";
 import * as XLSX from "xlsx";
+import { MAX_IMAGES_PER_PRODUCT } from "@/utils/productConstants";
+import { generateSlug as generateSlugUtil } from "@/utils/slugGenerator";
 
 const adminStore = useAdminStore();
 
@@ -928,6 +1236,7 @@ const materials = ref([]); // Danh sách chất liệu
 const soles = ref([]); // Danh sách loại đế giày
 const stats = ref(null);
 const loading = ref(false);
+const actionLoading = ref(false); // 🆕 Loading riêng cho duplicate/delete actions
 const currentPage = ref(0);
 const sortBy = ref("id"); // Default sort column
 const sortOrder = ref("desc"); // 'asc' or 'desc'
@@ -945,6 +1254,7 @@ const bulkUpdating = ref(false);
 const productToDelete = ref(null);
 const isSubmitting = ref(false);
 const removedImageUrls = ref([]);
+const highlightedProductId = ref(null);
 
 // 🧩 Ảnh sản phẩm
 const productImages = ref([]); // danh sách ảnh hiện tại
@@ -955,6 +1265,7 @@ const originalImagesSnapshot = ref([]); // 🆕 lưu trạng thái ảnh DB ban 
 // ================== STATE ==================
 const showCategoryModal = ref(false);
 const submittingCategory = ref(false);
+const MAX_IMAGES_PER_PRODUCT = 10;
 
 const newCategory = ref({
   name: "",
@@ -966,6 +1277,14 @@ const categoryErrors = ref({});
 const rootCategories = ref([]);
 
 // ================== METHODS ==================
+// setTimeout(() => {
+//   nextTick(() => {
+//     const el = document.querySelector(
+//       `[data-id="${highlightedProductId.value}"]`
+//     );
+//     if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+//   });
+// }, 300);
 
 // 🟦 Mở popup
 const openCreateCategoryModal = async () => {
@@ -1145,8 +1464,13 @@ const isAllSelected = computed(() => {
 
 // Methods
 // ===== STOCK HELPERS =====
+const getTotalStock = (product) => {
+  if (typeof product.totalStock === "number") return product.totalStock;
+  return 0;
+};
+
 const getStockClass = (product) => {
-  const totalStock = product.variantCount; // Giả định backend trả về tổng stock
+  const totalStock = getTotalStock(product);
   if (totalStock === 0) return "out-of-stock";
   if (totalStock <= 10) return "low-stock";
   return "in-stock";
@@ -1230,14 +1554,6 @@ const fetchProducts = async () => {
     );
     products.value = result.content || [];
     totalItems.value = result.totalElements || 0;
-
-    // Apply current sort after fetching
-    if (sortBy.value) {
-      sortColumn(sortBy.value);
-      // Reset sort order to maintain current state
-      sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
-      sortColumn(sortBy.value);
-    }
   } catch (error) {
     console.error("Lỗi khi tải danh sách sản phẩm:", error);
     toastService.error('Lỗi', 'Không thể tải danh sách sản phẩm!');
@@ -1293,20 +1609,68 @@ const fetchSoles = async () => {
 };
 
 // ===== BULK SELECTION =====
-const toggleSelect = (productId) => {
+// 🟢 Tick từng dòng (hiệu ứng riêng cho từng hàng)
+const toggleSelect = async (productId) => {
   const index = selectedProducts.value.indexOf(productId);
   if (index > -1) {
+    // Bỏ chọn
     selectedProducts.value.splice(index, 1);
   } else {
+    // Thêm chọn
     selectedProducts.value.push(productId);
+    await nextTick();
+
+    const row = document.querySelector(`[data-id="${productId}"]`);
+    if (row) {
+      row.classList.add(
+        "ring-2",
+        "ring-green-400",
+        "bg-green-50",
+        "dark:bg-green-900/30",
+        "animate-pulse"
+      );
+      setTimeout(() => {
+        row.classList.remove(
+          "ring-2",
+          "ring-green-400",
+          "bg-green-50",
+          "dark:bg-green-900/30",
+          "animate-pulse"
+        );
+      }, 2000);
+    }
   }
 };
 
-const toggleSelectAll = () => {
+// 🟩 Tick checkbox đầu bảng (chọn tất cả)
+const toggleSelectAll = async () => {
   if (isAllSelected.value) {
     selectedProducts.value = [];
   } else {
     selectedProducts.value = products.value.map((p) => p.id);
+    await nextTick();
+
+    selectedProducts.value.forEach((id) => {
+      const row = document.querySelector(`[data-id="${id}"]`);
+      if (row) {
+        row.classList.add(
+          "ring-2",
+          "ring-green-400",
+          "bg-green-50",
+          "dark:bg-green-900/30",
+          "animate-pulse"
+        );
+        setTimeout(() => {
+          row.classList.remove(
+            "ring-2",
+            "ring-green-400",
+            "bg-green-50",
+            "dark:bg-green-900/30",
+            "animate-pulse"
+          );
+        }, 2000);
+      }
+    });
   }
 };
 
@@ -1324,7 +1688,7 @@ const bulkDelete = async () => {
   }
 
   try {
-    loading.value = true;
+    actionLoading.value = true; // ✅ Dùng loading riêng
 
     for (const productId of selectedProducts.value) {
       await adminStore.deleteProduct(productId);
@@ -1338,17 +1702,17 @@ const bulkDelete = async () => {
     console.error("Lỗi khi xóa hàng loạt:", error);
     toastService.error('Lỗi', 'Có lỗi xảy ra khi xóa sản phẩm!');
   } finally {
-    loading.value = false;
+    actionLoading.value = false;
   }
 };
 
 // ===== MODAL ACTIONS =====
 const openCreateModal = () => {
-  isEditMode.value = false
-  editingProduct.value = null
-  productImages.value = []
-  initialProductImages.value = []
-  uploadedImages.value = []
+  isEditMode.value = false;
+  editingProduct.value = null; // ✅ để modal hiểu là "create"
+  productImages.value = [];
+  initialProductImages.value = [];
+  uploadedImages.value = [];
   formData.value = {
     name: "",
     slug: "",
@@ -1361,58 +1725,54 @@ const openCreateModal = () => {
     materialId: null,
     shoeSoleId: null,
     variants: [],
-  }
-  formErrors.value = {}
-  showModal.value = true
-}
+  };
+  formErrors.value = {};
+  showModal.value = true;
+};
 
-const editingProduct = ref(null)
+const editingProduct = ref(null);
 
 const openEditModal = async (product) => {
   isEditMode.value = true;
-  editingProduct.value = null // Reset trước
+  editingProduct.value = null;
+  loading.value = true;
 
   try {
-    // 1️⃣ Tải dữ liệu cho dropdown trước (tránh select rỗng khi đã có id)
     await Promise.all([
       adminStore.fetchBrands?.(),
       adminStore.fetchCategories?.(),
-      adminStore.fetchMaterials?.(), // 🆕 chất liệu
-      adminStore.fetchSoles?.(), // 🆕 đế giày
+      adminStore.fetchMaterials?.(),
+      adminStore.fetchSoles?.(),
     ]);
 
-    // 2️⃣ Lấy chi tiết sản phẩm
     const detailData = await adminStore.getProductById(product.id);
 
-    // 3️⃣ Gán formData ĐẦY ĐỦ field, có cả materialId & shoeSoleId
-    const productData = {
-      id: detailData.id,
-      name: detailData.name || "",
-      slug: detailData.slug || "",
-      brandId: detailData.brandId || null,
-      description: detailData.description || "",
-      isActive: detailData.isActive !== undefined ? detailData.isActive : true,
-      categoryIds: detailData.categories?.map((c) => c.id) || [],
-      images:
-        detailData.images?.map((img) => ({
-          previewUrl: img.imageUrl,
-          isPrimary: img.isPrimary || false,
-        })) || [],
-      // 🆕 BỔ SUNG 2 TRƯỜNG MỚI:
-      materialId: detailData.materialId ?? null,
-      shoeSoleId: detailData.shoeSoleId ?? null,
-      variants:
-        detailData.variants?.map((v) => ({
-          id: v.id,
-          sku: v.sku || "",
-          size: v.size || "",
-          color: v.color || "",
-          priceBase: v.priceBase || 0,
-          priceSale: v.priceSale || null,
-          stockQuantity: v.stockQuantity || 0,
-          imageUrl: v.imageUrl || "",
-        })) || [],
-    };
+    // ⚠️ Quan trọng: Luôn tạo object mới để Vue detect change
+    editingProduct.value = JSON.parse(
+      JSON.stringify({
+        id: detailData.id,
+        name: detailData.name || "",
+        slug: detailData.slug || "",
+        brandId: detailData.brandId || null,
+        description: detailData.description || "",
+        isActive:
+          detailData.isActive !== undefined ? detailData.isActive : true,
+        categoryIds: detailData.categories?.map((c) => c.id) || [],
+        materialId: detailData.materialId ?? null,
+        shoeSoleId: detailData.shoeSoleId ?? null,
+        variants:
+          detailData.variants?.map((v) => ({
+            id: v.id,
+            sku: v.sku || "",
+            size: v.size || "",
+            color: v.color || "",
+            priceBase: v.priceBase || 0,
+            priceSale: v.priceSale ?? null,
+            stockQuantity: v.stockQuantity || 0,
+            imageUrl: v.imageUrl || "",
+          })) || [],
+      })
+    );
 
     // 🟢 Bổ sung phần LOAD ẢNH từ API
     const { data: imageData } = await axios.get(
@@ -1422,9 +1782,9 @@ const openEditModal = async (product) => {
     // Chuẩn hóa về format UploadGallery hiểu được
     initialProductImages.value = (imageData || []).map((img) => ({
       id: img.id,
-      previewUrl: img.imageUrl.startsWith("http")
+      previewUrl: img.imageUrl.startsWith("http") || img.imageUrl.startsWith("blob:")
         ? img.imageUrl
-        : `${window.location.origin}${img.imageUrl}`, // hỗ trợ /uploads/*
+        : `http://localhost:8080${img.imageUrl}`, // Backend serve static files từ port 8080
       isPrimary: !!img.isPrimary,
       displayOrder: img.displayOrder ?? 0, // 🆕 giữ nguyên thứ tự từ BE
       file: null,
@@ -1432,30 +1792,21 @@ const openEditModal = async (product) => {
     }));
 
     // 🧠 Thêm snapshot ban đầu để so sánh sau
-    originalImagesSnapshot.value = initialProductImages.value.map((x) => ({
-      id: x.id,
-      isPrimary: !!x.isPrimary,
+    originalImagesSnapshot.value = initialProductImages.value.map((img) => ({
+      id: img.id,
+      isPrimary: !!img.isPrimary,
+      displayOrder: img.displayOrder ?? 0,
     }));
 
     // Gán cho UploadGallery
     productImages.value = [...initialProductImages.value];
     formData.value.images = [...initialProductImages.value];
 
-    // 🟢 Lưu snapshot ảnh DB gốc để diff khi cập nhật
-    originalImagesSnapshot.value = initialProductImages.value.map(
-      (img, idx) => ({
-        id: img.id,
-        isPrimary: !!img.isPrimary,
-        displayOrder: idx,
-      })
-    );
-
-    console.log("🖼️ Ảnh sản phẩm từ API:", initialProductImages.value);
+    // 🟢 Chỉ mở modal sau khi gán xong object mới
+    showModal.value = true;
   } catch (error) {
-    console.error("Lỗi khi tải chi tiết sản phẩm:", error);
-
-    // Fallback vẫn giữ đủ 2 field mới để tránh mất reactivity
-    formData.value = {
+    console.error("❌ Lỗi khi tải chi tiết sản phẩm:", error);
+    editingProduct.value = {
       id: product.id,
       name: product.name || "",
       slug: product.slug || "",
@@ -1467,13 +1818,12 @@ const openEditModal = async (product) => {
       shoeSoleId: null,
       variants: [],
     };
-
-    // Reset ảnh nếu API lỗi
     initialProductImages.value = [];
     productImages.value = [];
+    showModal.value = true;
+  } finally {
+    loading.value = false;
   }
-
-  showModal.value = true;
 };
 
 // 🟢 Lấy ảnh sản phẩm riêng (nếu BE có API riêng)
@@ -1495,10 +1845,10 @@ const fetchProductImages = async (productId) => {
 };
 
 const closeModal = () => {
-  showModal.value = false
-  isEditMode.value = false
-  editingProduct.value = null
-  formErrors.value = {}
+  showModal.value = false;
+  isEditMode.value = false;
+  editingProduct.value = null;
+  formErrors.value = {};
   // Reset form về mặc định — NHỚ giữ đủ key cho reactivity
   formData.value = {
     name: "",
@@ -1512,19 +1862,19 @@ const closeModal = () => {
     materialId: null,
     shoeSoleId: null,
     variants: [],
-  }
+  };
   // 🧹 Cleanup blob URL khi đóng modal
   productImages.value.forEach((img) => {
     if (img.file && img.previewUrl?.startsWith("blob:")) {
-      URL.revokeObjectURL(img.previewUrl)
+      URL.revokeObjectURL(img.previewUrl);
     }
-  })
-  productImages.value = []
-  initialProductImages.value = []
-  uploadedImages.value = []
-  formData.value.mainImageUrl = null
-  formErrors.value = {}
-}
+  });
+  productImages.value = [];
+  initialProductImages.value = [];
+  uploadedImages.value = [];
+  formData.value.mainImageUrl = null;
+  formErrors.value = {};
+};
 
 const generateSlug = () => {
   if (!isEditMode.value) {
@@ -1577,7 +1927,7 @@ const validateForm = () => {
 
 const handleSubmit = async (submittedData = null) => {
   // Nếu có data từ ProductFormModal, dùng data đó
-  const dataToSubmit = submittedData || formData.value
+  const dataToSubmit = submittedData || formData.value;
   try {
     isSubmitting.value = true;
     const updatedIds = new Set(); // 🧠 tránh update trùng
@@ -1650,7 +2000,27 @@ const handleSubmit = async (submittedData = null) => {
     removedImageUrls.value = [];
 
     // ==================== [4] TẠO / CẬP NHẬT SẢN PHẨM ====================
+    // const productPayload = {
+    //   name: dataToSubmit.name?.trim(),
+    //   slug: dataToSubmit.slug?.trim(),
+    //   description: dataToSubmit.description?.trim() || "",
+    //   brandId: dataToSubmit.brandId,
+    //   categoryIds: dataToSubmit.categoryIds,
+    //   materialId: dataToSubmit.materialId,
+    //   shoeSoleId: dataToSubmit.shoeSoleId,
+    //   isActive: dataToSubmit.isActive ?? true,
+    //   variants: dataToSubmit.variants.map((v) => ({
+    //     sku: v.sku,
+    //     color: v.color,
+    //     size: v.size,
+    //     priceBase: Number(v.priceBase) || 0,
+    //     priceSale: Number(v.priceSale) || 0,
+    //     stockQuantity: Number(v.stockQuantity) || 0,
+    //   })),
+    // };
+    // ==================== [4] TẠO / CẬP NHẬT SẢN PHẨM ====================
     const productPayload = {
+      id: dataToSubmit.id || null,
       name: dataToSubmit.name?.trim(),
       slug: dataToSubmit.slug?.trim(),
       description: dataToSubmit.description?.trim() || "",
@@ -1659,13 +2029,19 @@ const handleSubmit = async (submittedData = null) => {
       materialId: dataToSubmit.materialId,
       shoeSoleId: dataToSubmit.shoeSoleId,
       isActive: dataToSubmit.isActive ?? true,
+
       variants: dataToSubmit.variants.map((v) => ({
-        sku: v.sku,
-        color: v.color,
-        size: v.size,
+        id: v.id || null, // 🟢 GIỮ ID khi update (nếu variant cũ)
+        sku: v.sku?.trim(),
+        color: v.color?.trim(),
+        size: v.size?.trim(),
         priceBase: Number(v.priceBase) || 0,
-        priceSale: Number(v.priceSale) || 0,
+        priceSale:
+          v.priceSale !== null && v.priceSale !== undefined
+            ? Number(v.priceSale)
+            : null,
         stockQuantity: Number(v.stockQuantity) || 0,
+        imageUrl: v.imageUrl || "", // 🆕 optional - giữ để sync ảnh variant nếu có
       })),
     };
 
@@ -1884,11 +2260,33 @@ const handleSubmit = async (submittedData = null) => {
       ? "Cập nhật sản phẩm thành công!"
       : "Tạo sản phẩm mới thành công!");
 
+    highlightedProductId.value = savedProduct.id;
+
+    // 🧭 Gọi fetch và chờ render hoàn tất
     await fetchProducts();
     await fetchStatistics();
-    originalImagesSnapshot.value = productImages.value
-      .filter((x) => x.type === "db" && x.id)
-      .map((x) => ({ id: x.id, isPrimary: !!x.isPrimary }));
+    await nextTick(); // 🟢 BẮT BUỘC: chờ Vue render xong bảng mới
+
+    // 🟢 Cuộn đến hàng vừa tạo/cập nhật
+    const el = document.querySelector(
+      `[data-id="${highlightedProductId.value}"]`
+    );
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      // 🩵 Nhấp nháy nhẹ khi cuộn đến (Tailwind có sẵn animate)
+      el.classList.add("animate-pulse", "ring-2", "ring-green-400");
+      setTimeout(() => {
+        el.classList.remove("animate-pulse", "ring-2", "ring-green-400");
+      }, 2000);
+    }
+
+    // 🕒 Xoá highlight sau 3s
+    setTimeout(() => {
+      highlightedProductId.value = null;
+    }, 3000);
 
     closeModal();
   } catch (error) {
@@ -2114,6 +2512,16 @@ const generateSoleSlug = () => {
   quickSoleData.value.slug = generateSlugUtil(quickSoleData.value.name);
 };
 
+function generateSlugUtil(text) {
+  return text
+    .toLowerCase()
+    .normalize("NFD") // loại bỏ dấu tiếng Việt
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
+
 const saveQuickSole = async () => {
   if (!quickSoleData.value.name.trim()) {
     toastService.warning('Cảnh báo', 'Vui lòng nhập tên loại đế giày!');
@@ -2286,7 +2694,7 @@ const handleBulkUpdate = async () => {
 // ===== DUPLICATE PRODUCT =====
 const duplicateProduct = async (productId) => {
   try {
-    loading.value = true;
+    actionLoading.value = true; // ✅ Dùng loading riêng
     const duplicated = await adminStore.duplicateProduct(productId);
     toastService.success('Thành công', `Đã nhân bản sản phẩm "${duplicated.name}" thành công!`);
     await fetchProducts();
@@ -2295,7 +2703,7 @@ const duplicateProduct = async (productId) => {
     console.error("Lỗi khi nhân bản sản phẩm:", error);
     toastService.error('Lỗi', 'Không thể nhân bản sản phẩm. Vui lòng thử lại!');
   } finally {
-    loading.value = false;
+    actionLoading.value = false;
   }
 };
 
@@ -2386,5 +2794,61 @@ onMounted(async () => {
 });
 </script>
 
-
-
+<!-- =============================
+     🎨 Shared Tailwind Styles
+     ============================= -->
+<style scoped>
+.modal-backdrop {
+  @apply fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in;
+}
+.modal-container {
+  @apply bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700
+         max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-all duration-300;
+}
+.modal-header {
+  @apply flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10;
+}
+.modal-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2;
+}
+.modal-close-btn {
+  @apply p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors;
+}
+.modal-body {
+  @apply p-6 space-y-4;
+}
+.modal-footer {
+  @apply flex items-center justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800;
+}
+.form-label {
+  @apply block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300;
+}
+.form-control {
+  @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100
+         bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all;
+}
+.form-error {
+  @apply text-red-500 text-xs mt-1;
+}
+.btn-primary {
+  @apply px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg 
+         hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2;
+}
+.btn-secondary {
+  @apply px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 
+         rounded-lg transition-colors font-medium;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}
+</style>
