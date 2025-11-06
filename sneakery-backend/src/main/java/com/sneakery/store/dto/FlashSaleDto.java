@@ -30,6 +30,7 @@ public class FlashSaleDto {
     private String productSlug;
     private String brandName;
     private String imageUrl;
+    private BigDecimal originalPrice; // Giá gốc từ product variants
     
     @NotNull(message = "Phần trăm giảm giá không được để trống")
     @Min(value = 1, message = "Phần trăm giảm giá phải >= 1")

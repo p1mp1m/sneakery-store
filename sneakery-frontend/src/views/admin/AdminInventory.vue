@@ -504,10 +504,69 @@ const paginatedProducts = computed(() => {
 const fetchProducts = async () => {
   loading.value = true
   try {
-    const result = await adminStore.fetchProducts(0, 100, { isActive: true })
-    products.value = result.content || []
+    console.log('🔍 Fetching inventory variants...')
+    
+    // Fetch inventory variants using product-variants endpoint which returns DTOs
+    // Use a large size to get all variants, or handle pagination
+    const result = await adminStore.fetchProductVariants(0, 10000, {})
+    
+    console.log('📦 Inventory API response:', result)
+    console.log('Response type:', typeof result)
+    console.log('Response keys:', result ? Object.keys(result) : 'null')
+    
+    // Handle different response formats
+    let variants = []
+    if (Array.isArray(result)) {
+      // If result is directly an array
+      variants = result
+    } else if (result && result.content) {
+      // If result is a Page object with content
+      variants = result.content
+    } else if (result && Array.isArray(result.data)) {
+      // If result is wrapped in data
+      variants = result.data
+    } else if (result && result.content && Array.isArray(result.content)) {
+      variants = result.content
+    }
+    
+    console.log(`✅ Found ${variants.length} variants`)
+    console.log('First variant sample:', variants[0])
+    
+    if (variants.length === 0) {
+      console.warn('⚠️ No variants found in response')
+      products.value = []
+      return
+    }
+    
+    products.value = variants.map(variant => {
+      const transformed = {
+        id: variant.id,
+        name: variant.productName || variant.product?.name || 'N/A',
+        sku: variant.sku || 'N/A',
+        size: variant.size || 'N/A',
+        color: variant.color || 'N/A',
+        brandName: variant.brandName || variant.product?.brand?.name || variant.brand?.name || 'N/A',
+        stockQuantity: variant.stockQuantity !== undefined && variant.stockQuantity !== null ? Number(variant.stockQuantity) : 0,
+        lowStockThreshold: variant.lowStockThreshold !== undefined && variant.lowStockThreshold !== null ? Number(variant.lowStockThreshold) : 10,
+        costPrice: variant.costPrice ? Number(variant.costPrice) : 0,
+        priceBase: variant.priceBase ? Number(variant.priceBase) : 0,
+        image: variant.imageUrl || variant.product?.imageUrl || variant.product?.mainImageUrl || null,
+        updatedAt: variant.updatedAt || variant.createdAt || new Date().toISOString()
+      }
+      return transformed
+    })
+    
+    console.log(`✅ Transformed ${products.value.length} products for display`)
+    console.log('First transformed product:', products.value[0])
   } catch (error) {
-    toastService.error('Lỗi','Không thể tải danh sách sản phẩm')
+    console.error('❌ Error fetching inventory:', error)
+    console.error('Error stack:', error.stack)
+    if (error.response) {
+      console.error('Error response status:', error.response.status)
+      console.error('Error response data:', error.response.data)
+    }
+    toastService.error('Lỗi', `Không thể tải danh sách tồn kho: ${error.message || 'Unknown error'}`)
+    products.value = []
   } finally {
     loading.value = false
   }
@@ -728,22 +787,30 @@ const getChangeTypeText = (type) => {
 }
 
 const formatNumber = (num) => {
-  return new Intl.NumberFormat('vi-VN').format(num)
+  if (num === null || num === undefined || isNaN(num)) return '0'
+  return new Intl.NumberFormat('vi-VN').format(Number(num))
 }
 
 const formatCurrency = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 ₫'
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND'
-  }).format(value)
+  }).format(Number(value))
 }
 
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('vi-VN')
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '—'
+  return date.toLocaleDateString('vi-VN')
 }
 
 const formatDateTime = (dateString) => {
-  return new Date(dateString).toLocaleString('vi-VN')
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '—'
+  return date.toLocaleString('vi-VN')
 }
 
 // Lifecycle

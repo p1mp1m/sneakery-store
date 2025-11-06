@@ -45,8 +45,10 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, Integer> {
     /**
      * Lấy tất cả flash sales (admin)
      */
-    @Query("SELECT fs FROM FlashSale fs " +
-           "JOIN FETCH fs.product " +
+    @Query("SELECT DISTINCT fs FROM FlashSale fs " +
+           "JOIN FETCH fs.product p " +
+           "JOIN FETCH p.brand " +
+           "LEFT JOIN FETCH p.variants " +
            "ORDER BY fs.startTime DESC")
     List<FlashSale> findAllWithProduct();
 

@@ -1132,7 +1132,8 @@ class AdminService {
         size: size.toString(),
         ...cleanFilters
       })
-      const response = await adminApi.get(`/inventory?${params}`)
+      // Use /inventory/variants endpoint to get product variants with stock info
+      const response = await adminApi.get(`/inventory/variants?${params}`)
       return response.data
     } catch (error) {
       throw this.handleError(error)

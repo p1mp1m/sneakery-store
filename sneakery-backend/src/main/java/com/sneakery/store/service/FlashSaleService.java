@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class FlashSaleService {
     @Transactional(readOnly = true)
     public List<FlashSaleDto> getAllFlashSales() {
         log.info("Fetching all flash sales");
-        List<FlashSale> flashSales = flashSaleRepository.findAll();
+        List<FlashSale> flashSales = flashSaleRepository.findAllWithProduct();
         
         return flashSales.stream()
                 .map(this::convertToDto)
@@ -197,11 +198,29 @@ public class FlashSaleService {
      * Convert Entity to DTO
      */
     private FlashSaleDto convertToDto(FlashSale flashSale) {
+        Product product = flashSale.getProduct();
+        
+        // Calculate original price from product variants
+        // Use the minimum price from variants (or first variant if available)
+        BigDecimal originalPrice = BigDecimal.ZERO;
+        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+            originalPrice = product.getVariants().stream()
+                    .filter(v -> v.getPriceBase() != null)
+                    .map(v -> v.getPriceSale() != null && v.getPriceSale().compareTo(BigDecimal.ZERO) > 0 
+                            ? v.getPriceSale() 
+                            : v.getPriceBase())
+                    .min(BigDecimal::compareTo)
+                    .orElse(product.getVariants().get(0).getPriceBase());
+        }
+        
         return FlashSaleDto.builder()
                 .id(flashSale.getId())
-                .productId(flashSale.getProduct().getId())
-                .productName(flashSale.getProduct().getName())
-                .productSlug(flashSale.getProduct().getSlug())
+                .productId(product.getId())
+                .productName(product.getName())
+                .productSlug(product.getSlug())
+                .brandName(product.getBrand() != null ? product.getBrand().getName() : null)
+                .imageUrl(product.getMainImageUrl() != null ? product.getMainImageUrl() : null)
+                .originalPrice(originalPrice)
                 .discountPercent(flashSale.getDiscountPercent())
                 .startTime(flashSale.getStartTime())
                 .endTime(flashSale.getEndTime())
