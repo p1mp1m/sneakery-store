@@ -2,8 +2,8 @@
 # Database Configuration
 # ==========================================
 spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=sneakery_db;encrypt=false;trustServerCertificate=true
-spring.datasource.username=sa
-spring.datasource.password=1234
+spring.datasource.username=YOUR_DATABASE_USERNAME
+spring.datasource.password=YOUR_DATABASE_PASSWORD
 spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
 
 # JPA/Hibernate Configuration
@@ -16,7 +16,7 @@ spring.jpa.properties.hibernate.format_sql=true
 # JWT Configuration
 # ==========================================
 
-app.jwt.secret=pr4A69n8RRGkZvDq56wfpxvjTE0cNF2SnmxgngH9nrQ=
+app.jwt.secret=YOUR_JWT_SECRET_KEY_HERE
 app.jwt.expiration-ms=86400000
 
 # ==========================================
@@ -35,9 +35,9 @@ cors.allowed-headers=*
 # Cloudinary Configuration (Optional)
 # ==========================================
 
-cloudinary.cloud-name=djk6lqgu7
-cloudinary.api-key=333354252274719
-cloudinary.api-secret=X9VOs0qbR_D01JHqEBm4wH2WQq0
+cloudinary.cloud-name=YOUR_CLOUDINARY_CLOUD_NAME
+cloudinary.api-key=YOUR_CLOUDINARY_API_KEY
+cloudinary.api-secret=YOUR_CLOUDINARY_API_SECRET
 
 # ==========================================
 # Email Configuration (Optional)
@@ -45,8 +45,8 @@ cloudinary.api-secret=X9VOs0qbR_D01JHqEBm4wH2WQq0
 spring.mail.enabled=false
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
-spring.mail.username=lenhaitho@gmail.com
-spring.mail.password=686998letho
+spring.mail.username=YOUR_EMAIL_ADDRESS
+spring.mail.password=YOUR_EMAIL_PASSWORD
 
 # ==========================================
 # Logging Configuration
