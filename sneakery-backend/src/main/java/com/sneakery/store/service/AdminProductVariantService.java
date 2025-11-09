@@ -4,6 +4,9 @@ import com.sneakery.store.dto.*;
 import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.ProductVariant;
 import com.sneakery.store.entity.ProductImage; // ✅ Added: import ProductImage
+import com.sneakery.store.exception.ProductNotFoundException;
+import com.sneakery.store.exception.ProductVariantNotFoundException;
+import com.sneakery.store.exception.BusinessRuleException;
 import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
 import com.sneakery.store.repository.ProductImageRepository; // ✅ Added: import ProductImageRepository
@@ -20,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -96,7 +100,7 @@ public class AdminProductVariantService {
             
             // Tạo Page mới với data đã sort và paginate
             return new org.springframework.data.domain.PageImpl<>(
-                    pagedList.stream().map(this::convertToDto).collect(java.util.stream.Collectors.toList()),
+                    Objects.requireNonNull(pagedList.stream().map(this::convertToDto).collect(java.util.stream.Collectors.toList())),
                     pageable,
                     variantList.size()
             );
@@ -110,8 +114,8 @@ public class AdminProductVariantService {
      */
     @Transactional(readOnly = true)
     public AdminProductVariantDto getVariantById(Long id) {
-        ProductVariant variant = productVariantRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể với ID: " + id));
+        ProductVariant variant = productVariantRepository.findById(Objects.requireNonNull(id))
+                .orElseThrow(() -> new ProductVariantNotFoundException(id));
         return convertToDto(variant);
     }
 
@@ -119,8 +123,8 @@ public class AdminProductVariantService {
      * Tạo biến thể mới
      */
     public AdminProductVariantDto createVariant(AdminProductVariantRequestDto requestDto) {
-        Product product = productRepository.findById(requestDto.getProductId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + requestDto.getProductId()));
+        Product product = productRepository.findById(Objects.requireNonNull(requestDto.getProductId()))
+                .orElseThrow(() -> new ProductNotFoundException(requestDto.getProductId()));
 
         ProductVariant variant = new ProductVariant();
         variant.setProduct(product);
@@ -149,14 +153,14 @@ public class AdminProductVariantService {
      */
     public List<AdminProductVariantDto> createVariantsBatch(List<AdminProductVariantRequestDto> requestList) {
         if (requestList == null || requestList.isEmpty()) {
-            throw new RuntimeException("Danh sách biến thể rỗng");
+            throw new BusinessRuleException("Danh sách biến thể rỗng");
         }
 
         List<AdminProductVariantDto> resultList = new ArrayList<>();
 
         for (AdminProductVariantRequestDto requestDto : requestList) {
-            Product product = productRepository.findById(requestDto.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + requestDto.getProductId()));
+            Product product = productRepository.findById(Objects.requireNonNull(requestDto.getProductId()))
+                    .orElseThrow(() -> new ProductNotFoundException(requestDto.getProductId()));
 
             // ✅ Kiểm tra SKU đã tồn tại chưa
             Optional<ProductVariant> existingOpt = productVariantRepository.findBySku(requestDto.getSku());
@@ -230,8 +234,8 @@ public class AdminProductVariantService {
      * Cập nhật biến thể
      */
     public AdminProductVariantDto updateVariant(Long id, AdminProductVariantRequestDto requestDto) {
-        ProductVariant variant = productVariantRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể với ID: " + id));
+        ProductVariant variant = productVariantRepository.findById(Objects.requireNonNull(id))
+                .orElseThrow(() -> new ProductVariantNotFoundException(id));
 
         variant.setSku(requestDto.getSku());
         variant.setSize(requestDto.getSize());
@@ -265,8 +269,8 @@ public class AdminProductVariantService {
      * <p><b>Cảnh báo:</b> Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
      */
     public void deleteVariant(Long id) {
-        ProductVariant variant = productVariantRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể với ID: " + id));
+        ProductVariant variant = productVariantRepository.findById(Objects.requireNonNull(id))
+                .orElseThrow(() -> new ProductVariantNotFoundException(id));
         
         log.info("Bắt đầu xóa variant ID: {} (SKU: {}) và tất cả dữ liệu liên quan", id, variant.getSku());
         
@@ -308,8 +312,8 @@ public class AdminProductVariantService {
      * Cập nhật tồn kho
      */
     public AdminProductVariantDto updateStock(Long id, StockUpdateRequestDto requestDto) {
-        ProductVariant variant = productVariantRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể với ID: " + id));
+        ProductVariant variant = productVariantRepository.findById(Objects.requireNonNull(id))
+                .orElseThrow(() -> new ProductVariantNotFoundException(id));
 
         variant.setStockQuantity(requestDto.getNewQuantity());
         variant.setUpdatedAt(LocalDateTime.now());

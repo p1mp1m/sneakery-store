@@ -606,6 +606,8 @@ import { useTheme } from '@/composables/useTheme';
 import { storeToRefs } from 'pinia';
 import toastService from '@/utils/toastService';
 import confirmDialogService from '@/utils/confirmDialogService';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import userService from '@/services/userService';
 
 const authStore = useAuthStore();
@@ -661,13 +663,13 @@ const updateProfile = async () => {
     updating.value = true;
     
     // Note: Backend needs to support profile update endpoint
-    // await axios.put('http://localhost:8080/api/users/profile', profile, {
+    // await axios.put(API_ENDPOINTS.AUTH.PROFILE, profile, {
     //   headers: { Authorization: `Bearer ${authStore.token}` },
     // });
 
     toastService.success('Thành công','Cập nhật thông tin thành công');
   } catch (error) {
-    console.error('Error updating profile:', error);
+    logger.error('Error updating profile:', error);
     toastService.error('Lỗi','Không thể cập nhật thông tin');
   } finally {
     updating.value = false;
@@ -689,7 +691,7 @@ const changePassword = async () => {
     changingPassword.value = true;
 
     // Note: Backend needs to support password change endpoint
-    // await axios.post('http://localhost:8080/api/auth/change-password', {
+    // await axios.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
     //   currentPassword: passwordForm.currentPassword,
     //   newPassword: passwordForm.newPassword,
     // }, {
@@ -703,7 +705,7 @@ const changePassword = async () => {
     passwordForm.newPassword = '';
     passwordForm.confirmPassword = '';
   } catch (error) {
-    console.error('Error changing password:', error);
+    logger.error('Error changing password:', error);
     toastService.error('Lỗi','Không thể đổi mật khẩu');
   } finally {
     changingPassword.value = false;
@@ -715,7 +717,7 @@ const loadAddresses = async () => {
     loadingAddresses.value = true;
     addresses.value = await userService.getMyAddresses();
   } catch (error) {
-    console.error('Error loading addresses:', error);
+    logger.error('Error loading addresses:', error);
     toastService.error('Lỗi',error.message || 'Không thể tải danh sách địa chỉ');
   } finally {
     loadingAddresses.value = false;
@@ -757,7 +759,7 @@ const saveAddress = async () => {
 
     closeAddressForm();
   } catch (error) {
-    console.error('Error saving address:', error);
+    logger.error('Error saving address:', error);
     toastService.error('Lỗi',error.message || 'Không thể lưu địa chỉ');
   }
 };
@@ -779,7 +781,7 @@ const deleteAddress = async (id) => {
     toastService.success('Thành công','Đã xóa địa chỉ');
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('Error deleting address:', error);
+      logger.error('Error deleting address:', error);
       toastService.error('Lỗi','Không thể xóa địa chỉ');
     }
   }

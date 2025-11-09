@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.entity.InventoryLog;
 import com.sneakery.store.entity.ProductVariant;
+import com.sneakery.store.exception.InventoryLogNotFoundException;
 import com.sneakery.store.repository.InventoryLogRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * Admin Inventory Controller
@@ -91,8 +94,8 @@ public class AdminInventoryController {
     public ResponseEntity<InventoryLog> getLogById(@PathVariable Long id) {
         log.info("📊 Fetching inventory log ID: {}", id);
         
-        InventoryLog log = inventoryLogRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Inventory log not found with id: " + id));
+        InventoryLog log = inventoryLogRepository.findById(Objects.requireNonNull(id))
+            .orElseThrow(() -> new InventoryLogNotFoundException(id));
         
         return ResponseEntity.ok(log);
     }

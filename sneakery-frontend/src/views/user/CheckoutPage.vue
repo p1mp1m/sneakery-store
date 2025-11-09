@@ -728,6 +728,8 @@ import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
 import { storeToRefs } from 'pinia';
 import toastService from '@/utils/toastService';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import axios from 'axios';
 import userService from '@/services/userService';
 import * as guestCartService from '@/services/guestCartService';
@@ -962,7 +964,7 @@ const handleCheckout = async () => {
       };
 
       const response = await axios.post(
-        'http://localhost:8080/api/guest/checkout',
+        API_ENDPOINTS.CART.GUEST_CHECKOUT,
         guestCheckoutData
       );
 

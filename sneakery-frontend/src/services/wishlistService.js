@@ -4,8 +4,8 @@
  */
 
 import axios from 'axios'
-
-const API_URL = 'http://localhost:8080/api/wishlist'
+import { API_ENDPOINTS } from '@/config/api'
+import logger from '@/utils/logger'
 
 // Lấy access token từ localStorage
 const getAuthHeader = () => {
@@ -19,12 +19,12 @@ class WishlistService {
    */
   async getWishlist() {
     try {
-      const response = await axios.get(API_URL, {
+      const response = await axios.get(API_ENDPOINTS.WISHLIST.BASE, {
         headers: getAuthHeader()
       })
       return response.data
     } catch (error) {
-      console.error('Error fetching wishlist:', error)
+      logger.error('Error fetching wishlist:', error)
       throw error
     }
   }
@@ -35,15 +35,16 @@ class WishlistService {
   async addToWishlist(productId) {
     try {
       const response = await axios.post(
-        `${API_URL}/${productId}`,
+        `${API_ENDPOINTS.WISHLIST.BASE}/${productId}`,
         {},
         {
           headers: getAuthHeader()
         }
       )
+      logger.log('Product added to wishlist:', productId)
       return response.data
     } catch (error) {
-      console.error('Error adding to wishlist:', error)
+      logger.error('Error adding to wishlist:', error)
       throw error
     }
   }
@@ -53,12 +54,13 @@ class WishlistService {
    */
   async removeFromWishlist(productId) {
     try {
-      const response = await axios.delete(`${API_URL}/${productId}`, {
+      const response = await axios.delete(`${API_ENDPOINTS.WISHLIST.BASE}/${productId}`, {
         headers: getAuthHeader()
       })
+      logger.log('Product removed from wishlist:', productId)
       return response.data
     } catch (error) {
-      console.error('Error removing from wishlist:', error)
+      logger.error('Error removing from wishlist:', error)
       throw error
     }
   }
@@ -68,12 +70,12 @@ class WishlistService {
    */
   async checkInWishlist(productId) {
     try {
-      const response = await axios.get(`${API_URL}/check/${productId}`, {
+      const response = await axios.get(`${API_ENDPOINTS.WISHLIST.BASE}/check/${productId}`, {
         headers: getAuthHeader()
       })
       return response.data.inWishlist
     } catch (error) {
-      console.error('Error checking wishlist:', error)
+      logger.error('Error checking wishlist:', error)
       return false
     }
   }
@@ -83,12 +85,12 @@ class WishlistService {
    */
   async countWishlistItems() {
     try {
-      const response = await axios.get(`${API_URL}/count`, {
+      const response = await axios.get(`${API_ENDPOINTS.WISHLIST.BASE}/count`, {
         headers: getAuthHeader()
       })
       return response.data.count
     } catch (error) {
-      console.error('Error counting wishlist items:', error)
+      logger.error('Error counting wishlist items:', error)
       return 0
     }
   }
@@ -98,12 +100,13 @@ class WishlistService {
    */
   async clearWishlist() {
     try {
-      const response = await axios.delete(`${API_URL}/clear`, {
+      const response = await axios.delete(`${API_ENDPOINTS.WISHLIST.BASE}/clear`, {
         headers: getAuthHeader()
       })
+      logger.log('Wishlist cleared')
       return response.data
     } catch (error) {
-      console.error('Error clearing wishlist:', error)
+      logger.error('Error clearing wishlist:', error)
       throw error
     }
   }
@@ -123,7 +126,7 @@ class WishlistService {
         return { action: 'added', inWishlist: true }
       }
     } catch (error) {
-      console.error('Error toggling wishlist:', error)
+      logger.error('Error toggling wishlist:', error)
       throw error
     }
   }

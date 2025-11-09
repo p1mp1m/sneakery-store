@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +35,7 @@ public class MaterialService {
 
     /** Lấy theo ID */
     public MaterialDto getById(Integer id) {
-        Material entity = materialRepository.findById(id)
+        Material entity = materialRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chất liệu"));
         return toDto(entity);
     }
@@ -48,29 +49,29 @@ public class MaterialService {
         BeanUtils.copyProperties(dto, entity);
         entity.setCreatedAt(LocalDateTime.now());
         entity.setIsActive(true);
-        return toDto(materialRepository.save(entity));
+        return toDto(materialRepository.save(Objects.requireNonNull(entity)));
     }
 
     /** Cập nhật chất liệu */
     public MaterialDto update(Integer id, MaterialDto dto) {
-        Material entity = materialRepository.findById(id)
+        Material entity = materialRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chất liệu"));
-        BeanUtils.copyProperties(dto, entity, "id", "createdAt");
+        BeanUtils.copyProperties(Objects.requireNonNull(dto), Objects.requireNonNull(entity), "id", "createdAt");
         entity.setUpdatedAt(LocalDateTime.now());
         return toDto(materialRepository.save(entity));
     }
 
     /** Xóa chất liệu */
     public void delete(Integer id) {
-        Material entity = materialRepository.findById(id)
+        Material entity = materialRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy chất liệu"));
-        materialRepository.delete(entity);
+        materialRepository.delete(Objects.requireNonNull(entity));
     }
 
     /** Chuyển entity sang DTO */
     private MaterialDto toDto(Material entity) {
         MaterialDto dto = new MaterialDto();
-        BeanUtils.copyProperties(entity, dto);
+        BeanUtils.copyProperties(Objects.requireNonNull(entity), dto);
         return dto;
     }
 }

@@ -14,8 +14,48 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Service xử lý đơn hàng cho User
+ * 
+ * <p>Service này cung cấp các chức năng quản lý đơn hàng cho user:
+ * <ul>
+ *   <li>Tạo đơn hàng từ giỏ hàng (checkout)</li>
+ *   <li>Lấy danh sách đơn hàng của user</li>
+ *   <li>Lấy thông tin chi tiết đơn hàng theo ID</li>
+ * </ul>
+ * 
+ * <p><b>Về checkout:</b>
+ * <ul>
+ *   <li>Checkout sẽ tạo đơn hàng từ giỏ hàng hiện tại</li>
+ *   <li>Sau khi checkout thành công, giỏ hàng sẽ được xóa</li>
+ *   <li>Hệ thống sẽ tự động áp dụng coupon (nếu có) và tính điểm loyalty</li>
+ *   <li>Gửi email xác nhận đơn hàng cho khách hàng</li>
+ * </ul>
+ * 
+ * <p><b>Về thanh toán:</b>
+ * <ul>
+ *   <li>Hỗ trợ nhiều phương thức thanh toán: COD, Bank Transfer, Credit Card</li>
+ *   <li>Nếu thanh toán online, sẽ tích hợp với Payment Gateway</li>
+ * </ul>
+ * 
+ * <p><b>Ví dụ sử dụng:</b>
+ * <pre>
+ * // Tạo đơn hàng từ giỏ hàng
+ * CheckoutRequestDto checkoutRequest = new CheckoutRequestDto();
+ * checkoutRequest.setAddressId(1L);
+ * checkoutRequest.setPaymentMethod("COD");
+ * OrderDto order = orderService.createOrderFromCart(userId, checkoutRequest);
+ * 
+ * // Lấy danh sách đơn hàng
+ * List&lt;OrderSummaryDto&gt; orders = orderService.getMyOrders(userId);
+ * </pre>
+ * 
+ * @author Sneakery Store Team
+ * @since 1.0
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,7 +73,51 @@ public class OrderService {
     private final LoyaltyService loyaltyService;
 
     /**
-     * API 1: Xử lý Checkout (Tạo đơn hàng)
+     * Xử lý Checkout - Tạo đơn hàng từ giỏ hàng
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Lấy giỏ hàng của user (với đầy đủ thông tin items)</li>
+     *   <li>Validate giỏ hàng (không được trống)</li>
+     *   <li>Lấy địa chỉ giao hàng</li>
+     *   <li>Kiểm tra tồn kho của tất cả sản phẩm trong giỏ hàng</li>
+     *   <li>Tính toán tổng tiền (bao gồm coupon nếu có)</li>
+     *   <li>Tạo đơn hàng mới với các order items</li>
+     *   <li>Xóa giỏ hàng sau khi tạo đơn hàng thành công</li>
+     *   <li>Áp dụng coupon và tính điểm loyalty (nếu có)</li>
+     *   <li>Gửi email xác nhận đơn hàng</li>
+     * </ol>
+     * 
+     * <p><b>Lưu ý:</b>
+     * <ul>
+     *   <li>Giỏ hàng phải có ít nhất 1 sản phẩm</li>
+     *   <li>Tất cả sản phẩm trong giỏ hàng phải còn tồn kho đủ</li>
+     *   <li>Địa chỉ giao hàng phải tồn tại và thuộc về user</li>
+     *   <li>Sau khi checkout thành công, giỏ hàng sẽ được xóa</li>
+     *   <li>Nếu có coupon, sẽ tự động áp dụng và tính lại tổng tiền</li>
+     *   <li>Nếu thanh toán online, sẽ tích hợp với Payment Gateway</li>
+     * </ul>
+     * 
+     * @param userId ID của user đang checkout
+     * @param requestDto DTO chứa thông tin checkout:
+     *                   - addressId: ID địa chỉ giao hàng (bắt buộc)
+     *                   - paymentMethod: Phương thức thanh toán (bắt buộc)
+     *                   - couponCode: Mã coupon (tùy chọn)
+     *                   - note: Ghi chú đơn hàng (tùy chọn)
+     * @return OrderDto của đơn hàng vừa tạo
+     * @throws ApiException nếu giỏ hàng trống, địa chỉ không tồn tại, hết tồn kho, hoặc validation thất bại
+     * 
+     * @example
+     * <pre>
+     * CheckoutRequestDto checkoutRequest = new CheckoutRequestDto();
+     * checkoutRequest.setAddressId(1L);
+     * checkoutRequest.setPaymentMethod("COD");
+     * checkoutRequest.setCouponCode("SALE10"); // Tùy chọn
+     * 
+     * OrderDto order = orderService.createOrderFromCart(userId, checkoutRequest);
+     * System.out.println(order.getOrderCode()); // Mã đơn hàng
+     * System.out.println(order.getTotalAmount()); // Tổng tiền
+     * </pre>
      */
     @Transactional
     public OrderDto createOrderFromCart(Long userId, CheckoutRequestDto requestDto) {
@@ -47,7 +131,8 @@ public class OrderService {
         }
 
         // 2. Lấy User
-        User user = userRepository.findById(userId).get();
+        User user = userRepository.findById(Objects.requireNonNull(userId))
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
 
         // 3. Lấy địa chỉ giao hàng (và kiểm tra)
         Address shippingAddress = addressRepository.findByIdAndUserId(requestDto.getAddressShippingId(), userId)
@@ -122,7 +207,7 @@ public class OrderService {
         if (requestDto.getCouponCode() != null && !requestDto.getCouponCode().trim().isEmpty()) {
             try {
                 CouponDto couponDto = couponService.validateCouponCode(requestDto.getCouponCode());
-                coupon = couponRepository.findById(couponDto.getId()).orElse(null);
+                coupon = couponRepository.findById(Objects.requireNonNull(couponDto.getId())).orElse(null);
                 
                 if (coupon != null) {
                     // Tính discount amount
@@ -368,7 +453,7 @@ public class OrderService {
         if (requestDto.getCouponCode() != null && !requestDto.getCouponCode().trim().isEmpty()) {
             try {
                 CouponDto couponDto = couponService.validateCouponCode(requestDto.getCouponCode());
-                coupon = couponRepository.findById(couponDto.getId()).orElse(null);
+                coupon = couponRepository.findById(Objects.requireNonNull(couponDto.getId())).orElse(null);
                 
                 if (coupon != null) {
                     // Tính discount amount

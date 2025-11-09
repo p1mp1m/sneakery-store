@@ -93,6 +93,8 @@
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { debounce } from '@/utils/debounce';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import axios from 'axios';
 
 const router = useRouter();
@@ -112,7 +114,7 @@ const handleSearch = debounce(async () => {
 
   isLoading.value = true;
   try {
-    const response = await axios.get('http://localhost:8080/api/products', {
+    const response = await axios.get(API_ENDPOINTS.PRODUCTS.BASE, {
       params: {
         page: 0,
         size: 5,
@@ -122,7 +124,7 @@ const handleSearch = debounce(async () => {
     
     suggestions.value = response.data.content || [];
   } catch (error) {
-    console.error('Error fetching suggestions:', error);
+    logger.error('Error fetching suggestions:', error);
     suggestions.value = [];
   } finally {
     isLoading.value = false;

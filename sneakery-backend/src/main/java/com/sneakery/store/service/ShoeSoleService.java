@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +35,7 @@ public class ShoeSoleService {
 
     /** Lấy loại đế theo ID */
     public ShoeSoleDto getById(Integer id) {
-        ShoeSole entity = shoeSoleRepository.findById(id)
+        ShoeSole entity = shoeSoleRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại đế giày"));
         return toDto(entity);
     }
@@ -48,29 +49,29 @@ public class ShoeSoleService {
         BeanUtils.copyProperties(dto, entity);
         entity.setCreatedAt(LocalDateTime.now());
         entity.setIsActive(true);
-        return toDto(shoeSoleRepository.save(entity));
+        return toDto(shoeSoleRepository.save(Objects.requireNonNull(entity)));
     }
 
     /** Cập nhật loại đế */
     public ShoeSoleDto update(Integer id, ShoeSoleDto dto) {
-        ShoeSole entity = shoeSoleRepository.findById(id)
+        ShoeSole entity = shoeSoleRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại đế giày"));
-        BeanUtils.copyProperties(dto, entity, "id", "createdAt");
+        BeanUtils.copyProperties(Objects.requireNonNull(dto), Objects.requireNonNull(entity), "id", "createdAt");
         entity.setUpdatedAt(LocalDateTime.now());
         return toDto(shoeSoleRepository.save(entity));
     }
 
     /** Xóa loại đế */
     public void delete(Integer id) {
-        ShoeSole entity = shoeSoleRepository.findById(id)
+        ShoeSole entity = shoeSoleRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy loại đế giày"));
-        shoeSoleRepository.delete(entity);
+        shoeSoleRepository.delete(Objects.requireNonNull(entity));
     }
 
     /** Chuyển entity sang DTO */
     private ShoeSoleDto toDto(ShoeSole entity) {
         ShoeSoleDto dto = new ShoeSoleDto();
-        BeanUtils.copyProperties(entity, dto);
+        BeanUtils.copyProperties(Objects.requireNonNull(entity), dto);
         return dto;
     }
 }

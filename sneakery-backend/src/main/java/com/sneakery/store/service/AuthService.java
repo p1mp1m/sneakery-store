@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -52,7 +53,7 @@ public class AuthService {
                 .isActive(true)
                 .build();
 
-        userRepository.save(user);
+        userRepository.save(Objects.requireNonNull(user));
 
         LoginDto loginDto = new LoginDto();
         loginDto.setEmail(registerDto.getEmail());
@@ -120,7 +121,7 @@ public class AuthService {
 
         var user = prt.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
+        userRepository.save(Objects.requireNonNull(user));
 
         // Đánh dấu đã dùng
         prt.setUsedAt(LocalDateTime.now());
@@ -130,7 +131,7 @@ public class AuthService {
     // -------------------- GET PROFILE --------------------
     @Transactional(readOnly = true)
     public UserDto getProfile(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
 
         return UserDto.builder()
@@ -146,7 +147,7 @@ public class AuthService {
     // -------------------- UPDATE PROFILE --------------------
     @Transactional
     public UserDto updateProfile(Long userId, UpdateProfileDto updateProfileDto) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
 
         if (updateProfileDto.getFullName() != null && !updateProfileDto.getFullName().trim().isEmpty()) {
@@ -157,7 +158,7 @@ public class AuthService {
             user.setPhoneNumber(updateProfileDto.getPhoneNumber().trim());
         }
 
-        user = userRepository.save(user);
+        user = userRepository.save(Objects.requireNonNull(user));
 
         return UserDto.builder()
                 .id(user.getId())
@@ -172,7 +173,7 @@ public class AuthService {
     // -------------------- CHANGE PASSWORD --------------------
     @Transactional
     public void changePassword(Long userId, ChangePasswordDto changePasswordDto) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
 
         // Xác thực mật khẩu hiện tại
@@ -182,6 +183,6 @@ public class AuthService {
 
         // Cập nhật mật khẩu mới
         user.setPasswordHash(passwordEncoder.encode(changePasswordDto.getNewPassword()));
-        userRepository.save(user);
+        userRepository.save(Objects.requireNonNull(user));
     }
 }

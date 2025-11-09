@@ -94,6 +94,8 @@ import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import toastService from '@/utils/toastService';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import axios from 'axios';
 import productService from '@/services/productService';
 
@@ -152,7 +154,7 @@ watch(() => props.productId, (newId) => {
 const fetchProduct = async () => {
   loading.value = true;
   try {
-    const response = await axios.get(`http://localhost:8080/api/admin/products/${props.productId}`);
+    const response = await axios.get(API_ENDPOINTS.ADMIN_PRODUCTS.BY_ID(props.productId));
     product.value = response.data;
     
     if (product.value.variants && product.value.variants.length > 0) {
@@ -164,7 +166,7 @@ const fetchProduct = async () => {
       }
     }
   } catch (error) {
-    console.error('Error fetching product:', error);
+    logger.error('Error fetching product:', error);
     toastService.error('Lỗi','Không thể tải thông tin sản phẩm');
   } finally {
     loading.value = false;
@@ -186,7 +188,7 @@ const handleAddToCart = async () => {
 
   try {
     await axios.post(
-      'http://localhost:8080/api/cart/item',
+      API_ENDPOINTS.CART.ITEM,
       {
         variantId: currentVariant.value.id,
         quantity: 1

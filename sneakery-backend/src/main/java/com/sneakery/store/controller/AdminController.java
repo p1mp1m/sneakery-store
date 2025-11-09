@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.CreateUserRequestDto;
 import com.sneakery.store.dto.UserDto;
+import com.sneakery.store.exception.DatabaseOperationException;
 import com.sneakery.store.repository.*;
 import com.sneakery.store.service.AdminUserService;
 import jakarta.validation.Valid;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "Admin - Dashboard", description = "API Dashboard và thống kê cho Admin")
 @Slf4j
 @RestController
 @RequestMapping("/api/admin")
@@ -42,13 +45,45 @@ public class AdminController {
     private final PaymentRepository paymentRepository;
 
     /**
-     * API Dashboard: Lấy thống kê tổng quan cho Admin
-     * Bao gồm: Tổng users, products, orders, và doanh thu
+     * Lấy thống kê tổng quan cho Admin Dashboard
      * 
-     * OPTIMIZED: 
-     * - Sử dụng single aggregation query thay vì 4 queries riêng lẻ
-     * - Caching với TTL 5 minutes để giảm database load
-     * Performance improvement: Giảm số lượng queries từ 4 xuống 1 + caching
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Thực hiện single aggregation query để lấy tất cả thống kê trong 1 lần</li>
+     *   <li>Cache kết quả để tối ưu hiệu năng (TTL: 5 phút)</li>
+     *   <li>Trả về thống kê tổng quan</li>
+     * </ol>
+     * 
+     * <p><b>Về dữ liệu trả về:</b>
+     * <ul>
+     *   <li>totalUsers: Tổng số users trong hệ thống</li>
+     *   <li>totalProducts: Tổng số sản phẩm (chưa bị xóa)</li>
+     *   <li>totalOrders: Tổng số đơn hàng</li>
+     *   <li>totalRevenue: Tổng doanh thu (VNĐ)</li>
+     * </ul>
+     * 
+     * <p><b>Về tối ưu hiệu năng:</b>
+     * <ul>
+     *   <li>Sử dụng single aggregation query thay vì 4 queries riêng lẻ</li>
+     *   <li>Caching với TTL 5 phút để giảm database load</li>
+     *   <li>Performance improvement: Giảm số lượng queries từ 4 xuống 1 + caching</li>
+     * </ul>
+     * 
+     * <p><b>Lưu ý:</b> Nếu có lỗi xảy ra, sẽ trả về giá trị mặc định (0) cho tất cả các thống kê.
+     * 
+     * @return ResponseEntity chứa Map với các thống kê:
+     *         - totalUsers: Long
+     *         - totalProducts: Long
+     *         - totalOrders: Long
+     *         - totalRevenue: Double (VNĐ)
+     * 
+     * @example
+     * <pre>
+     * ResponseEntity&lt;Map&lt;String, Object&gt;&gt; response = adminController.getDashboardStats();
+     * Map&lt;String, Object&gt; stats = response.getBody();
+     * Long totalUsers = (Long) stats.get("totalUsers");
+     * Double totalRevenue = (Double) stats.get("totalRevenue");
+     * </pre>
      */
     @GetMapping("/dashboard/stats")
     @PreAuthorize("hasRole('ADMIN')")
@@ -63,7 +98,7 @@ public class AdminController {
             List<Object[]> results = orderRepository.getDashboardStatsRaw();
             
             if (results == null || results.isEmpty()) {
-                throw new RuntimeException("No stats data returned from database");
+                throw new DatabaseOperationException("No stats data returned from database");
             }
             
             // Native query returns List<Object[]>, get first row: [total_users, total_products, total_orders, total_revenue]

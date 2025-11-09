@@ -16,6 +16,7 @@ import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Service xử lý logic cho Coupon
@@ -32,7 +33,7 @@ public class CouponService {
     @Transactional(readOnly = true)
     public Page<CouponDto> getAllCoupons(String search, String type, String status, Pageable pageable) {
         Specification<Coupon> spec = buildSpecification(search, type, status);
-        Page<Coupon> coupons = couponRepository.findAll(spec, pageable);
+        Page<Coupon> coupons = couponRepository.findAll(spec, Objects.requireNonNull(pageable));
         return coupons.map(this::convertToDto);
     }
 
@@ -72,7 +73,7 @@ public class CouponService {
      */
     @Transactional(readOnly = true)
     public CouponDto getCouponById(Integer id) {
-        Coupon coupon = couponRepository.findById(id)
+        Coupon coupon = couponRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy coupon"));
         return convertToDto(coupon);
     }
@@ -93,7 +94,7 @@ public class CouponService {
         }
 
         Coupon coupon = convertToEntity(dto);
-        coupon = couponRepository.save(coupon);
+        coupon = couponRepository.save(Objects.requireNonNull(coupon));
         return convertToDto(coupon);
     }
 
@@ -102,7 +103,7 @@ public class CouponService {
      */
     @Transactional
     public CouponDto updateCoupon(Integer id, CouponDto dto) {
-        Coupon coupon = couponRepository.findById(id)
+        Coupon coupon = couponRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy coupon"));
 
         // Validate dates
@@ -131,7 +132,7 @@ public class CouponService {
      */
     @Transactional
     public void deleteCoupon(Integer id) {
-        Coupon coupon = couponRepository.findById(id)
+        Coupon coupon = couponRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy coupon"));
         
         // Kiểm tra coupon đã được sử dụng chưa
@@ -139,7 +140,7 @@ public class CouponService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Không thể xóa coupon đã được sử dụng");
         }
 
-        couponRepository.delete(coupon);
+        couponRepository.delete(Objects.requireNonNull(coupon));
     }
 
     /**
@@ -147,7 +148,7 @@ public class CouponService {
      */
     @Transactional
     public CouponDto toggleStatus(Integer id) {
-        Coupon coupon = couponRepository.findById(id)
+        Coupon coupon = couponRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy coupon"));
         
         coupon.setIsActive(!coupon.getIsActive());

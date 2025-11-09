@@ -6,6 +6,7 @@ import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.Review;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.exception.ApiException;
+import com.sneakery.store.exception.DatabaseOperationException;
 import com.sneakery.store.repository.ReviewRepository;
 import com.sneakery.store.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * Service: AdminReviewService
@@ -79,7 +81,7 @@ public class AdminReviewService {
             return predicates;
         };
         
-        Page<Review> reviews = reviewRepository.findAll(spec, pageable);
+        Page<Review> reviews = reviewRepository.findAll(spec, Objects.requireNonNull(pageable));
 
         return reviews.map(this::convertToListDto);
     }
@@ -91,7 +93,7 @@ public class AdminReviewService {
     public AdminReviewDto getReviewById(Long id) {
         log.info("📄 Fetching review detail - ID: {}", id);
 
-        Review review = reviewRepository.findById(id)
+        Review review = reviewRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy review"));
 
         return convertToDto(review);
@@ -104,10 +106,10 @@ public class AdminReviewService {
     public AdminReviewDto updateReviewStatus(Long id, Boolean isApproved, Long adminId) {
         log.info("✅ Updating review status - ID: {}, approved: {}, by admin: {}", id, isApproved, adminId);
 
-        Review review = reviewRepository.findById(id)
+        Review review = reviewRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy review"));
 
-        User admin = userRepository.findById(adminId)
+        User admin = userRepository.findById(Objects.requireNonNull(adminId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
 
         review.setIsApproved(isApproved);
@@ -137,7 +139,7 @@ public class AdminReviewService {
     public void deleteReview(Long id) {
         log.info("🗑️ Deleting review - ID: {}", id);
 
-        Review review = reviewRepository.findById(id)
+        Review review = reviewRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy review"));
 
         Product product = review.getProduct();
@@ -162,10 +164,10 @@ public class AdminReviewService {
     public AdminReviewDto replyToReview(Long id, String replyText, Long adminId) {
         log.info("💬 Replying to review - ID: {}, by admin: {}", id, adminId);
 
-        Review review = reviewRepository.findById(id)
+        Review review = reviewRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy review"));
 
-        User admin = userRepository.findById(adminId)
+        User admin = userRepository.findById(Objects.requireNonNull(adminId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
 
         review.setReplyText(replyText);
@@ -265,7 +267,7 @@ public class AdminReviewService {
             log.debug("✅ Called sp_UpdateProductRating for product ID: {}", productId);
         } catch (Exception e) {
             log.error("❌ Error calling sp_UpdateProductRating for product ID {}: {}", productId, e.getMessage());
-            throw new RuntimeException("Failed to update product rating", e);
+            throw new DatabaseOperationException("Failed to update product rating", e);
         }
     }
 }

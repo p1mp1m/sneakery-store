@@ -38,15 +38,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ApiException ex,
             HttpServletRequest request
     ) {
+        HttpStatus status = ex.getStatus();
         ErrorResponseDto errorDto = ErrorResponseDto.builder()
                 .timestamp(LocalDateTime.now())
-                .status(ex.getStatus().value())
-                .error(ex.getStatus().getReasonPhrase())
+                .status(status.value())
+                .error(status.getReasonPhrase())
                 .message(ex.getMessage())
                 .path(request.getRequestURI())
                 .build();
 
-        return new ResponseEntity<>(errorDto, ex.getStatus());
+        return new ResponseEntity<>(errorDto, status);
     }
 
     /**

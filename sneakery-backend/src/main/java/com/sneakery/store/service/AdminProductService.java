@@ -14,6 +14,8 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +26,51 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Service quản lý sản phẩm cho Admin
+ * 
+ * <p>Service này cung cấp các chức năng quản lý sản phẩm cho admin:
+ * <ul>
+ *   <li>Tạo, đọc, cập nhật, xóa sản phẩm</li>
+ *   <li>Tìm kiếm và lọc sản phẩm nâng cao (theo brand, category, giá, v.v.)</li>
+ *   <li>Quản lý biến thể sản phẩm (variants) - size, màu sắc, giá</li>
+ *   <li>Cache dữ liệu sản phẩm để tối ưu hiệu năng</li>
+ * </ul>
+ * 
+ * <p><b>Về Caching:</b>
+ * <ul>
+ *   <li>Dữ liệu sản phẩm được cache để giảm tải database</li>
+ *   <li>Cache tự động bị xóa khi có sản phẩm mới được tạo, cập nhật, hoặc xóa</li>
+ *   <li>Cache key: ID của sản phẩm (ví dụ: "products::1")</li>
+ * </ul>
+ * 
+ * <p><b>Về Sản phẩm và Biến thể:</b>
+ * <ul>
+ *   <li>Một sản phẩm có thể có nhiều biến thể (variants)</li>
+ *   <li>Ví dụ: Sản phẩm "Nike Air Max" có các biến thể: Size 40 - Đỏ, Size 41 - Đỏ, Size 40 - Xanh</li>
+ *   <li>Mỗi biến thể có: SKU, size, màu sắc, giá, số lượng tồn kho</li>
+ * </ul>
+ * 
+ * <p><b>Ví dụ sử dụng:</b>
+ * <pre>
+ * // Tạo sản phẩm mới với các biến thể
+ * AdminProductRequestDto request = new AdminProductRequestDto();
+ * request.setName("Nike Air Max");
+ * request.setBrandId(1);
+ * request.setCategoryIds(Arrays.asList(1, 2));
+ * // ... thêm các biến thể
+ * AdminProductDetailDto created = adminProductService.createProduct(request);
+ * 
+ * // Lấy sản phẩm theo ID (có cache)
+ * AdminProductDetailDto product = adminProductService.getProductByIdForAdmin(1L);
+ * </pre>
+ * 
+ * @author Sneakery Store Team
+ * @since 1.0
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -45,9 +90,57 @@ public class AdminProductService {
 
 
     /**
- * API 1: Tạo sản phẩm mới
- */
+     * Tạo sản phẩm mới
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Validate các business rules (slug unique, tên sản phẩm unique, SKU unique, giá hợp lệ)</li>
+     *   <li>Lấy thương hiệu (Brand) từ database</li>
+     *   <li>Lấy các danh mục (Categories) từ database</li>
+     *   <li>Lấy chất liệu (Material) và loại đế giày (ShoeSole) nếu có</li>
+     *   <li>Tạo sản phẩm mới với mã sản phẩm tự động</li>
+     *   <li>Tạo các biến thể (variants) của sản phẩm</li>
+     *   <li>Lưu vào database (cascade variants)</li>
+     *   <li>Xóa tất cả cache của sản phẩm</li>
+     * </ol>
+     * 
+     * <p><b>Lưu ý:</b>
+     * <ul>
+     *   <li>Mã sản phẩm (code) sẽ được tự động sinh dựa trên ID cuối cùng</li>
+     *   <li>Nếu validation thất bại, sẽ throw ApiException với thông báo lỗi cụ thể</li>
+     *   <li>Sau khi tạo thành công, cache sẽ bị xóa để đảm bảo dữ liệu mới nhất</li>
+     * </ul>
+     * 
+     * @param requestDto DTO chứa thông tin sản phẩm cần tạo:
+     *                   - Tên, slug, mô tả
+     *                   - Brand ID, Category IDs
+     *                   - Material ID, ShoeSole ID (tùy chọn)
+     *                   - Danh sách variants (SKU, size, màu, giá, số lượng)
+     * @return AdminProductDetailDto của sản phẩm vừa tạo (bao gồm tất cả variants)
+     * @throws ApiException nếu validation thất bại hoặc không tìm thấy Brand/Category
+     * 
+     * @example
+     * <pre>
+     * AdminProductRequestDto request = new AdminProductRequestDto();
+     * request.setName("Nike Air Max 90");
+     * request.setSlug("nike-air-max-90");
+     * request.setBrandId(1); // Nike
+     * request.setCategoryIds(Arrays.asList(1, 2)); // Giày thể thao, Giày chạy bộ
+     * 
+     * // Thêm biến thể
+     * ProductVariantRequestDto variant1 = new ProductVariantRequestDto();
+     * variant1.setSku("NIKE-AM90-40-RED");
+     * variant1.setSize(40);
+     * variant1.setColor("Đỏ");
+     * variant1.setPrice(new BigDecimal("2500000"));
+     * variant1.setStockQuantity(100);
+     * request.setVariants(Arrays.asList(variant1));
+     * 
+     * AdminProductDetailDto created = adminProductService.createProduct(request);
+     * </pre>
+     */
     @Transactional
+    @CacheEvict(value = "products", allEntries = true)
     public AdminProductDetailDto createProduct(AdminProductRequestDto requestDto) {
         // ✅ VALIDATION: Business rules
         productValidationUtil.validateSlugUniqueness(requestDto.getSlug(), null);
@@ -56,26 +149,26 @@ public class AdminProductService {
         productValidationUtil.validateVariantPrices(requestDto.getVariants());
         
         // 1️⃣ Lấy Brand
-        Brand brand = brandRepository.findById(requestDto.getBrandId())
+        Brand brand = brandRepository.findById(Objects.requireNonNull(requestDto.getBrandId()))
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
 
         // 2️⃣ Lấy Categories
         Set<Category> categories = requestDto.getCategoryIds().stream()
-                .map(id -> categoryRepository.findById(id)
+                .map(id -> categoryRepository.findById(Objects.requireNonNull(id))
                         .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Danh mục không tồn tại: " + id)))
                 .collect(Collectors.toSet());
 
         // 3️⃣ Lấy Material (nếu có)
         Material material = null;
         if (requestDto.getMaterialId() != null) {
-            material = materialRepository.findById(requestDto.getMaterialId())
+            material = materialRepository.findById(Objects.requireNonNull(requestDto.getMaterialId()))
                     .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Chất liệu không tồn tại"));
         }
 
         // 4️⃣ Lấy Shoe Sole (nếu có)
         ShoeSole shoeSole = null;
         if (requestDto.getShoeSoleId() != null) {
-            shoeSole = shoeSoleRepository.findById(requestDto.getShoeSoleId())
+            shoeSole = shoeSoleRepository.findById(Objects.requireNonNull(requestDto.getShoeSoleId()))
                     .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Loại đế giày không tồn tại"));
         }
 
@@ -110,12 +203,49 @@ public class AdminProductService {
 
 
     /**
-     * API 2: Cập nhật sản phẩm
+     * Cập nhật thông tin sản phẩm
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Tìm sản phẩm theo ID</li>
+     *   <li>Validate các business rules (slug unique, tên sản phẩm unique, SKU unique, giá hợp lệ)</li>
+     *   <li>Lấy thương hiệu (Brand) và các danh mục (Categories) mới từ database</li>
+     *   <li>Cập nhật thông tin sản phẩm (tên, slug, mô tả, brand, categories, v.v.)</li>
+     *   <li>Cập nhật các biến thể (variants) - thêm mới, cập nhật, hoặc xóa</li>
+     *   <li>Lưu vào database</li>
+     *   <li>Xóa cache của sản phẩm này</li>
+     * </ol>
+     * 
+     * <p><b>Về cập nhật variants:</b>
+     * <ul>
+     *   <li>Nếu variant có ID: Cập nhật variant hiện có</li>
+     *   <li>Nếu variant không có ID: Tạo variant mới</li>
+     *   <li>Nếu variant hiện có không có trong danh sách mới: Xóa variant đó</li>
+     * </ul>
+     * 
+     * <p><b>Lưu ý:</b> Sau khi cập nhật thành công, cache của sản phẩm này sẽ bị xóa
+     * để đảm bảo dữ liệu mới nhất.
+     * 
+     * @param productId ID của sản phẩm cần cập nhật
+     * @param requestDto DTO chứa thông tin mới của sản phẩm (tương tự như createProduct)
+     * @return AdminProductDetailDto của sản phẩm sau khi cập nhật
+     * @throws ApiException nếu không tìm thấy sản phẩm hoặc validation thất bại
+     * 
+     * @example
+     * <pre>
+     * AdminProductRequestDto updateData = new AdminProductRequestDto();
+     * updateData.setName("Nike Air Max 90 Updated");
+     * updateData.setPrice(new BigDecimal("2600000")); // Cập nhật giá
+     * // ... các thông tin khác
+     * 
+     * AdminProductDetailDto updated = adminProductService.updateProduct(1L, updateData);
+     * </pre>
      */
     @Transactional
+    @CacheEvict(value = "products", key = "#productId")
     public AdminProductDetailDto updateProduct(Long productId, AdminProductRequestDto requestDto) {
         // 1️⃣ Tìm Product
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findById(Objects.requireNonNull(productId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
 
         // ✅ VALIDATION: Business rules
@@ -125,26 +255,26 @@ public class AdminProductService {
         productValidationUtil.validateVariantPrices(requestDto.getVariants());
 
         // 2️⃣ Lấy Brand
-        Brand brand = brandRepository.findById(requestDto.getBrandId())
+        Brand brand = brandRepository.findById(Objects.requireNonNull(requestDto.getBrandId()))
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
 
         // 3️⃣ Lấy Categories
         Set<Category> categories = requestDto.getCategoryIds().stream()
-                .map(id -> categoryRepository.findById(id)
+                .map(id -> categoryRepository.findById(Objects.requireNonNull(id))
                         .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Danh mục không tồn tại: " + id)))
                 .collect(Collectors.toSet());
 
         // 4️⃣ Lấy Material (nếu có)
         Material material = null;
         if (requestDto.getMaterialId() != null) {
-            material = materialRepository.findById(requestDto.getMaterialId())
+            material = materialRepository.findById(Objects.requireNonNull(requestDto.getMaterialId()))
                     .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Chất liệu không tồn tại"));
         }
 
         // 5️⃣ Lấy Shoe Sole (nếu có)
         ShoeSole shoeSole = null;
         if (requestDto.getShoeSoleId() != null) {
-            shoeSole = shoeSoleRepository.findById(requestDto.getShoeSoleId())
+            shoeSole = shoeSoleRepository.findById(Objects.requireNonNull(requestDto.getShoeSoleId()))
                     .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Loại đế giày không tồn tại"));
         }
 
@@ -170,9 +300,36 @@ public class AdminProductService {
 
 
     /**
-     * API 3: Lấy 1 sản phẩm (cho trang Edit)
+     * Lấy thông tin chi tiết sản phẩm theo ID (cho trang Edit)
+     * 
+     * <p>Phương thức này sử dụng cache để tối ưu hiệu năng:
+     * <ul>
+     *   <li>Lần đầu tiên: Lấy từ database và lưu vào cache</li>
+     *   <li>Lần sau: Lấy trực tiếp từ cache (nhanh hơn)</li>
+     *   <li>Cache key: ID của sản phẩm (ví dụ: "products::1")</li>
+     * </ul>
+     * 
+     * <p><b>Về dữ liệu trả về:</b>
+     * <ul>
+     *   <li>Bao gồm tất cả thông tin sản phẩm: tên, mô tả, brand, categories, variants</li>
+     *   <li>Bao gồm tất cả biến thể (variants) với đầy đủ thông tin: SKU, size, màu, giá, số lượng</li>
+     *   <li>Sử dụng query tối ưu (findByIdWithDetails) để load tất cả dữ liệu trong 1 lần</li>
+     * </ul>
+     * 
+     * @param productId ID của sản phẩm cần lấy
+     * @return AdminProductDetailDto chứa thông tin chi tiết sản phẩm (bao gồm tất cả variants)
+     * @throws ApiException nếu không tìm thấy sản phẩm với ID này
+     * 
+     * @example
+     * <pre>
+     * // Lấy sản phẩm có ID = 1
+     * AdminProductDetailDto product = adminProductService.getProductByIdForAdmin(1L);
+     * System.out.println(product.getName()); // "Nike Air Max 90"
+     * System.out.println(product.getVariants().size()); // Số lượng biến thể
+     * </pre>
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#productId")
     public AdminProductDetailDto getProductByIdForAdmin(Long productId) {
         Product product = productRepository.findByIdWithDetails(productId) // Dùng query tối ưu
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
@@ -180,18 +337,50 @@ public class AdminProductService {
     }
 
     /**
-     * API 4: Lấy danh sách (phân trang)
+     * Lấy danh sách sản phẩm với phân trang (cho Admin)
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Lấy danh sách sản phẩm từ database với phân trang</li>
+     *   <li>Bao gồm thông tin Brand và Categories (sử dụng query tối ưu)</li>
+     *   <li>Loại trừ các sản phẩm đã bị xóa mềm (soft-deleted)</li>
+     *   <li>Chuyển đổi sang DTO để trả về</li>
+     * </ol>
+     * 
+     * <p><b>Về phân trang:</b>
+     * <ul>
+     *   <li>Sử dụng Spring Data Pageable để phân trang</li>
+     *   <li>Mặc định: page = 0, size = 20 (có thể tùy chỉnh)</li>
+     *   <li>Trả về Page chứa: danh sách sản phẩm, tổng số trang, tổng số phần tử</li>
+     * </ul>
+     * 
+     * <p><b>Về dữ liệu trả về:</b>
+     * <ul>
+     *   <li>Mỗi sản phẩm bao gồm: ID, tên, slug, brand, categories, giá thấp nhất, giá cao nhất</li>
+     *   <li>Không bao gồm chi tiết variants (chỉ dùng cho danh sách)</li>
+     * </ul>
+     * 
+     * @param pageable Thông tin phân trang (page, size, sort)
+     * @return Page chứa danh sách AdminProductListDto
+     * 
+     * @example
+     * <pre>
+     * // Lấy trang đầu tiên, mỗi trang 20 sản phẩm
+     * Pageable pageable = PageRequest.of(0, 20);
+     * Page&lt;AdminProductListDto&gt; products = adminProductService.getAllProductsForAdmin(pageable);
+     * 
+     * System.out.println("Tổng số sản phẩm: " + products.getTotalElements());
+     * System.out.println("Tổng số trang: " + products.getTotalPages());
+     * products.getContent().forEach(p -&gt; System.out.println(p.getName()));
+     * </pre>
      */
-    /**
- * API 4: Lấy danh sách sản phẩm (Admin, có Brand + Categories)
- */
-@Transactional(readOnly = true)
-public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
     // Use the optimized query that already excludes soft-deleted products
-    Page<Product> page = productRepository.findAllWithDetails(pageable);
+    Page<Product> page = productRepository.findAllWithDetails(Objects.requireNonNull(pageable));
 
     if (page.isEmpty()) {
-        return Page.empty(pageable);
+        return Page.empty(Objects.requireNonNull(pageable));
     }
 
     // Convert to DTO
@@ -199,7 +388,7 @@ public Page<AdminProductListDto> getAllProductsForAdmin(Pageable pageable) {
             .map(this::convertToListDto)
             .toList();
 
-    return new PageImpl<>(dtoList, pageable, page.getTotalElements());
+    return new PageImpl<>(Objects.requireNonNull(dtoList), Objects.requireNonNull(pageable), page.getTotalElements());
 }
 
     
@@ -258,6 +447,7 @@ private AdminProductListDto convertToListDto(Product product) {
      * <p><b>Cảnh báo:</b> Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
      */
     @Transactional
+    @CacheEvict(value = "products", key = "#productId")
     public void deleteProduct(Long productId) {
         // Load product với variants để tránh LazyInitializationException
         Product product = productRepository.findByIdWithDetails(productId)
@@ -383,7 +573,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 .collect(Collectors.toList());
         for (ProductVariant v : toRemove) {
             product.getVariants().remove(v);
-            variantRepository.delete(v);
+            variantRepository.delete(Objects.requireNonNull(v));
         }
 
         // 2️⃣ Cập nhật hoặc thêm mới các biến thể
@@ -599,7 +789,7 @@ private AdminProductListDto convertToListDto(Product product) {
 
         for (Long productId : request.getProductIds()) {
             try {
-                Product product = productRepository.findById(productId)
+                Product product = productRepository.findById(Objects.requireNonNull(productId))
                         .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm ID: " + productId));
 
                 switch (request.getAction()) {
@@ -608,13 +798,13 @@ private AdminProductListDto convertToListDto(Product product) {
                         break;
                         
                     case "UPDATE_BRAND":
-                        Brand brand = brandRepository.findById(request.getBrandId())
+                        Brand brand = brandRepository.findById(Objects.requireNonNull(request.getBrandId()))
                                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Thương hiệu không tồn tại"));
                         product.setBrand(brand);
                         break;
                         
                     case "ADD_CATEGORY":
-                        Category categoryToAdd = categoryRepository.findById(request.getCategoryId())
+                        Category categoryToAdd = categoryRepository.findById(Objects.requireNonNull(request.getCategoryId()))
                                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Danh mục không tồn tại"));
                         product.getCategories().add(categoryToAdd);
                         break;
@@ -690,7 +880,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 .map(this::convertToListDto)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(dtos, pageable, total);
+        return new PageImpl<>(Objects.requireNonNull(dtos), pageable, total);
     }
 
     /**

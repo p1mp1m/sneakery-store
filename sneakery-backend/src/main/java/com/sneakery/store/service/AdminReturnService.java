@@ -1,7 +1,5 @@
 package com.sneakery.store.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sneakery.store.dto.AdminReturnDto;
 import com.sneakery.store.dto.AdminReturnListDto;
 import com.sneakery.store.entity.ReturnRequest;
@@ -9,6 +7,7 @@ import com.sneakery.store.entity.User;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.ReturnRequestRepository;
 import com.sneakery.store.repository.UserRepository;
+import com.sneakery.store.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,8 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Service: AdminReturnService
@@ -32,7 +31,6 @@ public class AdminReturnService {
 
     private final ReturnRequestRepository returnRequestRepository;
     private final UserRepository userRepository;
-    private final ObjectMapper objectMapper;
 
     /**
      * Lấy tất cả return requests với pagination và filter
@@ -57,7 +55,7 @@ public class AdminReturnService {
     public AdminReturnDto getReturnById(Long id) {
         log.info("📄 Fetching return detail - ID: {}", id);
 
-        ReturnRequest returnRequest = returnRequestRepository.findById(id)
+        ReturnRequest returnRequest = returnRequestRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
 
         return convertToDto(returnRequest);
@@ -70,10 +68,10 @@ public class AdminReturnService {
     public AdminReturnDto updateReturnStatus(Long id, String status, Long adminId, String adminNote) {
         log.info("✅ Updating return status - ID: {}, status: {}, by admin: {}", id, status, adminId);
 
-        ReturnRequest returnRequest = returnRequestRepository.findById(id)
+        ReturnRequest returnRequest = returnRequestRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
 
-        User admin = userRepository.findById(adminId)
+        User admin = userRepository.findById(Objects.requireNonNull(adminId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
 
         returnRequest.setStatus(status);
@@ -97,14 +95,14 @@ public class AdminReturnService {
     public AdminReturnDto processRefund(Long id, Long adminId) {
         log.info("💰 Processing refund - ID: {}, by admin: {}", id, adminId);
 
-        ReturnRequest returnRequest = returnRequestRepository.findById(id)
+        ReturnRequest returnRequest = returnRequestRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
 
         if (!"approved".equals(returnRequest.getStatus())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Yêu cầu chưa được duyệt");
         }
 
-        User admin = userRepository.findById(adminId)
+        User admin = userRepository.findById(Objects.requireNonNull(adminId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
 
         // Update status to completed
@@ -195,16 +193,7 @@ public class AdminReturnService {
     }
 
     private List<String> parseJsonImages(String imagesJson) {
-        if (imagesJson == null || imagesJson.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        try {
-            return objectMapper.readValue(imagesJson, new TypeReference<List<String>>() {});
-        } catch (Exception e) {
-            log.warn("Failed to parse images JSON: {}", imagesJson, e);
-            return Collections.emptyList();
-        }
+        return JsonUtil.parseJsonToStringList(imagesJson);
     }
 }
 

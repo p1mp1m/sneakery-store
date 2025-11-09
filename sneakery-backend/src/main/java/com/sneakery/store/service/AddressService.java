@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +48,7 @@ public class AddressService {
      */
     @Transactional
     public AddressDto createAddress(AddressDto addressDto, Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
         
         Address address = convertToEntity(addressDto);
@@ -88,7 +89,7 @@ public class AddressService {
         Address address = addressRepository.findByIdAndUserId(addressId, userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ"));
         
-        addressRepository.delete(address);
+        addressRepository.delete(Objects.requireNonNull(address));
     }
 
     // =================================================================

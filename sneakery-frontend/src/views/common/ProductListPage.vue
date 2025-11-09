@@ -28,7 +28,11 @@
               </label>
             </div>
 
-            <button @click="clearFilters" class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium">
+            <button 
+              @click="clearFilters" 
+              class="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              aria-label="Xóa tất cả bộ lọc"
+            >
               Xóa bộ lọc
             </button>
           </div>
@@ -41,7 +45,12 @@
             <div class="text-sm text-gray-600 dark:text-gray-400">
               Tìm thấy <span class="font-semibold text-gray-900 dark:text-gray-100">{{ totalItems }}</span> sản phẩm
             </div>
-            <select v-model="sortBy" @change="fetchProducts" class="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <select 
+              v-model="sortBy" 
+              @change="fetchProducts" 
+              class="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              aria-label="Sắp xếp sản phẩm"
+            >
               <option value="">Sắp xếp</option>
               <option value="price-asc">Giá: Thấp → Cao</option>
               <option value="price-desc">Giá: Cao → Thấp</option>
@@ -52,9 +61,10 @@
           </div>
 
           <!-- Loading State -->
-          <div v-if="loading" class="text-center py-16">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mb-4"></div>
+          <div v-if="loading" class="text-center py-16" role="status" aria-live="polite">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mb-4" aria-hidden="true"></div>
             <p class="text-gray-600 dark:text-gray-400">Đang tải sản phẩm...</p>
+            <span class="sr-only">Đang tải danh sách sản phẩm</span>
           </div>
 
           <!-- Error State -->
@@ -65,7 +75,11 @@
               <path d="M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
             <p class="text-gray-900 dark:text-gray-100 mb-4">{{ error }}</p>
-            <button @click="fetchProducts" class="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors">
+            <button 
+              @click="fetchProducts" 
+              class="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              aria-label="Thử tải lại danh sách sản phẩm"
+            >
               Thử lại
             </button>
           </div>
@@ -86,7 +100,11 @@
             </svg>
             <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Không tìm thấy sản phẩm</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-6">Hãy thử điều chỉnh bộ lọc hoặc mua sắm sau</p>
-            <button @click="clearFilters" class="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors">
+            <button 
+              @click="clearFilters" 
+              class="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              aria-label="Xóa tất cả bộ lọc"
+            >
               Xóa bộ lọc
             </button>
           </div>
@@ -96,19 +114,21 @@
             <button 
               @click="prevPage" 
               :disabled="currentPage === 0"
-              class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              aria-label="Trang trước"
             >
               Trước
             </button>
             
-            <span class="text-sm text-gray-600 dark:text-gray-400">
+            <span class="text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
               Trang {{ currentPage + 1 }} / {{ totalPages }}
             </span>
             
             <button 
               @click="nextPage" 
               :disabled="currentPage >= totalPages - 1"
-              class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              aria-label="Trang sau"
             >
               Sau
             </button>
@@ -159,10 +179,7 @@ const fetchProducts = async () => {
     loading.value = true
     error.value = null
     
-    console.log('🔄 Fetching products...')
     const response = await productService.getProducts(0, 50)
-    console.log('✅ Response received:', response)
-    console.log('📦 Response data:', response.data)
     
     // Handle Spring Data Page structure
     let productData = []
@@ -181,30 +198,16 @@ const fetchProducts = async () => {
       }
       // If response.data is a single object (shouldn't happen but handle it)
       else {
-        console.warn('⚠️ Unexpected response format:', response.data)
         productData = []
         totalElements = 0
       }
     }
     
-    console.log('📋 Processed products:', productData.length)
     products.value = productData
     totalItems.value = totalElements
     totalPages.value = Math.ceil(totalElements / pageSize.value)
     
-    if (productData.length === 0) {
-      console.warn('⚠️ No products found')
-    }
-    
   } catch (err) {
-    console.error('❌ Error fetching products:', err)
-    console.error('❌ Error details:', {
-      message: err.message,
-      response: err.response?.data,
-      status: err.response?.status,
-      statusText: err.response?.statusText
-    })
-    
     // Better error message
     if (err.response?.status === 404) {
       error.value = 'Không tìm thấy sản phẩm nào.'

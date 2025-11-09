@@ -135,7 +135,13 @@ const getImageUrl = (url) => {
   
   // Nếu là relative URL (bắt đầu bằng /), prefix với backend URL
   if (url.startsWith('/')) {
-    return `http://localhost:8080${url}`;
+    // In development, Vite proxy handles /api requests
+    // In production, use environment variable or default
+    const API_BASE_URL = import.meta.env.DEV 
+      ? '' // Development: use proxy
+      : (import.meta.env.VITE_API_URL || 'http://localhost:8080');
+    
+    return API_BASE_URL ? `${API_BASE_URL}${url}` : url;
   }
   
   return url;

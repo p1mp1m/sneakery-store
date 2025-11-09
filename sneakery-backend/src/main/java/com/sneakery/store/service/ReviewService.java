@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,11 +35,11 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public List<ReviewResponseDto> getReviewsForProduct(Long productId) {
         // Kiểm tra sản phẩm có tồn tại không
-        if (!productRepository.existsById(productId)) {
+        if (!productRepository.existsById(Objects.requireNonNull(productId))) {
             throw new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
         }
         
-        List<Review> reviews = reviewRepository.findByProductIdAndIsApprovedTrue(productId);
+        List<Review> reviews = reviewRepository.findByProductIdAndIsApprovedTrue(Objects.requireNonNull(productId));
         return reviews.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -51,9 +52,9 @@ public class ReviewService {
     public ReviewResponseDto createReview(Long productId, Long userId, ReviewRequestDto requestDto) {
         
         // 1. Kiểm tra sản phẩm và user
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findById(Objects.requireNonNull(productId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
 
         // 2. Kiểm tra xem user đã review sản phẩm này chưa

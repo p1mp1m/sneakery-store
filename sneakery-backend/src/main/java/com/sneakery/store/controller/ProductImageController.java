@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.ProductImageDto;
 import com.sneakery.store.service.ProductImageService;
+import com.sneakery.store.util.FileValidationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,9 @@ public class ProductImageController {
                                                               @RequestParam("file") MultipartFile file,
                                                               @RequestParam(value = "isPrimary", defaultValue = "false") boolean isPrimary,
                                                               @RequestParam(value = "displayOrder", required = false) Integer displayOrder) {
+        // Validate file before processing
+        FileValidationUtil.validateImageFile(file);
+        
         ProductImageDto dto = productImageService.uploadImageFile(productId, file, isPrimary, displayOrder);
         return ResponseEntity.ok(dto);
     }

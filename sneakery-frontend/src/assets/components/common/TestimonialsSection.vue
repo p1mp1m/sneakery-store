@@ -90,6 +90,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import axios from 'axios';
 
 const testimonials = ref([]);
@@ -103,7 +105,7 @@ const formatDate = (dateString) => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get('http://localhost:8080/api/admin/reviews', {
+    const response = await axios.get(API_ENDPOINTS.ADMIN_PRODUCTS.REVIEWS, {
       params: {
         page: 0,
         size: 6,
@@ -126,7 +128,7 @@ onMounted(async () => {
       }));
     }
   } catch (error) {
-    console.error('Error loading testimonials:', error);
+    logger.error('Error loading testimonials:', error);
     // Fallback data for demo
     testimonials.value = [
       {

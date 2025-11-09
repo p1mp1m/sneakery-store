@@ -418,6 +418,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
 import toastService from '@/utils/toastService';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import axios from 'axios';
 
 const route = useRoute();
@@ -471,7 +473,7 @@ const fetchProduct = async () => {
     error.value = '';
     
     const response = await axios.get(
-      `http://localhost:8080/api/admin/products/${route.params.id}`
+      API_ENDPOINTS.ADMIN_PRODUCTS.BY_ID(route.params.id)
     );
     
     product.value = response.data;
@@ -502,7 +504,7 @@ const fetchProduct = async () => {
       { id: 104, name: 'Product 4', price: product.value.price * 0.8 },
     ];
   } catch (err) {
-    console.error('Error fetching product:', err);
+    logger.error('Error fetching product:', err);
     error.value = err.response?.data?.message || 'Không thể tải thông tin sản phẩm';
   } finally {
     loading.value = false;
@@ -614,7 +616,7 @@ const addToCart = async () => {
 
   try {
     await axios.post(
-      'http://localhost:8080/api/cart/item',
+      API_ENDPOINTS.CART.ITEM,
       {
         variantId: selectedVariant.value.id,
         quantity: quantity.value,
@@ -627,8 +629,9 @@ const addToCart = async () => {
     );
 
     toastService.success('Thành công',`Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
+    logger.log('Product added to cart:', selectedVariant.value.id);
   } catch (err) {
-    console.error('Error adding to cart:', err);
+    logger.error('Error adding to cart:', err);
     toastService.error('Lỗi',err.response?.data?.message || 'Không thể thêm vào giỏ hàng');
   }
 };

@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.entity.Notification;
 import com.sneakery.store.entity.User;
+import com.sneakery.store.exception.AuthenticationException;
 import com.sneakery.store.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,7 @@ public class NotificationController {
         if (principal instanceof User) {
             return ((User) principal).getId();
         }
-        throw new RuntimeException("Không thể lấy userId từ authentication");
+        throw new AuthenticationException("Không thể lấy userId từ authentication");
     }
 
     /**

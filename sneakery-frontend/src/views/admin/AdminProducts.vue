@@ -1727,7 +1727,7 @@ const openEditModal = async (product) => {
       id: img.id,
       previewUrl: img.imageUrl.startsWith("http") || img.imageUrl.startsWith("blob:")
         ? img.imageUrl
-        : `http://localhost:8080${img.imageUrl}`, // Backend serve static files từ port 8080
+        : (img.imageUrl?.startsWith('http') ? img.imageUrl : `${import.meta.env.VITE_API_URL || ''}${img.imageUrl}`), // Backend serve static files
       isPrimary: !!img.isPrimary,
       displayOrder: img.displayOrder ?? 0, // 🆕 giữ nguyên thứ tự từ BE
       file: null,

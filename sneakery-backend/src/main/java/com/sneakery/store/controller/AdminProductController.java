@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ import java.util.List;
  * @author Sneakery Store Team
  * @since 1.0
  */
+@Tag(name = "Admin - Products", description = "API quản lý sản phẩm cho Admin")
 @RestController
 @RequestMapping("/api/admin/products")
 @RequiredArgsConstructor
@@ -43,12 +45,50 @@ public class AdminProductController {
     /**
      * Tạo sản phẩm mới
      * 
-     * @param requestDto DTO chứa thông tin sản phẩm cần tạo
-     *                    (bao gồm brand, categories, variants, etc.)
-     * @return ResponseEntity chứa AdminProductDetailDto của sản phẩm vừa tạo
-     * @throws ApiException nếu validation fails hoặc data không hợp lệ
-     * @see AdminProductRequestDto
-     * @see AdminProductDetailDto
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Validate dữ liệu đầu vào (tên, slug, brand, categories, variants)</li>
+     *   <li>Validate các business rules (slug unique, tên sản phẩm unique, SKU unique, giá hợp lệ)</li>
+     *   <li>Gọi service để tạo sản phẩm mới với các biến thể</li>
+     *   <li>Xóa cache của sản phẩm</li>
+     *   <li>Trả về sản phẩm vừa tạo</li>
+     * </ol>
+     * 
+     * <p><b>Về variants:</b>
+     * <ul>
+     *   <li>Mỗi sản phẩm phải có ít nhất 1 biến thể (variant)</li>
+     *   <li>Mỗi variant phải có: SKU (unique), size, màu sắc, giá, số lượng tồn kho</li>
+     *   <li>SKU phải unique trong toàn bộ hệ thống</li>
+     * </ul>
+     * 
+     * @param requestDto DTO chứa thông tin sản phẩm cần tạo:
+     *                   - name: Tên sản phẩm (bắt buộc)
+     *                   - slug: Slug của sản phẩm (bắt buộc, phải unique)
+     *                   - brandId: ID thương hiệu (bắt buộc)
+     *                   - categoryIds: Danh sách ID danh mục (bắt buộc, ít nhất 1)
+     *                   - variants: Danh sách biến thể (bắt buộc, ít nhất 1)
+     * @return ResponseEntity chứa AdminProductDetailDto của sản phẩm vừa tạo (HTTP 201 Created)
+     * @throws ApiException nếu validation thất bại hoặc dữ liệu không hợp lệ
+     * 
+     * @example
+     * <pre>
+     * AdminProductRequestDto request = new AdminProductRequestDto();
+     * request.setName("Nike Air Max 90");
+     * request.setSlug("nike-air-max-90");
+     * request.setBrandId(1);
+     * request.setCategoryIds(Arrays.asList(1, 2));
+     * 
+     * // Thêm biến thể
+     * ProductVariantRequestDto variant = new ProductVariantRequestDto();
+     * variant.setSku("NIKE-AM90-40-RED");
+     * variant.setSize(40);
+     * variant.setColor("Đỏ");
+     * variant.setPrice(new BigDecimal("2500000"));
+     * variant.setStockQuantity(100);
+     * request.setVariants(Arrays.asList(variant));
+     * 
+     * ResponseEntity&lt;AdminProductDetailDto&gt; response = adminProductController.createProduct(request);
+     * </pre>
      */
     @PostMapping
     public ResponseEntity<AdminProductDetailDto> createProduct(
@@ -59,31 +99,58 @@ public class AdminProductController {
     }
 
     /**
-     * Lấy danh sách sản phẩm với phân trang và advanced filtering
+     * Lấy danh sách sản phẩm với phân trang và lọc nâng cao
      * 
-     * <p>Hỗ trợ các filter options:
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Xây dựng filter DTO từ các tham số query</li>
+     *   <li>Gọi service để lấy danh sách sản phẩm với filter và phân trang</li>
+     *   <li>Trả về danh sách sản phẩm đã được lọc và phân trang</li>
+     * </ol>
+     * 
+     * <p><b>Hỗ trợ các filter options:</b>
      * <ul>
-     *   <li>Search: Tìm kiếm theo tên hoặc slug</li>
-     *   <li>Brand: Lọc theo thương hiệu</li>
-     *   <li>Category: Lọc theo danh mục</li>
-     *   <li>Status: active/inactive</li>
-     *   <li>Price range: minPrice - maxPrice</li>
-     *   <li>Stock level: in_stock, low_stock, out_of_stock</li>
-     *   <li>Sorting: sortBy và sortDirection</li>
+     *   <li>Search: Tìm kiếm theo tên hoặc slug (không phân biệt hoa thường)</li>
+     *   <li>Brand: Lọc theo thương hiệu (brandId)</li>
+     *   <li>Category: Lọc theo danh mục (categoryId)</li>
+     *   <li>Status: Lọc theo trạng thái ("active" hoặc "inactive")</li>
+     *   <li>Price range: Lọc theo khoảng giá (minPrice - maxPrice, đơn vị: VNĐ)</li>
+     *   <li>Stock level: Lọc theo mức tồn kho ("in_stock", "low_stock", "out_of_stock")</li>
+     *   <li>Sorting: Sắp xếp theo cột (sortBy: "name", "price", "stock") và hướng (sortDirection: "asc", "desc")</li>
      * </ul>
      * 
-     * @param page Số trang (bắt đầu từ 0, default: 0)
-     * @param size Số items mỗi trang (default: 10)
-     * @param search Từ khóa tìm kiếm (tên hoặc slug)
-     * @param brandId ID thương hiệu để lọc
-     * @param status Trạng thái: "active" hoặc "inactive"
-     * @param categoryId ID danh mục để lọc
-     * @param minPrice Giá tối thiểu (VNĐ)
-     * @param maxPrice Giá tối đa (VNĐ)
-     * @param stockLevel Mức tồn kho: "in_stock", "low_stock", "out_of_stock"
-     * @param sortBy Cột để sort: "name", "price", "stock"
-     * @param sortDirection Hướng sort: "asc" hoặc "desc"
-     * @return ResponseEntity chứa Page<AdminProductListDto>
+     * <p><b>Về phân trang:</b>
+     * <ul>
+     *   <li>Mặc định: page = 0, size = 10</li>
+     *   <li>Trả về Page chứa: danh sách sản phẩm, tổng số trang, tổng số phần tử</li>
+     * </ul>
+     * 
+     * @param page Số trang (bắt đầu từ 0, mặc định: 0)
+     * @param size Số items mỗi trang (mặc định: 10)
+     * @param search Từ khóa tìm kiếm (tên hoặc slug, tùy chọn)
+     * @param brandId ID thương hiệu để lọc (tùy chọn)
+     * @param status Trạng thái: "active" hoặc "inactive" (tùy chọn)
+     * @param categoryId ID danh mục để lọc (tùy chọn)
+     * @param minPrice Giá tối thiểu (VNĐ, tùy chọn)
+     * @param maxPrice Giá tối đa (VNĐ, tùy chọn)
+     * @param stockLevel Mức tồn kho: "in_stock", "low_stock", "out_of_stock" (tùy chọn)
+     * @param sortBy Cột để sort: "name", "price", "stock" (tùy chọn)
+     * @param sortDirection Hướng sort: "asc" hoặc "desc" (tùy chọn)
+     * @return ResponseEntity chứa Page&lt;AdminProductListDto&gt; với danh sách sản phẩm đã lọc (HTTP 200 OK)
+     * 
+     * @example
+     * <pre>
+     * // Lấy trang đầu tiên, mỗi trang 20 sản phẩm, lọc theo brand Nike
+     * ResponseEntity&lt;Page&lt;AdminProductListDto&gt;&gt; response = adminProductController.getAllProducts(
+     *     0, 20, null, 1, null, null, null, null, null, null, null
+     * );
+     * Page&lt;AdminProductListDto&gt; products = response.getBody();
+     * 
+     * // Tìm kiếm sản phẩm có tên chứa "Nike"
+     * ResponseEntity&lt;Page&lt;AdminProductListDto&gt;&gt; response2 = adminProductController.getAllProducts(
+     *     0, 10, "Nike", null, null, null, null, null, null, null, null
+     * );
+     * </pre>
      */
     @GetMapping
     public ResponseEntity<Page<AdminProductListDto>> getAllProducts(
@@ -119,18 +186,34 @@ public class AdminProductController {
     }
 
     /**
-     * Lấy chi tiết 1 sản phẩm (dùng cho trang Edit)
+     * Lấy thông tin chi tiết sản phẩm theo ID (dùng cho trang Edit)
      * 
-     * <p>Trả về đầy đủ thông tin sản phẩm bao gồm:
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Gọi service để lấy sản phẩm theo ID (có cache)</li>
+     *   <li>Trả về thông tin chi tiết đầy đủ của sản phẩm</li>
+     * </ol>
+     * 
+     * <p><b>Về dữ liệu trả về:</b>
      * <ul>
-     *   <li>Thông tin cơ bản (name, slug, description, etc.)</li>
-     *   <li>Brand, Categories, Material, ShoeSole</li>
-     *   <li>Danh sách variants với đầy đủ thông tin</li>
+     *   <li>Thông tin cơ bản: tên, slug, mô tả, trạng thái</li>
+     *   <li>Thông tin liên quan: Brand, Categories, Material, ShoeSole</li>
+     *   <li>Danh sách variants với đầy đủ thông tin: SKU, size, màu, giá, số lượng tồn kho</li>
      * </ul>
      * 
+     * <p><b>Lưu ý:</b> Dữ liệu được cache để tối ưu hiệu năng. Cache key là ID của sản phẩm.
+     * 
      * @param id ID của sản phẩm cần lấy
-     * @return ResponseEntity chứa AdminProductDetailDto
+     * @return ResponseEntity chứa AdminProductDetailDto với thông tin chi tiết sản phẩm (HTTP 200 OK)
      * @throws ApiException với status 404 nếu không tìm thấy sản phẩm
+     * 
+     * @example
+     * <pre>
+     * ResponseEntity&lt;AdminProductDetailDto&gt; response = adminProductController.getProductById(1L);
+     * AdminProductDetailDto product = response.getBody();
+     * System.out.println(product.getName()); // "Nike Air Max 90"
+     * System.out.println(product.getVariants().size()); // Số lượng biến thể
+     * </pre>
      */
     @GetMapping("/{id}")
     public ResponseEntity<AdminProductDetailDto> getProductById(@PathVariable Long id) {
@@ -141,25 +224,46 @@ public class AdminProductController {
     /**
      * Cập nhật thông tin sản phẩm
      * 
-     * <p>Có thể cập nhật:
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Tìm sản phẩm theo ID</li>
+     *   <li>Validate dữ liệu đầu vào và các business rules</li>
+     *   <li>Gọi service để cập nhật sản phẩm</li>
+     *   <li>Cập nhật variants (thêm mới, cập nhật, hoặc xóa)</li>
+     *   <li>Xóa cache của sản phẩm này</li>
+     *   <li>Trả về sản phẩm sau khi cập nhật</li>
+     * </ol>
+     * 
+     * <p><b>Có thể cập nhật:</b>
      * <ul>
-     *   <li>Thông tin cơ bản (name, slug, description)</li>
-     *   <li>Brand, Categories, Material, ShoeSole</li>
-     *   <li>Variants (thêm, sửa, xóa)</li>
-     *   <li>Trạng thái active/inactive</li>
+     *   <li>Thông tin cơ bản: tên, slug, mô tả, trạng thái</li>
+     *   <li>Thông tin liên quan: Brand, Categories, Material, ShoeSole</li>
+     *   <li>Variants: thêm mới (không có ID), cập nhật (có ID), xóa (không có trong danh sách mới)</li>
      * </ul>
      * 
-     * <p><b>Lưu ý:</b> Validation sẽ kiểm tra:
+     * <p><b>Về validation:</b>
      * <ul>
-     *   <li>Slug uniqueness</li>
-     *   <li>SKU uniqueness trong variants</li>
-     *   <li>Price logic (priceSale <= priceBase)</li>
+     *   <li>Slug phải unique (trừ chính sản phẩm này)</li>
+     *   <li>SKU phải unique trong toàn bộ variants</li>
+     *   <li>Giá sale phải <= giá gốc (priceSale <= priceBase)</li>
+     *   <li>Tên sản phẩm phải unique trong cùng brand (trừ chính sản phẩm này)</li>
      * </ul>
      * 
      * @param id ID của sản phẩm cần cập nhật
-     * @param requestDto DTO chứa thông tin mới
-     * @return ResponseEntity chứa AdminProductDetailDto đã cập nhật
-     * @throws ApiException nếu không tìm thấy sản phẩm hoặc validation fails
+     * @param requestDto DTO chứa thông tin mới của sản phẩm (tương tự như createProduct)
+     * @return ResponseEntity chứa AdminProductDetailDto của sản phẩm sau khi cập nhật (HTTP 200 OK)
+     * @throws ApiException nếu không tìm thấy sản phẩm hoặc validation thất bại
+     * 
+     * @example
+     * <pre>
+     * AdminProductRequestDto updateData = new AdminProductRequestDto();
+     * updateData.setName("Nike Air Max 90 Updated");
+     * updateData.setPrice(new BigDecimal("2600000"));
+     * // ... các thông tin khác
+     * 
+     * ResponseEntity&lt;AdminProductDetailDto&gt; response = adminProductController.updateProduct(1L, updateData);
+     * AdminProductDetailDto updated = response.getBody();
+     * </pre>
      */
     @PutMapping("/{id}")
     public ResponseEntity<AdminProductDetailDto> updateProduct(
@@ -173,12 +277,34 @@ public class AdminProductController {
     /**
      * Xóa sản phẩm (soft delete)
      * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Tìm sản phẩm theo ID</li>
+     *   <li>Gọi service để xóa sản phẩm (soft delete - đánh dấu đã xóa, không xóa thật)</li>
+     *   <li>Xóa cache của sản phẩm</li>
+     *   <li>Trả về thông báo thành công</li>
+     * </ol>
+     * 
      * <p><b>Cảnh báo:</b> Hành động này sẽ xóa sản phẩm và tất cả variants liên quan.
      * Nếu sản phẩm đã có đơn hàng, cần cân nhắc kỹ.
      * 
+     * <p><b>Về soft delete:</b>
+     * <ul>
+     *   <li>Sản phẩm không bị xóa thật khỏi database</li>
+     *   <li>Chỉ đánh dấu là đã xóa (deleted_at != null)</li>
+     *   <li>Có thể khôi phục lại nếu cần</li>
+     *   <li>Sản phẩm đã xóa sẽ không hiển thị trong danh sách (trừ khi filter riêng)</li>
+     * </ul>
+     * 
      * @param id ID của sản phẩm cần xóa
-     * @return ResponseEntity với message xác nhận
+     * @return ResponseEntity chứa thông báo thành công (HTTP 200 OK)
      * @throws ApiException với status 404 nếu không tìm thấy sản phẩm
+     * 
+     * @example
+     * <pre>
+     * ResponseEntity&lt;String&gt; response = adminProductController.deleteProduct(1L);
+     * String message = response.getBody(); // "Đã xóa sản phẩm thành công"
+     * </pre>
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long id) {

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +60,7 @@ public class SizeChartController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<SizeChartDto> getSizeChartById(@PathVariable Integer id) {
-        SizeChart sizeChart = sizeChartRepository.findById(id)
+        SizeChart sizeChart = sizeChartRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Size chart không tồn tại"));
         
         return ResponseEntity.ok(convertToDto(sizeChart));

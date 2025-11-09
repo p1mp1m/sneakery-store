@@ -1,5 +1,6 @@
 package com.sneakery.store.dto;
 
+import com.sneakery.store.validation.PhoneNumber;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +15,7 @@ public class AddressDto {
     private String recipientName;
 
     @NotBlank(message = "Số điện thoại không được để trống")
+    @PhoneNumber
     private String phone;
 
     @NotBlank(message = "Địa chỉ (dòng 1) không được để trống")

@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -259,7 +260,7 @@ public class AdminOrderService {
         // 2. Lấy User nếu có customerId
         User user = null;
         if (requestDto.getCustomerId() != null) {
-            user = userRepository.findById(requestDto.getCustomerId())
+            user = userRepository.findById(Objects.requireNonNull(requestDto.getCustomerId()))
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
         }
         
@@ -351,7 +352,7 @@ public class AdminOrderService {
         if (requestDto.getDiscountCode() != null && !requestDto.getDiscountCode().trim().isEmpty()) {
             try {
                 CouponDto couponDto = couponService.validateCouponCode(requestDto.getDiscountCode());
-                coupon = couponRepository.findById(couponDto.getId()).orElse(null);
+                coupon = couponRepository.findById(Objects.requireNonNull(couponDto.getId())).orElse(null);
                 
                 if (coupon != null) {
                     // Tính discount amount

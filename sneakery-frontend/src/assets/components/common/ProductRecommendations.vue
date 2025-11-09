@@ -29,6 +29,8 @@
 import { ref, onMounted } from 'vue';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
 import ProductCard from '@/assets/components/products/ProductCard.vue';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import axios from 'axios';
 
 const { recentlyViewed } = useRecentlyViewed();
@@ -44,12 +46,12 @@ const loadRecommendations = async () => {
     const viewedBrands = [...new Set(recentlyViewed.value.map(p => p.brandName))];
     
     // Simple recommendation: lấy trending products
-    const response = await axios.get('http://localhost:8080/api/products', {
+    const response = await axios.get(API_ENDPOINTS.PRODUCTS.BASE, {
       params: { page: 0, size: 8 }
     });
     recommendedProducts.value = response.data.content || [];
   } catch (error) {
-    console.error('Error loading recommendations:', error);
+    logger.error('Error loading recommendations:', error);
     recommendedProducts.value = [];
   }
 };

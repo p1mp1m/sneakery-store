@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.NotificationDto;
 import com.sneakery.store.entity.Notification;
+import com.sneakery.store.exception.NotificationNotFoundException;
 import com.sneakery.store.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Admin Notification Controller
@@ -117,7 +119,7 @@ public class AdminNotificationController {
         
         // Sử dụng method với @EntityGraph để eager load User
         Notification notification = notificationRepository.findByIdWithUser(id)
-                .orElseThrow(() -> new RuntimeException("Notification không tồn tại"));
+                .orElseThrow(() -> new NotificationNotFoundException(id));
         
         return ResponseEntity.ok(mapToDto(notification));
     }
@@ -129,7 +131,7 @@ public class AdminNotificationController {
     public ResponseEntity<Map<String, String>> deleteNotification(@PathVariable Long id) {
         log.info("📍 DELETE /api/admin/notifications/{}", id);
         
-        notificationRepository.deleteById(id);
+        notificationRepository.deleteById(Objects.requireNonNull(id));
         
         Map<String, String> response = new HashMap<>();
         response.put("message", "Đã xóa thông báo thành công");

@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL } from '@/config/api';
+import logger from '@/utils/logger';
 
-const API_BASE_URL = 'http://localhost:8080/api';
 const SESSION_ID_KEY = 'guest_session_id';
 const GUEST_CART_KEY = 'guest_cart';
 
@@ -41,7 +42,7 @@ export async function getGuestCart() {
     
     return response.data;
   } catch (error) {
-    console.error('Error fetching guest cart:', error);
+    logger.error('Error fetching guest cart:', error);
     
     // Fallback: lấy từ localStorage nếu có
     const cachedCart = localStorage.getItem(GUEST_CART_KEY);
@@ -76,7 +77,7 @@ export async function addToGuestCart(variantId, quantity = 1) {
     
     return response.data;
   } catch (error) {
-    console.error('Error adding to guest cart:', error);
+    logger.error('Error adding to guest cart:', error);
     throw error;
   }
 }
@@ -97,7 +98,7 @@ export async function removeFromGuestCart(variantId) {
     
     return response.data;
   } catch (error) {
-    console.error('Error removing from guest cart:', error);
+    logger.error('Error removing from guest cart:', error);
     throw error;
   }
 }
@@ -118,7 +119,7 @@ export async function syncGuestCartWithBackend() {
     const cart = await getGuestCart();
     return cart;
   } catch (error) {
-    console.error('Error syncing guest cart:', error);
+    logger.error('Error syncing guest cart:', error);
     // Trả về cached cart nếu API fail
     return JSON.parse(cachedCart);
   }

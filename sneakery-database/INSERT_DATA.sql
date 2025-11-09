@@ -167,7 +167,7 @@ GO
 -- TIER 3: DEPENDS ON PRODUCTS
 -- =====================================================
 PRINT '';
-PRINT 'TIER 3: Dang them Product_Variants, Product_Images, Coupons, Flash_Sales...';
+PRINT 'TIER 3: Dang them Product_Variants, Coupons, Flash_Sales...';
 
 -- 7. PRODUCT_VARIANTS (40 variants: 2 per product)
 INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, cost_price, stock_quantity, low_stock_threshold, is_active) VALUES
@@ -233,163 +233,8 @@ INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sa
 (20, 'NB-993-GRY-41', '41', N'Xám', 3800000, 3500000, 2500000, 22, 5, 1);
 PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' product variants';
 
--- 8. PRODUCT_IMAGES (20 images: 1 primary per product)
-INSERT INTO Product_Images (product_id, image_url, alt_text, is_primary, display_order) VALUES
-(1, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', N'Nike Air Max 270 - Góc nhìn chính', 1, 1),
-(2, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Nike Air Force 1 - Góc nhìn chính', 1, 1),
-(3, 'https://images.unsplash.com/photo-1600342848615-734266351fc8', N'Nike Dunk Low - Góc nhìn chính', 1, 1),
-(4, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', N'Nike Pegasus 39 - Góc nhìn chính', 1, 1),
-(5, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Adidas Ultraboost 22 - Góc nhìn chính', 1, 1),
-(6, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Adidas Stan Smith - Góc nhìn chính', 1, 1),
-(7, 'https://images.unsplash.com/photo-1592065890607-7a96a9c4ec38', N'Adidas NMD R1 - Góc nhìn chính', 1, 1),
-(8, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Adidas Superstar - Góc nhìn chính', 1, 1),
-(9, 'https://images.unsplash.com/photo-1605446811894-70a14f4c1ce9', N'Air Jordan 1 Retro High - Góc nhìn chính', 1, 1),
-(10, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Air Jordan 4 Retro - Góc nhìn chính', 1, 1),
-(11, 'https://images.unsplash.com/photo-1605446811894-70a14f4c1ce9', N'Air Jordan 3 Retro - Góc nhìn chính', 1, 1),
-(12, 'https://images.unsplash.com/photo-1600047509807-ba8f99d2a3de', N'Converse Chuck Taylor - Góc nhìn chính', 1, 1),
-(13, 'https://images.unsplash.com/photo-1600010034943-0ba43ce25e95', N'Converse Chuck 70 - Góc nhìn chính', 1, 1),
-(14, 'https://images.unsplash.com/photo-1600010034943-0ba43ce25e95', N'Converse One Star - Góc nhìn chính', 1, 1),
-(15, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Vans Old Skool - Góc nhìn chính', 1, 1),
-(16, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca', N'Vans Authentic - Góc nhìn chính', 1, 1),
-(17, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Vans Sk8-Hi - Góc nhìn chính', 1, 1),
-(18, 'https://images.unsplash.com/photo-1572577722808-ba98339ea7bb', N'New Balance 550 - Góc nhìn chính', 1, 1),
-(19, 'https://images.unsplash.com/photo-1572577722808-ba98339ea7bb', N'New Balance 574 - Góc nhìn chính', 1, 1),
-(20, 'https://images.unsplash.com/photo-1608667508764-33cf0726b6b5', N'New Balance 993 - Góc nhìn chính', 1, 1);
-PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' product images';
-
--- 8a. VARIANT_IMAGES (80+ images: 2-3 images per variant)
-INSERT INTO Variant_Images (variant_id, image_url, alt_text, is_primary, display_order) VALUES
--- Product 1: Nike Air Max 270 - Variant 1 (Đen, 40)
-(1, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', N'Nike Air Max 270 Đen Size 40 - Góc nhìn chính', 1, 1),
-(1, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Nike Air Max 270 Đen Size 40 - Góc nhìn bên', 0, 2),
-(1, 'https://images.unsplash.com/photo-1600342848615-734266351fc8', N'Nike Air Max 270 Đen Size 40 - Góc nhìn trên', 0, 3),
--- Product 1: Nike Air Max 270 - Variant 2 (Đen, 41)
-(2, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', N'Nike Air Max 270 Đen Size 41 - Góc nhìn chính', 1, 1),
-(2, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Nike Air Max 270 Đen Size 41 - Góc nhìn bên', 0, 2),
--- Product 2: Nike Air Force 1 - Variant 1 (Đen, 40)
-(3, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Nike Air Force 1 Đen Size 40 - Góc nhìn chính', 1, 1),
-(3, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', N'Nike Air Force 1 Đen Size 40 - Góc nhìn bên', 0, 2),
-(3, 'https://images.unsplash.com/photo-1600342848615-734266351fc8', N'Nike Air Force 1 Đen Size 40 - Góc nhìn sau', 0, 3),
--- Product 2: Nike Air Force 1 - Variant 2 (Trắng, 40)
-(4, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Nike Air Force 1 Trắng Size 40 - Góc nhìn chính', 1, 1),
-(4, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Nike Air Force 1 Trắng Size 40 - Góc nhìn bên', 0, 2),
--- Product 3: Nike Dunk Low - Variant 1 (Đen, 40)
-(5, 'https://images.unsplash.com/photo-1600342848615-734266351fc8', N'Nike Dunk Low Đen Size 40 - Góc nhìn chính', 1, 1),
-(5, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Nike Dunk Low Đen Size 40 - Góc nhìn bên', 0, 2),
--- Product 3: Nike Dunk Low - Variant 2 (Trắng, 40)
-(6, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Nike Dunk Low Trắng Size 40 - Góc nhìn chính', 1, 1),
-(6, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Nike Dunk Low Trắng Size 40 - Góc nhìn bên', 0, 2),
--- Product 4: Nike Pegasus 39 - Variant 1 (Đen, 40)
-(7, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', N'Nike Pegasus 39 Đen Size 40 - Góc nhìn chính', 1, 1),
-(7, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Nike Pegasus 39 Đen Size 40 - Góc nhìn bên', 0, 2),
--- Product 4: Nike Pegasus 39 - Variant 2 (Xanh dương, 40)
-(8, 'https://images.unsplash.com/photo-1592065890607-7a96a9c4ec38', N'Nike Pegasus 39 Xanh dương Size 40 - Góc nhìn chính', 1, 1),
-(8, 'https://images.unsplash.com/photo-1600342848615-734266351fc8', N'Nike Pegasus 39 Xanh dương Size 40 - Góc nhìn bên', 0, 2),
--- Product 5: Adidas Ultraboost 22 - Variant 1 (Đen, 36)
-(9, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Adidas Ultraboost 22 Đen Size 36 - Góc nhìn chính', 1, 1),
-(9, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Adidas Ultraboost 22 Đen Size 36 - Góc nhìn bên', 0, 2),
-(9, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Adidas Ultraboost 22 Đen Size 36 - Góc nhìn trên', 0, 3),
--- Product 5: Adidas Ultraboost 22 - Variant 2 (Đen, 37)
-(10, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Adidas Ultraboost 22 Đen Size 37 - Góc nhìn chính', 1, 1),
-(10, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Adidas Ultraboost 22 Đen Size 37 - Góc nhìn bên', 0, 2),
--- Product 6: Adidas Stan Smith - Variant 1 (Trắng, 36)
-(11, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Adidas Stan Smith Trắng Size 36 - Góc nhìn chính', 1, 1),
-(11, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Adidas Stan Smith Trắng Size 36 - Góc nhìn bên', 0, 2),
-(11, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Adidas Stan Smith Trắng Size 36 - Góc nhìn sau', 0, 3),
--- Product 6: Adidas Stan Smith - Variant 2 (Trắng, 37)
-(12, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Adidas Stan Smith Trắng Size 37 - Góc nhìn chính', 1, 1),
-(12, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Adidas Stan Smith Trắng Size 37 - Góc nhìn bên', 0, 2),
--- Product 7: Adidas NMD R1 - Variant 1 (Đen, 36)
-(13, 'https://images.unsplash.com/photo-1592065890607-7a96a9c4ec38', N'Adidas NMD R1 Đen Size 36 - Góc nhìn chính', 1, 1),
-(13, 'https://images.unsplash.com/photo-1600342848615-734266351fc8', N'Adidas NMD R1 Đen Size 36 - Góc nhìn bên', 0, 2),
--- Product 7: Adidas NMD R1 - Variant 2 (Đen, 37)
-(14, 'https://images.unsplash.com/photo-1592065890607-7a96a9c4ec38', N'Adidas NMD R1 Đen Size 37 - Góc nhìn chính', 1, 1),
-(14, 'https://images.unsplash.com/photo-1600342848615-734266351fc8', N'Adidas NMD R1 Đen Size 37 - Góc nhìn bên', 0, 2),
--- Product 8: Adidas Superstar - Variant 1 (Đen, 36)
-(15, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Adidas Superstar Đen Size 36 - Góc nhìn chính', 1, 1),
-(15, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Adidas Superstar Đen Size 36 - Góc nhìn bên', 0, 2),
--- Product 8: Adidas Superstar - Variant 2 (Trắng, 36)
-(16, 'https://images.unsplash.com/photo-1544966503-7cc49d477ec6', N'Adidas Superstar Trắng Size 36 - Góc nhìn chính', 1, 1),
-(16, 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a', N'Adidas Superstar Trắng Size 36 - Góc nhìn bên', 0, 2),
--- Product 9: Air Jordan 1 Retro High - Variant 1 (Đen/Trắng, 40)
-(17, 'https://images.unsplash.com/photo-1605446811894-70a14f4c1ce9', N'Air Jordan 1 Retro High Đen/Trắng Size 40 - Góc nhìn chính', 1, 1),
-(17, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Air Jordan 1 Retro High Đen/Trắng Size 40 - Góc nhìn bên', 0, 2),
-(17, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', N'Air Jordan 1 Retro High Đen/Trắng Size 40 - Góc nhìn sau', 0, 3),
--- Product 9: Air Jordan 1 Retro High - Variant 2 (Đen/Trắng, 41)
-(18, 'https://images.unsplash.com/photo-1605446811894-70a14f4c1ce9', N'Air Jordan 1 Retro High Đen/Trắng Size 41 - Góc nhìn chính', 1, 1),
-(18, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Air Jordan 1 Retro High Đen/Trắng Size 41 - Góc nhìn bên', 0, 2),
--- Product 10: Air Jordan 4 Retro - Variant 1 (Đen/Xám, 40)
-(19, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Air Jordan 4 Retro Đen/Xám Size 40 - Góc nhìn chính', 1, 1),
-(19, 'https://images.unsplash.com/photo-1605446811894-70a14f4c1ce9', N'Air Jordan 4 Retro Đen/Xám Size 40 - Góc nhìn bên', 0, 2),
-(19, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff', N'Air Jordan 4 Retro Đen/Xám Size 40 - Góc nhìn trên', 0, 3),
--- Product 10: Air Jordan 4 Retro - Variant 2 (Đen/Xám, 41)
-(20, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Air Jordan 4 Retro Đen/Xám Size 41 - Góc nhìn chính', 1, 1),
-(20, 'https://images.unsplash.com/photo-1605446811894-70a14f4c1ce9', N'Air Jordan 4 Retro Đen/Xám Size 41 - Góc nhìn bên', 0, 2),
--- Product 11: Air Jordan 3 Retro - Variant 1 (Đen/Trắng, 40)
-(21, 'https://images.unsplash.com/photo-1605446811894-70a14f4c1ce9', N'Air Jordan 3 Retro Đen/Trắng Size 40 - Góc nhìn chính', 1, 1),
-(21, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Air Jordan 3 Retro Đen/Trắng Size 40 - Góc nhìn bên', 0, 2),
--- Product 11: Air Jordan 3 Retro - Variant 2 (Đen/Trắng, 41)
-(22, 'https://images.unsplash.com/photo-1605446811894-70a14f4c1ce9', N'Air Jordan 3 Retro Đen/Trắng Size 41 - Góc nhìn chính', 1, 1),
-(22, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa', N'Air Jordan 3 Retro Đen/Trắng Size 41 - Góc nhìn bên', 0, 2),
--- Product 12: Converse Chuck Taylor - Variant 1 (Đen, 40)
-(23, 'https://images.unsplash.com/photo-1600047509807-ba8f99d2a3de', N'Converse Chuck Taylor Đen Size 40 - Góc nhìn chính', 1, 1),
-(23, 'https://images.unsplash.com/photo-1600010034943-0ba43ce25e95', N'Converse Chuck Taylor Đen Size 40 - Góc nhìn bên', 0, 2),
-(23, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Converse Chuck Taylor Đen Size 40 - Góc nhìn sau', 0, 3),
--- Product 12: Converse Chuck Taylor - Variant 2 (Trắng, 40)
-(24, 'https://images.unsplash.com/photo-1600047509807-ba8f99d2a3de', N'Converse Chuck Taylor Trắng Size 40 - Góc nhìn chính', 1, 1),
-(24, 'https://images.unsplash.com/photo-1600010034943-0ba43ce25e95', N'Converse Chuck Taylor Trắng Size 40 - Góc nhìn bên', 0, 2),
--- Product 13: Converse Chuck 70 - Variant 1 (Đen, 40)
-(25, 'https://images.unsplash.com/photo-1600010034943-0ba43ce25e95', N'Converse Chuck 70 Đen Size 40 - Góc nhìn chính', 1, 1),
-(25, 'https://images.unsplash.com/photo-1600047509807-ba8f99d2a3de', N'Converse Chuck 70 Đen Size 40 - Góc nhìn bên', 0, 2),
--- Product 13: Converse Chuck 70 - Variant 2 (Trắng, 40)
-(26, 'https://images.unsplash.com/photo-1600010034943-0ba43ce25e95', N'Converse Chuck 70 Trắng Size 40 - Góc nhìn chính', 1, 1),
-(26, 'https://images.unsplash.com/photo-1600047509807-ba8f99d2a3de', N'Converse Chuck 70 Trắng Size 40 - Góc nhìn bên', 0, 2),
--- Product 14: Converse One Star - Variant 1 (Đen, 40)
-(27, 'https://images.unsplash.com/photo-1600010034943-0ba43ce25e95', N'Converse One Star Đen Size 40 - Góc nhìn chính', 1, 1),
-(27, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Converse One Star Đen Size 40 - Góc nhìn bên', 0, 2),
--- Product 14: Converse One Star - Variant 2 (Đen, 41)
-(28, 'https://images.unsplash.com/photo-1600010034943-0ba43ce25e95', N'Converse One Star Đen Size 41 - Góc nhìn chính', 1, 1),
-(28, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Converse One Star Đen Size 41 - Góc nhìn bên', 0, 2),
--- Product 15: Vans Old Skool - Variant 1 (Đen/Trắng, 40)
-(29, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Vans Old Skool Đen/Trắng Size 40 - Góc nhìn chính', 1, 1),
-(29, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca', N'Vans Old Skool Đen/Trắng Size 40 - Góc nhìn bên', 0, 2),
-(29, 'https://images.unsplash.com/photo-1600047509807-ba8f99d2a3de', N'Vans Old Skool Đen/Trắng Size 40 - Góc nhìn sau', 0, 3),
--- Product 15: Vans Old Skool - Variant 2 (Đen/Trắng, 41)
-(30, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Vans Old Skool Đen/Trắng Size 41 - Góc nhìn chính', 1, 1),
-(30, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca', N'Vans Old Skool Đen/Trắng Size 41 - Góc nhìn bên', 0, 2),
--- Product 16: Vans Authentic - Variant 1 (Đen, 40)
-(31, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca', N'Vans Authentic Đen Size 40 - Góc nhìn chính', 1, 1),
-(31, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Vans Authentic Đen Size 40 - Góc nhìn bên', 0, 2),
--- Product 16: Vans Authentic - Variant 2 (Trắng, 40)
-(32, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca', N'Vans Authentic Trắng Size 40 - Góc nhìn chính', 1, 1),
-(32, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Vans Authentic Trắng Size 40 - Góc nhìn bên', 0, 2),
--- Product 17: Vans Sk8-Hi - Variant 1 (Đen/Trắng, 40)
-(33, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Vans Sk8-Hi Đen/Trắng Size 40 - Góc nhìn chính', 1, 1),
-(33, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca', N'Vans Sk8-Hi Đen/Trắng Size 40 - Góc nhìn bên', 0, 2),
--- Product 17: Vans Sk8-Hi - Variant 2 (Đen/Trắng, 41)
-(34, 'https://images.unsplash.com/photo-1626379950705-965b26e0fb8a', N'Vans Sk8-Hi Đen/Trắng Size 41 - Góc nhìn chính', 1, 1),
-(34, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca', N'Vans Sk8-Hi Đen/Trắng Size 41 - Góc nhìn bên', 0, 2),
--- Product 18: New Balance 550 - Variant 1 (Đen, 40)
-(35, 'https://images.unsplash.com/photo-1572577722808-ba98339ea7bb', N'New Balance 550 Đen Size 40 - Góc nhìn chính', 1, 1),
-(35, 'https://images.unsplash.com/photo-1608667508764-33cf0726b6b5', N'New Balance 550 Đen Size 40 - Góc nhìn bên', 0, 2),
-(35, 'https://images.unsplash.com/photo-1600047509807-ba8f99d2a3de', N'New Balance 550 Đen Size 40 - Góc nhìn trên', 0, 3),
--- Product 18: New Balance 550 - Variant 2 (Xám, 40)
-(36, 'https://images.unsplash.com/photo-1572577722808-ba98339ea7bb', N'New Balance 550 Xám Size 40 - Góc nhìn chính', 1, 1),
-(36, 'https://images.unsplash.com/photo-1608667508764-33cf0726b6b5', N'New Balance 550 Xám Size 40 - Góc nhìn bên', 0, 2),
--- Product 19: New Balance 574 - Variant 1 (Đen, 40)
-(37, 'https://images.unsplash.com/photo-1572577722808-ba98339ea7bb', N'New Balance 574 Đen Size 40 - Góc nhìn chính', 1, 1),
-(37, 'https://images.unsplash.com/photo-1608667508764-33cf0726b6b5', N'New Balance 574 Đen Size 40 - Góc nhìn bên', 0, 2),
--- Product 19: New Balance 574 - Variant 2 (Xám, 40)
-(38, 'https://images.unsplash.com/photo-1572577722808-ba98339ea7bb', N'New Balance 574 Xám Size 40 - Góc nhìn chính', 1, 1),
-(38, 'https://images.unsplash.com/photo-1608667508764-33cf0726b6b5', N'New Balance 574 Xám Size 40 - Góc nhìn bên', 0, 2),
--- Product 20: New Balance 993 - Variant 1 (Xám, 40)
-(39, 'https://images.unsplash.com/photo-1608667508764-33cf0726b6b5', N'New Balance 993 Xám Size 40 - Góc nhìn chính', 1, 1),
-(39, 'https://images.unsplash.com/photo-1572577722808-ba98339ea7bb', N'New Balance 993 Xám Size 40 - Góc nhìn bên', 0, 2),
-(39, 'https://images.unsplash.com/photo-1600047509807-ba8f99d2a3de', N'New Balance 993 Xám Size 40 - Góc nhìn sau', 0, 3),
--- Product 20: New Balance 993 - Variant 2 (Xám, 41)
-(40, 'https://images.unsplash.com/photo-1608667508764-33cf0726b6b5', N'New Balance 993 Xám Size 41 - Góc nhìn chính', 1, 1),
-(40, 'https://images.unsplash.com/photo-1572577722808-ba98339ea7bb', N'New Balance 993 Xám Size 41 - Góc nhìn bên', 0, 2);
-PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' variant images';
+-- NOTE: Product_Images và Variant_Images đã được tách ra file INSERT_IMG.sql riêng
+-- Chạy file INSERT_IMG.sql sau khi chạy file này để thêm dữ liệu ảnh
 
 -- 9. COUPONS (5 coupons)
 INSERT INTO Coupons (code, description, discount_type, discount_value, min_order_amount, max_discount_amount, start_at, end_at, max_uses, uses_count, max_uses_per_user, applicable_to, is_active) VALUES
@@ -679,8 +524,6 @@ PRINT '  + 6 brands';
 PRINT '  + 8 categories (2 parents, 6 children)';
 PRINT '  + 20 products';
 PRINT '  + 40 product variants';
-PRINT '  + 20 product images';
-PRINT '  + 90+ variant images (2-3 images per variant)';
 PRINT '  + 5 coupons';
 PRINT '  + 5 flash sales';
 PRINT '  + 8 addresses';
@@ -702,6 +545,10 @@ PRINT '  + 3 warranty requests';
 PRINT '';
 PRINT 'TAT CA DU LIEU DA DUOC THEM THANH CONG!';
 PRINT '=====================================================';
+PRINT '';
+PRINT 'Luu y: Du lieu anh (Product_Images va Variant_Images)';
+PRINT 'da duoc tach ra file INSERT_IMG.sql rieng.';
+PRINT 'Chay file INSERT_IMG.sql de them du lieu anh.';
 PRINT '';
 PRINT 'Script da ket thuc thanh cong!';
 PRINT 'Transaction da duoc commit.';

@@ -4,8 +4,14 @@
  */
 
 import axios from 'axios';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// Lấy access token từ localStorage
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 class NotificationService {
     /**
@@ -13,20 +19,16 @@ class NotificationService {
      */
     async getNotifications(page = 0, size = 20) {
         try {
-            const token = localStorage.getItem('token');
             const response = await axios.get(
-                `${API_BASE_URL}/notifications`,
+                API_ENDPOINTS.NOTIFICATIONS.BASE,
                 {
                     params: { page, size },
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
             return response.data;
         } catch (error) {
-            console.error('❌ Failed to fetch notifications:', error);
-            console.error('❌ Error details:', error.response?.data);
+            logger.error('Failed to fetch notifications:', error);
             throw error;
         }
     }
@@ -36,19 +38,15 @@ class NotificationService {
      */
     async getUnreadCount() {
         try {
-            const token = localStorage.getItem('token');
             const response = await axios.get(
-                `${API_BASE_URL}/notifications/unread-count`,
+                `${API_ENDPOINTS.NOTIFICATIONS.BASE}/unread-count`,
                 {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
             return response.data.count;
         } catch (error) {
-            console.error('❌ Failed to fetch unread count:', error);
-            console.error('❌ Error details:', error.response?.data);
+            logger.error('Failed to fetch unread count:', error);
             throw error;
         }
     }
@@ -58,18 +56,16 @@ class NotificationService {
      */
     async markAsRead(notificationId) {
         try {
-            const token = localStorage.getItem('token');
             await axios.put(
-                `${API_BASE_URL}/notifications/${notificationId}/read`,
+                `${API_ENDPOINTS.NOTIFICATIONS.BASE}/${notificationId}/read`,
                 null,
                 {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
+            logger.log(`Notification ${notificationId} marked as read`);
         } catch (error) {
-            console.error(`❌ Failed to mark notification ${notificationId} as read:`, error);
+            logger.error(`Failed to mark notification ${notificationId} as read:`, error);
             throw error;
         }
     }
@@ -79,18 +75,16 @@ class NotificationService {
      */
     async markAllAsRead() {
         try {
-            const token = localStorage.getItem('token');
             await axios.put(
-                `${API_BASE_URL}/notifications/read-all`,
+                `${API_ENDPOINTS.NOTIFICATIONS.BASE}/read-all`,
                 null,
                 {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
+            logger.log('All notifications marked as read');
         } catch (error) {
-            console.error('❌ Failed to mark all notifications as read:', error);
+            logger.error('Failed to mark all notifications as read:', error);
             throw error;
         }
     }

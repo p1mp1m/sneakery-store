@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -80,7 +81,7 @@ public class FlashSaleService {
         log.info("Creating flash sale for product ID: {}", dto.getProductId());
         
         // Validate product exists
-        Product product = productRepository.findById(dto.getProductId())
+        Product product = productRepository.findById(Objects.requireNonNull(dto.getProductId()))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
         
         // Validate dates
@@ -120,7 +121,7 @@ public class FlashSaleService {
     public FlashSaleDto updateFlashSale(Integer id, FlashSaleDto dto) {
         log.info("Updating flash sale ID: {}", id);
         
-        FlashSale flashSale = flashSaleRepository.findById(id)
+        FlashSale flashSale = flashSaleRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Flash sale không tồn tại"));
         
         flashSale.setDiscountPercent(dto.getDiscountPercent());
@@ -142,10 +143,10 @@ public class FlashSaleService {
     public void deleteFlashSale(Integer id) {
         log.info("Deleting flash sale ID: {}", id);
         
-        FlashSale flashSale = flashSaleRepository.findById(id)
+        FlashSale flashSale = flashSaleRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Flash sale không tồn tại"));
         
-        flashSaleRepository.delete(flashSale);
+        flashSaleRepository.delete(Objects.requireNonNull(flashSale));
         log.info("Deleted flash sale ID: {}", id);
     }
 
