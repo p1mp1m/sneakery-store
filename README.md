@@ -91,6 +91,14 @@ mvn clean install
 
 ### 🎨 **Bước 4: Cài đặt Frontend**
 
+1. **Copy file cấu hình (tùy chọn):**
+```bash
+# Windows (PowerShell)
+Copy-Item sneakery-frontend\.env.example sneakery-frontend\.env
+```
+> **💡 Lưu ý:** Trong development mode, Vite proxy tự động xử lý `/api` requests, nên không cần cấu hình `.env`. Chỉ cần khi deploy production.
+
+2. **Cài đặt dependencies:**
 ```bash
 cd sneakery-frontend
 npm install

@@ -99,6 +99,8 @@ build/
 .env.test
 .env.staging
 *.env
+# Keep example files for reference
+!**/.env.example
 *.secret
 *.key
 *.pem
