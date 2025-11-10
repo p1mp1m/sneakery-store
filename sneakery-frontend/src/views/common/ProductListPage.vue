@@ -735,7 +735,7 @@ watch(() => categories.value, (newCategories) => {
     const categorySlug = decodeURIComponent(route.query.category).trim()
     if (!selectedCategories.value.includes(categorySlug)) {
       selectedCategories.value = [categorySlug]
-      currentPage.value = 0
+  currentPage.value = 0
     }
   }
 })

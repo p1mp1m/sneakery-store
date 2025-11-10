@@ -11,7 +11,7 @@ GO
 SET NOCOUNT ON;
 
 PRINT '=====================================================';
-PRINT 'DANG INSERT DU LIEU CO BAN (PART 1)...';
+PRINT N'DANG INSERT DU LIEU CO BAN (PART 1)...';
 PRINT '=====================================================';
 PRINT '';
 
@@ -303,6 +303,8 @@ PRINT 'Inserting Product_Variants...';
 -- We'll create variants with different sizes and colors
 DECLARE @ProductId BIGINT;
 DECLARE @SkuCounter INT;
+DECLARE @PriceBase BIGINT;
+DECLARE @PriceSale BIGINT;
 -- Get max SKU number to avoid duplicates
 SELECT @SkuCounter = ISNULL(MAX(CAST(SUBSTRING(sku, 5, LEN(sku)) AS INT)), 0) + 1
 FROM Product_Variants
@@ -318,24 +320,31 @@ FETCH NEXT FROM product_cursor INTO @ProductId;
 
 WHILE @@FETCH_STATUS = 0
 BEGIN
+    -- Generate random price from 1,000,000 to 50,000,000
+    SET @PriceBase = 1000000 + CAST(RAND() * 49000000 AS BIGINT);
+    SET @PriceSale = @PriceBase - CAST(RAND() * (@PriceBase * 0.2) AS BIGINT); -- 0-20% discount
+    -- Round up to nearest 1000 (làm tròn lên đến hàng nghìn)
+    SET @PriceBase = CEILING(@PriceBase / 1000.0) * 1000;
+    SET @PriceSale = CEILING(@PriceSale / 1000.0) * 1000;
+    
     -- Variant 1: Size 40, Color 1
     INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, stock_quantity, low_stock_threshold, is_active, created_at)
-    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '40', N'Đen', 1500000, 1200000, 50, 10, 1, GETDATE());
+    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '40', N'Đen', @PriceBase, @PriceSale, 50, 10, 1, GETDATE());
     SET @SkuCounter = @SkuCounter + 1;
     
     -- Variant 2: Size 41, Color 1
     INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, stock_quantity, low_stock_threshold, is_active, created_at)
-    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '41', N'Đen', 1500000, 1200000, 45, 10, 1, GETDATE());
+    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '41', N'Đen', @PriceBase, @PriceSale, 45, 10, 1, GETDATE());
     SET @SkuCounter = @SkuCounter + 1;
     
     -- Variant 3: Size 40, Color 2
     INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, stock_quantity, low_stock_threshold, is_active, created_at)
-    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '40', N'Trắng', 1500000, 1200000, 40, 10, 1, GETDATE());
+    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '40', N'Trắng', @PriceBase, @PriceSale, 40, 10, 1, GETDATE());
     SET @SkuCounter = @SkuCounter + 1;
     
     -- Variant 4: Size 42, Color 1
     INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, stock_quantity, low_stock_threshold, is_active, created_at)
-    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '42', N'Đen', 1500000, 1200000, 35, 10, 1, GETDATE());
+    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '42', N'Đen', @PriceBase, @PriceSale, 35, 10, 1, GETDATE());
     SET @SkuCounter = @SkuCounter + 1;
     
     FETCH NEXT FROM product_cursor INTO @ProductId;
@@ -580,10 +589,10 @@ GO
 
 PRINT '';
 PRINT '=====================================================';
-PRINT 'HOAN THANH INSERT DU LIEU CO BAN (PART 1)!';
+PRINT N'HOAN THANH INSERT DU LIEU CO BAN (PART 1)!';
 PRINT '=====================================================';
 PRINT '';
-PRINT 'Da insert thanh cong:';
+PRINT N'Da insert thanh cong:';
 PRINT '  - 10 brands';
 PRINT '  - 15 categories';
 PRINT '  - 8 materials';
@@ -598,6 +607,6 @@ PRINT '  - 30 newsletter subscriptions';
 PRINT '  - 5 coupons';
 PRINT '  - 5 flash sales';
 PRINT '';
-PRINT 'Bước tiếp theo: Chạy file 3_INSERT_DATA_PART2.sql để thêm dữ liệu giao dịch.';
+PRINT N'Bước tiếp theo: Chạy file 3_INSERT_DATA_PART2.sql để thêm dữ liệu giao dịch.';
 PRINT '';
 

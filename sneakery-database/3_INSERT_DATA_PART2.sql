@@ -11,7 +11,7 @@ GO
 SET NOCOUNT ON;
 
 PRINT '=====================================================';
-PRINT 'DANG INSERT DU LIEU GIAO DICH (PART 2)...';
+PRINT N'DANG INSERT DU LIEU GIAO DICH (PART 2)...';
 PRINT '=====================================================';
 PRINT '';
 
@@ -849,10 +849,10 @@ GO
 
 PRINT '';
 PRINT '=====================================================';
-PRINT 'HOAN THANH INSERT DU LIEU GIAO DICH (PART 2)!';
+PRINT N'HOAN THANH INSERT DU LIEU GIAO DICH (PART 2)!';
 PRINT '=====================================================';
 PRINT '';
-PRINT 'Da insert thanh cong:';
+PRINT N'Da insert thanh cong:';
 PRINT '  - 200 orders';
 PRINT '  - ~600 order details';
 PRINT '  - ~200 order status histories';
@@ -871,10 +871,10 @@ PRINT '  - Email templates';
 PRINT '  - Size charts';
 PRINT '';
 PRINT '=====================================================';
-PRINT 'DATABASE HOAN THANH!';
+PRINT N'DATABASE HOAN THANH!';
 PRINT '=====================================================';
 PRINT '';
-PRINT 'Tong ket:';
+PRINT N'Tong ket:';
 PRINT '  - 10 brands';
 PRINT '  - 15 categories';
 PRINT '  - 50 products';
@@ -883,6 +883,6 @@ PRINT '  - 100 users';
 PRINT '  - 200 orders';
 PRINT '  - 150 reviews';
 PRINT '';
-PRINT 'Database da san sang su dung!';
+PRINT N'Database da san sang su dung!';
 PRINT '';
 
