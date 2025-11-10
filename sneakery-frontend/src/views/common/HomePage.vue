@@ -122,24 +122,29 @@
           <p class="text-lg text-gray-600 dark:text-gray-400">Khám phá bộ sưu tập theo danh mục yêu thích</p>
         </div>
         
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+        <div class="flex flex-wrap justify-center items-center gap-4 md:gap-6">
           <router-link 
             v-for="(category, index) in categories" 
             :key="category.id"
             :to="`/home/products?category=${category.slug}`"
-            class="group relative p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-center transform category-card"
-            :style="{ animationDelay: `${index * 100}ms` }"
+            class="group relative p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-center transform category-card flex-shrink-0"
+            :style="{ 
+              animationDelay: `${index * 100}ms`,
+              minWidth: '150px',
+              maxWidth: '200px',
+              width: '150px'
+            }"
           >
             <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             
             <div class="relative z-10">
               <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600 group-hover:from-purple-600 group-hover:to-indigo-600 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                <i class="material-icons text-white text-3xl">{{ category.icon }}</i>
+                <i class="material-icons text-white text-3xl">{{ category.icon || 'category' }}</i>
               </div>
               <h3 class="font-bold text-gray-900 dark:text-gray-100 mb-2 text-base group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                 {{ category.name }}
               </h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ category.count }} sản phẩm</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ category.count || 0 }} sản phẩm</p>
             </div>
           </router-link>
         </div>
@@ -147,7 +152,7 @@
     </section>
 
     <!-- Flash Sale / Hot Deals -->
-    <section class="py-16 md:py-20 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 dark:from-orange-600 dark:via-red-600 dark:to-pink-600 relative overflow-hidden">
+    <section v-if="flashSaleStore.hasActiveFlashSales || flashSaleProducts.length > 0" class="py-16 md:py-20 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 dark:from-orange-600 dark:via-red-600 dark:to-pink-600 relative overflow-hidden">
       <!-- Animated Background -->
       <div class="absolute inset-0 opacity-20">
         <div class="absolute inset-0 animate-pulse" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.1) 20px, rgba(255,255,255,0.1) 40px);"></div>
@@ -155,16 +160,20 @@
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="bg-white dark:bg-gray-800 rounded-3xl p-8 md:p-10 border-4 border-white/30 shadow-2xl transform hover:scale-[1.02] transition-transform duration-300">
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
             <div class="flex items-center gap-6">
               <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-xl animate-pulse">
                 <i class="material-icons text-white text-3xl">flash_on</i>
               </div>
               <div>
                 <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-3">Flash Sale</h2>
-                <div class="flex items-center gap-3">
+                <div v-if="nearestEndTime" class="flex items-center gap-3">
                   <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Kết thúc trong:</span>
                   <div class="flex items-center gap-2">
+                    <div class="px-3 py-1.5 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-lg text-sm font-bold text-gray-900 dark:text-gray-100 shadow-md">
+                      {{ countdown.days }}
+                    </div>
+                    <span class="text-gray-600 dark:text-gray-400 font-bold">:</span>
                     <div class="px-3 py-1.5 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 rounded-lg text-sm font-bold text-gray-900 dark:text-gray-100 shadow-md">
                       {{ countdown.hours }}
                     </div>
@@ -181,12 +190,26 @@
               </div>
             </div>
             <router-link 
-              to="/home/products?sale=true" 
+              to="/home/flash-sale" 
               class="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
             >
               Xem tất cả
               <i class="material-icons group-hover:translate-x-1 transition-transform">arrow_forward</i>
             </router-link>
+          </div>
+          
+          <!-- Flash Sale Products Grid -->
+          <div v-if="flashSaleProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              v-for="product in flashSaleProducts"
+              :key="product.id"
+              class="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl hover:scale-105 transition-all duration-300 overflow-hidden transform"
+            >
+              <ProductCard :product="product" />
+            </div>
+          </div>
+          <div v-else class="text-center py-12">
+            <p class="text-gray-600 dark:text-gray-400">Đang tải sản phẩm flash sale...</p>
           </div>
         </div>
       </div>
@@ -305,15 +328,16 @@
         </div>
         
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-          <div 
+          <router-link 
             v-for="brand in brands" 
-            :key="brand.id" 
-            class="group bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-8 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center transform"
+            :key="brand.id"
+            :to="`/home/products?brand=${encodeURIComponent(brand.name)}`"
+            class="group bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-8 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center transform cursor-pointer"
           >
             <div class="text-2xl font-bold text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
               {{ brand.name }}
             </div>
-          </div>
+          </router-link>
         </div>
       </div>
     </section>
@@ -347,12 +371,18 @@
                   type="email" 
                   placeholder="Nhập email của bạn..." 
                   v-model="newsletterEmail"
+                  @keyup.enter="handleNewsletterSubscribe"
                   class="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 font-medium"
                 />
               </div>
-              <button class="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105 flex items-center justify-center gap-2">
-                <i class="material-icons">send</i>
-                Đăng Ký
+              <button 
+                @click="handleNewsletterSubscribe"
+                :disabled="subscribing || !newsletterEmail.trim()"
+                class="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                <i v-if="subscribing" class="material-icons animate-spin">refresh</i>
+                <i v-else class="material-icons">send</i>
+                {{ subscribing ? 'Đang xử lý...' : 'Đăng Ký' }}
               </button>
             </div>
           </div>
@@ -365,28 +395,57 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import ProductService from '@/services/productService';
+import newsletterService from '@/services/newsletterService';
+import { useFlashSaleStore } from '@/stores/flashSale';
 import ProductCard from '@/assets/components/products/ProductCard.vue';
 import TestimonialsSection from '@/assets/components/common/TestimonialsSection.vue';
+import logger from '@/utils/logger';
+import toastService from '@/utils/toastService';
+import { API_ENDPOINTS } from '@/config/api';
+import axios from 'axios';
 
 // Categories data
-const categories = ref([
-  { id: 1, name: 'Running', slug: 'running', icon: 'directions_run', count: 156, gradient: 'var(--gradient-purple)' },
-  { id: 2, name: 'Basketball', slug: 'basketball', icon: 'sports_basketball', count: 89, gradient: 'var(--gradient-orange)' },
-  { id: 3, name: 'Casual', slug: 'casual', icon: 'weekend', count: 234, gradient: 'var(--gradient-blue)' },
-  { id: 4, name: 'Training', slug: 'training', icon: 'fitness_center', count: 112, gradient: 'var(--gradient-green)' },
-  { id: 5, name: 'Skateboarding', slug: 'skateboarding', icon: 'skateboarding', count: 67, gradient: 'var(--gradient-pink)' },
-  { id: 6, name: 'Limited Edition', slug: 'limited', icon: 'stars', count: 45, gradient: 'var(--gradient-sunset)' },
-]);
+const categories = ref([]);
+const loadingCategories = ref(false);
+
+// Icon mapping for categories
+const categoryIconMap = {
+  'running': 'directions_run',
+  'basketball': 'sports_basketball',
+  'casual': 'style',
+  'training': 'fitness_center',
+  'skateboarding': 'skateboarding',
+  'limited': 'stars',
+  'giay-chay-bo-nam': 'directions_run',
+  'giay-bong-ro-nam': 'sports_basketball',
+  'giay-chay-bo-nu': 'directions_run',
+  'giay-thoi-trang-nu': 'style',
+  // Add more mappings as needed
+};
+
+// Get icon for category based on slug or name
+const getCategoryIcon = (category) => {
+  const slug = category.slug?.toLowerCase() || category.name?.toLowerCase().replace(/\s+/g, '-') || '';
+  // Try exact match first
+  if (categoryIconMap[slug]) {
+    return categoryIconMap[slug];
+  }
+  // Try partial match
+  for (const [key, icon] of Object.entries(categoryIconMap)) {
+    if (slug.includes(key) || key.includes(slug)) {
+      return icon;
+    }
+  }
+  // Default icon
+  return 'category';
+};
 
 // Brands data
-const brands = ref([
-  { id: 1, name: 'Nike', logo: null },
-  { id: 2, name: 'Adidas', logo: null },
-  { id: 3, name: 'Jordan', logo: null },
-  { id: 4, name: 'Puma', logo: null },
-  { id: 5, name: 'New Balance', logo: null },
-  { id: 6, name: 'Vans', logo: null },
-]);
+const brands = ref([]);
+const loadingBrands = ref(false);
+
+// Stores
+const flashSaleStore = useFlashSaleStore();
 
 // Products state
 const products = ref([]);
@@ -397,12 +456,15 @@ const pageSize = ref(12);
 const totalProducts = ref(0);
 const totalPages = ref(0);
 const newsletterEmail = ref('');
+const subscribing = ref(false);
 
-// Countdown timer for Flash Sale
+// Flash Sale state
+const flashSaleProducts = ref([]);
 const countdown = ref({
-  hours: '12',
-  minutes: '34',
-  seconds: '56'
+  days: '00',
+  hours: '00',
+  minutes: '00',
+  seconds: '00'
 });
 
 let countdownInterval = null;
@@ -483,36 +545,263 @@ const handlePageChange = (newPage) => {
   }
 };
 
-const updateCountdown = () => {
-  // Simple countdown logic - in production, this would use a real end time
-  let seconds = parseInt(countdown.value.seconds);
-  let minutes = parseInt(countdown.value.minutes);
-  let hours = parseInt(countdown.value.hours);
-  
-  seconds--;
-  
-  if (seconds < 0) {
-    seconds = 59;
-    minutes--;
-    if (minutes < 0) {
-      minutes = 59;
-      hours--;
-      if (hours < 0) {
-        hours = 23;
-      }
-    }
+// Computed - Get nearest end time from active flash sales
+const nearestEndTime = computed(() => {
+  if (!flashSaleStore.activeFlashSales || flashSaleStore.activeFlashSales.length === 0) {
+    return null;
   }
   
+  const now = new Date();
+  const activeSales = flashSaleStore.activeFlashSales.filter(sale => {
+    const start = new Date(sale.startTime);
+    const end = new Date(sale.endTime);
+    return now >= start && now <= end;
+  });
+  
+  if (activeSales.length === 0) {
+    return null;
+  }
+  
+  // Find the nearest end time
+  const endTimes = activeSales.map(sale => new Date(sale.endTime));
+  const nearestEnd = new Date(Math.min(...endTimes));
+  return nearestEnd;
+});
+
+const updateCountdown = () => {
+  if (!nearestEndTime.value) {
+    countdown.value = { hours: '00', minutes: '00', seconds: '00' };
+    return;
+  }
+  
+  const now = new Date();
+  const end = new Date(nearestEndTime.value);
+  const diff = end - now;
+  
+  if (diff <= 0) {
+    countdown.value = { days: '00', hours: '00', minutes: '00', seconds: '00' };
+    // Refresh flash sales when countdown ends
+    fetchFlashSales();
+    return;
+  }
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  
   countdown.value = {
+    days: days.toString().padStart(2, '0'),
     hours: hours.toString().padStart(2, '0'),
     minutes: minutes.toString().padStart(2, '0'),
     seconds: seconds.toString().padStart(2, '0')
   };
 };
 
+// Fetch brands
+const fetchBrands = async () => {
+  loadingBrands.value = true;
+  try {
+    // Fetch brands from public API endpoint
+    const brandsResponse = await axios.get(API_ENDPOINTS.PRODUCTS.BRANDS);
+    if (Array.isArray(brandsResponse.data) && brandsResponse.data.length > 0) {
+      brands.value = brandsResponse.data.map(brand => ({
+        id: brand.id,
+        name: brand.name,
+        slug: brand.slug,
+        logo: brand.logo || null
+      }));
+      logger.log('Fetched brands for HomePage:', brands.value.length, brands.value);
+    } else {
+      // Fallback to empty array if no brands
+      brands.value = [];
+      logger.warn('No brands found from API');
+    }
+  } catch (error) {
+    logger.error('Error fetching brands:', error);
+    // Fallback to empty array if API fails
+    brands.value = [];
+  } finally {
+    loadingBrands.value = false;
+  }
+};
+
+// Fetch categories
+const fetchCategories = async () => {
+  loadingCategories.value = true;
+  try {
+    // Try public API endpoint first
+    const categoriesResponse = await axios.get(API_ENDPOINTS.PRODUCTS.CATEGORIES);
+    if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
+      // Map categories with icons
+      const mappedCategories = categoriesResponse.data.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),
+        icon: getCategoryIcon(cat),
+        count: 0, // Will be calculated from products
+        gradient: 'var(--gradient-purple)' // Default gradient
+      }));
+      
+      // Fetch products to count by category
+      try {
+        const productsResponse = await ProductService.getProducts(0, 1000);
+        let productData = [];
+        if (productsResponse.data) {
+          if (Array.isArray(productsResponse.data.content)) {
+            productData = productsResponse.data.content;
+          } else if (Array.isArray(productsResponse.data)) {
+            productData = productsResponse.data;
+          }
+        }
+        
+        // Count products for each category
+        mappedCategories.forEach(category => {
+          const count = productData.filter(product => {
+            if (product.categories && Array.isArray(product.categories)) {
+              return product.categories.some(cat => 
+                (cat.slug || cat.name?.toLowerCase().replace(/\s+/g, '-')) === category.slug
+              );
+            }
+            return false;
+          }).length;
+          category.count = count;
+        });
+        
+        categories.value = mappedCategories;
+        logger.log('Fetched categories for HomePage:', categories.value.length, categories.value);
+      } catch (productsError) {
+        logger.warn('Could not fetch products to count categories:', productsError);
+        categories.value = mappedCategories;
+      }
+    } else {
+      // Fallback to hardcoded categories
+      categories.value = [
+        { id: 1, name: 'Running', slug: 'running', icon: 'directions_run', count: 156, gradient: 'var(--gradient-purple)' },
+        { id: 2, name: 'Basketball', slug: 'basketball', icon: 'sports_basketball', count: 89, gradient: 'var(--gradient-orange)' },
+        { id: 3, name: 'Casual', slug: 'casual', icon: 'style', count: 234, gradient: 'var(--gradient-blue)' },
+        { id: 4, name: 'Training', slug: 'training', icon: 'fitness_center', count: 112, gradient: 'var(--gradient-green)' },
+        { id: 5, name: 'Skateboarding', slug: 'skateboarding', icon: 'skateboarding', count: 67, gradient: 'var(--gradient-pink)' },
+        { id: 6, name: 'Limited Edition', slug: 'limited', icon: 'stars', count: 45, gradient: 'var(--gradient-sunset)' },
+      ];
+    }
+  } catch (error) {
+    logger.error('Error fetching categories for HomePage:', error);
+    // Fallback to hardcoded categories
+    categories.value = [
+      { id: 1, name: 'Running', slug: 'running', icon: 'directions_run', count: 156, gradient: 'var(--gradient-purple)' },
+      { id: 2, name: 'Basketball', slug: 'basketball', icon: 'sports_basketball', count: 89, gradient: 'var(--gradient-orange)' },
+      { id: 3, name: 'Casual', slug: 'casual', icon: 'style', count: 234, gradient: 'var(--gradient-blue)' },
+      { id: 4, name: 'Training', slug: 'training', icon: 'fitness_center', count: 112, gradient: 'var(--gradient-green)' },
+      { id: 5, name: 'Skateboarding', slug: 'skateboarding', icon: 'skateboarding', count: 67, gradient: 'var(--gradient-pink)' },
+      { id: 6, name: 'Limited Edition', slug: 'limited', icon: 'stars', count: 45, gradient: 'var(--gradient-sunset)' },
+    ];
+  } finally {
+    loadingCategories.value = false;
+  }
+};
+
+// Fetch flash sales
+const fetchFlashSales = async () => {
+  try {
+    await flashSaleStore.fetchActiveFlashSales();
+    
+    if (flashSaleStore.activeFlashSales.length === 0) {
+      flashSaleProducts.value = [];
+      return;
+    }
+    
+    // Fetch products for each flash sale (limit to 4 for homepage)
+    const productIds = flashSaleStore.activeFlashSales.slice(0, 4).map(sale => sale.productId);
+    const products = [];
+    
+    for (const productId of productIds) {
+      try {
+        const product = await ProductService.getProductById(productId);
+        if (product) {
+          // Add flash sale info to product
+          const flashSale = flashSaleStore.getFlashSaleForProduct(productId);
+          if (flashSale) {
+            product.flashSale = flashSale;
+            // Ensure brandName is set from flashSale if product doesn't have it
+            if (!product.brandName && !product.brand?.name && flashSale.brandName) {
+              product.brandName = flashSale.brandName;
+            }
+            // Ensure brand object is set if we have brandName
+            if (product.brandName && !product.brand) {
+              product.brand = { name: product.brandName };
+            }
+            products.push(product);
+          }
+        }
+      } catch (err) {
+        logger.warn(`Failed to fetch product ${productId}:`, err);
+      }
+    }
+    
+    flashSaleProducts.value = products;
+  } catch (err) {
+    logger.error('Error fetching flash sales:', err);
+  }
+};
+
+// Newsletter subscription
+const handleNewsletterSubscribe = async () => {
+  const email = newsletterEmail.value.trim();
+  
+  // Validate email
+  if (!email) {
+    toastService.warning('Vui lòng nhập email', 'Email không được để trống');
+    return;
+  }
+  
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    toastService.warning('Email không hợp lệ', 'Vui lòng nhập địa chỉ email hợp lệ');
+    return;
+  }
+  
+  subscribing.value = true;
+  try {
+    await newsletterService.subscribe(email);
+    toastService.success('Đăng ký thành công!', 'Cảm ơn bạn đã đăng ký nhận tin. Chúng tôi sẽ gửi thông báo về sản phẩm mới và ưu đãi đặc biệt đến email của bạn.');
+    newsletterEmail.value = ''; // Clear input after success
+  } catch (error) {
+    logger.error('Error subscribing to newsletter:', error);
+    
+    // Handle different error types
+    if (error.response) {
+      const status = error.response.status;
+      const message = error.response.data?.message || error.response.data?.error || 'Đã xảy ra lỗi';
+      
+      if (status === 409) {
+        // Email already subscribed
+        toastService.info('Email đã đăng ký', 'Email này đã được đăng ký nhận tin rồi. Cảm ơn bạn!');
+        newsletterEmail.value = ''; // Clear input
+      } else if (status === 400) {
+        // Bad request (invalid email)
+        toastService.warning('Email không hợp lệ', message);
+      } else {
+        toastService.error('Đăng ký thất bại', message);
+      }
+    } else {
+      toastService.error('Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng thử lại sau.');
+    }
+  } finally {
+    subscribing.value = false;
+  }
+};
+
 // Lifecycle
-onMounted(() => {
-  fetchProducts(currentPage.value);
+onMounted(async () => {
+  await Promise.all([
+    fetchProducts(currentPage.value),
+    fetchFlashSales(),
+    fetchCategories(),
+    fetchBrands()
+  ]);
+  updateCountdown();
   countdownInterval = setInterval(updateCountdown, 1000);
 });
 

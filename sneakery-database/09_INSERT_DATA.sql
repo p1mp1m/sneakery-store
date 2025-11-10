@@ -233,8 +233,8 @@ INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sa
 (20, 'NB-993-GRY-41', '41', N'Xám', 3800000, 3500000, 2500000, 22, 5, 1);
 PRINT '  + Inserted ' + CAST(@@ROWCOUNT AS VARCHAR) + ' product variants';
 
--- NOTE: Product_Images và Variant_Images đã được tách ra file INSERT_IMG.sql riêng
--- Chạy file INSERT_IMG.sql sau khi chạy file này để thêm dữ liệu ảnh
+-- NOTE: Product_Images và Variant_Images đã được tách ra file 10_INSERT_IMAGES.sql riêng
+-- Chạy file 10_INSERT_IMAGES.sql sau khi chạy file này để thêm dữ liệu ảnh
 
 -- 9. COUPONS (5 coupons)
 INSERT INTO Coupons (code, description, discount_type, discount_value, min_order_amount, max_discount_amount, start_at, end_at, max_uses, uses_count, max_uses_per_user, applicable_to, is_active) VALUES
@@ -547,8 +547,8 @@ PRINT 'TAT CA DU LIEU DA DUOC THEM THANH CONG!';
 PRINT '=====================================================';
 PRINT '';
 PRINT 'Luu y: Du lieu anh (Product_Images va Variant_Images)';
-PRINT 'da duoc tach ra file INSERT_IMG.sql rieng.';
-PRINT 'Chay file INSERT_IMG.sql de them du lieu anh.';
+PRINT 'da duoc tach ra file 10_INSERT_IMAGES.sql rieng.';
+PRINT 'Chay file 10_INSERT_IMAGES.sql de them du lieu anh.';
 PRINT '';
 PRINT 'Script da ket thuc thanh cong!';
 PRINT 'Transaction da duoc commit.';

@@ -42,6 +42,16 @@ const routes = [
         name: "product-detail",
         component: () => import("../views/common/ProductDetailPage.vue"),
       },
+      {
+        path: "flash-sale",
+        name: "flash-sale",
+        component: () => import("../views/common/FlashSalePage.vue"),
+      },
+      {
+        path: "reviews",
+        name: "reviews",
+        component: () => import("../views/common/ReviewsPage.vue"),
+      },
     ],
   },
   // Auth pages (no layout)

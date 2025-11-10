@@ -13,7 +13,7 @@
       <div class="text-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 max-w-md">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">❌ Không tìm thấy sản phẩm</h2>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ error }}</p>
-        <button @click="router.push('/products')" class="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors">
+        <button @click="router.push('/home/products')" class="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors">
           Quay lại danh sách sản phẩm
         </button>
       </div>
@@ -25,7 +25,7 @@
       <nav class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-6">
         <router-link to="/" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Trang chủ</router-link>
         <span>/</span>
-        <router-link to="/products" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Sản phẩm</router-link>
+        <router-link to="/home/products" class="hover:text-purple-600 dark:hover:text-purple-400 transition-colors">Sản phẩm</router-link>
         <span>/</span>
         <span class="text-gray-900 dark:text-gray-100">{{ product.name }}</span>
       </nav>
@@ -35,6 +35,12 @@
         <!-- Product Gallery -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div class="relative aspect-square mb-4 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 cursor-zoom-in" @click="openZoom">
+            <!-- Flash Sale Badge -->
+            <FlashSaleBadge
+              v-if="productFlashSale"
+              :flashSale="productFlashSale"
+              class="compact"
+            />
             <img 
               :src="selectedImage || product.imageUrl" 
               :alt="product.name"
@@ -416,15 +422,20 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useCartStore } from '@/stores/cart';
+import { useFlashSaleStore } from '@/stores/flashSale';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
 import toastService from '@/utils/toastService';
 import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
 import axios from 'axios';
+import FlashSaleBadge from '@/assets/components/common/FlashSaleBadge.vue';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const cartStore = useCartStore();
+const flashSaleStore = useFlashSaleStore();
 const { addProduct } = useRecentlyViewed();
 
 // State
@@ -472,8 +483,13 @@ const fetchProduct = async () => {
     loading.value = true;
     error.value = '';
     
+    // Fetch flash sales if not already loaded
+    if (flashSaleStore.activeFlashSales.length === 0) {
+      await flashSaleStore.fetchActiveFlashSales();
+    }
+    
     const response = await axios.get(
-      API_ENDPOINTS.ADMIN_PRODUCTS.BY_ID(route.params.id)
+      API_ENDPOINTS.PRODUCTS.BY_ID(route.params.id)
     );
     
     product.value = response.data;
@@ -529,9 +545,20 @@ const selectedVariant = computed(() => {
   );
 });
 
+// Computed - Flash sale for product
+const productFlashSale = computed(() => {
+  if (!product.value) return null;
+  return flashSaleStore.getFlashSaleForProduct(product.value.id);
+});
+
 const currentPrice = computed(() => {
   if (selectedVariant.value) {
-    return selectedVariant.value.priceSale || selectedVariant.value.priceBase;
+    const basePrice = selectedVariant.value.priceSale || selectedVariant.value.priceBase;
+    // Apply flash sale discount if available
+    if (productFlashSale.value) {
+      return flashSaleStore.calculateDiscountedPrice(basePrice, productFlashSale.value.discountPercent);
+    }
+    return basePrice;
   }
   return 0;
 });
@@ -615,24 +642,20 @@ const addToCart = async () => {
   }
 
   try {
-    await axios.post(
-      API_ENDPOINTS.CART.ITEM,
-      {
-        variantId: selectedVariant.value.id,
-        quantity: quantity.value,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${authStore.token}`,
-        },
-      }
-    );
-
-    toastService.success('Thành công',`Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
+    // Sử dụng cart store để thêm vào giỏ hàng
+    await cartStore.addItem(selectedVariant.value.id, quantity.value);
+    toastService.success('Thành công', `Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
     logger.log('Product added to cart:', selectedVariant.value.id);
   } catch (err) {
     logger.error('Error adding to cart:', err);
-    toastService.error('Lỗi',err.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+    
+    // Nếu lỗi 401, yêu cầu đăng nhập
+    if (err.response?.status === 401) {
+      toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
+      router.push('/login');
+    } else {
+      toastService.error('Lỗi', err.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+    }
   }
 };
 

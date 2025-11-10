@@ -13,19 +13,108 @@
         <aside class="w-full lg:w-64 flex-shrink-0">
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Thương hiệu</h3>
-            <div class="space-y-2 mb-6">
-              <label v-for="brand in brands" :key="brand" class="flex items-center gap-2 cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
-                <input type="checkbox" :value="brand" v-model="selectedBrands" class="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500">
-                <span class="text-sm text-gray-700 dark:text-gray-300">{{ brand }}</span>
-              </label>
+            <div v-if="loadingBrands" class="mb-6">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Đang tải...</span>
+              </div>
+            </div>
+            <div v-else-if="brands.length > 0" class="flex flex-wrap gap-2 mb-6">
+              <button
+                v-for="brand in brands"
+                :key="brand"
+                @click="toggleBrand(brand)"
+                :class="[
+                  'px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
+                  selectedBrands.includes(brand)
+                    ? 'bg-purple-600 text-white shadow-md hover:bg-purple-700'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                ]"
+              >
+                {{ brand }}
+              </button>
+            </div>
+            <div v-else class="mb-6">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Không có thương hiệu nào</p>
+            </div>
+
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Danh mục</h3>
+            <div v-if="loadingCategories" class="mb-6">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-sm text-gray-600 dark:text-gray-400">Đang tải...</span>
+              </div>
+            </div>
+            <div v-else-if="categories.length > 0" class="flex flex-wrap gap-2 mb-6">
+              <button
+                v-for="category in categories"
+                :key="category.slug"
+                @click="toggleCategory(category.slug)"
+                :class="[
+                  'px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
+                  selectedCategories.includes(category.slug)
+                    ? 'bg-purple-600 text-white shadow-md hover:bg-purple-700'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                ]"
+              >
+                {{ category.name }}
+              </button>
+            </div>
+            <div v-else class="mb-6">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Không có danh mục nào</p>
             </div>
 
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Khoảng giá</h3>
-            <div class="space-y-2 mb-6">
-              <label v-for="range in priceRanges" :key="range.label" class="flex items-center gap-2 cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
-                <input type="radio" :value="range" v-model="selectedPriceRange" name="price" class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500">
-                <span class="text-sm text-gray-700 dark:text-gray-300">{{ range.label }}</span>
-              </label>
+            <div class="mb-6">
+              <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Từ</span>
+                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatPrice(minPrice) }}</span>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Đến</span>
+                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatPrice(maxPrice) }}</span>
+                </div>
+              </div>
+              
+              <!-- Range Slider -->
+              <div class="relative h-8">
+                <div class="absolute w-full h-2 top-1/2 -translate-y-1/2 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div 
+                  v-if="minPrice > 0 || maxPrice < 20000000"
+                  class="absolute h-2 top-1/2 -translate-y-1/2 bg-purple-600 rounded-lg"
+                  :style="{ 
+                    left: `${(minPrice / 20000000) * 100}%`, 
+                    width: `${((maxPrice - minPrice) / 20000000) * 100}%` 
+                  }"
+                ></div>
+                
+                <input
+                  type="range"
+                  :min="0"
+                  :max="20000000"
+                  :step="100000"
+                  v-model.number="minPrice"
+                  @input="handleMinPriceChange"
+                  class="absolute w-full h-2 top-1/2 -translate-y-1/2 bg-transparent appearance-none cursor-pointer range-slider range-slider-min"
+                  style="z-index: 10;"
+                />
+                <input
+                  type="range"
+                  :min="0"
+                  :max="20000000"
+                  :step="100000"
+                  v-model.number="maxPrice"
+                  @input="handleMaxPriceChange"
+                  class="absolute w-full h-2 top-1/2 -translate-y-1/2 bg-transparent appearance-none cursor-pointer range-slider range-slider-max"
+                  style="z-index: 20;"
+                />
+              </div>
+              
+              <div class="flex items-center justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <span>0đ</span>
+                <span>20.000.000đ</span>
+              </div>
             </div>
 
             <button 
@@ -43,20 +132,19 @@
           <!-- Sort Bar -->
           <div class="flex items-center justify-between mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div class="text-sm text-gray-600 dark:text-gray-400">
-              Tìm thấy <span class="font-semibold text-gray-900 dark:text-gray-100">{{ totalItems }}</span> sản phẩm
+              Tìm thấy <span class="font-semibold text-gray-900 dark:text-gray-100">{{ filteredTotalItems }}</span> sản phẩm
             </div>
             <select 
               v-model="sortBy" 
-              @change="fetchProducts" 
+              @change="handleSortChange" 
               class="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
               aria-label="Sắp xếp sản phẩm"
             >
-              <option value="">Sắp xếp</option>
+              <option value="newest">Mới nhất</option>
               <option value="price-asc">Giá: Thấp → Cao</option>
               <option value="price-desc">Giá: Cao → Thấp</option>
               <option value="name-asc">Tên: A → Z</option>
               <option value="name-desc">Tên: Z → A</option>
-              <option value="newest">Mới nhất</option>
             </select>
           </div>
 
@@ -110,7 +198,7 @@
           </div>
 
           <!-- Pagination -->
-          <div v-if="totalPages > 1" class="flex items-center justify-center gap-4 mt-8">
+          <div v-if="filteredTotalPages > 1" class="flex items-center justify-center gap-4 mt-8">
             <button 
               @click="prevPage" 
               :disabled="currentPage === 0"
@@ -121,12 +209,12 @@
             </button>
             
             <span class="text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
-              Trang {{ currentPage + 1 }} / {{ totalPages }}
+              Trang {{ currentPage + 1 }} / {{ filteredTotalPages }}
             </span>
             
             <button 
               @click="nextPage" 
-              :disabled="currentPage >= totalPages - 1"
+              :disabled="currentPage >= filteredTotalPages - 1"
               class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
               aria-label="Trang sau"
             >
@@ -141,8 +229,19 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import productService from '@/services/productService'
+import { useFlashSaleStore } from '@/stores/flashSale'
 import ProductCard from '@/assets/components/products/ProductCard.vue'
+import { API_ENDPOINTS } from '@/config/api'
+import logger from '@/utils/logger'
+import axios from 'axios'
+
+// Router
+const route = useRoute()
+
+// Stores
+const flashSaleStore = useFlashSaleStore()
 
 // State
 const products = ref([])
@@ -152,26 +251,135 @@ const currentPage = ref(0)
 const pageSize = ref(8)
 const totalPages = ref(0)
 const totalItems = ref(0)
-const sortBy = ref('')
+const sortBy = ref('newest') // Mặc định: Mới nhất
 
 // Filters
-const brands = ref(['Nike', 'Adidas', 'Puma', 'New Balance', 'Vans', 'Converse'])
+const brands = ref([])
+const loadingBrands = ref(false)
 const selectedBrands = ref([])
-const selectedPriceRange = ref(null)
-const priceRanges = ref([
-  { label: 'Tất cả', min: 0, max: 999999999 },
-  { label: 'Dưới 1 triệu', min: 0, max: 1000000 },
-  { label: '1 - 2 triệu', min: 1000000, max: 2000000 },
-  { label: '2 - 5 triệu', min: 2000000, max: 5000000 },
-  { label: 'Trên 5 triệu', min: 5000000, max: 999999999 }
-])
+const categories = ref([])
+const loadingCategories = ref(false)
+const selectedCategories = ref([])
+const minPrice = ref(0)
+const maxPrice = ref(20000000)
 
-// Computed
+// Computed - Get filtered and sorted products (without pagination)
+const filteredAndSortedProducts = computed(() => {
+  let filteredProducts = [...products.value]
+  
+  // Apply brand filter
+  if (selectedBrands.value.length > 0) {
+    filteredProducts = filteredProducts.filter(product => {
+      // Check both brandName and brand.name
+      const productBrandName = product.brandName || product.brand?.name || ''
+      return selectedBrands.value.includes(productBrandName)
+    })
+  }
+  
+  // Apply category filter
+  if (selectedCategories.value.length > 0) {
+    filteredProducts = filteredProducts.filter(product => {
+      // Check if product has any of the selected categories
+      if (product.categories && Array.isArray(product.categories)) {
+        const hasMatchingCategory = product.categories.some(cat => {
+          const catSlug = cat.slug || cat.name?.toLowerCase().replace(/\s+/g, '-')
+          return catSlug && selectedCategories.value.includes(catSlug)
+        })
+        return hasMatchingCategory
+      }
+      // Fallback: check categoryIds if categories array is not available
+      if (product.categoryIds && Array.isArray(product.categoryIds)) {
+        // Match by category slug if we have category mapping
+        const categorySlugs = categories.value
+          .filter(cat => product.categoryIds.includes(cat.id))
+          .map(cat => cat.slug)
+        return categorySlugs.some(slug => selectedCategories.value.includes(slug))
+      }
+      return false
+    })
+  }
+  
+  // Apply price range filter
+  if (minPrice.value > 0 || maxPrice.value < 20000000) {
+    filteredProducts = filteredProducts.filter(product => {
+      const price = product.price || product.priceBase || 0
+      return price >= minPrice.value && price <= maxPrice.value
+    })
+  }
+  
+  // Apply sorting
+  if (sortBy.value) {
+    filteredProducts = sortProducts(filteredProducts, sortBy.value)
+  }
+  
+  return filteredProducts
+})
+
+// Computed - Total items after filtering
+const filteredTotalItems = computed(() => {
+  return filteredAndSortedProducts.value.length
+})
+
+// Computed - Total pages after filtering
+const filteredTotalPages = computed(() => {
+  return Math.ceil(filteredTotalItems.value / pageSize.value)
+})
+
+// Computed - Apply pagination to filtered and sorted products
 const displayedProducts = computed(() => {
   const start = currentPage.value * pageSize.value
   const end = start + pageSize.value
-  return products.value.slice(start, end)
+  return filteredAndSortedProducts.value.slice(start, end)
 })
+
+// Sort products based on sortBy value
+const sortProducts = (productsList, sortOption) => {
+  const sorted = [...productsList]
+  
+  switch (sortOption) {
+    case 'price-asc':
+      return sorted.sort((a, b) => {
+        const priceA = a.price || a.priceBase || 0
+        const priceB = b.price || b.priceBase || 0
+        return priceA - priceB
+      })
+    
+    case 'price-desc':
+      return sorted.sort((a, b) => {
+        const priceA = a.price || a.priceBase || 0
+        const priceB = b.price || b.priceBase || 0
+        return priceB - priceA
+      })
+    
+    case 'name-asc':
+      return sorted.sort((a, b) => {
+        const nameA = (a.name || '').toLowerCase()
+        const nameB = (b.name || '').toLowerCase()
+        return nameA.localeCompare(nameB, 'vi')
+      })
+    
+    case 'name-desc':
+      return sorted.sort((a, b) => {
+        const nameA = (a.name || '').toLowerCase()
+        const nameB = (b.name || '').toLowerCase()
+        return nameB.localeCompare(nameA, 'vi')
+      })
+    
+    case 'newest':
+      // Sort by ID descending (assuming higher ID = newer product)
+      // Or by createdAt if available
+      return sorted.sort((a, b) => {
+        if (a.createdAt && b.createdAt) {
+          return new Date(b.createdAt) - new Date(a.createdAt)
+        }
+        // Fallback to ID
+        return (b.id || 0) - (a.id || 0)
+      })
+    
+    default:
+      return sorted
+  }
+}
 
 // Methods
 const fetchProducts = async () => {
@@ -204,8 +412,9 @@ const fetchProducts = async () => {
     }
     
     products.value = productData
+    // totalItems and totalPages will be recalculated in computed based on filtered and sorted products
+    // We keep the original total for reference
     totalItems.value = totalElements
-    totalPages.value = Math.ceil(totalElements / pageSize.value)
     
   } catch (err) {
     // Better error message
@@ -230,26 +439,502 @@ const prevPage = () => {
 }
 
 const nextPage = () => {
-  if (currentPage.value < totalPages.value - 1) {
+  if (currentPage.value < filteredTotalPages.value - 1) {
     currentPage.value++
+  }
+}
+
+const handleSortChange = () => {
+  // Reset to first page when sort changes
+  currentPage.value = 0
+  // Sorting is handled in computed, no need to refetch
+}
+
+const toggleBrand = (brand) => {
+  const index = selectedBrands.value.indexOf(brand)
+  if (index > -1) {
+    selectedBrands.value.splice(index, 1)
+  } else {
+    selectedBrands.value.push(brand)
+  }
+  handleBrandChange()
+}
+
+const toggleCategory = (categorySlug) => {
+  const index = selectedCategories.value.indexOf(categorySlug)
+  if (index > -1) {
+    selectedCategories.value.splice(index, 1)
+  } else {
+    selectedCategories.value.push(categorySlug)
+  }
+  handleCategoryChange()
+}
+
+const handleCategoryChange = () => {
+  // Reset to first page when filter changes
+  currentPage.value = 0
+  // Filtering is handled in computed, no need to refetch
+}
+
+const handleBrandChange = () => {
+  // Reset to first page when filter changes
+  currentPage.value = 0
+  // Filtering is handled in computed, no need to refetch
+}
+
+const handleMinPriceChange = () => {
+  // Ensure minPrice doesn't exceed maxPrice
+  if (minPrice.value > maxPrice.value) {
+    minPrice.value = maxPrice.value
+  }
+  // Ensure values are within bounds
+  if (minPrice.value < 0) minPrice.value = 0
+  if (minPrice.value > 20000000) minPrice.value = 20000000
+  // Reset to first page when filter changes
+  currentPage.value = 0
+  // Filtering is handled in computed, no need to refetch
+}
+
+const handleMaxPriceChange = () => {
+  // Ensure maxPrice doesn't go below minPrice
+  if (maxPrice.value < minPrice.value) {
+    maxPrice.value = minPrice.value
+  }
+  // Ensure values are within bounds
+  if (maxPrice.value < 0) maxPrice.value = 0
+  if (maxPrice.value > 20000000) maxPrice.value = 20000000
+  // Reset to first page when filter changes
+  currentPage.value = 0
+  // Filtering is handled in computed, no need to refetch
+}
+
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(price)
+}
+
+
+const fetchBrands = async () => {
+  loadingBrands.value = true
+  try {
+    // Try to get brands from products first (extract unique brands)
+    const response = await productService.getProducts(0, 1000) // Get more products to extract brands
+    let productData = []
+    
+    if (response.data) {
+      if (Array.isArray(response.data.content)) {
+        productData = response.data.content
+      } else if (Array.isArray(response.data)) {
+        productData = response.data
+      }
+    }
+    
+    // Extract unique brands from products (check both brandName and brand.name)
+    const uniqueBrands = [...new Set(
+      productData
+        .map(p => p.brandName || p.brand?.name)
+        .filter(Boolean)
+    )]
+    brands.value = uniqueBrands.sort((a, b) => a.localeCompare(b, 'vi'))
+    
+    // If no brands found, try API endpoint
+    if (brands.value.length === 0) {
+      try {
+        const brandsResponse = await axios.get(API_ENDPOINTS.ADMIN_PRODUCTS.BRANDS)
+        if (Array.isArray(brandsResponse.data)) {
+          brands.value = brandsResponse.data
+            .map(b => b.name || b)
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b, 'vi'))
+        }
+      } catch (apiError) {
+        logger.warn('Could not fetch brands from API, using empty list:', apiError)
+      }
+    }
+  } catch (error) {
+    logger.error('Error fetching brands:', error)
+    // Fallback to empty array
+    brands.value = []
+  } finally {
+    loadingBrands.value = false
+  }
+}
+
+const fetchCategories = async () => {
+  loadingCategories.value = true
+  try {
+    // Try to get categories from products first (extract unique categories)
+    const response = await productService.getProducts(0, 1000) // Get more products to extract categories
+    let productData = []
+    
+    if (response.data) {
+      if (Array.isArray(response.data.content)) {
+        productData = response.data.content
+      } else if (Array.isArray(response.data)) {
+        productData = response.data
+      }
+    }
+    
+    // Extract unique categories from products
+    const categoryMap = new Map()
+    productData.forEach(product => {
+      // Check if product has categories array
+      if (product.categories && Array.isArray(product.categories)) {
+        product.categories.forEach(cat => {
+          if (cat && (cat.slug || cat.name)) {
+            const slug = cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
+            const name = cat.name || cat.slug
+            const id = cat.id
+            if (slug && name) {
+              categoryMap.set(slug, { id, name, slug })
+            }
+          }
+        })
+      }
+      // Also check categoryIds if categories array is not available
+      else if (product.categoryIds && Array.isArray(product.categoryIds)) {
+        // We'll need to fetch category details later, but for now just log
+        logger.log('Product has categoryIds but no categories array:', product.id, product.categoryIds)
+      }
+    })
+    
+    categories.value = Array.from(categoryMap.values()).sort((a, b) => 
+      a.name.localeCompare(b.name, 'vi')
+    )
+    
+    logger.log('Extracted categories from products:', categories.value.length, categories.value)
+    
+    // If no categories found, try public API endpoint first, then admin endpoint, then hardcoded
+    if (categories.value.length === 0) {
+      try {
+        // Try public API endpoint first
+        const categoriesResponse = await axios.get(API_ENDPOINTS.PRODUCTS.CATEGORIES)
+        if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
+          // Categories from public API are already filtered to child categories
+          const childCategories = categoriesResponse.data.map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
+          }))
+          categories.value = childCategories.sort((a, b) => 
+            a.name.localeCompare(b.name, 'vi')
+          )
+          logger.log('Fetched categories from public API:', categories.value.length, categories.value)
+        }
+      } catch (publicApiError) {
+        logger.warn('Could not fetch categories from public API, trying admin endpoint:', publicApiError)
+        try {
+          // Fallback to admin API endpoint (may require auth)
+          const categoriesResponse = await axios.get(API_ENDPOINTS.ADMIN_PRODUCTS.CATEGORIES)
+          if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
+            // Filter only child categories (with parentId)
+            const childCategories = categoriesResponse.data
+              .filter(cat => cat.parentId != null)
+              .map(cat => ({
+                id: cat.id,
+                name: cat.name,
+                slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
+              }))
+            categories.value = childCategories.sort((a, b) => 
+              a.name.localeCompare(b.name, 'vi')
+            )
+            logger.log('Fetched categories from admin API:', categories.value.length, categories.value)
+          }
+        } catch (adminApiError) {
+          logger.warn('Could not fetch categories from admin API, using hardcoded list:', adminApiError)
+          // Fallback to hardcoded categories from HomePage
+          categories.value = [
+            { id: 1, name: 'Running', slug: 'running' },
+            { id: 2, name: 'Basketball', slug: 'basketball' },
+            { id: 3, name: 'Casual', slug: 'casual' },
+            { id: 4, name: 'Training', slug: 'training' },
+            { id: 5, name: 'Skateboarding', slug: 'skateboarding' },
+            { id: 6, name: 'Limited Edition', slug: 'limited' },
+          ]
+        }
+      }
+    }
+  } catch (error) {
+    logger.error('Error fetching categories:', error)
+    // Fallback to hardcoded categories
+    categories.value = [
+      { id: 1, name: 'Running', slug: 'running' },
+      { id: 2, name: 'Basketball', slug: 'basketball' },
+      { id: 3, name: 'Casual', slug: 'casual' },
+      { id: 4, name: 'Training', slug: 'training' },
+      { id: 5, name: 'Skateboarding', slug: 'skateboarding' },
+      { id: 6, name: 'Limited Edition', slug: 'limited' },
+    ]
+  } finally {
+    loadingCategories.value = false
   }
 }
 
 const clearFilters = () => {
   selectedBrands.value = []
-  selectedPriceRange.value = null
-  sortBy.value = ''
-  fetchProducts()
+  selectedCategories.value = []
+  minPrice.value = 0
+  maxPrice.value = 20000000
+  sortBy.value = 'newest' // Reset to default: Mới nhất
+  currentPage.value = 0
+  // No need to refetch, filtering is handled in computed
 }
 
-// Watch filters
-watch([selectedBrands, selectedPriceRange], () => {
-  currentPage.value = 0
-  fetchProducts()
-}, { deep: true })
+// Watch route query params for brand filter
+watch(() => route.query.brand, (brandParam) => {
+  if (brandParam) {
+    const brandName = decodeURIComponent(brandParam)
+    // Apply filter even if brand is not in brands list yet
+    // (brand might exist in products but not extracted yet)
+    if (!selectedBrands.value.includes(brandName)) {
+      selectedBrands.value = [brandName]
+      currentPage.value = 0
+    }
+  } else {
+    // If no brand in query, clear selection
+    selectedBrands.value = []
+  }
+})
+
+// Watch brands array to apply filter when brands are loaded
+watch(() => brands.value, (newBrands) => {
+  // Apply brand filter from query params if present and brands are now loaded
+  if (newBrands.length > 0 && route.query.brand) {
+    const brandName = decodeURIComponent(route.query.brand)
+    if (!selectedBrands.value.includes(brandName)) {
+      selectedBrands.value = [brandName]
+      currentPage.value = 0
+    }
+  }
+})
+
+// Watch route query params for category filter
+watch(() => route.query.category, (categoryParam) => {
+  if (categoryParam) {
+    const categorySlug = decodeURIComponent(categoryParam).trim()
+    logger.log('Category filter from query params:', categorySlug)
+    // Apply filter even if category is not in categories list yet
+    if (!selectedCategories.value.includes(categorySlug)) {
+      selectedCategories.value = [categorySlug]
+      currentPage.value = 0
+      logger.log('Applied category filter:', categorySlug, 'Selected categories:', selectedCategories.value)
+    }
+  } else {
+    // If no category in query, clear selection
+    selectedCategories.value = []
+    logger.log('Cleared category filter')
+  }
+}, { immediate: true })
+
+// Watch categories array to apply filter when categories are loaded
+watch(() => categories.value, (newCategories) => {
+  // Apply category filter from query params if present and categories are now loaded
+  if (newCategories.length > 0 && route.query.category) {
+    const categorySlug = decodeURIComponent(route.query.category).trim()
+    if (!selectedCategories.value.includes(categorySlug)) {
+      selectedCategories.value = [categorySlug]
+      currentPage.value = 0
+    }
+  }
+})
 
 // Initial load
-onMounted(() => {
-  fetchProducts()
+onMounted(async () => {
+  // Fetch flash sales if not already loaded
+  if (flashSaleStore.activeFlashSales.length === 0) {
+    try {
+      await flashSaleStore.fetchActiveFlashSales()
+    } catch (error) {
+      logger.warn('Failed to fetch flash sales in ProductListPage:', error)
+    }
+  }
+  
+  await Promise.all([
+    fetchProducts(),
+    fetchBrands(),
+    fetchCategories()
+  ])
+  
+  // Apply brand filter from query params if present (after brands are loaded)
+  if (route.query.brand) {
+    const brandName = decodeURIComponent(route.query.brand).trim()
+    logger.log('Applying brand filter on mount:', brandName)
+    const normalizedBrandName = brandName.toLowerCase()
+    const isAlreadySelected = selectedBrands.value.some(b => b.toLowerCase() === normalizedBrandName)
+    if (!isAlreadySelected) {
+      selectedBrands.value = [brandName]
+      currentPage.value = 0
+      logger.log('Applied brand filter on mount:', brandName, 'Selected brands:', selectedBrands.value)
+    }
+  }
+  
+  // Apply category filter from query params if present (after categories are loaded)
+  if (route.query.category) {
+    const categorySlug = decodeURIComponent(route.query.category).trim()
+    logger.log('Applying category filter on mount:', categorySlug)
+    if (!selectedCategories.value.includes(categorySlug)) {
+      selectedCategories.value = [categorySlug]
+      currentPage.value = 0
+      logger.log('Applied category filter on mount:', categorySlug, 'Selected categories:', selectedCategories.value)
+    }
+  }
+  
+  // Log products, brands, and categories for debugging
+  logger.log('Products loaded:', products.value.length)
+  logger.log('Brands loaded:', brands.value.length, brands.value)
+  logger.log('Categories loaded:', categories.value.length, categories.value)
+  logger.log('Selected brands:', selectedBrands.value)
+  logger.log('Selected categories:', selectedCategories.value)
+  
+  // Debug: Log sample product categories
+  if (products.value.length > 0) {
+    const sampleProduct = products.value[0]
+    logger.log('Sample product categories:', sampleProduct.categories)
+    logger.log('Sample product categoryIds:', sampleProduct.categoryIds)
+    logger.log('Sample product:', {
+      id: sampleProduct.id,
+      name: sampleProduct.name,
+      categories: sampleProduct.categories,
+      categoryIds: sampleProduct.categoryIds
+    })
+  }
 })
 </script>
+
+<style scoped>
+.range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* Min slider - only thumb is interactive */
+.range-slider-min {
+  pointer-events: none;
+}
+
+.range-slider-min::-webkit-slider-thumb {
+  pointer-events: auto;
+  z-index: 30;
+}
+
+.range-slider-min::-moz-range-thumb {
+  pointer-events: auto;
+  z-index: 30;
+}
+
+.range-slider-min::-ms-thumb {
+  pointer-events: auto;
+  z-index: 30;
+}
+
+/* Max slider - only thumb is interactive */
+.range-slider-max {
+  pointer-events: none;
+}
+
+.range-slider-max::-webkit-slider-thumb {
+  pointer-events: auto;
+  z-index: 30;
+}
+
+.range-slider-max::-moz-range-thumb {
+  pointer-events: auto;
+  z-index: 30;
+}
+
+.range-slider-max::-ms-thumb {
+  pointer-events: auto;
+  z-index: 30;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #9333ea;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  margin-top: -6px;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+  background: #7e22ce;
+  transform: scale(1.1);
+}
+
+.range-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  background: transparent;
+  width: 100%;
+}
+
+.range-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #9333ea;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  margin-top: -6px;
+}
+
+.range-slider::-moz-range-thumb:hover {
+  background: #7e22ce;
+  transform: scale(1.1);
+}
+
+.range-slider::-moz-range-track {
+  height: 8px;
+  background: transparent;
+  width: 100%;
+}
+
+.range-slider::-ms-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #9333ea;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  margin-top: -6px;
+}
+
+.range-slider::-ms-thumb:hover {
+  background: #7e22ce;
+  transform: scale(1.1);
+}
+
+.range-slider::-ms-track {
+  height: 8px;
+  background: transparent;
+  width: 100%;
+}
+
+/* Dark mode support */
+.dark .range-slider::-webkit-slider-thumb {
+  border-color: #1f2937;
+}
+
+.dark .range-slider::-moz-range-thumb {
+  border-color: #1f2937;
+}
+
+.dark .range-slider::-ms-thumb {
+  border-color: #1f2937;
+}
+</style>

@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import flashSaleService from '@/services/flashSaleService';
+import logger from '@/utils/logger';
 
 export const useFlashSaleStore = defineStore('flashSale', () => {
     // State
@@ -25,11 +26,17 @@ export const useFlashSaleStore = defineStore('flashSale', () => {
 
         try {
             const data = await flashSaleService.getActiveFlashSales();
-            activeFlashSales.value = data;
-            console.log(`✅ Fetched ${data.length} active flash sales`);
+            activeFlashSales.value = Array.isArray(data) ? data : [];
+            logger.log(`Fetched ${activeFlashSales.value.length} active flash sales`);
+            if (activeFlashSales.value.length > 0) {
+                logger.log('Flash sales data:', activeFlashSales.value);
+            } else {
+                logger.warn('No active flash sales found. Check if flash sales exist and are within time range.');
+            }
         } catch (err) {
             error.value = err.response?.data?.message || 'Không thể tải flash sales';
-            console.error('❌ Error fetching flash sales:', err);
+            logger.error('Error fetching flash sales:', err);
+            activeFlashSales.value = [];
         } finally {
             loading.value = false;
         }
@@ -42,7 +49,7 @@ export const useFlashSaleStore = defineStore('flashSale', () => {
         try {
             return await flashSaleService.getFlashSaleByProductId(productId);
         } catch (err) {
-            console.error(`❌ Error fetching flash sale for product ${productId}:`, err);
+            logger.error(`Error fetching flash sale for product ${productId}:`, err);
             return null;
         }
     };
@@ -65,7 +72,11 @@ export const useFlashSaleStore = defineStore('flashSale', () => {
      * Calculate discounted price
      */
     const calculateDiscountedPrice = (originalPrice, discountPercent) => {
-        return originalPrice * (1 - discountPercent / 100);
+        // Convert discountPercent to number if it's a string or BigDecimal
+        const discount = typeof discountPercent === 'number' 
+            ? discountPercent 
+            : parseFloat(discountPercent) || 0;
+        return originalPrice * (1 - discount / 100);
     };
 
     /**

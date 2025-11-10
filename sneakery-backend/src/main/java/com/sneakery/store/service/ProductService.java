@@ -1,18 +1,29 @@
 package com.sneakery.store.service;
 
+import com.sneakery.store.dto.AdminProductDetailDto;
+import com.sneakery.store.dto.AdminVariantRequestDto;
+import com.sneakery.store.dto.CategoryDto;
 import com.sneakery.store.dto.ProductCardDto;
+import com.sneakery.store.entity.Category;
 import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.ProductVariant;
+import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.ProductRepository;
 import lombok.RequiredArgsConstructor; // SỬA ĐỔI: Thêm import
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service xử lý sản phẩm cho User (Public)
@@ -207,6 +218,116 @@ public class ProductService {
                 .totalStock(totalStock)
                 .inStock(totalStock > 0)
                 
+                // Categories
+                .categories(convertCategoriesToDto(product.getCategories()))
+                
                 .build();
+    }
+
+    /**
+     * Lấy thông tin chi tiết sản phẩm theo ID (Public)
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Gọi repository để lấy sản phẩm theo ID</li>
+     *   <li>Chỉ lấy các sản phẩm đang active và chưa bị xóa</li>
+     *   <li>Chuyển đổi sang AdminProductDetailDto</li>
+     *   <li>Trả về thông tin chi tiết đầy đủ của sản phẩm</li>
+     * </ol>
+     * 
+     * <p><b>Về dữ liệu trả về:</b>
+     * <ul>
+     *   <li>Bao gồm tất cả thông tin sản phẩm: tên, mô tả, brand, categories, variants</li>
+     *   <li>Bao gồm tất cả biến thể (variants) với đầy đủ thông tin: SKU, size, màu, giá, số lượng</li>
+     *   <li>Sử dụng query tối ưu (findByIdWithDetails) để load tất cả dữ liệu trong 1 lần</li>
+     * </ul>
+     * 
+     * <p><b>Về bảo mật:</b>
+     * <ul>
+     *   <li>Chỉ trả về các sản phẩm đang active (isActive = true)</li>
+     *   <li>Chỉ trả về các sản phẩm chưa bị xóa (soft-deleted)</li>
+     * </ul>
+     * 
+     * @param productId ID của sản phẩm cần lấy
+     * @return AdminProductDetailDto chứa thông tin chi tiết sản phẩm (bao gồm tất cả variants)
+     * @throws ApiException nếu không tìm thấy sản phẩm với ID này hoặc sản phẩm không active
+     * 
+     * @example
+     * <pre>
+     * // Lấy sản phẩm có ID = 1
+     * AdminProductDetailDto product = productService.getProductByIdForPublic(1L);
+     * System.out.println(product.getName()); // "Nike Air Max 90"
+     * System.out.println(product.getVariants().size()); // Số lượng biến thể
+     * </pre>
+     */
+    @Transactional(readOnly = true)
+    public AdminProductDetailDto getProductByIdForPublic(Long productId) {
+        Product product = productRepository.findByIdWithDetails(productId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
+        
+        // Kiểm tra sản phẩm có đang active không
+        if (product.getIsActive() == null || !product.getIsActive()) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không có sẵn");
+        }
+        
+        return convertToAdminDetailDto(product);
+    }
+
+    /**
+     * Convert Product Entity sang AdminProductDetailDto
+     * Sử dụng lại logic từ AdminProductService
+     */
+    private AdminProductDetailDto convertToAdminDetailDto(Product product) {
+        // Convert Categories
+        Set<CategoryDto> categoryDtos = product.getCategories().stream()
+            .map(c -> new CategoryDto(c.getId(), c.getName(), c.getSlug(), c.getParent() != null ? c.getParent().getId() : null))
+            .collect(Collectors.toSet());
+
+        // Convert Variants
+        List<AdminVariantRequestDto> variantDtos = product.getVariants().stream()
+            .filter(v -> v.getDeletedAt() == null) // Chỉ lấy variants chưa bị xóa
+            .map(v -> {
+                AdminVariantRequestDto dto = new AdminVariantRequestDto();
+                dto.setId(v.getId());
+                dto.setSku(v.getSku());
+                dto.setSize(v.getSize());
+                dto.setColor(v.getColor());
+                dto.setPriceBase(v.getPriceBase());
+                dto.setPriceSale(v.getPriceSale());
+                dto.setStockQuantity(v.getStockQuantity());
+                dto.setImageUrl(v.getImageUrl());
+                return dto;
+            }).collect(Collectors.toList());
+
+        return AdminProductDetailDto.builder()
+                .id(product.getId())
+                .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
+                .name(product.getName())
+                .slug(product.getSlug())
+                .description(product.getDescription())
+                .isActive(product.getIsActive())
+                .materialId(product.getMaterial() != null ? product.getMaterial().getId() : null)
+                .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
+                .categories(categoryDtos)
+                .variants(variantDtos)
+                .mainImageUrl(product.getMainImageUrl())
+                .build();
+    }
+
+    /**
+     * Convert Set<Category> to Set<CategoryDto>
+     */
+    private Set<CategoryDto> convertCategoriesToDto(Set<Category> categories) {
+        if (categories == null || categories.isEmpty()) {
+            return new HashSet<>();
+        }
+        return categories.stream()
+                .map(c -> new CategoryDto(
+                    c.getId(),
+                    c.getName(),
+                    c.getSlug(),
+                    c.getParent() != null ? c.getParent().getId() : null
+                ))
+                .collect(Collectors.toSet());
     }
 }

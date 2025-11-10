@@ -77,28 +77,24 @@
 
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-shrink-0">
                   <!-- Quantity Controls -->
-                  <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-1">
+                  <div class="flex items-center gap-1 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-1">
                     <button 
                       @click="updateQuantity(item, item.quantity - 1)" 
                       :disabled="item.quantity <= 1"
-                      class="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      class="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all focus:outline-none focus:ring-2 focus:ring-purple-500"
                       aria-label="Giảm số lượng"
                     >
-                      <i class="material-icons text-sm">remove</i>
+                      <i class="material-icons text-base">remove</i>
                     </button>
-                    <input 
-                      v-model.number="item.quantity" 
-                      type="number" 
-                      min="1" 
-                      readonly
-                      class="w-14 h-8 text-center border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-semibold"
-                    />
+                    <div class="w-12 h-9 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
+                      <span class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ item.quantity }}</span>
+                    </div>
                     <button 
                       @click="updateQuantity(item, item.quantity + 1)"
-                      class="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-all"
+                      class="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500"
                       aria-label="Tăng số lượng"
                     >
-                      <i class="material-icons text-sm">add</i>
+                      <i class="material-icons text-base">add</i>
                     </button>
                   </div>
 
@@ -250,21 +246,25 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useCartStore } from '@/stores/cart';
 import toastService from '@/utils/toastService';
 import confirmDialogService from '@/utils/confirmDialogService';
-import userService from '@/services/userService';
+import logger from '@/utils/logger';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const cartStore = useCartStore();
 
-// State
-const cart = ref(null);
-const loading = ref(true);
+// Local state
 const couponCode = ref('');
 const couponApplied = ref(false);
 const couponDiscount = ref(0);
 const couponError = ref('');
 const applyingCoupon = ref(false);
+
+// Computed từ cart store
+const cart = computed(() => cartStore.cart);
+const loading = computed(() => cartStore.loading);
 
 // Computed
 const shippingFee = computed(() => {
@@ -292,13 +292,10 @@ const totalAmount = computed(() => {
 // Methods
 const fetchCart = async () => {
   try {
-    loading.value = true;
-    cart.value = await userService.getMyCart();
+    await cartStore.fetchCart();
   } catch (error) {
-    console.error('Error fetching cart:', error);
-    toastService.error('Lỗi',error.message || 'Không thể tải giỏ hàng');
-  } finally {
-    loading.value = false;
+    logger.error('Error fetching cart:', error);
+    toastService.error('Lỗi', error.message || 'Không thể tải giỏ hàng');
   }
 };
 
@@ -306,15 +303,11 @@ const updateQuantity = async (item, newQuantity) => {
   if (newQuantity < 1) return;
 
   try {
-    await userService.addItemToCart({
-      variantId: item.variantId,
-      quantity: newQuantity,
-    });
-    await fetchCart();
-    toastService.success('Thành công','Đã cập nhật số lượng');
+    await cartStore.updateQuantity(item.variantId, newQuantity);
+    toastService.success('Thành công', 'Đã cập nhật số lượng');
   } catch (error) {
-    console.error('Error updating quantity:', error);
-    toastService.error('Lỗi',error.message || 'Không thể cập nhật số lượng');
+    logger.error('Error updating quantity:', error);
+    toastService.error('Lỗi', error.message || 'Không thể cập nhật số lượng');
   }
 };
 
@@ -330,13 +323,12 @@ const removeItem = async (item) => {
       }
     );
 
-    await userService.removeItemFromCart(item.variantId);
-    await fetchCart();
-    toastService.success('Thành công','Đã xóa sản phẩm khỏi giỏ hàng');
+    await cartStore.removeItem(item.variantId);
+    toastService.success('Thành công', 'Đã xóa sản phẩm khỏi giỏ hàng');
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('Error removing item:', error);
-      toastService.error('Lỗi',error.message || 'Không thể xóa sản phẩm');
+      logger.error('Error removing item:', error);
+      toastService.error('Lỗi', error.message || 'Không thể xóa sản phẩm');
     }
   }
 };
@@ -366,7 +358,7 @@ const applyCoupon = async () => {
       couponError.value = 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
     }
   } catch (error) {
-    console.error('Error applying coupon:', error);
+    logger.error('Error applying coupon:', error);
     couponError.value = 'Không thể áp dụng mã giảm giá';
   } finally {
     applyingCoupon.value = false;

@@ -1,5 +1,5 @@
 -- =====================================================
--- Database Indexes Optimization Script
+-- SNEAKERY E-COMMERCE - ADD COMPOSITE INDEXES
 -- =====================================================
 -- Mục đích: Thêm composite indexes để tối ưu các queries phức tạp
 -- Thời gian tạo: 2024-12-19
@@ -7,6 +7,8 @@
 
 USE sneakery_db;
 GO
+
+SET NOCOUNT ON;
 
 PRINT '========================================';
 PRINT 'Bắt đầu thêm composite indexes...';
@@ -101,10 +103,6 @@ GO
 -- =====================================================
 -- 3. PRODUCT_VARIANTS TABLE - Composite Indexes
 -- =====================================================
-
--- Index cho query: filter theo product_id + stock_quantity (đã có nhưng cần review)
--- Query: SELECT * FROM Product_Variants WHERE product_id = ? AND stock_quantity > 0
--- Note: Index idx_variants_product_stock đã tồn tại, nhưng cần đảm bảo nó đúng
 
 -- Index cho query: filter theo product_id + is_active
 -- Query: SELECT * FROM Product_Variants WHERE product_id = ? AND is_active = 1
@@ -210,10 +208,6 @@ GO
 -- 7. WISHLISTS TABLE - Composite Indexes
 -- =====================================================
 
--- Index cho query: filter theo user_id + product_id (đã có unique constraint nhưng cần index)
--- Query: SELECT * FROM Wishlists WHERE user_id = ? AND product_id = ?
--- Note: Unique constraint đã có, nhưng cần đảm bảo index tồn tại
-
 -- Index cho query: filter theo product_id (để xem ai đã wishlist sản phẩm)
 -- Query: SELECT * FROM Wishlists WHERE product_id = ?
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_wishlists_product' AND object_id = OBJECT_ID('Wishlists'))
@@ -281,12 +275,13 @@ ELSE
     PRINT '⏭️  Index đã tồn tại: idx_users_role_active';
 GO
 
--- Index cho query: filter theo email (đã có unique constraint nhưng cần index)
--- Query: SELECT * FROM Users WHERE email = ?
--- Note: Unique constraint đã có, nhưng cần đảm bảo index tồn tại
-
 PRINT '========================================';
 PRINT 'Hoàn thành thêm composite indexes!';
 PRINT '========================================';
 GO
+
+PRINT '';
+PRINT 'Da tao thanh cong tat ca composite indexes.';
+PRINT 'Bước tiếp theo: Chạy file 09_INSERT_DATA.sql để thêm dữ liệu mẫu.';
+PRINT '';
 

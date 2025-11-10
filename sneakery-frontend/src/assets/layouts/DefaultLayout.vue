@@ -59,10 +59,14 @@
             <NotificationDropdown />
 
             <!-- Orders/Cart Icon -->
-            <router-link to="/cart" class="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-white/90 bg-transparent transition-all duration-200 cursor-pointer border border-transparent hover:bg-white/10 hover:text-white hover:border-white/20" :class="{ 'bg-white/20 text-white border-white/30': $route.path === '/cart' }">
+            <router-link to="/cart" class="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-white/90 bg-transparent transition-all duration-200 cursor-pointer border border-transparent hover:bg-white/10 hover:text-white hover:border-white/20" :class="{ 'bg-white/20 text-white border-white/30': $route.path === '/cart' }" aria-label="Giỏ hàng">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L18 21H6L5 9Z"/>
               </svg>
+              <span v-if="cartStore.cartCount > 0" class="absolute top-0 right-0 min-w-[18px] h-[18px] px-1.5 bg-red-500 text-white text-[11px] font-semibold rounded-full flex items-center justify-center shadow-md transform translate-x-1 -translate-y-1">
+                {{ cartStore.cartCount > 99 ? '99+' : cartStore.cartCount }}
+              </span>
+              <span v-if="cartStore.cartCount > 0" class="sr-only">{{ cartStore.cartCount }} sản phẩm trong giỏ hàng</span>
             </router-link>
           </template>
         </div>
@@ -319,6 +323,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useAdminStore } from '@/stores/admin';
 import { useWishlistStore } from '@/stores/wishlist';
+import { useCartStore } from '@/stores/cart';
 import { useRouter } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
 import NotificationDropdown from '@/assets/components/common/NotificationDropdown.vue';
@@ -328,6 +333,7 @@ import ToastContainer from '@/components/ToastContainer.vue';
 const authStore = useAuthStore();
 const adminStore = useAdminStore();
 const wishlistStore = useWishlistStore();
+const cartStore = useCartStore();
 const router = useRouter();
 
 // Theme
@@ -412,8 +418,15 @@ onMounted(async () => {
     try {
       await wishlistStore.fetchWishlist();
     } catch (error) {
-      console.error('Error loading wishlist:', error);
+      // Silently fail - wishlist is optional
     }
+  }
+  
+  // Load cart nếu user đã đăng nhập hoặc có guest cart
+  try {
+    await cartStore.fetchCart();
+  } catch (error) {
+    // Silently fail - cart will be loaded when needed
   }
 });
 

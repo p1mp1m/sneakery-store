@@ -2,6 +2,7 @@ package com.sneakery.store.service;
 
 import com.sneakery.store.dto.ReviewRequestDto;
 import com.sneakery.store.dto.ReviewResponseDto;
+import com.sneakery.store.dto.TestimonialDto;
 import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.Review;
 import com.sneakery.store.entity.User;
@@ -11,6 +12,9 @@ import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ReviewRepository;
 import com.sneakery.store.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,6 +88,18 @@ public class ReviewService {
     // HÀM HELPER
     // =================================================================
 
+    /**
+     * API 3: Lấy tất cả reviews đã được duyệt với pagination (cho testimonials)
+     * Chỉ lấy các reviews đã approved và chưa bị xóa
+     */
+    @Transactional(readOnly = true)
+    public Page<TestimonialDto> getAllApprovedReviews(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Review> reviewPage = reviewRepository.findAllApprovedReviews(pageable);
+        
+        return reviewPage.map(this::convertToTestimonialDto);
+    }
+
     private ReviewResponseDto convertToDto(Review review) {
         return ReviewResponseDto.builder()
                 .id(review.getId())
@@ -92,6 +108,39 @@ public class ReviewService {
                 .createdAt(review.getCreatedAt())
                 .authorName(review.getUser().getFullName()) // Lấy tên user
                 .isVerifiedPurchase(review.getIsVerifiedPurchase())
+                .build();
+    }
+
+    private TestimonialDto convertToTestimonialDto(Review review) {
+        // Lấy product image từ mainImageUrl (ưu tiên) hoặc first image nếu có
+        // Lưu ý: Không fetch images trong pagination query để tránh vấn đề với pagination
+        // Sử dụng mainImageUrl là chính, chỉ fallback sang images nếu mainImageUrl null
+        String productImage = null;
+        if (review.getProduct().getMainImageUrl() != null) {
+            productImage = review.getProduct().getMainImageUrl();
+        } else if (review.getProduct().getImages() != null && !review.getProduct().getImages().isEmpty()) {
+            // Fallback: Lazy load images nếu mainImageUrl không có
+            // Có thể gây N+1 query nhưng chỉ khi mainImageUrl null
+            productImage = review.getProduct().getImages().get(0).getImageUrl();
+        }
+        
+        // Lấy brand name
+        String brandName = null;
+        if (review.getProduct().getBrand() != null) {
+            brandName = review.getProduct().getBrand().getName();
+        }
+        
+        return TestimonialDto.builder()
+                .id(review.getId())
+                .productId(review.getProduct().getId())
+                .productName(review.getProduct().getName())
+                .productImage(productImage)
+                .brandName(brandName)
+                .userName(review.getUser().getFullName())
+                .rating(review.getRating())
+                .comment(review.getBody())
+                .isVerifiedPurchase(review.getIsVerifiedPurchase() != null && review.getIsVerifiedPurchase())
+                .createdAt(review.getCreatedAt())
                 .build();
     }
 }

@@ -36,6 +36,8 @@ export const API_ENDPOINTS = {
     BASE: '/api/products',
     SEARCH: '/api/products/search',
     BY_ID: (id) => `/api/products/${id}`,
+    CATEGORIES: '/api/products/categories',
+    BRANDS: '/api/products/brands',
   },
   
   // Admin Products
@@ -93,6 +95,18 @@ export const API_ENDPOINTS = {
   // Size Charts
   SIZE_CHARTS: {
     BASE: '/api/size-charts',
+  },
+  
+  // Reviews
+  REVIEWS: {
+    APPROVED: '/api/reviews/approved',
+    BY_PRODUCT: (productId) => `/api/products/${productId}/reviews`,
+  },
+  
+  // Newsletter
+  NEWSLETTER: {
+    SUBSCRIBE: '/api/newsletter/subscribe',
+    UNSUBSCRIBE: '/api/newsletter/unsubscribe',
   },
 };
 

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 /**
  * DTO cho Product Card hiển thị trong grid/list
@@ -36,4 +37,7 @@ public class ProductCardDto {
     // Stock status
     private Integer totalStock;      // Tổng số lượng tồn kho (tất cả variants)
     private Boolean inStock;         // Còn hàng hay không
+    
+    // Categories
+    private Set<CategoryDto> categories; // Danh sách categories của sản phẩm
 }

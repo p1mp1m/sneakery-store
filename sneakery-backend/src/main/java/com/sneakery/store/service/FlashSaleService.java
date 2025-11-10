@@ -52,8 +52,23 @@ public class FlashSaleService {
     public List<FlashSaleDto> getActiveFlashSales() {
         log.info("Fetching active flash sales");
         LocalDateTime now = LocalDateTime.now();
+        log.info("Current time: {}", now);
         
         List<FlashSale> flashSales = flashSaleRepository.findActiveFlashSales(now);
+        log.info("Found {} active flash sales", flashSales.size());
+        
+        // Log details for debugging if no flash sales found
+        if (flashSales.isEmpty()) {
+            log.warn("No active flash sales found. Checking all flash sales...");
+            List<FlashSale> allFlashSales = flashSaleRepository.findAll();
+            log.info("Total flash sales in database: {}", allFlashSales.size());
+            allFlashSales.forEach(fs -> {
+                boolean isInTimeRange = now.isAfter(fs.getStartTime()) && now.isBefore(fs.getEndTime());
+                log.info("Flash Sale ID: {}, Product ID: {}, Start: {}, End: {}, IsActive: {}, InTimeRange: {}", 
+                    fs.getId(), fs.getProduct().getId(), fs.getStartTime(), fs.getEndTime(), 
+                    fs.getIsActive(), isInTimeRange);
+            });
+        }
         
         return flashSales.stream()
                 .map(this::convertToDto)

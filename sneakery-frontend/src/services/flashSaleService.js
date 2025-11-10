@@ -20,9 +20,14 @@ class FlashSaleService {
     async getActiveFlashSales() {
         try {
             const response = await axios.get(API_ENDPOINTS.FLASH_SALES.ACTIVE);
+            logger.log('Flash sales API response:', response.data);
             return response.data;
         } catch (error) {
             logger.error('Failed to fetch active flash sales:', error);
+            if (error.response) {
+                logger.error('Response status:', error.response.status);
+                logger.error('Response data:', error.response.data);
+            }
             throw error;
         }
     }
