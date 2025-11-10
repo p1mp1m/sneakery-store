@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
     SEARCH: '/api/products/search',
     BY_ID: (id) => `/api/products/${id}`,
     CATEGORIES: '/api/products/categories',
+    CATEGORIES_GROUPS: '/api/products/categories/groups',
     BRANDS: '/api/products/brands',
   },
   

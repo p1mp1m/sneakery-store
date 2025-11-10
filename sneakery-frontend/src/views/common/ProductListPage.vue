@@ -45,7 +45,58 @@
                 <span class="text-sm text-gray-600 dark:text-gray-400">Đang tải...</span>
               </div>
             </div>
+            <div v-else-if="categoryGroups.length > 0" class="mb-6 space-y-4">
+              <!-- Category Groups (Parent with Children) -->
+              <div v-for="group in categoryGroups" :key="group.id" class="space-y-2">
+                <!-- Parent Category Header (Clickable) -->
+                <button
+                  @click="toggleParentCategory(group)"
+                  :class="[
+                    'w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
+                    isParentSelected(group)
+                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 border-purple-600 text-white shadow-md hover:from-purple-700 hover:to-indigo-700'
+                      : 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-200 dark:border-purple-800 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/30 dark:hover:to-indigo-900/30'
+                  ]"
+                >
+                  <i :class="[
+                    'material-icons text-lg',
+                    isParentSelected(group)
+                      ? 'text-white'
+                      : 'text-purple-600 dark:text-purple-400'
+                  ]">{{ getCategoryIcon({ slug: group.slug, name: group.name }) }}</i>
+                  <span :class="[
+                    'font-semibold text-sm',
+                    isParentSelected(group)
+                      ? 'text-white'
+                      : 'text-gray-900 dark:text-gray-100'
+                  ]">{{ group.name }}</span>
+                  <span :class="[
+                    'ml-auto text-xs',
+                    isParentSelected(group)
+                      ? 'text-white/80'
+                      : 'text-gray-500 dark:text-gray-400'
+                  ]">({{ group.children?.length || 0 }})</span>
+                </button>
+                <!-- Child Categories -->
+                <div class="flex flex-wrap gap-2 pl-4">
+                  <button
+                    v-for="child in group.children"
+                    :key="child.id"
+                    @click="toggleCategory(child.slug)"
+                    :class="[
+                      'px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
+                      selectedCategories.includes(child.slug)
+                        ? 'bg-purple-600 text-white shadow-md hover:bg-purple-700'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ]"
+                  >
+                    {{ child.name }}
+                  </button>
+                </div>
+              </div>
+            </div>
             <div v-else-if="categories.length > 0" class="flex flex-wrap gap-2 mb-6">
+              <!-- Fallback: Show flat list if groups not available -->
               <button
                 v-for="category in categories"
                 :key="category.slug"
@@ -260,9 +311,53 @@ const selectedBrands = ref([])
 const categories = ref([])
 const loadingCategories = ref(false)
 const selectedCategories = ref([])
+const categoryGroups = ref([]) // Store category groups to map child to parent
 const minPrice = ref(0)
 const maxPrice = ref(20000000)
 
+// Icon mapping for categories (same as HomePage)
+const categoryIconMap = {
+  // Root categories
+  'running': 'directions_run',
+  'basketball': 'sports_basketball',
+  'skateboard': 'skateboarding',
+  'skateboarding': 'skateboarding',
+  'lifestyle': 'style',
+  'sneakers': 'sports',
+  
+  // Child categories - Sneakers
+  'high-top': 'height',
+  'low-top': 'vertical_align_bottom',
+  'mid-top': 'vertical_align_center',
+  'slip-on': 'checkroom',
+  
+  // Child categories - Lifestyle
+  'casual': 'style',
+  'streetwear': 'streetview',
+  'retro': 'history',
+  
+  // Legacy mappings
+  'training': 'fitness_center',
+  'limited': 'stars',
+};
+
+// Get icon for category based on slug or name
+const getCategoryIcon = (category) => {
+  const slug = category.slug?.toLowerCase() || category.name?.toLowerCase().replace(/\s+/g, '-') || '';
+  // Try exact match first
+  if (categoryIconMap[slug]) {
+    return categoryIconMap[slug];
+  }
+  // Try partial match
+  for (const [key, icon] of Object.entries(categoryIconMap)) {
+    if (slug.includes(key) || key.includes(slug)) {
+      return icon;
+    }
+  }
+  // Default icon
+  return 'category';
+};
+  
 // Computed - Get filtered and sorted products (without pagination)
 const filteredAndSortedProducts = computed(() => {
   let filteredProducts = [...products.value]
@@ -278,25 +373,118 @@ const filteredAndSortedProducts = computed(() => {
   
   // Apply category filter
   if (selectedCategories.value.length > 0) {
+    // Normalize slug for comparison
+    const normalizeSlug = (slug) => {
+      if (!slug) return '';
+      return slug.toLowerCase().trim().replace(/\s+/g, '-');
+    };
+    
+    const selectedSlugsNormalized = selectedCategories.value.map(slug => normalizeSlug(slug));
+    
+    // Build a map of child category slugs to their parent category slugs
+    const childToParentMap = new Map();
+    // Build a map of parent category slugs to their child category slugs
+    const parentToChildrenMap = new Map();
+    
+    // Only build maps if categoryGroups is available
+    if (categoryGroups.value && categoryGroups.value.length > 0) {
+      categoryGroups.value.forEach(group => {
+        const parentSlug = normalizeSlug(group.slug);
+        if (group.children && Array.isArray(group.children)) {
+          const childSlugs = [];
+          group.children.forEach(child => {
+            const childSlug = normalizeSlug(child.slug);
+            childToParentMap.set(childSlug, parentSlug);
+            childSlugs.push(childSlug);
+          });
+          parentToChildrenMap.set(parentSlug, childSlugs);
+        }
+      });
+    }
+    
     filteredProducts = filteredProducts.filter(product => {
       // Check if product has any of the selected categories
       if (product.categories && Array.isArray(product.categories)) {
-        const hasMatchingCategory = product.categories.some(cat => {
-          const catSlug = cat.slug || cat.name?.toLowerCase().replace(/\s+/g, '-')
-          return catSlug && selectedCategories.value.includes(catSlug)
-        })
-        return hasMatchingCategory
+        const productCategorySlugs = product.categories.map(cat => 
+          normalizeSlug(cat.slug || cat.name)
+        ).filter(Boolean);
+        
+        // Check direct match with selected categories (both parent and child)
+        const hasDirectMatch = productCategorySlugs.some(catSlug => 
+          selectedSlugsNormalized.includes(catSlug)
+        );
+        if (hasDirectMatch) return true;
+        
+        // Only check parent/child matches if we have categoryGroups mapping
+        if (childToParentMap.size > 0 || parentToChildrenMap.size > 0) {
+          // Check if product belongs to parent category of selected child categories
+          // (since products might only be linked to parent, not children)
+          const hasParentMatch = selectedSlugsNormalized.some(selectedSlug => {
+            const parentSlug = childToParentMap.get(selectedSlug);
+            if (parentSlug) {
+              return productCategorySlugs.includes(parentSlug);
+            }
+            return false;
+          });
+          if (hasParentMatch) return true;
+          
+          // Check if product belongs to any child category of selected parent categories
+          const hasChildMatch = selectedSlugsNormalized.some(selectedSlug => {
+            const childSlugs = parentToChildrenMap.get(selectedSlug);
+            if (childSlugs && childSlugs.length > 0) {
+              return productCategorySlugs.some(catSlug => childSlugs.includes(catSlug));
+            }
+            return false;
+          });
+          if (hasChildMatch) return true;
+        }
       }
+      
       // Fallback: check categoryIds if categories array is not available
       if (product.categoryIds && Array.isArray(product.categoryIds)) {
         // Match by category slug if we have category mapping
         const categorySlugs = categories.value
           .filter(cat => product.categoryIds.includes(cat.id))
-          .map(cat => cat.slug)
-        return categorySlugs.some(slug => selectedCategories.value.includes(slug))
+          .map(cat => normalizeSlug(cat.slug));
+        
+        // Check direct match
+        const hasDirectMatch = categorySlugs.some(slug => selectedSlugsNormalized.includes(slug));
+        if (hasDirectMatch) return true;
+        
+        // Only check parent/child matches if we have categoryGroups mapping
+        if (childToParentMap.size > 0 || parentToChildrenMap.size > 0) {
+          // Check parent match (selected child, product has parent)
+          const hasParentMatch = selectedSlugsNormalized.some(selectedSlug => {
+            const parentSlug = childToParentMap.get(selectedSlug);
+            if (parentSlug) {
+              return categorySlugs.includes(parentSlug);
+            }
+            return false;
+          });
+          if (hasParentMatch) return true;
+          
+          // Check child match (selected parent, product has child)
+          const hasChildMatch = selectedSlugsNormalized.some(selectedSlug => {
+            const childSlugs = parentToChildrenMap.get(selectedSlug);
+            if (childSlugs && childSlugs.length > 0) {
+              return categorySlugs.some(catSlug => childSlugs.includes(catSlug));
+            }
+            return false;
+          });
+          if (hasChildMatch) return true;
+        }
       }
-      return false
-    })
+      
+      return false;
+    });
+    
+    logger.log('Category filter applied:', {
+      selectedCategories: selectedCategories.value,
+      categoryGroupsCount: categoryGroups.value.length,
+      childToParentMap: Object.fromEntries(childToParentMap),
+      parentToChildrenMap: Object.fromEntries(parentToChildrenMap),
+      filteredCount: filteredProducts.length
+    });
   }
   
   // Apply price range filter
@@ -460,6 +648,67 @@ const toggleBrand = (brand) => {
   handleBrandChange()
 }
 
+// Check if parent category is selected (either directly or through all children)
+const isParentSelected = (group) => {
+  const normalizeSlug = (slug) => {
+    if (!slug) return '';
+    return slug.toLowerCase().trim().replace(/\s+/g, '-');
+  };
+  
+  const parentSlug = normalizeSlug(group.slug);
+  
+  // Check if parent slug is directly selected
+  if (selectedCategories.value.some(slug => normalizeSlug(slug) === parentSlug)) {
+    return true;
+  }
+  
+  // Check if all children are selected
+  if (group.children && Array.isArray(group.children) && group.children.length > 0) {
+    const allChildrenSelected = group.children.every(child => {
+      const childSlug = normalizeSlug(child.slug);
+      return selectedCategories.value.some(slug => normalizeSlug(slug) === childSlug);
+    });
+    return allChildrenSelected;
+  }
+  
+  return false;
+};
+
+// Toggle parent category selection
+const toggleParentCategory = (group) => {
+  const normalizeSlug = (slug) => {
+    if (!slug) return '';
+    return slug.toLowerCase().trim().replace(/\s+/g, '-');
+  };
+  
+  const parentSlug = normalizeSlug(group.slug);
+  const parentSlugIndex = selectedCategories.value.findIndex(slug => normalizeSlug(slug) === parentSlug);
+  
+  if (parentSlugIndex > -1) {
+    // Parent is selected, deselect it
+    selectedCategories.value.splice(parentSlugIndex, 1);
+    
+    // Also deselect all children
+    if (group.children && Array.isArray(group.children)) {
+      group.children.forEach(child => {
+        const childSlug = normalizeSlug(child.slug);
+        const childIndex = selectedCategories.value.findIndex(slug => normalizeSlug(slug) === childSlug);
+        if (childIndex > -1) {
+          selectedCategories.value.splice(childIndex, 1);
+        }
+      });
+    }
+  } else {
+    // Parent is not selected, select it
+    selectedCategories.value.push(group.slug);
+    
+    // Optionally: also select all children (or keep them unselected for flexibility)
+    // For now, we'll just select parent, user can manually select children if needed
+  }
+  
+  handleCategoryChange();
+};
+
 const toggleCategory = (categorySlug) => {
   const index = selectedCategories.value.indexOf(categorySlug)
   if (index > -1) {
@@ -565,107 +814,146 @@ const fetchBrands = async () => {
 const fetchCategories = async () => {
   loadingCategories.value = true
   try {
-    // Try to get categories from products first (extract unique categories)
-    const response = await productService.getProducts(0, 1000) // Get more products to extract categories
-    let productData = []
-    
-    if (response.data) {
-      if (Array.isArray(response.data.content)) {
-        productData = response.data.content
-      } else if (Array.isArray(response.data)) {
-        productData = response.data
-      }
-    }
-    
-    // Extract unique categories from products
-    const categoryMap = new Map()
-    productData.forEach(product => {
-      // Check if product has categories array
-      if (product.categories && Array.isArray(product.categories)) {
-        product.categories.forEach(cat => {
-          if (cat && (cat.slug || cat.name)) {
-            const slug = cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
-            const name = cat.name || cat.slug
-            const id = cat.id
-            if (slug && name) {
-              categoryMap.set(slug, { id, name, slug })
-            }
+    // First, fetch category groups to get parent-child mapping
+    try {
+      const groupsResponse = await axios.get(API_ENDPOINTS.PRODUCTS.CATEGORIES_GROUPS)
+      if (Array.isArray(groupsResponse.data) && groupsResponse.data.length > 0) {
+        categoryGroups.value = groupsResponse.data
+        logger.log('Fetched category groups:', categoryGroups.value.length, categoryGroups.value)
+        
+        // Extract all child categories from groups for filter display
+        const allChildren = []
+        groupsResponse.data.forEach(group => {
+          if (group.children && Array.isArray(group.children)) {
+            allChildren.push(...group.children)
           }
         })
+        
+        categories.value = allChildren.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
+        })).sort((a, b) => a.name.localeCompare(b.name, 'vi'))
+        
+        logger.log('Fetched categories from groups:', categories.value.length, categories.value)
+        return // Success, exit early
       }
-      // Also check categoryIds if categories array is not available
-      else if (product.categoryIds && Array.isArray(product.categoryIds)) {
-        // We'll need to fetch category details later, but for now just log
-        logger.log('Product has categoryIds but no categories array:', product.id, product.categoryIds)
+    } catch (groupsError) {
+      logger.warn('Could not fetch category groups, trying categories endpoint:', groupsError)
+    }
+    
+    // Try public API endpoint (fallback)
+    try {
+      const categoriesResponse = await axios.get(API_ENDPOINTS.PRODUCTS.CATEGORIES)
+      if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
+        // Categories from public API are already filtered to child categories
+        const childCategories = categoriesResponse.data.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
+        }))
+        categories.value = childCategories.sort((a, b) => 
+          a.name.localeCompare(b.name, 'vi')
+        )
+        logger.log('Fetched categories from public API:', categories.value.length, categories.value)
+        return // Success, exit early
       }
-    })
+    } catch (publicApiError) {
+      logger.warn('Could not fetch categories from public API, trying fallback methods:', publicApiError)
+    }
     
-    categories.value = Array.from(categoryMap.values()).sort((a, b) => 
-      a.name.localeCompare(b.name, 'vi')
-    )
-    
-    logger.log('Extracted categories from products:', categories.value.length, categories.value)
-    
-    // If no categories found, try public API endpoint first, then admin endpoint, then hardcoded
-    if (categories.value.length === 0) {
-      try {
-        // Try public API endpoint first
-        const categoriesResponse = await axios.get(API_ENDPOINTS.PRODUCTS.CATEGORIES)
-        if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
-          // Categories from public API are already filtered to child categories
-          const childCategories = categoriesResponse.data.map(cat => ({
+    // Fallback: Try admin API endpoint
+    try {
+      const categoriesResponse = await axios.get(API_ENDPOINTS.ADMIN_PRODUCTS.CATEGORIES)
+      if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
+        // Filter only child categories (with parentId)
+        const childCategories = categoriesResponse.data
+          .filter(cat => cat.parentId != null)
+          .map(cat => ({
             id: cat.id,
             name: cat.name,
             slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
           }))
-          categories.value = childCategories.sort((a, b) => 
-            a.name.localeCompare(b.name, 'vi')
-          )
-          logger.log('Fetched categories from public API:', categories.value.length, categories.value)
-        }
-      } catch (publicApiError) {
-        logger.warn('Could not fetch categories from public API, trying admin endpoint:', publicApiError)
-        try {
-          // Fallback to admin API endpoint (may require auth)
-          const categoriesResponse = await axios.get(API_ENDPOINTS.ADMIN_PRODUCTS.CATEGORIES)
-          if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
-            // Filter only child categories (with parentId)
-            const childCategories = categoriesResponse.data
-              .filter(cat => cat.parentId != null)
-              .map(cat => ({
-                id: cat.id,
-                name: cat.name,
-                slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
-              }))
-            categories.value = childCategories.sort((a, b) => 
-              a.name.localeCompare(b.name, 'vi')
-            )
-            logger.log('Fetched categories from admin API:', categories.value.length, categories.value)
-          }
-        } catch (adminApiError) {
-          logger.warn('Could not fetch categories from admin API, using hardcoded list:', adminApiError)
-          // Fallback to hardcoded categories from HomePage
-          categories.value = [
-            { id: 1, name: 'Running', slug: 'running' },
-            { id: 2, name: 'Basketball', slug: 'basketball' },
-            { id: 3, name: 'Casual', slug: 'casual' },
-            { id: 4, name: 'Training', slug: 'training' },
-            { id: 5, name: 'Skateboarding', slug: 'skateboarding' },
-            { id: 6, name: 'Limited Edition', slug: 'limited' },
-          ]
+        categories.value = childCategories.sort((a, b) => 
+          a.name.localeCompare(b.name, 'vi')
+        )
+        logger.log('Fetched categories from admin API:', categories.value.length, categories.value)
+        return // Success, exit early
+      }
+    } catch (adminApiError) {
+      logger.warn('Could not fetch categories from admin API, trying to extract from products:', adminApiError)
+    }
+    
+    // Last fallback: Extract categories from products
+    try {
+      const response = await productService.getProducts(0, 1000)
+      let productData = []
+      
+      if (response.data) {
+        if (Array.isArray(response.data.content)) {
+          productData = response.data.content
+        } else if (Array.isArray(response.data)) {
+          productData = response.data
         }
       }
+      
+      // Extract unique categories from products
+      const categoryMap = new Map()
+      productData.forEach(product => {
+        // Check if product has categories array
+        if (product.categories && Array.isArray(product.categories)) {
+          product.categories.forEach(cat => {
+            if (cat && (cat.slug || cat.name)) {
+              const slug = cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-')
+              const name = cat.name || cat.slug
+              const id = cat.id
+              if (slug && name) {
+                categoryMap.set(slug, { id, name, slug })
+              }
+            }
+          })
+        }
+      })
+      
+      categories.value = Array.from(categoryMap.values()).sort((a, b) => 
+        a.name.localeCompare(b.name, 'vi')
+      )
+      
+      logger.log('Extracted categories from products:', categories.value.length, categories.value)
+    } catch (productsError) {
+      logger.warn('Could not extract categories from products:', productsError)
+    }
+    
+    // If still no categories found, use hardcoded fallback
+    if (categories.value.length === 0) {
+      logger.warn('No categories found from any source, using hardcoded fallback')
+      categories.value = [
+        { id: 1, name: 'High Top', slug: 'high-top' },
+        { id: 2, name: 'Low Top', slug: 'low-top' },
+        { id: 3, name: 'Mid Top', slug: 'mid-top' },
+        { id: 4, name: 'Slip On', slug: 'slip-on' },
+        { id: 5, name: 'Casual', slug: 'casual' },
+        { id: 6, name: 'Streetwear', slug: 'streetwear' },
+        { id: 7, name: 'Retro', slug: 'retro' },
+        { id: 8, name: 'Running', slug: 'running' },
+        { id: 9, name: 'Basketball', slug: 'basketball' },
+        { id: 10, name: 'Skateboard', slug: 'skateboard' }
+      ]
     }
   } catch (error) {
     logger.error('Error fetching categories:', error)
     // Fallback to hardcoded categories
     categories.value = [
-      { id: 1, name: 'Running', slug: 'running' },
-      { id: 2, name: 'Basketball', slug: 'basketball' },
-      { id: 3, name: 'Casual', slug: 'casual' },
-      { id: 4, name: 'Training', slug: 'training' },
-      { id: 5, name: 'Skateboarding', slug: 'skateboarding' },
-      { id: 6, name: 'Limited Edition', slug: 'limited' },
+      { id: 1, name: 'High Top', slug: 'high-top' },
+      { id: 2, name: 'Low Top', slug: 'low-top' },
+      { id: 3, name: 'Mid Top', slug: 'mid-top' },
+      { id: 4, name: 'Slip On', slug: 'slip-on' },
+      { id: 5, name: 'Casual', slug: 'casual' },
+      { id: 6, name: 'Streetwear', slug: 'streetwear' },
+      { id: 7, name: 'Retro', slug: 'retro' },
+      { id: 8, name: 'Running', slug: 'running' },
+      { id: 9, name: 'Basketball', slug: 'basketball' },
+      { id: 10, name: 'Skateboard', slug: 'skateboard' }
     ]
   } finally {
     loadingCategories.value = false
@@ -716,8 +1004,9 @@ watch(() => route.query.category, (categoryParam) => {
     const categorySlug = decodeURIComponent(categoryParam).trim()
     logger.log('Category filter from query params:', categorySlug)
     // Apply filter even if category is not in categories list yet
+    // Add to selection if not already selected (multi-select support)
     if (!selectedCategories.value.includes(categorySlug)) {
-      selectedCategories.value = [categorySlug]
+      selectedCategories.value.push(categorySlug)
       currentPage.value = 0
       logger.log('Applied category filter:', categorySlug, 'Selected categories:', selectedCategories.value)
     }
@@ -728,14 +1017,30 @@ watch(() => route.query.category, (categoryParam) => {
   }
 }, { immediate: true })
 
-// Watch categories array to apply filter when categories are loaded
-watch(() => categories.value, (newCategories) => {
-  // Apply category filter from query params if present and categories are now loaded
-  if (newCategories.length > 0 && route.query.category) {
+// Watch categoryGroups to apply filter when groups are loaded (for parent-child mapping)
+watch(() => categoryGroups.value, (newGroups) => {
+  // Apply category filter from query params if present and groups are now loaded
+  if (newGroups.length > 0 && route.query.category) {
     const categorySlug = decodeURIComponent(route.query.category).trim()
+    // Add to selection if not already selected (multi-select support)
     if (!selectedCategories.value.includes(categorySlug)) {
-      selectedCategories.value = [categorySlug]
-  currentPage.value = 0
+      selectedCategories.value.push(categorySlug)
+      currentPage.value = 0
+      logger.log('Applied category filter after groups loaded:', categorySlug, 'Selected categories:', selectedCategories.value)
+    }
+  }
+})
+
+// Watch categories array to apply filter when categories are loaded (fallback)
+watch(() => categories.value, (newCategories) => {
+  // Only apply if categoryGroups is empty (fallback scenario)
+  if (newCategories.length > 0 && categoryGroups.value.length === 0 && route.query.category) {
+    const categorySlug = decodeURIComponent(route.query.category).trim()
+    // Add to selection if not already selected (multi-select support)
+    if (!selectedCategories.value.includes(categorySlug)) {
+      selectedCategories.value.push(categorySlug)
+      currentPage.value = 0
+      logger.log('Applied category filter after categories loaded (fallback):', categorySlug, 'Selected categories:', selectedCategories.value)
     }
   }
 })
@@ -774,8 +1079,9 @@ onMounted(async () => {
   if (route.query.category) {
     const categorySlug = decodeURIComponent(route.query.category).trim()
     logger.log('Applying category filter on mount:', categorySlug)
+    // Add to selection if not already selected (multi-select support)
     if (!selectedCategories.value.includes(categorySlug)) {
-      selectedCategories.value = [categorySlug]
+      selectedCategories.value.push(categorySlug)
       currentPage.value = 0
       logger.log('Applied category filter on mount:', categorySlug, 'Selected categories:', selectedCategories.value)
     }

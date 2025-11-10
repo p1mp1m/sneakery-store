@@ -3,6 +3,7 @@ package com.sneakery.store.controller;
 import com.sneakery.store.dto.AdminProductDetailDto;
 import com.sneakery.store.dto.BrandDto;
 import com.sneakery.store.dto.CategoryDto;
+import com.sneakery.store.dto.CategoryGroupDto;
 import com.sneakery.store.dto.ProductCardDto;
 import com.sneakery.store.service.BrandService;
 import com.sneakery.store.service.CategoryService;
@@ -213,6 +214,28 @@ public class ProductController {
                 .filter(cat -> cat.getParentId() != null)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(childCategories);
+    }
+
+    /**
+     * Lấy danh sách categories theo nhóm (parent categories với children)
+     * 
+     * <p>Phương thức này trả về categories được nhóm theo parent:
+     * <ul>
+     *   <li>Mỗi parent category bao gồm danh sách children</li>
+     *   <li>Chỉ trả về các parent categories có children</li>
+     *   <li>productCount sẽ được tính ở frontend dựa trên số sản phẩm của children</li>
+     * </ul>
+     * 
+     * @return ResponseEntity chứa danh sách CategoryGroupDto (HTTP 200 OK)
+     */
+    @Operation(summary = "Lấy danh sách categories theo nhóm", description = "Lấy danh sách parent categories với children của chúng. Endpoint công khai, không cần đăng nhập.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công")
+    })
+    @GetMapping("/categories/groups")
+    public ResponseEntity<List<CategoryGroupDto>> getCategoryGroups() {
+        List<CategoryGroupDto> categoryGroups = categoryService.getCategoryGroups();
+        return ResponseEntity.ok(categoryGroups);
     }
 
     /**

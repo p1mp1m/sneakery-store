@@ -1,6 +1,7 @@
 package com.sneakery.store.service;
 
 import com.sneakery.store.dto.CategoryDto;
+import com.sneakery.store.dto.CategoryGroupDto;
 import com.sneakery.store.entity.Category;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.CategoryRepository;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -163,6 +165,52 @@ public class CategoryService {
     public List<CategoryDto> getAllCategories() {
         return categoryRepository.findAll().stream()
                 .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy danh sách categories theo nhóm (parent categories với children)
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Lấy tất cả categories</li>
+     *   <li>Nhóm child categories theo parent</li>
+     *   <li>Trả về danh sách parent categories với children của chúng</li>
+     * </ol>
+     * 
+     * <p><b>Về cấu trúc trả về:</b>
+     * <ul>
+     *   <li>Chỉ trả về các parent categories có children</li>
+     *   <li>Mỗi parent category bao gồm danh sách children</li>
+     *   <li>productCount là tổng số sản phẩm của tất cả children (sẽ được tính ở frontend)</li>
+     * </ul>
+     * 
+     * @return Danh sách CategoryGroupDto (parent categories với children)
+     */
+    @Cacheable(value = "categories", key = "'groups'")
+    public List<CategoryGroupDto> getCategoryGroups() {
+        List<CategoryDto> allCategories = getAllCategories();
+        
+        // Lấy tất cả parent categories (không có parentId)
+        List<CategoryDto> parentCategories = allCategories.stream()
+                .filter(cat -> cat.getParentId() == null)
+                .collect(Collectors.toList());
+        
+        // Nhóm child categories theo parentId
+        Map<Integer, List<CategoryDto>> childrenByParent = allCategories.stream()
+                .filter(cat -> cat.getParentId() != null)
+                .collect(Collectors.groupingBy(CategoryDto::getParentId));
+        
+        // Tạo CategoryGroupDto cho mỗi parent có children
+        return parentCategories.stream()
+                .filter(parent -> childrenByParent.containsKey(parent.getId()))
+                .map(parent -> CategoryGroupDto.builder()
+                        .id(parent.getId())
+                        .name(parent.getName())
+                        .slug(parent.getSlug())
+                        .productCount(0) // Sẽ được tính ở frontend
+                        .children(childrenByParent.get(parent.getId()))
+                        .build())
                 .collect(Collectors.toList());
     }
 

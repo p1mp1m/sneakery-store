@@ -122,31 +122,73 @@
           <p class="text-lg text-gray-600 dark:text-gray-400">Khám phá bộ sưu tập theo danh mục yêu thích</p>
         </div>
         
-        <div class="flex flex-wrap justify-center items-center gap-4 md:gap-6">
-          <router-link 
-            v-for="(category, index) in categories" 
-            :key="category.id"
-            :to="`/home/products?category=${category.slug}`"
-            class="group relative p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-center transform category-card flex-shrink-0"
-            :style="{ 
-              animationDelay: `${index * 100}ms`,
-              minWidth: '150px',
-              maxWidth: '200px',
-              width: '150px'
-            }"
-          >
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            
-            <div class="relative z-10">
-              <div class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600 group-hover:from-purple-600 group-hover:to-indigo-600 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                <i class="material-icons text-white text-3xl">{{ category.icon || 'category' }}</i>
+        <!-- Loading State -->
+        <div v-if="loadingCategories" class="flex justify-center items-center py-12">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-gray-600 dark:text-gray-400">Đang tải danh mục...</span>
+          </div>
+        </div>
+        
+        <!-- Category Groups - Tab Window Design -->
+        <div v-else-if="categoryGroups.length > 0" class="max-w-5xl mx-auto">
+          <!-- Tab Navigation -->
+          <div class="flex flex-wrap justify-center gap-2 mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
+            <button
+              v-for="(group, index) in categoryGroups"
+              :key="group.id"
+              @click="activeCategoryTab = index"
+              :class="[
+                'px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-300 flex items-center gap-2',
+                activeCategoryTab === index
+                  ? 'bg-purple-600 text-white shadow-lg scale-105'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              ]"
+            >
+              <i class="material-icons text-lg">{{ getCategoryIcon({ slug: group.slug, name: group.name }) }}</i>
+              <span>{{ group.name }}</span>
+              <span :class="[
+                'px-2 py-0.5 rounded-full text-xs font-medium',
+                activeCategoryTab === index
+                  ? 'bg-white/20 text-white'
+                  : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+              ]">
+                {{ group.productCount || 0 }}
+              </span>
+            </button>
+          </div>
+          
+          <!-- Tab Content - Child Categories -->
+          <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 md:p-8 shadow-lg">
+            <transition name="fade" mode="out-in">
+              <div
+                v-if="categoryGroups[activeCategoryTab]"
+                :key="activeCategoryTab"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+              >
+                <router-link
+                  v-for="child in categoryGroups[activeCategoryTab].children"
+                  :key="child.id"
+                  :to="`/home/products?category=${child.slug}`"
+                  class="group flex flex-col items-center p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-300 hover:shadow-md"
+                >
+                  <div class="w-12 h-12 mb-3 rounded-lg flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600 group-hover:from-purple-600 group-hover:to-indigo-600 transition-all duration-300">
+                    <i class="material-icons text-white text-xl">{{ getCategoryIcon(child) }}</i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    {{ child.name }}
+                  </h4>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ child.count || 0 }} sản phẩm</p>
+                </router-link>
               </div>
-              <h3 class="font-bold text-gray-900 dark:text-gray-100 mb-2 text-base group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                {{ category.name }}
-              </h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ category.count || 0 }} sản phẩm</p>
-            </div>
-          </router-link>
+            </transition>
+          </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div v-else class="text-center py-12">
+          <i class="material-icons text-gray-400 text-6xl mb-4">category</i>
+          <p class="text-gray-600 dark:text-gray-400">Chưa có danh mục nào</p>
         </div>
       </div>
     </section>
@@ -330,7 +372,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
           <router-link 
             v-for="brand in brands" 
-            :key="brand.id"
+            :key="brand.id" 
             :to="`/home/products?brand=${encodeURIComponent(brand.name)}`"
             class="group bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 p-8 hover:border-purple-500 dark:hover:border-purple-600 hover:shadow-2xl hover:scale-110 transition-all duration-300 flex items-center justify-center transform cursor-pointer"
           >
@@ -393,7 +435,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import ProductService from '@/services/productService';
 import newsletterService from '@/services/newsletterService';
 import { useFlashSaleStore } from '@/stores/flashSale';
@@ -404,23 +446,39 @@ import toastService from '@/utils/toastService';
 import { API_ENDPOINTS } from '@/config/api';
 import axios from 'axios';
 
-// Categories data
-const categories = ref([]);
+// Categories data - now grouped by parent
+const categoryGroups = ref([]);
 const loadingCategories = ref(false);
+const activeCategoryTab = ref(0); // Track active tab index
 
 // Icon mapping for categories
 const categoryIconMap = {
+  // Root categories
   'running': 'directions_run',
   'basketball': 'sports_basketball',
-  'casual': 'style',
-  'training': 'fitness_center',
+  'skateboard': 'skateboarding',
   'skateboarding': 'skateboarding',
+  'lifestyle': 'style',
+  'sneakers': 'sports',
+  
+  // Child categories - Sneakers
+  'high-top': 'height',
+  'low-top': 'vertical_align_bottom',
+  'mid-top': 'vertical_align_center',
+  'slip-on': 'checkroom',
+  
+  // Child categories - Lifestyle
+  'casual': 'style',
+  'streetwear': 'streetview',
+  'retro': 'history',
+  
+  // Legacy mappings
+  'training': 'fitness_center',
   'limited': 'stars',
   'giay-chay-bo-nam': 'directions_run',
   'giay-bong-ro-nam': 'sports_basketball',
   'giay-chay-bo-nu': 'directions_run',
   'giay-thoi-trang-nu': 'style',
-  // Add more mappings as needed
 };
 
 // Get icon for category based on slug or name
@@ -626,25 +684,19 @@ const fetchBrands = async () => {
   }
 };
 
-// Fetch categories
+// Fetch categories grouped by parent
 const fetchCategories = async () => {
   loadingCategories.value = true;
   try {
-    // Try public API endpoint first
-    const categoriesResponse = await axios.get(API_ENDPOINTS.PRODUCTS.CATEGORIES);
-    if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
-      // Map categories with icons
-      const mappedCategories = categoriesResponse.data.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),
-        icon: getCategoryIcon(cat),
-        count: 0, // Will be calculated from products
-        gradient: 'var(--gradient-purple)' // Default gradient
-      }));
-      
+    logger.log('Fetching category groups from:', API_ENDPOINTS.PRODUCTS.CATEGORIES_GROUPS);
+    // Try category groups endpoint first
+    const groupsResponse = await axios.get(API_ENDPOINTS.PRODUCTS.CATEGORIES_GROUPS);
+    logger.log('Category groups API response:', groupsResponse.data);
+    if (Array.isArray(groupsResponse.data) && groupsResponse.data.length > 0) {
+      logger.log('Found', groupsResponse.data.length, 'category groups');
       // Fetch products to count by category
       try {
+        logger.log('Fetching products to count categories...');
         const productsResponse = await ProductService.getProducts(0, 1000);
         let productData = [];
         if (productsResponse.data) {
@@ -654,48 +706,125 @@ const fetchCategories = async () => {
             productData = productsResponse.data;
           }
         }
+        logger.log(`Fetched ${productData.length} products for counting`);
         
-        // Count products for each category
-        mappedCategories.forEach(category => {
-          const count = productData.filter(product => {
+        // Log sample product to check categories structure
+        if (productData.length > 0) {
+          logger.log('Sample product categories:', productData[0].categories);
+          logger.log('Sample product categoryIds:', productData[0].categoryIds);
+        }
+        
+        // Normalize slug for comparison
+        const normalizeSlug = (slug) => {
+          if (!slug) return '';
+          return slug.toLowerCase().trim().replace(/\s+/g, '-');
+        };
+        
+        // Process each group
+        const processedGroups = groupsResponse.data.map(group => {
+          // Get parent category slug for matching
+          const parentSlugNormalized = normalizeSlug(group.slug);
+          
+          // Count products that belong to parent category
+          const parentProducts = productData.filter(product => {
             if (product.categories && Array.isArray(product.categories)) {
-              return product.categories.some(cat => 
-                (cat.slug || cat.name?.toLowerCase().replace(/\s+/g, '-')) === category.slug
-              );
+              return product.categories.some(cat => {
+                const catSlug = normalizeSlug(cat.slug || cat.name);
+                return catSlug === parentSlugNormalized;
+              });
+            }
+            // Fallback: check categoryIds if available
+            if (product.categoryIds && Array.isArray(product.categoryIds)) {
+              return product.categoryIds.includes(group.id);
             }
             return false;
-          }).length;
-          category.count = count;
+          });
+          
+          const parentProductCount = parentProducts.length;
+          
+          // Process children: check if products are directly linked to children
+          // If not, all children show the parent count (since products belong to parent)
+          const processedChildren = group.children.map((child) => {
+            // Check if product has this specific child category
+            const childSlugNormalized = normalizeSlug(child.slug);
+            const directChildCount = productData.filter(product => {
+              if (product.categories && Array.isArray(product.categories)) {
+                return product.categories.some(cat => {
+                  const catSlug = normalizeSlug(cat.slug || cat.name);
+                  return catSlug === childSlugNormalized;
+                });
+              }
+              if (product.categoryIds && Array.isArray(product.categoryIds)) {
+                return product.categoryIds.includes(child.id);
+              }
+              return false;
+            }).length;
+            
+            // If products are directly linked to child, use that count
+            // Otherwise, use parent count (products belong to parent category)
+            const finalCount = directChildCount > 0 ? directChildCount : parentProductCount;
+            
+            logger.log(`Child ${child.name}: directCount=${directChildCount}, finalCount=${finalCount}`);
+            
+            return {
+              ...child,
+              count: finalCount
+            };
+          });
+          
+          // Calculate total product count for parent
+          // If children have direct counts, sum them; otherwise use parent count
+          const childrenWithDirectCounts = processedChildren.filter(c => c.count > 0 && c.count !== parentProductCount);
+          const totalCount = childrenWithDirectCounts.length > 0 
+            ? processedChildren.reduce((sum, child) => sum + (child.count || 0), 0)
+            : parentProductCount;
+          
+          logger.log(`Group ${group.name}: ${parentProductCount} products in parent, ${processedChildren.length} children`);
+          
+          return {
+            ...group,
+            children: processedChildren,
+            productCount: totalCount
+          };
         });
         
-        categories.value = mappedCategories;
-        logger.log('Fetched categories for HomePage:', categories.value.length, categories.value);
+        categoryGroups.value = processedGroups;
+        logger.log('Fetched category groups for HomePage:', categoryGroups.value.length, categoryGroups.value);
       } catch (productsError) {
         logger.warn('Could not fetch products to count categories:', productsError);
-        categories.value = mappedCategories;
+        // Use groups without product counts
+        categoryGroups.value = groupsResponse.data.map(group => ({
+          ...group,
+          children: group.children.map(child => ({ ...child, count: 0 })),
+          productCount: 0
+        }));
       }
     } else {
-      // Fallback to hardcoded categories
-      categories.value = [
-        { id: 1, name: 'Running', slug: 'running', icon: 'directions_run', count: 156, gradient: 'var(--gradient-purple)' },
-        { id: 2, name: 'Basketball', slug: 'basketball', icon: 'sports_basketball', count: 89, gradient: 'var(--gradient-orange)' },
-        { id: 3, name: 'Casual', slug: 'casual', icon: 'style', count: 234, gradient: 'var(--gradient-blue)' },
-        { id: 4, name: 'Training', slug: 'training', icon: 'fitness_center', count: 112, gradient: 'var(--gradient-green)' },
-        { id: 5, name: 'Skateboarding', slug: 'skateboarding', icon: 'skateboarding', count: 67, gradient: 'var(--gradient-pink)' },
-        { id: 6, name: 'Limited Edition', slug: 'limited', icon: 'stars', count: 45, gradient: 'var(--gradient-sunset)' },
-      ];
+      // Fallback: try regular categories endpoint
+      try {
+        const categoriesResponse = await axios.get(API_ENDPOINTS.PRODUCTS.CATEGORIES);
+        if (Array.isArray(categoriesResponse.data) && categoriesResponse.data.length > 0) {
+          // Group categories by parent manually (if we have parent info)
+          // For now, just create a single group with all categories
+          categoryGroups.value = [{
+            id: 0,
+            name: 'Tất cả danh mục',
+            slug: 'all',
+            productCount: 0,
+            children: categoriesResponse.data.map(cat => ({
+              ...cat,
+              count: 0
+            }))
+          }];
+        }
+      } catch (fallbackError) {
+        logger.warn('Could not fetch categories, using empty groups:', fallbackError);
+        categoryGroups.value = [];
+      }
     }
   } catch (error) {
-    logger.error('Error fetching categories for HomePage:', error);
-    // Fallback to hardcoded categories
-    categories.value = [
-      { id: 1, name: 'Running', slug: 'running', icon: 'directions_run', count: 156, gradient: 'var(--gradient-purple)' },
-      { id: 2, name: 'Basketball', slug: 'basketball', icon: 'sports_basketball', count: 89, gradient: 'var(--gradient-orange)' },
-      { id: 3, name: 'Casual', slug: 'casual', icon: 'style', count: 234, gradient: 'var(--gradient-blue)' },
-      { id: 4, name: 'Training', slug: 'training', icon: 'fitness_center', count: 112, gradient: 'var(--gradient-green)' },
-      { id: 5, name: 'Skateboarding', slug: 'skateboarding', icon: 'skateboarding', count: 67, gradient: 'var(--gradient-pink)' },
-      { id: 6, name: 'Limited Edition', slug: 'limited', icon: 'stars', count: 45, gradient: 'var(--gradient-sunset)' },
-    ];
+    logger.error('Error fetching category groups for HomePage:', error);
+    categoryGroups.value = [];
   } finally {
     loadingCategories.value = false;
   }
@@ -792,6 +921,13 @@ const handleNewsletterSubscribe = async () => {
     subscribing.value = false;
   }
 };
+
+// Watch categoryGroups to reset active tab when groups change
+watch(() => categoryGroups.value, (newGroups) => {
+  if (newGroups.length > 0 && activeCategoryTab.value >= newGroups.length) {
+    activeCategoryTab.value = 0;
+  }
+});
 
 // Lifecycle
 onMounted(async () => {
@@ -926,5 +1062,16 @@ onUnmounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Fade transition for tab content */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
