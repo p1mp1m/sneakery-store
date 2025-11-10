@@ -125,5 +125,34 @@ public class ProductValidationUtil {
                 "Tên sản phẩm '" + name + "' đã tồn tại cho thương hiệu này");
         }
     }
+
+    /**
+     * Validate price range (giá từ và giá đến)
+     * - Giá từ và giá đến phải >= 0 nếu có
+     * - Giá từ phải <= giá đến nếu cả 2 đều có
+     * 
+     * @param priceFrom Giá từ (có thể null)
+     * @param priceTo Giá đến (có thể null)
+     * @throws ApiException nếu validation fail
+     */
+    public void validatePriceRange(Integer priceFrom, Integer priceTo) {
+        // Validate giá từ
+        if (priceFrom != null && priceFrom < 0) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                "Giá từ không được âm");
+        }
+
+        // Validate giá đến
+        if (priceTo != null && priceTo < 0) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                "Giá đến không được âm");
+        }
+
+        // Validate giá từ <= giá đến (nếu cả 2 đều có)
+        if (priceFrom != null && priceTo != null && priceFrom > priceTo) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                "Giá từ (" + priceFrom + ") phải nhỏ hơn hoặc bằng giá đến (" + priceTo + ")");
+        }
+    }
 }
 

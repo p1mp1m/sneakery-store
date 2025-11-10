@@ -38,6 +38,13 @@ public class AdminProductRequestDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String mainImageUrl;
 
+    @Schema(description = "Giá từ (VNĐ)", example = "1000000")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer priceFrom;
+
+    @Schema(description = "Giá đến (VNĐ)", example = "5000000")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Integer priceTo;
 
     // Danh sách các ID của Category
     @NotEmpty(message = "Sản phẩm phải thuộc ít nhất 1 danh mục")
