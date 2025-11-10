@@ -25,3 +25,6 @@ public interface NewsletterSubscriptionRepository extends JpaRepository<Newslett
     boolean existsByEmailAndIsActiveTrue(String email);
 }
 
+
+
+
