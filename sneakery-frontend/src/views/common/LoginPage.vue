@@ -175,17 +175,19 @@ const loginForm = ref({
 const validateForm = () => {
   errors.value = {};
   
-  if (!loginForm.value.email) {
+  // Email validation
+  if (!loginForm.value.email?.trim()) {
     errors.value.email = 'Vui lòng nhập email';
     return false;
   }
   
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(loginForm.value.email)) {
+  if (!emailRegex.test(loginForm.value.email.trim())) {
     errors.value.email = 'Email không hợp lệ';
     return false;
   }
   
+  // Password validation
   if (!loginForm.value.password) {
     errors.value.password = 'Vui lòng nhập mật khẩu';
     return false;

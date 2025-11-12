@@ -349,6 +349,8 @@ import toastService from "@/utils/toastService";
 import VariantModal from "@/assets/components/admin/VariantModal.vue";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 import { debounce } from "@/utils/debounce";
+import logger from "@/utils/logger";
+import { formatPrice } from "@/utils/formatters";
 
 // ===== STORES =====
 const adminStore = useAdminStore();
@@ -414,8 +416,8 @@ const loadVariants = async () => {
     totalElements.value = result.totalElements || 0;
     totalPages.value = result.totalPages || 1;
   } catch (error) {
-    console.error("Error loading variants:", error);
-    toastService.error('Lỗi', "Không thể tải danh sách biến thể");
+    logger.error("Error loading variants:", error);
+    toastService.apiError(error, "Không thể tải danh sách biến thể");
   } finally {
     loading.value = false;
   }
@@ -449,7 +451,7 @@ const loadStats = async () => {
     stats.lowStock = result.lowStockVariants || 0;
     stats.outOfStock = result.outOfStockVariants || 0;
   } catch (error) {
-    console.error("Error loading stats:", error);
+    logger.error("Error loading stats:", error);
     // Fallback to calculating from variants if API fails
     calculateStatsFromVariants();
   }
@@ -517,8 +519,8 @@ const deleteVariantConfirmed = async () => {
     await loadVariants();
     await loadStats();
   } catch (error) {
-    console.error("Error deleting variant:", error);
-    toastService.error('Lỗi', "Không thể xóa biến thể. Vui lòng thử lại!");
+    logger.error("Error deleting variant:", error);
+    toastService.apiError(error, "Không thể xóa biến thể");
   } finally {
     deleting.value = false;
     showDeleteModal.value = false;
@@ -531,12 +533,7 @@ const changePage = async (page) => {
   await loadVariants();
 };
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(price);
-};
+// formatPrice đã được import từ @/utils/formatters
 
 const getColorHex = (color) => {
   const colorMap = {

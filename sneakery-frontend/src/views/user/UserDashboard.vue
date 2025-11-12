@@ -235,15 +235,29 @@
           Sản phẩm đã xem gần đây
         </h2>
         <button 
-          v-if="recentlyViewed.length > 0" 
+          v-if="recentlyViewedProducts.length > 0 || recentlyViewed.length > 0" 
           @click="clearRecentlyViewed" 
-          class="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+          class="text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors flex items-center gap-1"
+          aria-label="Xóa tất cả sản phẩm đã xem"
         >
+          <i class="material-icons text-base">delete_outline</i>
           Xóa tất cả
         </button>
       </div>
 
-      <div v-if="recentlyViewed.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+
+      <!-- Loading State -->
+      <div v-if="loadingRecentlyViewed" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" role="status" aria-live="polite">
+        <LoadingSkeleton
+          v-for="n in 6"
+          :key="n"
+          type="card"
+          :show-image="true"
+        />
+        <span class="sr-only">Đang tải sản phẩm đã xem</span>
+      </div>
+
+      <div v-else-if="recentlyViewedProducts.length === 0 && recentlyViewed.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4 text-gray-400">
           <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M2.45801 12C3.73201 7.943 7.52301 5 12.0001 5C16.4781 5 20.2681 7.943 21.5421 12C20.2681 16.057 16.4781 19 12.0001 19C7.52301 19 3.73201 16.057 2.45801 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -251,11 +265,11 @@
         <p class="text-gray-600 dark:text-gray-400">Chưa xem sản phẩm nào</p>
       </div>
 
-      <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <div v-else-if="recentlyViewedProducts.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         <router-link
-          v-for="product in recentlyViewed"
+          v-for="product in recentlyViewedProducts"
           :key="product.id"
-          :to="`/products/${product.slug}`"
+          :to="`/home/products/${product.slug || product.id}`"
           class="group relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
           <div class="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
@@ -263,11 +277,15 @@
               :src="product.imageUrl || '/placeholder-image.png'" 
               :alt="product.name" 
               class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              loading="lazy"
+              decoding="async"
+              @error="(e) => { e.target.src = '/placeholder-image.png'; }"
             />
             <button
               @click.prevent="removeFromRecentlyViewed(product.id)"
-              class="absolute top-2 right-2 w-8 h-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white"
+              class="absolute top-2 right-2 w-8 h-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white z-10"
               title="Xóa khỏi danh sách"
+              aria-label="Xóa sản phẩm khỏi danh sách đã xem"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -277,8 +295,9 @@
           </div>
           <div class="p-3">
             <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-1 line-clamp-2">{{ product.name }}</h4>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ product.brandName }}</p>
-            <p class="font-bold text-purple-600 dark:text-purple-400 text-sm">{{ formatCurrency(product.price) }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-2 line-clamp-1">{{ product.brandName }}</p>
+            <p v-if="product.price > 0" class="font-bold text-purple-600 dark:text-purple-400 text-sm">{{ formatCurrency(product.price) }}</p>
+            <p v-else class="text-xs text-gray-400 dark:text-gray-500 italic">Liên hệ</p>
           </div>
         </router-link>
       </div>
@@ -323,12 +342,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
 import userService from '@/services/userService';
 import ProductService from '@/services/productService';
 import toastService from '@/utils/toastService';
+import confirmDialogService from '@/utils/confirmDialogService';
+import logger from '@/utils/logger';
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue';
+import { formatPrice, formatCurrency, formatDate } from '@/utils/formatters';
 
 const authStore = useAuthStore();
 const { recentlyViewed, clearAll, removeProduct } = useRecentlyViewed();
@@ -350,20 +373,12 @@ const orderStats = ref({
   totalSpent: 0
 });
 
-// Methods
-const formatCurrency = (value) => {
-  if (value === null || value === undefined) return '0 ₫';
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-};
+// Recently viewed products state
+const recentlyViewedProducts = ref([]);
+const loadingRecentlyViewed = ref(false);
 
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
+// Methods
+// formatCurrency và formatDate đã được import từ @/utils/formatters
 
 const getStatusType = (status) => {
   const statusMap = {
@@ -387,14 +402,107 @@ const getStatusText = (status) => {
   return statusMap[status] || status;
 };
 
-const clearRecentlyViewed = () => {
-  if (confirm('Bạn có chắc muốn xóa tất cả sản phẩm đã xem?')) {
-    clearAll();
+// Load và enrich recently viewed products với data từ API
+const loadRecentlyViewedProducts = async () => {
+  if (recentlyViewed.value.length === 0) {
+    recentlyViewedProducts.value = [];
+    return;
+  }
+
+  loadingRecentlyViewed.value = true;
+  try {
+    // Fetch product details từ API để lấy đầy đủ thông tin
+    const productIds = recentlyViewed.value.map(p => p.id);
+    const productPromises = productIds.map(id => 
+      ProductService.getProductById(id).catch(err => {
+        logger.warn(`Failed to fetch product ${id}:`, err);
+        return null;
+      })
+    );
+
+    const products = await Promise.all(productPromises);
+    
+    // Map và enrich product data
+    recentlyViewedProducts.value = products
+      .filter(p => p !== null)
+      .map(product => {
+        // Get price - prefer priceSale, fallback to priceBase
+        let price = 0;
+        if (product.variants && product.variants.length > 0) {
+          const firstVariant = product.variants[0];
+          price = firstVariant.priceSale || firstVariant.priceBase || 0;
+        } else {
+          price = product.priceSale || product.priceBase || product.price || 0;
+        }
+
+        // Get image URL
+        let imageUrl = null;
+        if (product.variants && product.variants.length > 0 && product.variants[0].imageUrl) {
+          imageUrl = product.variants[0].imageUrl;
+        } else if (product.images && product.images.length > 0) {
+          const firstImage = product.images[0];
+          imageUrl = typeof firstImage === 'string' ? firstImage : (firstImage.url || firstImage.imageUrl);
+        } else if (product.imageUrl) {
+          imageUrl = product.imageUrl;
+        } else if (product.mainImage) {
+          imageUrl = product.mainImage;
+        }
+
+        return {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          brandName: product.brand?.name || product.brandName || 'Unknown Brand',
+          imageUrl: imageUrl || '/placeholder-image.png',
+          price: price || 0,
+          viewedAt: recentlyViewed.value.find(p => p.id === product.id)?.viewedAt || new Date().toISOString()
+        };
+      })
+      .filter(p => p.price > 0 || p.imageUrl !== '/placeholder-image.png'); // Filter out invalid products
+
+    logger.log('✅ Loaded recently viewed products:', recentlyViewedProducts.value.length);
+  } catch (error) {
+    logger.error('Error loading recently viewed products:', error);
+    // Fallback to stored data if API fails
+    recentlyViewedProducts.value = recentlyViewed.value.map(p => ({
+      ...p,
+      imageUrl: p.imageUrl || '/placeholder-image.png',
+      price: p.price || 0
+    }));
+  } finally {
+    loadingRecentlyViewed.value = false;
   }
 };
 
-const removeFromRecentlyViewed = (productId) => {
-  removeProduct(productId);
+const clearRecentlyViewed = async () => {
+  try {
+    await confirmDialogService.confirm(
+      'Bạn có chắc muốn xóa tất cả sản phẩm đã xem?',
+      'Xác nhận xóa',
+      {
+        confirmButtonText: 'Xóa tất cả',
+        cancelButtonText: 'Hủy',
+        type: 'warning'
+      }
+    );
+    clearAll();
+    recentlyViewedProducts.value = [];
+    toastService.success('Thành công', 'Đã xóa tất cả sản phẩm đã xem');
+  } catch (error) {
+    if (error !== 'cancel') {
+      logger.error('Error clearing recently viewed:', error);
+    }
+  }
+};
+
+const removeFromRecentlyViewed = async (productId) => {
+  try {
+    removeProduct(productId);
+    recentlyViewedProducts.value = recentlyViewedProducts.value.filter(p => p.id !== productId);
+    toastService.success('Thành công', 'Đã xóa sản phẩm khỏi danh sách');
+  } catch (error) {
+    logger.error('Error removing product from recently viewed:', error);
+  }
 };
 
 const loadDashboardData = async () => {
@@ -436,9 +544,9 @@ const loadDashboardData = async () => {
           status: order.status?.toUpperCase() || 'PENDING'
         }));
       
-      console.log('✅ Orders loaded from API:', totalOrders, 'orders');
+      logger.log('✅ Orders loaded from API:', totalOrders, 'orders');
     } catch (error) {
-      console.error('Error loading orders:', error);
+      logger.error('Error loading orders:', error);
       orderStats.value = { totalOrders: 0, pendingOrders: 0, completedOrders: 0, totalSpent: 0 };
       recentOrders.value = [];
       if (error.response?.status !== 401) {
@@ -463,23 +571,30 @@ const loadDashboardData = async () => {
       if (recommendedProducts.value.length === 0) {
         toastService.info('Thông tin','Chưa có sản phẩm đề xuất');
       } else {
-        console.log('✅ Recommended products loaded from API:', recommendedProducts.value.length, 'products');
+        logger.log('✅ Recommended products loaded from API:', recommendedProducts.value.length, 'products');
       }
     } catch (error) {
-      console.error('Error loading recommended products:', error);
+      logger.error('Error loading recommended products:', error);
       recommendedProducts.value = [];
       toastService.warning('Cảnh báo','Không thể tải sản phẩm đề xuất');
     }
   } catch (error) {
-    console.error('Error loading dashboard data:', error);
+    logger.error('Error loading dashboard data:', error);
     toastService.error('Lỗi','Không thể tải dữ liệu dashboard');
   } finally {
     loading.value = false;
   }
 };
 
+// Watch recentlyViewed changes to reload products
+watch(() => recentlyViewed.value, () => {
+  loadRecentlyViewedProducts();
+}, { deep: true });
+
 // Lifecycle
-onMounted(() => {
-  loadDashboardData();
+onMounted(async () => {
+  await loadDashboardData();
+  // Load recently viewed products after dashboard data
+  await loadRecentlyViewedProducts();
 });
 </script>

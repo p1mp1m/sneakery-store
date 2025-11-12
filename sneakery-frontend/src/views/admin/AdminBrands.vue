@@ -364,6 +364,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
+import logger from '@/utils/logger'
+import { formatDate } from '@/utils/formatters'
 
 const adminStore = useAdminStore();
 
@@ -440,12 +442,8 @@ const fetchBrands = async () => {
     const result = await adminStore.fetchBrands();
     brands.value = result.content || result || [];
   } catch (error) {
-    console.error("Error fetching brands:", error);
-    // alert("Lỗi khi tải danh sách thương hiệu");
-    toastService.error('Lỗi',{
-      message: "Lỗi khi tải danh sách thương hiệu",
-      duration: 3000,
-    });
+    logger.error("Error fetching brands:", error);
+    toastService.apiError(error, "Lỗi khi tải danh sách thương hiệu")
   } finally {
     loading.value = false;
   }
@@ -514,12 +512,8 @@ const saveBrand = async () => {
       duration: 3000,
     });
   } catch (error) {
-    console.error("Error saving brand:", error);
-    // alert("Lỗi khi lưu thương hiệu");
-    toastService.error('Lỗi',{
-      message: "Lỗi khi lưu thương hiệu",
-      duration: 3000,
-    });
+    logger.error("Error saving brand:", error);
+    toastService.apiError(error, "Lỗi khi lưu thương hiệu")
   } finally {
     saving.value = false;
   }
@@ -543,12 +537,8 @@ const deleteBrand = async () => {
       duration: 3000,
     });
   } catch (error) {
-    console.error("Error deleting brand:", error);
-    // alert("Lỗi khi xóa thương hiệu");
-    toastService.error('Lỗi',{
-      message: "Lỗi khi xóa thương hiệu",
-      duration: 3000,
-    });
+    logger.error("Error deleting brand:", error);
+    toastService.apiError(error, "Lỗi khi xóa thương hiệu")
   } finally {
     deleting.value = false;
   }
@@ -558,12 +548,6 @@ const resetFilters = () => {
   searchKeyword.value = "";
   filterStatus.value = "all";
   currentPage.value = 1;
-};
-
-const formatDate = (dateString) => {
-  if (!dateString) return "—";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("vi-VN");
 };
 
 const truncateText = (text, maxLength) => {

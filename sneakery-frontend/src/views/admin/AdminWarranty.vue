@@ -214,7 +214,13 @@
               </td>
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
-                  <img :src="item.productImage" :alt="item.productName" class="w-12 h-12 object-cover rounded-lg" />
+                  <img 
+                    :src="item.productImage" 
+                    :alt="item.productName" 
+                    class="w-12 h-12 object-cover rounded-lg"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <div>
                     <strong class="text-sm font-medium text-gray-900 dark:text-gray-100 block">{{ item.productName }}</strong>
                     <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.variantName }}</p>
@@ -404,6 +410,8 @@ import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
 import { useAdminStore } from '@/stores/admin'
 import FilterBar from '@/assets/components/admin/FilterBar.vue'
+import logger from '@/utils/logger'
+import { formatDate } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -474,11 +482,11 @@ const fetchWarranties = async () => {
     if (warranties.value.length === 0) {
       toastService.info('Thông tin','Chưa có yêu cầu bảo hành nào')
     } else {
-      console.log('✅ Warranties loaded from API:', warranties.value.length, 'warranties')
+      logger.log('✅ Warranties loaded from API:', warranties.value.length, 'warranties')
     }
   } catch (error) {
-    console.error('Lỗi tải dữ liệu:', error)
-    toastService.error('Lỗi','Không thể tải danh sách bảo hành: ' + (error.message || 'Không thể kết nối đến server'))
+    logger.error('Lỗi tải dữ liệu:', error)
+    toastService.apiError(error, 'Không thể tải danh sách bảo hành')
     warranties.value = []
     updateStats()
   } finally {
@@ -567,8 +575,8 @@ const bulkApprove = async () => {
       clearSelection()
       fetchWarranties()
     } catch (error) {
-      console.error('Lỗi khi chấp nhận hàng loạt:', error)
-      toastService.error('Lỗi','Lỗi khi chấp nhận yêu cầu bảo hành')
+      logger.error('Lỗi khi chấp nhận hàng loạt:', error)
+      toastService.apiError(error, 'Lỗi khi chấp nhận yêu cầu bảo hành')
     }
   }).catch(() => {
     toastService.info('Thông tin','Đã hủy')
@@ -591,8 +599,8 @@ const bulkReject = async () => {
       clearSelection()
       fetchWarranties()
     } catch (error) {
-      console.error('Lỗi khi từ chối hàng loạt:', error)
-      toastService.error('Lỗi','Lỗi khi từ chối yêu cầu bảo hành')
+      logger.error('Lỗi khi từ chối hàng loạt:', error)
+      toastService.apiError(error, 'Lỗi khi từ chối yêu cầu bảo hành')
     }
   }).catch(() => {
     toastService.info('Thông tin','Đã hủy')
@@ -657,7 +665,12 @@ const saveDocuments = () => {
     return
   }
   
-  // TODO: Upload to server
+  // TODO: Upload warranty documents to server
+  // Priority: Medium
+  // Status: Pending backend API implementation
+  // Note: Currently shows success message, but files are not persisted to server
+  // Required: Backend endpoint for uploading warranty documents (POST /api/admin/warranty/{id}/documents)
+  // Timeline: To be implemented in future release
   toastService.success('Thành công',`Đã tải lên ${uploadedFiles.value.length} tài liệu!`)
   showUploadModal.value = false
   uploadedFiles.value = []
@@ -683,8 +696,8 @@ const approveWarranty = async (item) => {
       toastService.success('Thành công','Đã chấp nhận yêu cầu!')
       fetchWarranties()
     } catch (error) {
-      console.error('Lỗi khi chấp nhận:', error)
-      toastService.error('Lỗi','Lỗi khi chấp nhận yêu cầu bảo hành')
+      logger.error('Lỗi khi chấp nhận:', error)
+      toastService.apiError(error, 'Lỗi khi chấp nhận yêu cầu bảo hành')
     }
   }).catch(() => {
     toastService.info('Thông tin','Đã hủy')
@@ -711,8 +724,8 @@ const updateStatus = async (item, newStatus) => {
       toastService.success('Thành công','Đã cập nhật trạng thái!')
       fetchWarranties()
     } catch (error) {
-      console.error('Lỗi khi cập nhật trạng thái:', error)
-      toastService.error('Lỗi','Lỗi khi cập nhật trạng thái bảo hành')
+      logger.error('Lỗi khi cập nhật trạng thái:', error)
+      toastService.apiError(error, 'Lỗi khi cập nhật trạng thái bảo hành')
     }
   }).catch(() => {
     toastService.info('Thông tin','Đã hủy')
@@ -777,19 +790,7 @@ const getStatusText = (status) => {
   return statuses[status] || status
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    return new Intl.DateTimeFormat('vi-VN', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit'
-    }).format(new Date(dateString))
-  } catch (error) {
-    console.warn('Invalid date format:', dateString)
-    return 'N/A'
-  }
-}
+// formatDate đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

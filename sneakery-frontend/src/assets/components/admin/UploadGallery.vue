@@ -112,6 +112,7 @@
 import { ref, watch, onUnmounted } from "vue";
 // import toastService from "@/utils/toastService";
 import toastService from "@/utils/toastService";
+import { buildApiUrl } from "@/config/api";
 
 /**
  * Component này chỉ hiển thị và quản lý preview ảnh.
@@ -135,13 +136,7 @@ const getImageUrl = (url) => {
   
   // Nếu là relative URL (bắt đầu bằng /), prefix với backend URL
   if (url.startsWith('/')) {
-    // In development, Vite proxy handles /api requests
-    // In production, use environment variable or default
-    const API_BASE_URL = import.meta.env.DEV 
-      ? '' // Development: use proxy
-      : (import.meta.env.VITE_API_URL || 'http://localhost:8080');
-    
-    return API_BASE_URL ? `${API_BASE_URL}${url}` : url;
+    return buildApiUrl(url);
   }
   
   return url;

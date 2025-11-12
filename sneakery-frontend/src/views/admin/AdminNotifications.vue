@@ -121,8 +121,14 @@
     <!-- Table -->
     <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+        <div class="space-y-4" role="status" aria-live="polite">
+          <LoadingSkeleton
+            v-for="n in 5"
+            :key="n"
+            type="list"
+          />
+          <span class="sr-only">Đang tải dữ liệu</span>
+        </div>
       </div>
 
       <div v-else-if="notifications.length === 0" class="flex flex-col items-center justify-center p-12">
@@ -451,6 +457,9 @@ import { ref, reactive, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
+import logger from '@/utils/logger'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import { formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -517,11 +526,11 @@ const fetchNotifications = async () => {
     if (notifications.value.length === 0) {
       toastService.info('Thông tin','Chưa có thông báo nào')
     } else {
-      console.log('✅ Notifications loaded from API:', notifications.value.length, 'notifications')
+      logger.log('✅ Notifications loaded from API:', notifications.value.length, 'notifications')
     }
   } catch (error) {
-    console.error('Lỗi tải dữ liệu:', error)
-    toastService.error('Lỗi','Không thể tải danh sách thông báo: ' + (error.message || 'Không thể kết nối đến server'))
+    logger.error('Lỗi tải dữ liệu:', error)
+    toastService.apiError(error, 'Không thể tải danh sách thông báo')
     notifications.value = []
     updateStats()
   } finally {
@@ -594,8 +603,8 @@ const saveNotification = async () => {
     closeDialog()
     fetchNotifications()
   } catch (error) {
-    console.error('Lỗi lưu:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi lưu thông báo!')
+    logger.error('Lỗi lưu:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi lưu thông báo')
   } finally {
     saving.value = false
   }
@@ -618,8 +627,8 @@ const deleteNotification = async (item) => {
     fetchNotifications()
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('Lỗi xóa:', error)
-      toastService.error('Lỗi','Có lỗi xảy ra khi xóa thông báo!')
+      logger.error('Lỗi xóa:', error)
+      toastService.apiError(error, 'Có lỗi xảy ra khi xóa thông báo')
     }
   }
 }
@@ -718,16 +727,7 @@ const truncate = (text, length) => {
   return text.length > length ? text.substring(0, length) + '...' : text
 }
 
-const formatDateTime = (dateString) => {
-  if (!dateString) return '-'
-  return new Intl.DateTimeFormat('vi-VN', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(dateString))
-}
+// formatDateTime đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

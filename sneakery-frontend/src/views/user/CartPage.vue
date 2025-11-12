@@ -21,11 +21,20 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center py-20">
-        <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mb-4"></div>
-          <p class="text-gray-600 dark:text-gray-400 font-medium">Đang tải giỏ hàng...</p>
+      <div v-if="loading" class="space-y-4" role="status" aria-live="polite">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-4">
+            <LoadingSkeleton
+              v-for="n in 3"
+              :key="n"
+              type="list"
+            />
+          </div>
+          <div>
+            <LoadingSkeleton type="custom" :lines="5" />
+          </div>
         </div>
+        <span class="sr-only">Đang tải giỏ hàng</span>
       </div>
 
       <!-- Empty Cart -->
@@ -151,10 +160,18 @@
                 <i class="material-icons text-base">error</i>
                 {{ couponError }}
               </div>
-              <div v-if="couponApplied" class="flex items-center justify-between gap-2 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mt-2 border border-green-200 dark:border-green-800">
+              <div v-if="couponApplied && appliedCoupon" class="flex items-center justify-between gap-2 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mt-2 border border-green-200 dark:border-green-800">
                 <div class="flex items-center gap-2">
                   <i class="material-icons text-base">check_circle</i>
-                  <span class="font-medium">Đã áp dụng mã "{{ couponCode }}" (-{{ couponDiscount }}%)</span>
+                  <span class="font-medium">
+                    Đã áp dụng mã "{{ appliedCoupon.code }}"
+                    <span v-if="appliedCoupon.discountType === 'percent'">
+                      (-{{ appliedCoupon.value }}%)
+                    </span>
+                    <span v-else>
+                      (-{{ formatPrice(appliedCoupon.value) }})
+                    </span>
+                  </span>
                 </div>
                 <button @click="removeCoupon" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium transition-colors">
                   <i class="material-icons text-base">close</i>
@@ -165,6 +182,7 @@
             <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
 
             <div class="space-y-3 mb-4">
+              <!-- Subtotal -->
               <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span class="flex items-center gap-2">
                   <i class="material-icons text-xs">inventory_2</i>
@@ -173,14 +191,33 @@
                 <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatPrice(cart.subTotal) }}</span>
               </div>
 
-              <div v-if="couponApplied" class="flex justify-between text-sm text-green-600 dark:text-green-400">
+              <!-- Coupon Discount -->
+              <div v-if="couponApplied && appliedCoupon" class="flex justify-between text-sm text-green-600 dark:text-green-400">
                 <span class="flex items-center gap-2">
                   <i class="material-icons text-xs">local_offer</i>
-                  Giảm giá (-{{ couponDiscount }}%)
+                  Giảm giá ({{ appliedCoupon.code }})
                 </span>
                 <span class="font-semibold">-{{ formatPrice(discountAmount) }}</span>
               </div>
 
+              <!-- Amount After Discount -->
+              <div v-if="couponApplied && appliedCoupon" class="flex justify-between text-xs text-gray-500 dark:text-gray-500 pt-1 border-t border-gray-200 dark:border-gray-700">
+                <span class="italic">Sau giảm giá</span>
+                <span class="italic">{{ formatPrice(cart.subTotal - discountAmount) }}</span>
+              </div>
+
+              <!-- VAT (10%) -->
+              <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                <span class="flex items-center gap-2">
+                  <i class="material-icons text-xs">receipt</i>
+                  VAT (10%)
+                </span>
+                <span class="text-gray-900 dark:text-gray-100 font-semibold">
+                  {{ formatPrice(Math.max(0, (cart.subTotal - discountAmount) * 0.10)) }}
+                </span>
+              </div>
+
+              <!-- Shipping Fee -->
               <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                 <span class="flex items-center gap-2">
                   <i class="material-icons text-xs">local_shipping</i>
@@ -243,24 +280,34 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
+import { useCouponStore } from '@/stores/coupon';
 import toastService from '@/utils/toastService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import logger from '@/utils/logger';
+import couponService from '@/services/couponService';
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue';
+import { formatPrice } from '@/utils/formatters';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
+const couponStore = useCouponStore();
 
 // Local state
-const couponCode = ref('');
-const couponApplied = ref(false);
-const couponDiscount = ref(0);
-const couponError = ref('');
 const applyingCoupon = ref(false);
+
+// Use coupon store state
+const couponCode = computed({
+  get: () => couponStore.couponCode,
+  set: (value) => { couponStore.couponCode = value; }
+});
+const couponApplied = computed(() => couponStore.hasCoupon);
+const couponError = computed(() => couponStore.couponError);
+const appliedCoupon = computed(() => couponStore.appliedCoupon);
 
 // Computed từ cart store
 const cart = computed(() => cartStore.cart);
@@ -280,13 +327,27 @@ const shippingProgress = computed(() => {
 });
 
 const discountAmount = computed(() => {
-  if (!cart.value || !couponApplied.value) return 0;
-  return (cart.value.subTotal * couponDiscount.value) / 100;
+  if (!cart.value || !couponApplied.value || !appliedCoupon.value) return 0;
+  
+  // Calculate discount based on coupon type
+  return couponService.calculateDiscount(appliedCoupon.value, cart.value.subTotal);
+});
+
+// Calculate VAT (10% on amount after discount)
+const taxAmount = computed(() => {
+  if (!cart.value) return 0;
+  const amountAfterDiscount = cart.value.subTotal - discountAmount.value;
+  return Math.max(0, amountAfterDiscount * 0.10);
 });
 
 const totalAmount = computed(() => {
   if (!cart.value) return 0;
-  return cart.value.subTotal - discountAmount.value + shippingFee.value;
+  // Backend logic:
+  // 1. subtotal - discount = amountAfterDiscount
+  // 2. VAT = amountAfterDiscount * 0.10
+  // 3. total = amountAfterDiscount + shippingFee + VAT
+  const amountAfterDiscount = cart.value.subTotal - discountAmount.value;
+  return amountAfterDiscount + shippingFee.value + taxAmount.value;
 });
 
 // Methods
@@ -334,58 +395,77 @@ const removeItem = async (item) => {
 };
 
 const applyCoupon = async () => {
-  if (!couponCode.value) return;
+  if (!couponCode.value || !cart.value) return;
 
   try {
     applyingCoupon.value = true;
-    couponError.value = '';
+    couponStore.setError('');
 
-    // Mock coupon validation (replace with real API call later)
-    // For demo: SAVE10 = 10%, SAVE20 = 20%, SAVE30 = 30%
-    const validCoupons = {
-      'SAVE10': 10,
-      'SAVE20': 20,
-      'SAVE30': 30,
-      'FREESHIP': 0 // Just for free shipping demo
-    };
+    // Validate coupon code from API
+    const coupon = await couponService.validateCoupon(
+      couponCode.value.trim(),
+      cart.value.subTotal
+    );
 
-    const code = couponCode.value.toUpperCase();
-    if (validCoupons[code] !== undefined) {
-      couponDiscount.value = validCoupons[code];
-      couponApplied.value = true;
-      toastService.success('Thành công',`Đã áp dụng mã giảm giá ${couponDiscount.value}%`);
-    } else {
-      couponError.value = 'Mã giảm giá không hợp lệ hoặc đã hết hạn';
-    }
+    // Store coupon info in store
+    couponStore.setCoupon(couponCode.value.trim(), coupon);
+    
+    // Calculate discount
+    const discount = couponService.calculateDiscount(coupon, cart.value.subTotal);
+    
+    toastService.success(
+      'Thành công',
+      `Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${couponService.formatCurrency(discount)}`
+    );
+    
+    logger.log('Coupon applied:', coupon.code, 'Discount:', discount);
   } catch (error) {
     logger.error('Error applying coupon:', error);
-    couponError.value = 'Không thể áp dụng mã giảm giá';
+    couponStore.setError(error.message || 'Không thể áp dụng mã giảm giá');
+    couponStore.clearCoupon();
   } finally {
     applyingCoupon.value = false;
   }
 };
 
 const removeCoupon = () => {
-  couponCode.value = '';
-  couponApplied.value = false;
-  couponDiscount.value = 0;
-  couponError.value = '';
+  couponStore.clearCoupon();
   toastService.info('Thông tin','Đã xóa mã giảm giá');
 };
 
-const proceedToCheckout = () => {
-  router.push('/checkout');
+const proceedToCheckout = async () => {
+  try {
+    await router.push('/checkout');
+  } catch (error) {
+    logger.error('Navigation error to checkout:', error);
+    toastService.error('Lỗi', 'Không thể mở trang thanh toán. Vui lòng thử lại sau.');
+  }
 };
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(price);
-};
+// Watch cart subtotal changes - revalidate coupon if needed
+watch(() => cart.value?.subTotal, async (newSubtotal) => {
+  if (appliedCoupon.value && newSubtotal) {
+    // Re-validate coupon when subtotal changes
+    try {
+      const coupon = await couponService.validateCoupon(
+        couponCode.value,
+        newSubtotal
+      );
+      // Update coupon in store if validation passes
+      couponStore.setCoupon(couponCode.value, coupon);
+    } catch (error) {
+      // If validation fails, clear coupon
+      logger.warn('Coupon validation failed after subtotal change:', error);
+      couponStore.clearCoupon();
+      toastService.warning('Cảnh báo', 'Mã giảm giá không còn hợp lệ với giá trị đơn hàng mới');
+    }
+  }
+});
 
 // Lifecycle
 onMounted(() => {
+  // Initialize coupon store and load from storage
+  couponStore.init();
   fetchCart();
 });
 </script>

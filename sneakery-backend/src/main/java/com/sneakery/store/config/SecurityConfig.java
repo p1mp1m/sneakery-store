@@ -36,6 +36,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // CSRF protection disabled for REST APIs with JWT
+                // JWT tokens provide CSRF protection inherently
+                // For state-changing operations, JWT validation is sufficient
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth

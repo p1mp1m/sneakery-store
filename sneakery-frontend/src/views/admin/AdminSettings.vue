@@ -577,6 +577,7 @@ import { useTheme } from '@/composables/useTheme'
 import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { downloadJson } from '@/utils/exportHelpers'
+import logger from '@/utils/logger'
 
 const adminStore = useAdminStore()
 const { theme, setTheme, currentTheme, isDark } = useTheme()
@@ -708,13 +709,13 @@ const loadSettings = async () => {
         }
       }
       
-      console.log('✅ Settings loaded from API:', apiSettings)
+      logger.log('✅ Settings loaded from API:', apiSettings)
     } else {
       // Nếu không có data từ API, giữ giá trị mặc định (không dùng mock data)
-      console.log('⚠️ No settings found in database, using defaults')
+      logger.log('⚠️ No settings found in database, using defaults')
     }
   } catch (error) {
-    console.error('Error loading settings:', error)
+    logger.error('Error loading settings:', error)
     // Không hiển thị error để tránh làm phiền user, chỉ log
     // Settings sẽ giữ giá trị mặc định
   }
@@ -726,8 +727,8 @@ const saveStoreSettings = async () => {
     await adminStore.updateSettings({ store: storeSettings.value })
     toastService.success('Thành công','Đã lưu thông tin cửa hàng thành công!')
   } catch (error) {
-    console.error('Error saving store settings:', error)
-    toastService.error('Lỗi','Không thể lưu thông tin cửa hàng')
+    logger.error('Error saving store settings:', error)
+    toastService.apiError(error, 'Không thể lưu thông tin cửa hàng')
   }
 }
 
@@ -736,8 +737,8 @@ const saveGeneralSettings = async () => {
     await adminStore.updateSettings({ general: generalSettings.value })
     toastService.success('Thành công','Đã lưu cài đặt chung thành công!')
   } catch (error) {
-    console.error('Error saving general settings:', error)
-    toastService.error('Lỗi','Không thể lưu cài đặt chung')
+    logger.error('Error saving general settings:', error)
+    toastService.apiError(error, 'Không thể lưu cài đặt chung')
   }
 }
 
@@ -746,8 +747,8 @@ const saveEmailSettings = async () => {
     await adminStore.updateSettings({ email: emailSettings.value })
     toastService.success('Thành công','Đã lưu cài đặt email thành công!')
   } catch (error) {
-    console.error('Error saving email settings:', error)
-    toastService.error('Lỗi','Không thể lưu cài đặt email')
+    logger.error('Error saving email settings:', error)
+    toastService.apiError(error, 'Không thể lưu cài đặt email')
   }
 }
 
@@ -756,8 +757,8 @@ const savePaymentSettings = async () => {
     await adminStore.updateSettings({ payment: paymentSettings.value })
     toastService.success('Thành công','Đã lưu cài đặt thanh toán thành công!')
   } catch (error) {
-    console.error('Error saving payment settings:', error)
-    toastService.error('Lỗi','Không thể lưu cài đặt thanh toán')
+    logger.error('Error saving payment settings:', error)
+    toastService.apiError(error, 'Không thể lưu cài đặt thanh toán')
   }
 }
 
@@ -806,8 +807,8 @@ const exportSettings = async () => {
     downloadJson(allSettings, `sneakery-settings-${new Date().toISOString().split('T')[0]}.json`)
     toastService.success('Thành công','Đã xuất cấu hình thành công!')
   } catch (error) {
-    console.error('Error exporting settings:', error)
-    toastService.error('Lỗi','Không thể xuất cấu hình')
+    logger.error('Error exporting settings:', error)
+    toastService.apiError(error, 'Không thể xuất cấu hình')
   }
 }
 
@@ -858,8 +859,8 @@ const importSettings = () => {
           toastService.info('Thông tin','Đã hủy nhập cấu hình')
         })
       } catch (error) {
-        console.error('Error importing settings:', error)
-        toastService.error('Lỗi','Lỗi khi nhập cấu hình. Vui lòng kiểm tra file JSON.')
+        logger.error('Error importing settings:', error)
+        toastService.apiError(error, 'Lỗi khi nhập cấu hình')
       }
     }
     reader.readAsText(file)
@@ -928,8 +929,8 @@ const resetToDefaults = async () => {
     toastService.success('Thành công','Đã khôi phục cài đặt mặc định thành công!')
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('Error resetting settings:', error)
-      toastService.error('Lỗi','Không thể khôi phục cài đặt mặc định')
+      logger.error('Error resetting settings:', error)
+      toastService.apiError(error, 'Không thể khôi phục cài đặt mặc định')
     }
   }
 }

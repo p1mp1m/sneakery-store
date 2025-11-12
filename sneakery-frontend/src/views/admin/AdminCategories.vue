@@ -343,6 +343,8 @@ import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
+import { highlightSearchSafely } from '@/utils/sanitize'
+import logger from '@/utils/logger'
 
 const adminStore = useAdminStore()
 
@@ -466,11 +468,8 @@ const fetchCategories = async () => {
     const result = await adminStore.fetchCategories()
     categories.value = result.content || result || []
   } catch (error) {
-    console.error('Lỗi khi tải danh sách danh mục:', error)
-    toastService.error('Lỗi',{
-      message: 'Không thể tải danh sách danh mục. Vui lòng thử lại!',
-      duration: 5000
-    })
+    logger.error('Lỗi khi tải danh sách danh mục:', error)
+    toastService.apiError(error, 'Không thể tải danh sách danh mục')
   } finally {
     loading.value = false
   }
@@ -579,7 +578,7 @@ const handleSubmit = async () => {
     await fetchCategories()
     closeModal()
   } catch (error) {
-    console.error('Lỗi khi lưu danh mục:', error)
+    logger.error('Lỗi khi lưu danh mục:', error)
     
     // Handle specific error messages from server
     let errorMessage = 'Có lỗi xảy ra! Vui lòng thử lại.'
@@ -606,10 +605,7 @@ const handleSubmit = async () => {
       errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
     }
     
-    toastService.error('Lỗi',{
-      message: errorMessage,
-      duration: 5000
-    })
+    toastService.apiError(error, errorMessage || 'Không thể lưu danh mục')
   } finally {
     submitting.value = false
   }
@@ -629,8 +625,8 @@ const handleDelete = async () => {
     showDeleteModal.value = false
     categoryToDelete.value = null
   } catch (error) {
-    console.error('Lỗi khi xóa danh mục:', error)
-    toastService.error('Lỗi','Không thể xóa danh mục này. Vui lòng thử lại!')
+    logger.error('Lỗi khi xóa danh mục:', error)
+    toastService.apiError(error, 'Không thể xóa danh mục này')
   } finally {
     deleting.value = false
   }
@@ -655,13 +651,15 @@ const handleExport = (format) => {
   }
 }
 
-// Search highlighting
+// Search highlighting (with XSS protection)
 const highlightSearch = (text) => {
-  if (!searchQuery.value.trim() || !text) return text
+  if (!text) return ''
+  if (!searchQuery.value || !searchQuery.value.trim()) {
+    // Still escape the text even if no search query
+    return highlightSearchSafely(text, '')
+  }
   
-  const query = searchQuery.value.trim()
-  const regex = new RegExp(`(${query})`, 'gi')
-  return text.replace(regex, '<mark class="search-highlight">$1</mark>')
+  return highlightSearchSafely(text, searchQuery.value)
 }
 
 // Expand/Collapse all
@@ -692,8 +690,8 @@ const handleBulkDelete = async () => {
     selectedCategories.value = []
     await fetchCategories()
   } catch (error) {
-    console.error('Lỗi khi xóa danh mục:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi xóa danh mục. Vui lòng thử lại!')
+    logger.error('Lỗi khi xóa danh mục:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi xóa danh mục')
   } finally {
     deleting.value = false
   }

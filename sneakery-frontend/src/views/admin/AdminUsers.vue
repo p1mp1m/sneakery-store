@@ -365,6 +365,7 @@ import FilterBar from '@/assets/components/admin/FilterBar.vue'
 import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
 import EmptyState from '@/assets/components/admin/EmptyState.vue'
 import BulkActions from '@/assets/components/admin/BulkActions.vue'
+import logger from '@/utils/logger'
 
 const adminStore = useAdminStore()
 const users = ref([])
@@ -498,11 +499,8 @@ const executeBulkAction = async () => {
     bulkAction.value = ''
     await fetchUsers()
   } catch (error) {
-    console.error('Lỗi khi thực hiện hàng loạt:', error)
-    toastService.error('Lỗi',{
-      message: 'Có lỗi xảy ra khi thực hiện hành động!',
-      duration: 3000
-    })
+    logger.error('Lỗi khi thực hiện hàng loạt:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi thực hiện hành động')
   } finally {
     loading.value = false
   }
@@ -523,8 +521,8 @@ const fetchUsers = async () => {
     users.value = result.content || []
     totalItems.value = result.totalElements || 0
   } catch (error) {
-    console.error('Lỗi khi tải danh sách người dùng:', error)
-    toastService.error('Lỗi','Không thể tải danh sách người dùng.')
+    logger.error('Lỗi khi tải danh sách người dùng:', error)
+    toastService.apiError(error, 'Không thể tải danh sách người dùng')
   } finally {
     loading.value = false
   }
@@ -579,8 +577,8 @@ const exportToExcel = () => {
     exportToExcelStyled(exportData, 'nguoi-dung.xlsx', 'Người dùng')
     toastService.success('Thành công',`Đã export ${exportData.length} người dùng thành công!`)
   } catch (error) {
-    console.error('Lỗi khi export:', error)
-    toastService.error('Lỗi','Không thể export dữ liệu. Vui lòng thử lại!')
+    logger.error('Lỗi khi export:', error)
+    toastService.apiError(error, 'Không thể export dữ liệu')
   }
 }
 
@@ -615,8 +613,8 @@ const handleRoleUpdate = async () => {
     userToUpdate.value._originalRole = newRole.value
     showRoleConfirm.value = false
   } catch (error) {
-    console.error('Lỗi khi cập nhật vai trò:', error)
-    toastService.error('Lỗi','Không thể cập nhật vai trò. Vui lòng thử lại!')
+    logger.error('Lỗi khi cập nhật vai trò:', error)
+    toastService.apiError(error, 'Không thể cập nhật vai trò')
     
     userToUpdate.value.role = oldRole.value
   } finally {
@@ -656,8 +654,8 @@ const handleToggleStatus = async () => {
     
     showStatusConfirm.value = false
   } catch (error) {
-    console.error('Lỗi khi cập nhật trạng thái:', error)
-    toastService.error('Lỗi','Không thể cập nhật trạng thái. Vui lòng thử lại!')
+    logger.error('Lỗi khi cập nhật trạng thái:', error)
+    toastService.apiError(error, 'Không thể cập nhật trạng thái')
   } finally {
     updating.value = false
   }
@@ -678,9 +676,8 @@ const handleDelete = async () => {
     userToDelete.value = null
     await fetchUsers()
   } catch (error) {
-    console.error('Lỗi khi xóa người dùng:', error)
-    const errorMsg = error?.message || error?.response?.data?.message || 'Không thể xóa người dùng. Vui lòng thử lại!'
-    toastService.error('Lỗi',errorMsg)
+    logger.error('Lỗi khi xóa người dùng:', error)
+    toastService.apiError(error, 'Không thể xóa người dùng')
   } finally {
     deleting.value = false
   }
@@ -750,9 +747,8 @@ const handleCreateUser = async () => {
     closeCreateModal()
     await fetchUsers()
   } catch (error) {
-    console.error('Lỗi khi tạo người dùng:', error)
-    const errorMsg = error?.message || error?.response?.data?.message || 'Không thể tạo người dùng. Vui lòng thử lại!'
-    toastService.error('Lỗi',errorMsg)
+    logger.error('Lỗi khi tạo người dùng:', error)
+    toastService.apiError(error, 'Không thể tạo người dùng')
     
     // Hiển thị lỗi cụ thể nếu có
     if (error?.response?.data?.validationErrors) {

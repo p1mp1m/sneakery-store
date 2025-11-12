@@ -153,6 +153,8 @@
                     :src="sale.productImage" 
                     :alt="sale.productName"
                     class="w-12 h-12 rounded-lg object-cover bg-gray-100 dark:bg-gray-700"
+                    loading="lazy"
+                    decoding="async"
                     @error="handleImageError"
                   />
                   <div class="min-w-0">
@@ -394,6 +396,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
+import logger from '@/utils/logger'
+import { formatCurrency, formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -554,10 +558,10 @@ const loadFlashSales = async () => {
       }
     })
     
-    console.log('✅ Flash sales loaded from API', flashSales.value)
+    logger.log('✅ Flash sales loaded from API', flashSales.value)
   } catch (error) {
-    console.error('Lỗi khi tải danh sách flash sales:', error)
-    toastService.error('Lỗi','Không thể tải danh sách flash sales')
+    logger.error('Lỗi khi tải danh sách flash sales:', error)
+    toastService.apiError(error, 'Không thể tải danh sách flash sales')
   } finally {
     loading.value = false
   }
@@ -671,8 +675,8 @@ const saveFlashSale = async () => {
     closeModal()
     loadFlashSales()
   } catch (error) {
-    console.error('Error saving flash sale:', error)
-    toastService.error('Lỗi','Lỗi khi lưu Flash Sale')
+    logger.error('Error saving flash sale:', error)
+    toastService.apiError(error, 'Lỗi khi lưu Flash Sale')
   } finally {
     saving.value = false
   }
@@ -692,8 +696,8 @@ const deleteFlashSale = async () => {
     toastService.success('Thành công','Xóa Flash Sale thành công!')
     loadFlashSales()
   } catch (error) {
-    console.error('Error deleting flash sale:', error)
-    toastService.error('Lỗi','Lỗi khi xóa Flash Sale')
+    logger.error('Error deleting flash sale:', error)
+    toastService.apiError(error, 'Lỗi khi xóa Flash Sale')
   } finally {
     deleting.value = false
   }
@@ -705,26 +709,7 @@ const resetFilters = () => {
   currentPage.value = 1
 }
 
-const formatCurrency = (value) => {
-  if (value === null || value === undefined || isNaN(value)) return '0 ₫'
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(Number(value))
-}
-
-const formatDateTime = (dateString) => {
-  if (!dateString) return '—'
-  const date = new Date(dateString)
-  if (isNaN(date.getTime())) return '—'
-  return date.toLocaleString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+// formatCurrency và formatDateTime đã được import từ @/utils/formatters
 
 const handleImageError = (e) => {
   e.target.src = '/placeholder-image.png'

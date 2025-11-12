@@ -63,7 +63,14 @@
               <input
                 v-model="passwordForm.newPassword"
                 :type="showNewPassword ? 'text' : 'password'"
-                class="w-full px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                class="w-full px-4 py-2 pr-10 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
+                :class="[
+                  passwordForm.newPassword && passwordStrength && !passwordStrength.valid
+                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
+                    : passwordForm.newPassword && passwordStrength && passwordStrength.valid
+                    ? 'border-green-300 dark:border-green-600 focus:ring-green-500 focus:border-green-500'
+                    : 'border-gray-300 dark:border-gray-600 focus:ring-purple-500 focus:border-transparent'
+                ]"
                 placeholder="Nhập mật khẩu mới"
                 required
               />
@@ -75,7 +82,64 @@
                 <i class="material-icons text-lg">{{ showNewPassword ? 'visibility_off' : 'visibility' }}</i>
               </button>
             </div>
-            <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Mật khẩu phải có ít nhất 6 ký tự</small>
+            
+            <!-- Password Strength Indicator -->
+            <div v-if="passwordForm.newPassword" class="mt-2 space-y-2">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full transition-all duration-300"
+                    :class="[
+                      passwordStrength?.strength === 'strong' ? 'bg-green-500 w-full' :
+                      passwordStrength?.strength === 'medium' ? 'bg-yellow-500 w-2/3' :
+                      'bg-red-500 w-1/3'
+                    ]"
+                  ></div>
+                </div>
+                <span 
+                  class="text-xs font-semibold"
+                  :class="[
+                    passwordStrength?.strength === 'strong' ? 'text-green-600 dark:text-green-400' :
+                    passwordStrength?.strength === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
+                    'text-red-600 dark:text-red-400'
+                  ]"
+                >
+                  {{ passwordStrength?.strength === 'strong' ? 'Mạnh' : passwordStrength?.strength === 'medium' ? 'Trung bình' : 'Yếu' }}
+                </span>
+              </div>
+              
+              <!-- Password Requirements -->
+              <div class="space-y-1">
+                <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Yêu cầu mật khẩu:</p>
+                <ul class="text-xs space-y-1">
+                  <li class="flex items-center gap-2" :class="passwordForm.newPassword.length >= 8 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">
+                    <i class="material-icons text-xs">{{ passwordForm.newPassword.length >= 8 ? 'check_circle' : 'radio_button_unchecked' }}</i>
+                    Ít nhất 8 ký tự
+                  </li>
+                  <li class="flex items-center gap-2" :class="/[A-Z]/.test(passwordForm.newPassword) ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">
+                    <i class="material-icons text-xs">{{ /[A-Z]/.test(passwordForm.newPassword) ? 'check_circle' : 'radio_button_unchecked' }}</i>
+                    Ít nhất 1 chữ hoa
+                  </li>
+                  <li class="flex items-center gap-2" :class="/[a-z]/.test(passwordForm.newPassword) ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">
+                    <i class="material-icons text-xs">{{ /[a-z]/.test(passwordForm.newPassword) ? 'check_circle' : 'radio_button_unchecked' }}</i>
+                    Ít nhất 1 chữ thường
+                  </li>
+                  <li class="flex items-center gap-2" :class="/[0-9]/.test(passwordForm.newPassword) ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">
+                    <i class="material-icons text-xs">{{ /[0-9]/.test(passwordForm.newPassword) ? 'check_circle' : 'radio_button_unchecked' }}</i>
+                    Ít nhất 1 số
+                  </li>
+                </ul>
+              </div>
+              
+              <!-- Error Messages -->
+              <div v-if="passwordStrength && passwordStrength.errors.length > 0" class="space-y-1">
+                <p v-for="error in passwordStrength.errors" :key="error" class="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <i class="material-icons text-xs">error</i>
+                  {{ error }}
+                </p>
+              </div>
+            </div>
+            <small v-else class="text-xs text-gray-500 dark:text-gray-400 mt-1 block">Mật khẩu phải có ít nhất 6 ký tự</small>
           </div>
 
           <div>
@@ -129,11 +193,14 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import toastService from '@/utils/toastService'
 import axios from 'axios'
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api'
+import logger from '@/utils/logger'
+import { validatePasswordStrength } from '@/utils/validators'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -149,6 +216,12 @@ const passwordForm = reactive({
   confirmPassword: ''
 })
 
+// Password strength computed
+const passwordStrength = computed(() => {
+  if (!passwordForm.newPassword) return null
+  return validatePasswordStrength(passwordForm.newPassword)
+})
+
 const changePassword = async () => {
   // Validation
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -156,8 +229,10 @@ const changePassword = async () => {
     return
   }
 
-  if (passwordForm.newPassword.length < 6) {
-    toastService.error('Lỗi','Mật khẩu phải có ít nhất 6 ký tự')
+  // Validate password strength
+  const strength = validatePasswordStrength(passwordForm.newPassword)
+  if (!strength.valid) {
+    toastService.error('Lỗi', strength.errors[0] || 'Mật khẩu không hợp lệ')
     return
   }
 
@@ -165,7 +240,7 @@ const changePassword = async () => {
     changingPassword.value = true
 
     await axios.post(
-      `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/auth/change-password`,
+      buildApiUrl(API_ENDPOINTS.AUTH.CHANGE_PASSWORD),
       {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword
@@ -180,8 +255,8 @@ const changePassword = async () => {
     toastService.success('Thành công','Đổi mật khẩu thành công!')
     resetForm()
   } catch (error) {
-    console.error('Error changing password:', error)
-    toastService.error('Lỗi',error.response?.data?.message || 'Không thể đổi mật khẩu')
+    logger.error('Error changing password:', error)
+    toastService.apiError(error, 'Không thể đổi mật khẩu')
   } finally {
     changingPassword.value = false
   }

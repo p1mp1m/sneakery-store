@@ -92,8 +92,14 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+      <div class="space-y-4" role="status" aria-live="polite">
+        <LoadingSkeleton
+          v-for="n in 5"
+          :key="n"
+          type="list"
+        />
+        <span class="sr-only">Đang tải dữ liệu</span>
+      </div>
     </div>
 
     <!-- Empty State -->
@@ -297,6 +303,9 @@ import { ref, computed, onMounted } from "vue";
 import toastService from "@/utils/toastService";
 import { useAdminStore } from "@/stores/admin";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
+import logger from "@/utils/logger";
+import LoadingSkeleton from "@/components/common/LoadingSkeleton.vue";
+import { formatDate } from "@/utils/formatters";
 
 const adminStore = useAdminStore();
 
@@ -373,11 +382,8 @@ const fetchSoles = async () => {
     const result = await adminStore.fetchSoles();
     shoeSoles.value = result.content || result || [];
   } catch (error) {
-    console.error("Error fetching shoe soles:", error);
-    toastService.error('Lỗi',{
-      message: "Lỗi khi tải danh sách loại đế",
-      duration: 3000,
-    });
+    logger.error("Error fetching shoe soles:", error);
+    toastService.apiError(error, "Lỗi khi tải danh sách loại đế")
   } finally {
     loading.value = false;
   }
@@ -442,15 +448,12 @@ const saveShoeSole = async () => {
       duration: 3000,
     });
   } catch (error) {
-    console.error("Error saving shoe sole:", error);
+    logger.error("Error saving shoe sole:", error);
 
     // Nếu BE trả về lỗi validate, bạn có thể map vào formErrors
     // ví dụ: if (error.response?.data?.validationErrors) { ... }
 
-    toastService.error('Lỗi',{
-      message: "Lỗi khi lưu loại đế",
-      duration: 3000,
-    });
+    toastService.apiError(error, "Lỗi khi lưu loại đế")
   } finally {
     saving.value = false;
   }
@@ -473,11 +476,8 @@ const deleteShoeSole = async () => {
       duration: 3000,
     });
   } catch (error) {
-    console.error("Error deleting shoe sole:", error);
-    toastService.error('Lỗi',{
-      message: "Lỗi khi xóa loại đế",
-      duration: 3000,
-    });
+    logger.error("Error deleting shoe sole:", error);
+    toastService.apiError(error, "Lỗi khi xóa loại đế")
   } finally {
     deleting.value = false;
   }
@@ -489,11 +489,7 @@ const resetFilters = () => {
   currentPage.value = 1;
 };
 
-const formatDate = (dateString) => {
-  if (!dateString) return "—";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("vi-VN");
-};
+// formatDate đã được import từ @/utils/formatters
 
 const truncateText = (text, maxLength) => {
   if (!text) return "";

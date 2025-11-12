@@ -161,8 +161,14 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải danh sách giao dịch...</p>
+        <div class="space-y-4" role="status" aria-live="polite">
+          <LoadingSkeleton
+            v-for="n in 5"
+            :key="n"
+            type="list"
+          />
+          <span class="sr-only">Đang tải danh sách giao dịch</span>
+        </div>
       </div>
 
       <!-- Empty State -->
@@ -387,6 +393,9 @@ import { useAdminStore } from '@/stores/admin'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
+import logger from '@/utils/logger'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import { formatPrice, formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -458,10 +467,10 @@ const fetchPayments = async () => {
       const statsResult = await adminStore.fetchPaymentStats()
       if (statsResult) {
         paymentStats.value = statsResult
-        console.log('✅ Payment stats loaded:', paymentStats.value)
+        logger.log('✅ Payment stats loaded:', paymentStats.value)
       }
     } catch (error) {
-      console.warn('Payment stats API error:', error)
+      logger.warn('Payment stats API error:', error)
     }
     
     // Load từ API - chỉ dùng dữ liệu thật từ database
@@ -485,11 +494,11 @@ const fetchPayments = async () => {
     if (payments.value.length === 0) {
       toastService.info('Thông tin','Chưa có giao dịch thanh toán nào')
     } else {
-      console.log('✅ Payments loaded from API:', payments.value.length, 'payments')
+      logger.log('✅ Payments loaded from API:', payments.value.length, 'payments')
     }
   } catch (error) {
-    console.error('Error loading payments:', error)
-    toastService.error('Lỗi','Không thể tải danh sách giao dịch: ' + (error.message || 'Không thể kết nối đến server'))
+    logger.error('Error loading payments:', error)
+    toastService.apiError(error, 'Không thể tải danh sách giao dịch')
     payments.value = []
   } finally {
     loading.value = false
@@ -590,8 +599,8 @@ const exportPayments = (format) => {
       toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
-    console.error('Export error:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
+    logger.error('Export error:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 
@@ -630,20 +639,7 @@ const getStatusText = (status) => {
   return statuses[status] || status
 }
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(value)
-}
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('vi-VN')
-}
-
-const formatDateTime = (dateString) => {
-  return new Date(dateString).toLocaleString('vi-VN')
-}
+// formatCurrency, formatDate, formatDateTime đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

@@ -27,11 +27,13 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center py-20">
-        <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mb-4"></div>
-          <p class="text-gray-600 dark:text-gray-400 font-medium">Đang tải danh sách đơn hàng...</p>
-        </div>
+      <div v-if="loading" class="space-y-4" role="status" aria-live="polite">
+        <LoadingSkeleton
+          v-for="n in 3"
+          :key="n"
+          type="list"
+        />
+        <span class="sr-only">Đang tải danh sách đơn hàng</span>
       </div>
 
       <!-- Empty State -->
@@ -302,6 +304,9 @@ import { useAuthStore } from '@/stores/auth';
 import toastService from '@/utils/toastService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import userService from '@/services/userService';
+import logger from '@/utils/logger';
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue';
+import { formatPrice, formatDate, formatDateTime } from '@/utils/formatters';
 
 const authStore = useAuthStore();
 
@@ -353,9 +358,9 @@ const fetchOrders = async (silent = false) => {
       }
     }
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    logger.error('Error fetching orders:', error);
     if (!silent) {
-      toastService.error('Lỗi',error.message || 'Không thể tải danh sách đơn hàng');
+      toastService.error('Lỗi', error.message || 'Không thể tải danh sách đơn hàng');
     }
   } finally {
     if (!silent) loading.value = false;
@@ -377,7 +382,7 @@ const viewOrderDetail = async (orderId) => {
     };
     showDetail.value = true;
   } catch (error) {
-    console.error('Error fetching order detail:', error);
+    logger.error('Error fetching order detail:', error);
     toastService.error('Lỗi',error.message || 'Không thể tải chi tiết đơn hàng');
   }
 };
@@ -422,13 +427,24 @@ const cancelOrder = async (orderId) => {
       }
     );
 
-    // TODO: Implement cancel order API
-    toastService.success('Thành công','Đã hủy đơn hàng thành công');
+    // Gọi API hủy đơn hàng
+    await userService.cancelOrder(orderId);
+    
+    toastService.success('Thành công', 'Đã hủy đơn hàng thành công');
+    
+    // Refresh danh sách đơn hàng
     await fetchOrders();
+    
+    // Nếu đang xem chi tiết đơn hàng này, đóng modal và refresh
+    if (showDetail.value && selectedOrder.value?.id === orderId) {
+      showDetail.value = false;
+      selectedOrder.value = null;
+    }
   } catch (error) {
     if (error !== 'cancel') {
-      console.error('Error canceling order:', error);
-      toastService.error('Lỗi','Không thể hủy đơn hàng');
+      logger.error('Error canceling order:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Không thể hủy đơn hàng';
+      toastService.error('Lỗi', errorMessage);
     }
   }
 };
@@ -438,14 +454,15 @@ const reorder = async (orderId) => {
     // TODO: Implement reorder functionality
     toastService.info('Thông tin','Tính năng đang được phát triển');
   } catch (error) {
-    console.error('Error reordering:', error);
+    logger.error('Error reordering:', error);
     toastService.error('Lỗi','Không thể đặt lại đơn hàng');
   }
 };
 
 const canCancel = (status) => {
   const normalizedStatus = getNormalizedStatus(status);
-  return ['Pending', 'Processing'].includes(normalizedStatus);
+  // Chỉ cho phép hủy khi đơn hàng đang ở trạng thái "Pending" (chờ xác nhận)
+  return normalizedStatus === 'Pending';
 };
 
 const canReorder = (status) => {
@@ -520,32 +537,7 @@ const getPaymentStatusText = (status) => {
   return statusMap[status] || status;
 };
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(price);
-};
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(date);
-};
-
-const formatDateTime = (dateString) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
-};
+// Format functions are now imported from @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

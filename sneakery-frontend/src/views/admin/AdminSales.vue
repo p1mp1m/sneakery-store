@@ -902,6 +902,8 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
+import logger from '@/utils/logger'
+import { formatPrice, formatCurrency, formatDate } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -1021,7 +1023,7 @@ const loadData = async () => {
           return product
         })
       } catch (error) {
-        console.warn('Could not fetch product details:', error)
+        logger.warn('Could not fetch product details:', error)
       }
     }
     
@@ -1033,8 +1035,8 @@ const loadData = async () => {
     showingAll.value = false
     
   } catch (error) {
-    console.error('Error loading data:', error)
-    toastService.error('Lỗi', 'Không thể tải dữ liệu')
+    logger.error('Error loading data:', error)
+    toastService.apiError(error, 'Không thể tải dữ liệu')
   } finally {
     loading.value = false
   }
@@ -1063,8 +1065,8 @@ const searchProducts = async () => {
         toastService.info('Thông tin', 'Không tìm thấy sản phẩm nào')
       }
     } catch (error) {
-      console.error('Error searching products:', error)
-      toastService.error('Lỗi', 'Không thể tìm kiếm sản phẩm')
+      logger.error('Error searching products:', error)
+      toastService.apiError(error, 'Không thể tìm kiếm sản phẩm')
     } finally {
       loading.value = false
     }
@@ -1087,8 +1089,8 @@ const filterProducts = async () => {
       showingAll.value = true // Khi filter, hiển thị tất cả kết quả
     
   } catch (error) {
-    console.error('Error filtering products:', error)
-    toastService.error('Lỗi', 'Không thể lọc sản phẩm')
+    logger.error('Error filtering products:', error)
+    toastService.apiError(error, 'Không thể lọc sản phẩm')
   } finally {
     loading.value = false
   }
@@ -1118,8 +1120,8 @@ const handleBarcodeSearch = async () => {
     }
     
   } catch (error) {
-    console.error('Error searching barcode:', error)
-    toastService.error('Lỗi','Không thể tìm kiếm sản phẩm')
+    logger.error('Error searching barcode:', error)
+    toastService.apiError(error, 'Không thể tìm kiếm sản phẩm')
   } finally {
     loading.value = false
   }
@@ -1165,7 +1167,7 @@ const processOrder = async () => {
     toastService.success('Thành công','Đơn hàng đã được tạo thành công')
     
   } catch (error) {
-    console.error('Error processing order:', error)
+    logger.error('Error processing order:', error)
     
     // Extract error message from different error formats
     let errorMessage = 'Không thể tạo đơn hàng'
@@ -1188,7 +1190,7 @@ const processOrder = async () => {
     }
     
     // Show detailed error message
-    toastService.error('Lỗi',errorMessage)
+    toastService.apiError(error, 'Không thể tạo đơn hàng')
   } finally {
     processing.value = false
   }
@@ -1214,7 +1216,7 @@ const loadSuggestedCustomers = async () => {
     const result = await adminStore.fetchUsers(0, 10, {}) // Load 10 khách hàng đầu tiên
     searchCustomersList.value = result.content || result || []
   } catch (error) {
-    console.error('Error loading suggested customers:', error)
+    logger.error('Error loading suggested customers:', error)
     searchCustomersList.value = []
   } finally {
     loadingCustomers.value = false
@@ -1243,8 +1245,8 @@ const searchCustomers = async () => {
       })
       searchCustomersList.value = result.content || result || []
     } catch (error) {
-      console.error('Error searching customers:', error)
-      toastService.error('Lỗi','Không thể tìm kiếm khách hàng')
+      logger.error('Error searching customers:', error)
+      toastService.apiError(error, 'Không thể tìm kiếm khách hàng')
       searchCustomersList.value = []
     } finally {
       loadingCustomers.value = false
@@ -1266,7 +1268,7 @@ const selectCustomer = async (customer) => {
     selectedCustomerLoyaltyPoints.value = balanceData.balance || 0
     toastService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
   } catch (error) {
-    console.error('Error loading loyalty points:', error)
+    logger.error('Error loading loyalty points:', error)
     selectedCustomerLoyaltyPoints.value = 0
     toastService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
   }
@@ -1306,7 +1308,7 @@ const loadMoreProducts = async () => {
     const uniqueNewProducts = newProducts.filter(p => !existingIds.has(p.id))
     products.value = [...products.value, ...uniqueNewProducts]
   } catch (error) {
-    console.error('Error loading more products:', error)
+    logger.error('Error loading more products:', error)
   } finally {
     loading.value = false
   }
@@ -1501,20 +1503,8 @@ const applyDiscount = async () => {
     toastService.success('Thành công',`Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${formatCurrency(calculatedDiscount)}`)
     
   } catch (error) {
-    console.error('Error applying discount:', error)
-    
-    // Extract detailed error message
-    let errorMessage = 'Không thể áp dụng mã giảm giá'
-    
-    if (error?.message) {
-      errorMessage = error.message
-    } else if (error?.response?.data?.message) {
-      errorMessage = error.response.data.message
-    } else if (typeof error === 'string') {
-      errorMessage = error
-    }
-    
-    toastService.error('Lỗi',errorMessage)
+    logger.error('Error applying discount:', error)
+    toastService.apiError(error, 'Không thể áp dụng mã giảm giá')
     discountAmount.value = 0
   }
 }
@@ -1549,22 +1539,10 @@ const printReceipt = () => {
   try {
     printInvoice(receiptData)
   } catch (error) {
-    console.error('Error printing receipt:', error)
+    logger.error('Error printing receipt:', error)
     // Fallback: window.print() nếu có lỗi
     window.print()
   }
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleString('vi-VN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 }
 
 const getPaymentMethodLabel = (method) => {
@@ -1597,17 +1575,6 @@ const getPaymentMethodLabel = (method) => {
   }
   
   return otherLabels[method] || method
-}
-
-const formatCurrency = (value) => {
-  if (value === null || value === undefined || isNaN(value) || value === '') {
-    return '0 ₫'
-  }
-  const numValue = Number(value)
-  if (isNaN(numValue) || numValue < 0) {
-    return '0 ₫'
-  }
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(numValue)
 }
 
 // Helper function để lấy giá từ product
@@ -1672,17 +1639,8 @@ const loadSalesHistory = async () => {
     salesHistory.value = result.content || result || []
     
   } catch (error) {
-    console.error('Error loading sales history:', error)
-    
-    // Extract error message
-    let errorMessage = 'Không thể tải lịch sử bán hàng'
-    if (error?.message) {
-      errorMessage = error.message
-    } else if (error?.response?.data?.message) {
-      errorMessage = error.response.data.message
-    }
-    
-    toastService.error('Lỗi',errorMessage)
+    logger.error('Error loading sales history:', error)
+    toastService.apiError(error, 'Không thể tải lịch sử bán hàng')
     salesHistory.value = []
   } finally {
     loadingHistory.value = false
@@ -1776,7 +1734,7 @@ const saveCartToLocalStorage = () => {
     }
     localStorage.setItem('pos_cart', JSON.stringify(cartData))
   } catch (error) {
-    console.error('Error saving cart to localStorage:', error)
+    logger.error('Error saving cart to localStorage:', error)
   }
 }
 
@@ -1804,7 +1762,7 @@ const loadCartFromLocalStorage = () => {
       }
     }
   } catch (error) {
-    console.error('Error loading cart from localStorage:', error)
+    logger.error('Error loading cart from localStorage:', error)
     localStorage.removeItem('pos_cart')
   }
 }

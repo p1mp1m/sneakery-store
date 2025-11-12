@@ -434,6 +434,8 @@ import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
+import logger from '@/utils/logger'
+import { formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -494,7 +496,7 @@ const loadCoupons = async () => {
     coupons.value = response.content || []
     totalItems.value = response.totalElements || 0
   } catch (error) {
-    toastService.error('Lỗi','Lỗi khi tải danh sách coupon')
+    toastService.apiError(error, 'Lỗi khi tải danh sách coupon')
   } finally {
     loading.value = false
   }
@@ -510,7 +512,7 @@ const loadStats = async () => {
       totalUsed: 156
     }
   } catch (error) {
-    console.error('Error loading stats:', error)
+    logger.error('Error loading stats:', error)
   }
 }
 
@@ -586,7 +588,7 @@ const saveCoupon = async () => {
     closeModal()
     loadCoupons()
   } catch (error) {
-    toastService.error('Lỗi','Lỗi khi lưu coupon')
+    toastService.apiError(error, 'Lỗi khi lưu coupon')
   } finally {
     submitting.value = false
   }
@@ -598,7 +600,7 @@ const toggleCouponStatus = async (coupon) => {
     toastService.success('Thành công',`Đã ${coupon.is_active ? 'tắt' : 'bật'} coupon`)
     loadCoupons()
   } catch (error) {
-    toastService.error('Lỗi','Lỗi khi thay đổi trạng thái coupon')
+    toastService.apiError(error, 'Lỗi khi thay đổi trạng thái coupon')
   }
 }
 
@@ -615,7 +617,7 @@ const handleDelete = async () => {
     showDeleteModal.value = false
     loadCoupons()
   } catch (error) {
-    toastService.error('Lỗi','Lỗi khi xóa coupon')
+    toastService.apiError(error, 'Lỗi khi xóa coupon')
   } finally {
     deleting.value = false
   }
@@ -651,7 +653,7 @@ const exportCoupons = (format) => {
     }
     toastService.success('Thành công',`Đã xuất danh sách coupon (${format.toUpperCase()})`)
   } catch (error) {
-    toastService.error('Lỗi','Lỗi khi xuất dữ liệu')
+    toastService.apiError(error, 'Lỗi khi xuất dữ liệu')
   }
 }
 
@@ -678,22 +680,7 @@ const getStatusText = (coupon) => {
   return 'Đang hoạt động'
 }
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(value)
-}
-
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+// formatCurrency và formatDate đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

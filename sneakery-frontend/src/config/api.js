@@ -68,6 +68,9 @@ export const API_ENDPOINTS = {
   ORDERS: {
     BASE: '/api/orders',
     BY_ID: (id) => `/api/orders/${id}`,
+    CHECKOUT: '/api/orders/checkout',
+    VALIDATE_COUPON: (code) => `/api/orders/coupons/validate/${code}`,
+    CANCEL: (id) => `/api/orders/${id}/cancel`,
   },
   
   // Flash Sales

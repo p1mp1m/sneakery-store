@@ -200,9 +200,13 @@
           </div>
 
           <!-- Loading State -->
-          <div v-if="loading" class="text-center py-16" role="status" aria-live="polite">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent mb-4" aria-hidden="true"></div>
-            <p class="text-gray-600 dark:text-gray-400">Đang tải sản phẩm...</p>
+          <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6" role="status" aria-live="polite">
+            <LoadingSkeleton
+              v-for="n in 8"
+              :key="n"
+              type="card"
+              :show-image="true"
+            />
             <span class="sr-only">Đang tải danh sách sản phẩm</span>
           </div>
 
@@ -284,6 +288,7 @@ import { useRoute } from 'vue-router'
 import productService from '@/services/productService'
 import { useFlashSaleStore } from '@/stores/flashSale'
 import ProductCard from '@/assets/components/products/ProductCard.vue'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { API_ENDPOINTS } from '@/config/api'
 import logger from '@/utils/logger'
 import axios from 'axios'
@@ -599,7 +604,16 @@ const fetchProducts = async () => {
       }
     }
     
-    products.value = productData
+    // Normalize product data: đảm bảo có categoryIds từ categories array
+    const normalizedProducts = productData.map(product => {
+      // Nếu có categories array nhưng không có categoryIds, tạo categoryIds từ categories
+      if (product.categories && Array.isArray(product.categories) && (!product.categoryIds || !Array.isArray(product.categoryIds))) {
+        product.categoryIds = product.categories.map(c => c.id || c).filter(id => id != null);
+      }
+      return product;
+    });
+    
+    products.value = normalizedProducts
     // totalItems and totalPages will be recalculated in computed based on filtered and sorted products
     // We keep the original total for reference
     totalItems.value = totalElements

@@ -139,16 +139,17 @@
     <!-- =================================================================
          LOADING & EMPTY STATES
          ================================================================= -->
-    <div
-      v-if="loading"
-      class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
-    >
-      <div
-        class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"
-      ></div>
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        Đang tải danh sách sản phẩm...
-      </p>
+    <!-- Loading State -->
+    <div v-if="loading" class="space-y-4" role="status" aria-live="polite">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <LoadingSkeleton
+          v-for="n in 8"
+          :key="n"
+          type="card"
+          :show-image="true"
+        />
+      </div>
+      <span class="sr-only">Đang tải danh sách sản phẩm</span>
     </div>
 
     <div
@@ -1158,6 +1159,7 @@ import { nextTick } from "vue";
 import axios from "axios";
 import { useAdminStore } from "@/stores/admin";
 import toastService from "@/utils/toastService";
+import logger from "@/utils/logger";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 // import UploadGallery from "@/assets/components/admin/UploadGallery.vue";
 import ProductFilters from "@/assets/components/admin/ProductFilters.vue";
@@ -1165,6 +1167,8 @@ import ProductFormModal from "@/assets/components/admin/ProductFormModal.vue";
 import * as XLSX from "xlsx";
 import { MAX_IMAGES_PER_PRODUCT } from "@/utils/productConstants";
 import { generateSlug as generateSlugUtil } from "@/utils/slugGenerator";
+import LoadingSkeleton from "@/components/common/LoadingSkeleton.vue";
+import { formatPrice, formatCurrency } from "@/utils/formatters";
 
 const adminStore = useAdminStore();
 
@@ -1294,13 +1298,8 @@ const handleCreateCategory = async () => {
     await loadRootCategories(); // reload lại danh mục cha
     closeCategoryModal();
   } catch (error) {
-    console.error("Lỗi khi thêm danh mục:", error);
-    let msg = "Không thể thêm danh mục. Vui lòng thử lại!";
-
-    if (error.response?.status === 409) {
-      msg = "Tên hoặc slug đã tồn tại!";
-    }
-    toastService.error('Lỗi', msg);
+    logger.error("Lỗi khi thêm danh mục:", error);
+    toastService.apiError(error, 'Không thể thêm danh mục');
   } finally {
     submittingCategory.value = false;
   }
@@ -1314,7 +1313,7 @@ const loadRootCategories = async () => {
       (cat) => !cat.parentId
     );
   } catch (error) {
-    console.error("Lỗi khi tải danh mục gốc:", error);
+    logger.error("Lỗi khi tải danh mục gốc:", error);
   }
 };
 
@@ -1498,8 +1497,8 @@ const fetchProducts = async () => {
     products.value = result.content || [];
     totalItems.value = result.totalElements || 0;
   } catch (error) {
-    console.error("Lỗi khi tải danh sách sản phẩm:", error);
-    toastService.error('Lỗi', 'Không thể tải danh sách sản phẩm!');
+    logger.error("Lỗi khi tải danh sách sản phẩm:", error);
+    toastService.apiError(error, 'Không thể tải danh sách sản phẩm');
   } finally {
     loading.value = false;
   }
@@ -1510,7 +1509,7 @@ const fetchBrands = async () => {
     await adminStore.fetchBrands();
     brands.value = adminStore.brands;
   } catch (error) {
-    console.error("Lỗi khi tải danh sách thương hiệu:", error);
+    logger.error("Lỗi khi tải danh sách thương hiệu:", error);
   }
 };
 
@@ -1519,7 +1518,7 @@ const fetchCategories = async () => {
     await adminStore.fetchCategories();
     categories.value = adminStore.categories;
   } catch (error) {
-    console.error("Lỗi khi tải danh sách danh mục:", error);
+    logger.error("Lỗi khi tải danh sách danh mục:", error);
   }
 };
 
@@ -1528,7 +1527,7 @@ const fetchStatistics = async () => {
     const response = await adminStore.getProductStatistics();
     stats.value = response;
   } catch (error) {
-    console.error("Lỗi khi tải thống kê:", error);
+    logger.error("Lỗi khi tải thống kê:", error);
   }
 };
 
@@ -1538,7 +1537,7 @@ const fetchMaterials = async () => {
     await adminStore.fetchMaterials();
     materials.value = adminStore.materials;
   } catch (error) {
-    console.error("Lỗi khi tải danh sách chất liệu:", error);
+    logger.error("Lỗi khi tải danh sách chất liệu:", error);
   }
 };
 
@@ -1547,7 +1546,7 @@ const fetchSoles = async () => {
     await adminStore.fetchSoles();
     soles.value = adminStore.soles;
   } catch (error) {
-    console.error("Lỗi khi tải danh sách loại đế giày:", error);
+    logger.error("Lỗi khi tải danh sách loại đế giày:", error);
   }
 };
 
@@ -1630,22 +1629,33 @@ const bulkDelete = async () => {
     return;
   }
 
+  let loadingToastId = null;
   try {
-    actionLoading.value = true; // ✅ Dùng loading riêng
+    const totalCount = selectedProducts.value.length;
+    
+    // Hiển thị toast "Đang xử lý..."
+    loadingToastId = toastService.info('Đang xử lý...', `Đang xóa ${totalCount} sản phẩm...`, { duration: 0 });
 
     for (const productId of selectedProducts.value) {
       await adminStore.deleteProduct(productId);
     }
 
-    toastService.success('Thành công', `Đã xóa ${selectedProducts.value.length} sản phẩm thành công!`);
+    // Đóng toast loading và hiển thị toast success
+    if (loadingToastId) {
+      toastService.removeToast(loadingToastId);
+    }
+    toastService.success('Thành công', `Đã xóa ${totalCount} sản phẩm thành công!`);
+    
     selectedProducts.value = [];
     await fetchProducts();
     await fetchStatistics();
   } catch (error) {
-    console.error("Lỗi khi xóa hàng loạt:", error);
-    toastService.error('Lỗi', 'Có lỗi xảy ra khi xóa sản phẩm!');
-  } finally {
-    actionLoading.value = false;
+    // Đóng toast loading nếu có lỗi
+    if (loadingToastId) {
+      toastService.removeToast(loadingToastId);
+    }
+    logger.error("Lỗi khi xóa hàng loạt:", error);
+    toastService.apiError(error, 'Có lỗi xảy ra khi xóa sản phẩm');
   }
 };
 
@@ -1748,7 +1758,7 @@ const openEditModal = async (product) => {
     // 🟢 Chỉ mở modal sau khi gán xong object mới
     showModal.value = true;
   } catch (error) {
-    console.error("❌ Lỗi khi tải chi tiết sản phẩm:", error);
+    logger.error("❌ Lỗi khi tải chi tiết sản phẩm:", error);
     editingProduct.value = {
       id: product.id,
       name: product.name || "",
@@ -1783,7 +1793,7 @@ const fetchProductImages = async (productId) => {
     productImages.value = [...initialProductImages.value];
     formData.value.images = [...initialProductImages.value];
   } catch (error) {
-    console.error("Lỗi tải ảnh sản phẩm:", error);
+    logger.error("Lỗi tải ảnh sản phẩm:", error);
   }
 };
 
@@ -1921,7 +1931,7 @@ const handleSubmit = async (submittedData = null) => {
             }
           );
         } catch (e) {
-          console.error("❌ Xóa ảnh lỗi:", url, e);
+          logger.error("❌ Xóa ảnh lỗi:", url, e);
         }
       }
     }
@@ -2045,8 +2055,8 @@ const handleSubmit = async (submittedData = null) => {
           );
           uploadedUrls.push(res.data?.imageUrl);
         } catch (err) {
-          console.error("❌ Upload ảnh local lỗi:", err);
-          toastService.error('Lỗi', 'Upload ảnh local thất bại');
+          logger.error("❌ Upload ảnh local lỗi:", err);
+          toastService.apiError(err, 'Upload ảnh local thất bại');
         }
       } else if (img.type === "url" && img.previewUrl) {
         try {
@@ -2061,8 +2071,8 @@ const handleSubmit = async (submittedData = null) => {
           );
           uploadedUrls.push(img.previewUrl);
         } catch (err) {
-          console.error("❌ Upload ảnh URL lỗi:", err);
-          toastService.error('Lỗi', 'Upload ảnh URL thất bại');
+          logger.error("❌ Upload ảnh URL lỗi:", err);
+          toastService.apiError(err, 'Upload ảnh URL thất bại');
         }
       }
     }
@@ -2085,7 +2095,7 @@ const handleSubmit = async (submittedData = null) => {
             { isPrimary: true },
             { headers: { "Content-Type": "application/json" } }
           );
-          console.log(
+          logger.log(
             `✅ Ảnh mới upload được gán làm ảnh bìa ID=${matched.id}`
           );
         }
@@ -2115,7 +2125,7 @@ const handleSubmit = async (submittedData = null) => {
       }
 
       if (currentPrimary && oldPrimary && currentPrimary.id !== oldPrimary.id) {
-        console.log(
+        logger.log(
           `🔄 Đổi ảnh bìa từ ${oldPrimary.id} → ${currentPrimary.id}`
         );
 
@@ -2153,13 +2163,13 @@ const handleSubmit = async (submittedData = null) => {
               { isPrimary: img.isPrimary, displayOrder: idx + 1 },
               { headers: { "Content-Type": "application/json" } }
             );
-            console.log(
+            logger.log(
               `🆙 Update ảnh ID=${img.id} → order=${idx + 1}, primary=${
                 img.isPrimary
               }`
             );
           } catch (err) {
-            console.error("❌ Update ảnh DB lỗi:", err);
+            logger.error("❌ Update ảnh DB lỗi:", err);
           }
         }
       }
@@ -2194,8 +2204,8 @@ const handleSubmit = async (submittedData = null) => {
         formData.value.mainImageUrl = finalPrimary.previewUrl;
       }
     } catch (err) {
-      console.error("❌ Lỗi khi xử lý ảnh bìa / thứ tự hiển thị:", err);
-      toastService.error('Lỗi', 'Cập nhật ảnh bìa hoặc thứ tự hiển thị thất bại!');
+      logger.error("❌ Lỗi khi xử lý ảnh bìa / thứ tự hiển thị:", err);
+      toastService.apiError(err, 'Cập nhật ảnh bìa hoặc thứ tự hiển thị thất bại');
     }
 
     // ==================== [7] THÔNG BÁO & RESET FORM ====================
@@ -2233,12 +2243,8 @@ const handleSubmit = async (submittedData = null) => {
 
     closeModal();
   } catch (error) {
-    console.error("❌ Lỗi khi lưu sản phẩm:", error);
-    const msg =
-      error.response?.data?.message ||
-      error.message ||
-      "Đã xảy ra lỗi khi lưu sản phẩm";
-    toastService.error('Lỗi', msg);
+    logger.error("❌ Lỗi khi lưu sản phẩm:", error);
+    toastService.apiError(error, 'Đã xảy ra lỗi khi lưu sản phẩm');
   } finally {
     isSubmitting.value = false;
   }
@@ -2282,17 +2288,33 @@ const confirmDelete = (product) => {
 };
 
 const handleDelete = async () => {
+  let loadingToastId = null;
   try {
     deleting.value = true;
+    const productName = productToDelete.value.name;
+    
+    // Hiển thị toast "Đang xử lý..."
+    loadingToastId = toastService.info('Đang xử lý...', `Đang xóa sản phẩm "${productName}"`, { duration: 0 });
+    
     await adminStore.deleteProduct(productToDelete.value.id);
-    toastService.success('Thành công', `Đã xóa sản phẩm "${productToDelete.value.name}" thành công!`);
+    
+    // Đóng toast loading và hiển thị toast success
+    if (loadingToastId) {
+      toastService.removeToast(loadingToastId);
+    }
+    toastService.success('Thành công', `Đã xóa sản phẩm "${productName}" thành công!`);
+    
     await fetchProducts();
     await fetchStatistics();
     showDeleteModal.value = false;
     productToDelete.value = null;
   } catch (error) {
-    console.error("Lỗi khi xóa sản phẩm:", error);
-    toastService.error('Lỗi', 'Không thể xóa sản phẩm này. Vui lòng thử lại!');
+    // Đóng toast loading nếu có lỗi
+    if (loadingToastId) {
+      toastService.removeToast(loadingToastId);
+    }
+    logger.error("Lỗi khi xóa sản phẩm:", error);
+    toastService.apiError(error, 'Không thể xóa sản phẩm này');
   } finally {
     deleting.value = false;
   }
@@ -2371,8 +2393,8 @@ const saveQuickBrand = async () => {
       isActive: true,
     };
   } catch (error) {
-    console.error("Lỗi khi thêm thương hiệu nhanh:", error);
-    toastService.error('Lỗi', 'Không thể thêm thương hiệu. Vui lòng thử lại!');
+    logger.error("Lỗi khi thêm thương hiệu nhanh:", error);
+    toastService.apiError(error, 'Không thể thêm thương hiệu');
   } finally {
     savingQuickBrand.value = false;
   }
@@ -2428,8 +2450,8 @@ const saveQuickMaterial = async () => {
     // 🔒 Đóng popup
     closeQuickAddMaterial();
   } catch (err) {
-    console.error(err);
-    toastService.error('Lỗi', 'Không thể thêm chất liệu.');
+    logger.error('Lỗi khi thêm chất liệu:', err);
+    toastService.apiError(err, 'Không thể thêm chất liệu');
   } finally {
     savingQuickMaterial.value = false;
   }
@@ -2480,8 +2502,8 @@ const saveQuickSole = async () => {
     // 🔒 Đóng popup
     closeQuickAddSole();
   } catch (err) {
-    console.error(err);
-    toastService.error('Lỗi', 'Không thể thêm loại đế giày.');
+    logger.error('Lỗi khi thêm loại đế giày:', err);
+    toastService.apiError(err, 'Không thể thêm loại đế giày');
   } finally {
     savingQuickSole.value = false;
   }
@@ -2554,8 +2576,8 @@ const handleFileUpload = (event) => {
 
       toastService.success('Thành công', `Đã đọc ${importPreview.value.length} sản phẩm từ file Excel!`);
     } catch (error) {
-      console.error("Lỗi khi đọc file Excel:", error);
-      toastService.error('Lỗi', 'Không thể đọc file Excel. Vui lòng kiểm tra lại format!');
+      logger.error("Lỗi khi đọc file Excel:", error);
+      toastService.apiError(error, 'Không thể đọc file Excel');
     }
   };
   reader.readAsArrayBuffer(file);
@@ -2569,7 +2591,8 @@ const handleImport = async () => {
     toastService.success('Thành công', `Import thành công ${result.successCount}/${result.totalRows} sản phẩm!`);
 
     if (result.errorCount > 0) {
-      console.error("Import errors:", result.errorItems);
+      logger.error("Import errors:", result.errorItems);
+      logger.warn('Cảnh báo', `Có ${result.errorCount} sản phẩm bị lỗi. Xem console để biết chi tiết.`);
       toastService.warning('Cảnh báo', `Có ${result.errorCount} sản phẩm bị lỗi. Xem console để biết chi tiết.`);
     }
 
@@ -2577,8 +2600,8 @@ const handleImport = async () => {
     await fetchStatistics();
     closeImportModal();
   } catch (error) {
-    console.error("Lỗi khi import:", error);
-    toastService.error('Lỗi', 'Không thể import sản phẩm. Vui lòng thử lại!');
+    logger.error("Lỗi khi import:", error);
+    toastService.apiError(error, 'Không thể import sản phẩm');
   } finally {
     importing.value = false;
   }
@@ -2617,8 +2640,8 @@ const handleBulkUpdate = async () => {
     closeBulkUpdateModal();
     clearSelection();
   } catch (error) {
-    console.error("Lỗi khi bulk update:", error);
-    toastService.error('Lỗi', 'Không thể cập nhật hàng loạt. Vui lòng thử lại!');
+    logger.error("Lỗi khi bulk update:", error);
+    toastService.apiError(error, 'Không thể cập nhật hàng loạt');
   } finally {
     bulkUpdating.value = false;
   }
@@ -2626,17 +2649,28 @@ const handleBulkUpdate = async () => {
 
 // ===== DUPLICATE PRODUCT =====
 const duplicateProduct = async (productId) => {
+  let loadingToastId = null;
   try {
-    actionLoading.value = true; // ✅ Dùng loading riêng
+    // Hiển thị toast "Đang xử lý..." thay vì overlay
+    loadingToastId = toastService.info('Đang xử lý...', 'Đang nhân bản sản phẩm', { duration: 0 }); // duration: 0 = không tự đóng
+    
     const duplicated = await adminStore.duplicateProduct(productId);
+    
+    // Đóng toast loading và hiển thị toast success
+    if (loadingToastId) {
+      toastService.removeToast(loadingToastId);
+    }
     toastService.success('Thành công', `Đã nhân bản sản phẩm "${duplicated.name}" thành công!`);
+    
     await fetchProducts();
     await fetchStatistics();
   } catch (error) {
-    console.error("Lỗi khi nhân bản sản phẩm:", error);
-    toastService.error('Lỗi', 'Không thể nhân bản sản phẩm. Vui lòng thử lại!');
-  } finally {
-    actionLoading.value = false;
+    // Đóng toast loading nếu có lỗi
+    if (loadingToastId) {
+      toastService.removeToast(loadingToastId);
+    }
+    logger.error("Lỗi khi nhân bản sản phẩm:", error);
+    toastService.apiError(error, 'Không thể nhân bản sản phẩm');
   }
 };
 
@@ -2700,19 +2734,13 @@ const exportToExcel = () => {
     XLSX.writeFile(workbook, filename);
     toastService.success('Thành công', `Đã export ${exportData.length} sản phẩm thành công!`);
   } catch (error) {
-    console.error("Lỗi khi export Excel:", error);
-    toastService.error('Lỗi', 'Không thể export dữ liệu. Vui lòng thử lại!');
+    logger.error("Lỗi khi export Excel:", error);
+    toastService.apiError(error, 'Không thể export dữ liệu');
   }
 };
 
 // ===== HELPERS =====
-const formatCurrency = (value) => {
-  if (!value) return "0 đ";
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(value);
-};
+// formatCurrency và formatPrice đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(async () => {

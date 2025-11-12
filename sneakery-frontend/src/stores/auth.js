@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import AuthService from '@/services/authService';
 import { ref, computed } from 'vue';
+import logger from '@/utils/logger';
 
 /**
  * Hàm decode JWT token (không verify signature - chỉ để đọc payload)
@@ -17,7 +18,7 @@ function decodeJwt(token) {
         );
         return JSON.parse(jsonPayload);
     } catch (error) {
-        console.error('Error decoding JWT:', error);
+        logger.error('Error decoding JWT:', error);
         return null;
     }
 }
@@ -40,7 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
             const currentTime = Math.floor(Date.now() / 1000);
             if (decoded.exp && decoded.exp < currentTime) {
                 // Token đã hết hạn, xóa khỏi localStorage
-                console.warn('Token đã hết hạn, xóa khỏi localStorage');
+                logger.warn('Token đã hết hạn, xóa khỏi localStorage');
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 token.value = null;
@@ -72,12 +73,12 @@ export const useAuthStore = defineStore('auth', () => {
     async function login(credentials) {
         // Gọi API service để đăng nhập
         const responseData = await AuthService.login(credentials);
-        console.log('✅ Auth Store - Login response:', responseData);
-        console.log('✅ Auth Store - accessToken:', responseData.accessToken);
+        logger.log('✅ Auth Store - Login response:', responseData);
+        logger.log('✅ Auth Store - accessToken:', responseData.accessToken);
         
         // Kiểm tra có token không
         if (!responseData.accessToken) {
-            console.error('❌ Không có accessToken trong response!');
+            logger.error('❌ Không có accessToken trong response!');
             throw new Error('Login failed: No token received');
         }
         
@@ -89,8 +90,8 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = responseData;
         localStorage.setItem('user', JSON.stringify(responseData));
         
-        console.log('✅ Auth Store - Token saved to localStorage:', localStorage.getItem('token'));
-        console.log('✅ Auth Store - User saved:', user.value);
+        logger.log('✅ Auth Store - Token saved to localStorage:', localStorage.getItem('token'));
+        logger.log('✅ Auth Store - User saved:', user.value);
     }
 
     async function register(userData) {
@@ -114,7 +115,7 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = null;
         localStorage.removeItem('user');
         localStorage.removeItem('token');
-        console.log('✅ Auth Store - Logged out');
+        logger.log('✅ Auth Store - Logged out');
     }
 
     // Trả về state, getters, và actions để các component khác có thể sử dụng

@@ -1,9 +1,11 @@
 # ==========================================
 # Database Configuration
 # ==========================================
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=sneakery_db;encrypt=false;trustServerCertificate=true
-spring.datasource.username=YOUR_DATABASE_USERNAME
-spring.datasource.password=YOUR_DATABASE_PASSWORD
+# Sử dụng environment variables cho production
+# Development: Có thể hardcode hoặc dùng env vars
+spring.datasource.url=${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=sneakery_db;encrypt=false;trustServerCertificate=true}
+spring.datasource.username=${DB_USERNAME:YOUR_DATABASE_USERNAME}
+spring.datasource.password=${DB_PASSWORD:YOUR_DATABASE_PASSWORD}
 spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
 
 # JPA/Hibernate Configuration
@@ -15,9 +17,9 @@ spring.jpa.properties.hibernate.format_sql=true
 # ==========================================
 # JWT Configuration
 # ==========================================
-
-app.jwt.secret=YOUR_JWT_SECRET_KEY_HERE
-app.jwt.expiration-ms=86400000
+# Sử dụng environment variable cho production
+app.jwt.secret=${JWT_SECRET:YOUR_JWT_SECRET_KEY_HERE}
+app.jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
 
 # ==========================================
 # Server Configuration
@@ -34,19 +36,20 @@ cors.allowed-headers=*
 # ==========================================
 # Cloudinary Configuration (Optional)
 # ==========================================
-
-cloudinary.cloud-name=YOUR_CLOUDINARY_CLOUD_NAME
-cloudinary.api-key=YOUR_CLOUDINARY_API_KEY
-cloudinary.api-secret=YOUR_CLOUDINARY_API_SECRET
+# Sử dụng environment variables cho production
+cloudinary.cloud-name=${CLOUDINARY_CLOUD_NAME:YOUR_CLOUDINARY_CLOUD_NAME}
+cloudinary.api-key=${CLOUDINARY_API_KEY:YOUR_CLOUDINARY_API_KEY}
+cloudinary.api-secret=${CLOUDINARY_API_SECRET:YOUR_CLOUDINARY_API_SECRET}
 
 # ==========================================
 # Email Configuration (Optional)
 # ==========================================
-spring.mail.enabled=false
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=YOUR_EMAIL_ADDRESS
-spring.mail.password=YOUR_EMAIL_PASSWORD
+# Sử dụng environment variables cho production
+spring.mail.enabled=${MAIL_ENABLED:false}
+spring.mail.host=${MAIL_HOST:smtp.gmail.com}
+spring.mail.port=${MAIL_PORT:587}
+spring.mail.username=${MAIL_USERNAME:YOUR_EMAIL_ADDRESS}
+spring.mail.password=${MAIL_PASSWORD:YOUR_EMAIL_PASSWORD}
 
 # ==========================================
 # Logging Configuration
@@ -67,4 +70,14 @@ spring.devtools.restart.enabled=true
 spring.cache.type=caffeine
 spring.cache.caffeine.spec=maximumSize=100,expireAfterWrite=5m
 spring.cache.cache-names=dashboardStats,productStats,brands,categories,products
+
+# ==========================================
+# Database Connection Pooling (HikariCP)
+# ==========================================
+spring.datasource.hikari.maximum-pool-size=${DB_POOL_MAX_SIZE:10}
+spring.datasource.hikari.minimum-idle=${DB_POOL_MIN_IDLE:5}
+spring.datasource.hikari.connection-timeout=${DB_POOL_CONNECTION_TIMEOUT:30000}
+spring.datasource.hikari.idle-timeout=${DB_POOL_IDLE_TIMEOUT:600000}
+spring.datasource.hikari.max-lifetime=${DB_POOL_MAX_LIFETIME:1800000}
+spring.datasource.hikari.leak-detection-threshold=${DB_POOL_LEAK_DETECTION:60000}
 

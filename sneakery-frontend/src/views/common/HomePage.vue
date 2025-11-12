@@ -708,6 +708,15 @@ const fetchCategories = async () => {
         }
         logger.log(`Fetched ${productData.length} products for counting`);
         
+        // Normalize product data: đảm bảo có categoryIds từ categories array
+        productData = productData.map(product => {
+          // Nếu có categories array nhưng không có categoryIds, tạo categoryIds từ categories
+          if (product.categories && Array.isArray(product.categories) && (!product.categoryIds || !Array.isArray(product.categoryIds))) {
+            product.categoryIds = product.categories.map(c => c.id || c).filter(id => id != null);
+          }
+          return product;
+        });
+        
         // Log sample product to check categories structure
         if (productData.length > 0) {
           logger.log('Sample product categories:', productData[0].categories);

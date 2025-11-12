@@ -1,5 +1,6 @@
 package com.sneakery.store.controller;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,11 +9,13 @@ import java.util.Map;
 
 /**
  * TEST CONTROLLER - CHỈ ĐỂ DEBUG
- * XÓA SAU KHI PRODUCTION!
+ * Chỉ hoạt động trong môi trường development (profile: dev)
+ * Tự động disable trong production
  */
 @RestController
 @RequestMapping("/api/test")
 @CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
+@Profile("dev")
 public class TestController {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

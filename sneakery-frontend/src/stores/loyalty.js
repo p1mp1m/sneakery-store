@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import userService from '@/services/userService';
+import logger from '@/utils/logger';
 
 export const useLoyaltyStore = defineStore('loyalty', () => {
     // State
@@ -37,10 +38,10 @@ export const useLoyaltyStore = defineStore('loyalty', () => {
             const data = await userService.getLoyaltyBalance();
             balance.value = data.balance;
             valueVnd.value = data.valueVnd;
-            console.log(`✅ Loyalty balance: ${data.balance} points = ${data.valueVnd} VND`);
+            logger.log(`✅ Loyalty balance: ${data.balance} points = ${data.valueVnd} VND`);
         } catch (err) {
             error.value = err.response?.data?.message || 'Không thể tải điểm thưởng';
-            console.error('❌ Error fetching loyalty balance:', err);
+            logger.error('❌ Error fetching loyalty balance:', err);
         } finally {
             loading.value = false;
         }
@@ -56,10 +57,10 @@ export const useLoyaltyStore = defineStore('loyalty', () => {
         try {
             const data = await userService.getLoyaltyHistory();
             history.value = data;
-            console.log(`✅ Fetched ${data.length} loyalty transactions`);
+            logger.log(`✅ Fetched ${data.length} loyalty transactions`);
         } catch (err) {
             error.value = err.response?.data?.message || 'Không thể tải lịch sử điểm thưởng';
-            console.error('❌ Error fetching loyalty history:', err);
+            logger.error('❌ Error fetching loyalty history:', err);
         } finally {
             loading.value = false;
         }

@@ -50,8 +50,15 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center">
-        <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-gray-600 dark:text-gray-400">Đang tải chi tiết đơn hàng...</p>
+        <div class="space-y-4" role="status" aria-live="polite">
+          <LoadingSkeleton
+            v-for="n in 6"
+            :key="n"
+            type="custom"
+            :lines="3"
+          />
+          <span class="sr-only">Đang tải chi tiết đơn hàng</span>
+        </div>
       </div>
     </div>
 
@@ -244,6 +251,9 @@ import { useRoute, useRouter } from 'vue-router'
 import AdminService from '@/services/adminService'
 import toastService from '@/utils/toastService'
 import { printInvoice } from '@/utils/pdfGenerator'
+import logger from '@/utils/logger'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import { formatPrice, formatCurrency, formatDateTime } from '@/utils/formatters'
 
 const route = useRoute()
 const router = useRouter()
@@ -266,30 +276,16 @@ const fetchOrderDetail = async () => {
     const orderDetail = await AdminService.getOrderById(orderId.value)
     order.value = orderDetail
   } catch (err) {
-    console.error('Error fetching order detail:', err)
+    logger.error('Error fetching order detail:', err)
     error.value = err.message || 'Không thể tải chi tiết đơn hàng. Vui lòng thử lại.'
-    toastService.error('Lỗi', error.value)
+    toastService.apiError(err, 'Không thể tải chi tiết đơn hàng')
   } finally {
     loading.value = false
   }
 }
 
 // Format functions
-const formatCurrency = (amount) => {
-  if (!amount && amount !== 0) return '0 ₫'
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
-}
-
-const formatDateTime = (date) => {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleString('vi-VN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+// formatCurrency và formatDateTime đã được import từ @/utils/formatters
 
 const getStatusLabel = (status) => {
   if (!status) return 'N/A'
@@ -402,8 +398,8 @@ const handlePrintInvoice = (order) => {
     printInvoice(order)
     toastService.success('Thành công', 'Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
-    console.error('Error printing invoice:', error)
-    toastService.error('Lỗi', 'Không thể in hóa đơn. Vui lòng thử lại!')
+    logger.error('Error printing invoice:', error)
+    toastService.apiError(error, 'Không thể in hóa đơn')
   }
 }
 
@@ -417,8 +413,8 @@ const exportOrderToPDF = (order) => {
     handlePrintInvoice(order)
     toastService.success('Thành công', 'Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
-    console.error('Error exporting to PDF:', error)
-    toastService.error('Lỗi', 'Không thể export PDF. Vui lòng thử lại!')
+    logger.error('Error exporting to PDF:', error)
+    toastService.apiError(error, 'Không thể export PDF')
   }
 }
 

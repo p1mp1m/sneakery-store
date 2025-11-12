@@ -336,7 +336,12 @@ const handleQuickAddToCart = async (event) => {
   
   // Nếu sản phẩm có nhiều variants, redirect đến trang chi tiết để chọn
   if (props.product.variants && props.product.variants.length > 1) {
-    router.push(`/home/products/${props.product.id}`);
+    try {
+      await router.push(`/home/products/${props.product.id}`);
+    } catch (navError) {
+      logger.error('Navigation error:', navError);
+      toastService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
+    }
     return;
   }
   
@@ -352,7 +357,12 @@ const handleQuickAddToCart = async (event) => {
     variantId = props.product.variantId;
   } else {
     // Nếu không có variant, redirect đến trang chi tiết
-    router.push(`/home/products/${props.product.id}`);
+    try {
+      await router.push(`/home/products/${props.product.id}`);
+    } catch (navError) {
+      logger.error('Navigation error:', navError);
+      toastService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
+    }
     return;
   }
   

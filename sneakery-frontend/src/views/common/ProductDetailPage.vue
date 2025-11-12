@@ -391,17 +391,27 @@
       </div>
 
       <!-- Related Products -->
-      <div v-if="relatedProducts.length > 0" class="mb-12">
+      <div v-if="!loadingRelatedProducts && relatedProducts.length > 0" class="mb-12">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Sản phẩm tương tự</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          <div v-for="relatedProduct in relatedProducts" :key="relatedProduct.id" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-200">
-            <div class="aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
-              <img :src="relatedProduct.imageUrl || product.imageUrl" :alt="relatedProduct.name" class="w-full h-full object-cover" />
-            </div>
-            <div class="p-3">
-              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">{{ relatedProduct.brandName || product.brandName }}</p>
-              <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-2 line-clamp-2">{{ relatedProduct.name }}</h4>
-              <p class="font-bold text-purple-600 dark:text-purple-400 text-sm">{{ formatPrice(relatedProduct.price || product.price) }}</p>
+          <ProductCard 
+            v-for="relatedProduct in relatedProducts" 
+            :key="relatedProduct.id" 
+            :product="relatedProduct"
+          />
+        </div>
+      </div>
+      
+      <!-- Loading Related Products -->
+      <div v-if="loadingRelatedProducts" class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Sản phẩm tương tự</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div v-for="n in 4" :key="n" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
+            <div class="aspect-square bg-gray-200 dark:bg-gray-700"></div>
+            <div class="p-3 space-y-2">
+              <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
             </div>
           </div>
         </div>
@@ -430,6 +440,8 @@ import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
 import axios from 'axios';
 import FlashSaleBadge from '@/assets/components/common/FlashSaleBadge.vue';
+import productService from '@/services/productService';
+import ProductCard from '@/assets/components/products/ProductCard.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -474,8 +486,9 @@ const reviews = ref([
   }
 ]);
 
-// Mock related products (replace with real API later)
+// Related products
 const relatedProducts = ref([]);
+const loadingRelatedProducts = ref(false);
 
 // Fetch product detail
 const fetchProduct = async () => {
@@ -494,14 +507,12 @@ const fetchProduct = async () => {
     
     product.value = response.data;
     
-    // Add to recently viewed
+    // Add to recently viewed with full product data
+    // The composable will extract price and imageUrl correctly
     addProduct({
-      id: product.value.id,
-      name: product.value.name,
-      slug: product.value.slug,
+      ...product.value,
       brandName: product.value.brand?.name || product.value.brandName,
-      imageUrl: product.value.variants?.[0]?.imageUrl || product.value.imageUrl,
-      price: product.value.variants?.[0]?.price || product.value.price
+      // Pass full product object so composable can extract price and image correctly
     });
     
     // Auto-select first variant
@@ -512,13 +523,8 @@ const fetchProduct = async () => {
       selectedImage.value = firstVariant.imageUrl;
     }
 
-    // Mock related products based on same brand
-    relatedProducts.value = [
-      { id: 101, name: 'Product 1', price: product.value.price * 1.1 },
-      { id: 102, name: 'Product 2', price: product.value.price * 0.9 },
-      { id: 103, name: 'Product 3', price: product.value.price * 1.2 },
-      { id: 104, name: 'Product 4', price: product.value.price * 0.8 },
-    ];
+    // Fetch related products
+    await fetchRelatedProducts();
   } catch (err) {
     logger.error('Error fetching product:', err);
     error.value = err.response?.data?.message || 'Không thể tải thông tin sản phẩm';
@@ -590,6 +596,33 @@ const averageRating = computed(() => {
   const sum = reviews.value.reduce((acc, r) => acc + r.rating, 0);
   return sum / reviews.value.length;
 });
+
+// Fetch related products
+const fetchRelatedProducts = async () => {
+  if (!product.value) return;
+  
+  try {
+    loadingRelatedProducts.value = true;
+    
+    const brandId = product.value.brand?.id || product.value.brandId;
+    const categoryIds = product.value.categories?.map(c => c.id) || product.value.categoryIds || [];
+    
+    const related = await productService.getRelatedProducts(
+      product.value.id,
+      brandId,
+      categoryIds,
+      4 // Limit to 4 products
+    );
+    
+    relatedProducts.value = related;
+    logger.log('Fetched related products:', related.length);
+  } catch (err) {
+    logger.error('Error fetching related products:', err);
+    relatedProducts.value = [];
+  } finally {
+    loadingRelatedProducts.value = false;
+  }
+};
 
 // Methods
 const selectImage = (imageUrl) => {

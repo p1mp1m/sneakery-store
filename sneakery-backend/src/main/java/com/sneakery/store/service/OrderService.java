@@ -71,6 +71,7 @@ public class OrderService {
     private final CouponRepository couponRepository;
     private final CouponService couponService;
     private final LoyaltyService loyaltyService;
+    private final OrderStatusHistoryRepository statusHistoryRepository;
 
     /**
      * Xử lý Checkout - Tạo đơn hàng từ giỏ hàng
@@ -614,6 +615,80 @@ public class OrderService {
         }
 
         return convertToOrderDto(order, paymentUrl);
+    }
+
+    /**
+     * Hủy đơn hàng (chỉ cho phép khi đơn hàng đang ở trạng thái "pending")
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Kiểm tra đơn hàng có thuộc về user hiện tại không</li>
+     *   <li>Kiểm tra đơn hàng có đang ở trạng thái "pending" không</li>
+     *   <li>Nếu có, cập nhật trạng thái đơn hàng thành "cancelled"</li>
+     *   <li>Tạo OrderStatusHistory để ghi lại lịch sử</li>
+     *   <li>Hoàn trả tồn kho cho các sản phẩm trong đơn hàng</li>
+     *   <li>Trả về OrderDto sau khi hủy</li>
+     * </ol>
+     * 
+     * <p><b>Lưu ý:</b>
+     * <ul>
+     *   <li>Chỉ cho phép hủy khi đơn hàng đang ở trạng thái "pending" (chờ xác nhận)</li>
+     *   <li>Nếu đơn hàng đã được xác nhận hoặc đang xử lý, không cho phép hủy</li>
+     *   <li>Sẽ hoàn trả tồn kho cho các sản phẩm trong đơn hàng</li>
+     * </ul>
+     * 
+     * @param orderId ID của đơn hàng cần hủy
+     * @param userId ID của user hiện tại
+     * @return OrderDto của đơn hàng sau khi hủy
+     * @throws ApiException nếu không tìm thấy đơn hàng, đơn hàng không thuộc về user, hoặc đơn hàng không thể hủy
+     */
+    @Transactional
+    public OrderDto cancelOrder(Long orderId, Long userId) {
+        // Load order với đầy đủ relationships
+        Order order = orderRepository.findByIdAndUserIdWithDetails(orderId, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng"));
+
+        // Kiểm tra trạng thái đơn hàng - chỉ cho phép hủy khi status là "pending"
+        String currentStatus = order.getStatus() != null ? order.getStatus().toLowerCase() : "";
+        if (!"pending".equals(currentStatus)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                "Chỉ có thể hủy đơn hàng khi đơn hàng đang ở trạng thái 'Chờ xác nhận'. Trạng thái hiện tại: " + order.getStatus());
+        }
+
+        log.info("🔄 Cancelling order #{} for user {}", orderId, userId);
+
+        // Hoàn trả tồn kho cho các sản phẩm trong đơn hàng
+        if (order.getOrderDetails() != null) {
+            for (OrderDetail detail : order.getOrderDetails()) {
+                ProductVariant variant = detail.getVariant();
+                if (variant != null) {
+                    int currentStock = variant.getStockQuantity();
+                    int quantityToRestore = detail.getQuantity();
+                    variant.setStockQuantity(currentStock + quantityToRestore);
+                    variantRepository.save(variant);
+                    log.info("✅ Restored stock for variant #{}: {} -> {}", 
+                        variant.getId(), currentStock, currentStock + quantityToRestore);
+                }
+            }
+        }
+
+        // Cập nhật trạng thái đơn hàng thành "cancelled"
+        order.setStatus("cancelled");
+
+        // Tạo OrderStatusHistory để ghi lại lịch sử
+        OrderStatusHistory history = new OrderStatusHistory();
+        history.setOrder(order);
+        history.setStatus("cancelled");
+        history.setChangedAt(LocalDateTime.now());
+        statusHistoryRepository.save(history);
+        order.getStatusHistories().add(history);
+
+        // Lưu đơn hàng
+        Order savedOrder = orderRepository.save(order);
+        log.info("✅ Order #{} cancelled successfully", orderId);
+
+        // Convert và trả về OrderDto
+        return convertToOrderDto(savedOrder, null);
     }
 
     // =================================================================
