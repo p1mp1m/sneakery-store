@@ -2,6 +2,8 @@ package com.sneakery.store.config;
 
 import com.sneakery.store.security.CustomUserDetailsService;
 import com.sneakery.store.security.JwtAuthenticationFilter;
+// Rate limiting filter - tạm thời comment để tránh lỗi compile với Bucket4j
+// import com.sneakery.store.security.RateLimitingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +34,8 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
+    // Rate limiting filter - tạm thời comment để tránh lỗi compile với Bucket4j
+    // private final RateLimitingFilter rateLimitingFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -44,7 +48,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 1. Các API Public (Không cần đăng nhập)
                         .requestMatchers("/api/auth/**").permitAll() // API Đăng nhập/Đăng ký/Reset Password
-                        .requestMatchers("/api/test/**").permitAll() // TEST API - CHỈ DÙNG CHO DEBUG, XÓA KHI PRODUCTION!
+                        // TestController chỉ hoạt động trong dev profile (đã có @Profile("dev"))
+                        // Không cần permitAll ở đây vì @Profile sẽ tự động disable trong production
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll() // Swagger
 
                         // ✅ Cho phép GET public cho Product
@@ -63,6 +68,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
+                // Rate limiting filter - tạm thời comment để tránh lỗi compile với Bucket4j                // 
+                // .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -39,13 +39,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             HttpServletRequest request
     ) {
         HttpStatus status = ex.getStatus();
-        ErrorResponseDto errorDto = ErrorResponseDto.builder()
+        ErrorResponseDto.ErrorResponseDtoBuilder builder = ErrorResponseDto.builder()
                 .timestamp(LocalDateTime.now())
                 .status(status.value())
                 .error(status.getReasonPhrase())
                 .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
+                .path(request.getRequestURI());
+        
+        // Thêm errorCode nếu có
+        if (ex.getErrorCode() != null) {
+            builder.errorCode(ex.getErrorCode());
+        }
+        
+        ErrorResponseDto errorDto = builder.build();
 
         return new ResponseEntity<>(errorDto, status);
     }

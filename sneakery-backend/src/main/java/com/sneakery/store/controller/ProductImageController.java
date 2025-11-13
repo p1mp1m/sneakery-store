@@ -3,6 +3,7 @@ package com.sneakery.store.controller;
 import com.sneakery.store.dto.ProductImageDto;
 import com.sneakery.store.service.ProductImageService;
 import com.sneakery.store.util.FileValidationUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class ProductImageController {
     // ==========================================================
     @PostMapping(consumes = "application/json")
     public ResponseEntity<ProductImageDto> addProductImage(@PathVariable Long productId,
-                                                           @RequestBody ProductImageDto dto) {
+                                                           @Valid @RequestBody ProductImageDto dto) {
         return ResponseEntity.ok(productImageService.addProductImage(productId, dto));
     }
 
@@ -62,7 +63,7 @@ public class ProductImageController {
     // ==========================================================
     @DeleteMapping
     public ResponseEntity<Void> deleteByUrl(@PathVariable Long productId,
-                                            @RequestBody ProductImageDto dto) {
+                                            @Valid @RequestBody ProductImageDto dto) {
         productImageService.deleteByUrl(productId, dto.getImageUrl());
         return ResponseEntity.noContent().build();
     }
