@@ -1256,16 +1256,15 @@ const createMultipleProductVariants = async (variantList) => {
     }
   }
 
-  const updateReturnStatus = async (id, status, adminNote = '') => {
+  const updateReturnStatus = async (id, data) => {
     try {
-      loading.value = true
-      const result = await AdminService.updateReturnStatus(id, status, adminNote)
-      return result
+     loading.value = true
+     return await AdminService.updateReturnStatus(id, data)
     } catch (error) {
-      console.error('Error updating return status:', error)
-      throw error
+     console.error('Error updating return status:', error)
+     throw error
     } finally {
-      loading.value = false
+     loading.value = false
     }
   }
 

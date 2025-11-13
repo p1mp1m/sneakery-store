@@ -378,26 +378,34 @@ const viewReturnDetail = (item) => {
   showDetailDialog.value = true
 }
 
-const approveReturn = async (item) => {
-  if (!confirm('Bạn có chắc muốn duyệt yêu cầu này?')) return
-  
+const approveReturn = async (item) => { 
+  const adminNote = prompt('Ghi chú (tuỳ chọn):') || ''
+
   try {
-    await adminStore.approveReturn(item.id)
-    toastService.success('Thành công','Đã duyệt yêu cầu trả hàng!')
+    await adminStore.updateReturnStatus(item.id, {
+      status: 'approved',
+      adminNote: adminNote
+    })
+
+    toastService.success('Thành công', 'Đã duyệt yêu cầu trả hàng!')
     fetchReturns()
   } catch (error) {
-    logger.error('Lỗi khi duyệt yêu cầu:', error)
-    toastService.apiError(error, 'Lỗi khi duyệt yêu cầu trả hàng')
+    logger.error('Lỗi duyệt yêu cầu:', error)
+    toastService.apiError(error, 'Không thể duyệt yêu cầu trả hàng')
   }
 }
 
-const rejectReturn = async (item) => {
-  const reason = prompt('Lý do từ chối:')
-  if (!reason) return
+const rejectReturn = async (item) => { 
+  const adminNote = prompt('Lý do từ chối:')
+  if (!adminNote) return
   
   try {
-    await adminStore.rejectReturn(item.id, reason)
-    toastService.success('Thành công','Đã từ chối yêu cầu trả hàng!')
+    await adminStore.updateReturnStatus(item.id, {
+      status: 'rejected',
+      adminNote: adminNote
+    })
+
+    toastService.success('Thành công', 'Đã từ chối yêu cầu trả hàng!')
     fetchReturns()
   } catch (error) {
     logger.error('Lỗi khi từ chối yêu cầu:', error)

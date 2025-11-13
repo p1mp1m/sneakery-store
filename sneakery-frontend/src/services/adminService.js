@@ -656,12 +656,9 @@ class AdminService {
     }
   }
 
-  async updateReturnStatus(id, status, adminNote = '') {
+  async updateReturnStatus(id, data) {
     try {
-      const response = await adminApi.put(`/returns/${id}/status`, { 
-        status, 
-        adminNote 
-      })
+      const response = await adminApi.put(`/returns/${id}/status`, data)
       return response.data
     } catch (error) {
       throw this.handleError(error)
