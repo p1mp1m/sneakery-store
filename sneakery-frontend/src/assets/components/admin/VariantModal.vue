@@ -785,10 +785,7 @@ const loadProducts = async () => {
     products.value = result.content || [];
   } catch (error) {
     console.error("Error loading products:", error);
-    toastService.error('Lỗi',{
-      message: "Không thể tải danh sách sản phẩm",
-      duration: 3000,
-    });
+    toastService.error('Lỗi', "Không thể tải danh sách sản phẩm", { duration: 3000 });
   }
 };
 
@@ -1032,10 +1029,7 @@ const handleSubmit = async () => {
 
       await adminStore.updateProductVariant(variantId, payload);
 
-      toastService.success('Thành công',{
-        message: "Đã cập nhật biến thể thành công",
-        duration: 2500,
-      });
+      toastService.success('Thành công', "Đã cập nhật biến thể thành công", { duration: 2500 });
 
       resetForm();
       emit("success");
@@ -1065,10 +1059,7 @@ const handleSubmit = async () => {
 
     await adminStore.createMultipleProductVariants(variantList);
 
-    toastService.success('Thành công',{
-      message: `Đã tạo ${variantList.length} biến thể mới`,
-      duration: 3000,
-    });
+    toastService.success('Thành công', `Đã tạo ${variantList.length} biến thể mới`, { duration: 3000 });
     resetForm();
     emit("success");
     emit("close");

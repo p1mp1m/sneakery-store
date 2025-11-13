@@ -87,4 +87,11 @@ List<Product> findByIdInWithBrandAndCategories(@Param("ids") List<Long> ids);
      */
     @Query("SELECT COUNT(p) FROM Product p WHERE (p.isActive = false OR p.isActive IS NULL) AND p.deletedAt IS NULL")
     Long countInactiveProducts();
+
+    /**
+     * Count products by brand ID (for validation before deleting brand)
+     * Excludes soft deleted products
+     */
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.brand.id = :brandId AND p.deletedAt IS NULL")
+    Long countByBrandId(@Param("brandId") Integer brandId);
 }

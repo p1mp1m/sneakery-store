@@ -505,12 +505,7 @@ const saveBrand = async () => {
     await fetchBrands();
     closeModal();
     // alert(`${isEditMode.value ? "Cập nhật" : "Thêm"} thương hiệu thành công!`);
-    toastService.success('Thành công',{
-      message: `${
-        isEditMode.value ? "Cập nhật" : "Thêm"
-      } thương hiệu thành công!`,
-      duration: 3000,
-    });
+    toastService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} thương hiệu thành công!`, { duration: 3000 });
   } catch (error) {
     logger.error("Error saving brand:", error);
     toastService.apiError(error, "Lỗi khi lưu thương hiệu")
@@ -532,10 +527,7 @@ const deleteBrand = async () => {
     showDeleteModal.value = false;
     brandToDelete.value = null;
     // alert("Xóa thương hiệu thành công!");
-    toastService.success('Thành công',{
-      message: "Xóa thương hiệu thành công!",
-      duration: 3000,
-    });
+    toastService.success('Thành công', "Xóa thương hiệu thành công!", { duration: 3000 });
   } catch (error) {
     logger.error("Error deleting brand:", error);
     toastService.apiError(error, "Lỗi khi xóa thương hiệu")

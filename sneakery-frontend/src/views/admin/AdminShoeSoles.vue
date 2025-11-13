@@ -443,10 +443,7 @@ const saveShoeSole = async () => {
     }
     await fetchSoles();
     closeModal();
-    toastService.success('Thành công',{
-      message: `${isEditMode.value ? "Cập nhật" : "Thêm"} loại đế thành công!`,
-      duration: 3000,
-    });
+    toastService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} loại đế thành công!`, { duration: 3000 });
   } catch (error) {
     logger.error("Error saving shoe sole:", error);
 
@@ -471,10 +468,7 @@ const deleteShoeSole = async () => {
     await fetchSoles();
     showDeleteModal.value = false;
     shoeSoleToDelete.value = null;
-    toastService.success('Thành công',{
-      message: "Xóa loại đế thành công!",
-      duration: 3000,
-    });
+    toastService.success('Thành công', "Xóa loại đế thành công!", { duration: 3000 });
   } catch (error) {
     logger.error("Error deleting shoe sole:", error);
     toastService.apiError(error, "Lỗi khi xóa loại đế")

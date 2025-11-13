@@ -641,10 +641,7 @@ const deleteCoupon = async (coupon) => {
 const copyCouponCode = async (code) => {
   try {
     await navigator.clipboard.writeText(code)
-    toastService.success('Thành công',{
-      message: `Đã sao chép mã: ${code}`,
-      duration: 2000
-    })
+    toastService.success('Thành công', `Đã sao chép mã: ${code}`, { duration: 2000 })
   } catch (error) {
     logger.error('Lỗi copy:', error)
     toastService.apiError(error, 'Không thể sao chép mã')

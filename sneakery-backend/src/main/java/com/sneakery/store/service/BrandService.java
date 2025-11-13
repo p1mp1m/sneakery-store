@@ -4,11 +4,13 @@ import com.sneakery.store.dto.BrandDto;
 import com.sneakery.store.entity.Brand;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.BrandRepository;
+import com.sneakery.store.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -50,6 +52,7 @@ import java.util.stream.Collectors;
 public class BrandService {
 
     private final BrandRepository brandRepository;
+    private final ProductRepository productRepository;
 
     /**
      * Tạo thương hiệu mới
@@ -188,17 +191,19 @@ public class BrandService {
      * <p>Phương thức này sẽ:
      * <ol>
      *   <li>Kiểm tra thương hiệu có tồn tại không</li>
-     *   <li>Xóa khỏi database</li>
+     *   <li>Kiểm tra xem có sản phẩm nào đang sử dụng thương hiệu này không</li>
+     *   <li>Nếu có sản phẩm đang sử dụng, throw exception với thông báo rõ ràng</li>
+     *   <li>Nếu không có sản phẩm nào, xóa khỏi database</li>
      *   <li>Xóa tất cả cache của thương hiệu (để đảm bảo dữ liệu mới nhất)</li>
      * </ol>
      * 
      * <p><b>Cảnh báo:</b> Hành động này không thể hoàn tác. Hãy chắc chắn trước khi xóa.
      * 
-     * <p><b>Lưu ý:</b> Nếu thương hiệu đang được sử dụng bởi các sản phẩm, có thể gặp lỗi
-     * foreign key constraint. Cần xóa hoặc cập nhật các sản phẩm liên quan trước.
+     * <p><b>Lưu ý:</b> Nếu thương hiệu đang được sử dụng bởi các sản phẩm, sẽ throw exception
+     * với thông báo rõ ràng. Cần xóa hoặc cập nhật các sản phẩm liên quan trước.
      * 
      * @param id ID của thương hiệu cần xóa
-     * @throws ApiException nếu không tìm thấy thương hiệu với ID này
+     * @throws ApiException nếu không tìm thấy thương hiệu hoặc thương hiệu đang được sử dụng bởi sản phẩm
      * 
      * @example
      * <pre>
@@ -207,13 +212,36 @@ public class BrandService {
      * </pre>
      */
     @CacheEvict(value = "brands", allEntries = true)
+    @Transactional
     public void deleteBrand(Integer id) {
         Integer nonNullId = Objects.requireNonNull(id);
-        if (!brandRepository.existsById(nonNullId)) {
-            throw new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy thương hiệu");
-        }
+        
+        try {
+            // Kiểm tra thương hiệu có tồn tại không
+            Brand brand = brandRepository.findById(nonNullId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy thương hiệu"));
+            
+            // Kiểm tra xem có sản phẩm nào đang sử dụng thương hiệu này không
+            Long productCount = productRepository.countByBrandId(nonNullId);
+            if (productCount != null && productCount > 0) {
+                throw new ApiException(
+                    HttpStatus.CONFLICT, 
+                    String.format("Không thể xóa thương hiệu '%s' vì đang có %d sản phẩm đang sử dụng. Vui lòng xóa hoặc cập nhật các sản phẩm liên quan trước.", 
+                        brand.getName(), productCount)
+                );
+            }
 
-        brandRepository.deleteById(nonNullId);
+            // Nếu không có sản phẩm nào sử dụng, tiến hành xóa
+            brandRepository.deleteById(nonNullId);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Nếu vẫn gặp foreign key constraint (trường hợp hiếm), throw ApiException
+            Brand brand = brandRepository.findById(nonNullId).orElse(null);
+            String brandName = brand != null ? brand.getName() : "thương hiệu";
+            throw new ApiException(
+                HttpStatus.CONFLICT,
+                String.format("Không thể xóa %s vì đang có sản phẩm đang sử dụng. Vui lòng xóa hoặc cập nhật các sản phẩm liên quan trước.", brandName)
+            );
+        }
     }
 
     // --- Mapper ---

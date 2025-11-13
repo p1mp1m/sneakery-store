@@ -489,10 +489,7 @@ const executeBulkAction = async () => {
       }
     }
     
-    toastService.success('Thành công',{
-      message: `Đã ${actionMap[bulkAction.value]} ${selectedUsers.value.length} người dùng thành công!`,
-      duration: 3000
-    })
+    toastService.success('Thành công', `Đã ${actionMap[bulkAction.value]} ${selectedUsers.value.length} người dùng thành công!`, { duration: 3000 })
     
     // Clear selection and refresh list
     selectedUsers.value = []

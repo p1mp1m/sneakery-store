@@ -551,10 +551,7 @@ const validateForm = () => {
 
 const handleSubmit = async () => {
   if (!validateForm()) {
-    toastService.warning('Cảnh báo',{
-      message: 'Vui lòng kiểm tra lại thông tin form!',
-      duration: 3000
-    })
+    toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin form!', { duration: 3000 })
     return
   }
 
@@ -563,16 +560,10 @@ const handleSubmit = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateCategory(formData.value.id, formData.value)
-      toastService.success('Thành công',{
-        message: `Đã cập nhật danh mục "${formData.value.name}" thành công!`,
-        duration: 3000
-      })
+      toastService.success('Thành công', `Đã cập nhật danh mục "${formData.value.name}" thành công!`, { duration: 3000 })
     } else {
       await adminStore.createCategory(formData.value)
-      toastService.success('Thành công',{
-        message: `Đã thêm danh mục "${formData.value.name}" thành công!`,
-        duration: 3000
-      })
+      toastService.success('Thành công', `Đã thêm danh mục "${formData.value.name}" thành công!`, { duration: 3000 })
     }
     
     await fetchCategories()

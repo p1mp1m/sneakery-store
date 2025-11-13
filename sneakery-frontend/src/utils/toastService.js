@@ -288,14 +288,54 @@ class ToastService {
 
   /**
    * API Error handler
+   * Hỗ trợ cả axios error object và formatted error object từ handleError
    */
   apiError(error, defaultMessage = 'Đã xảy ra lỗi') {
     let title = 'Lỗi API'
     let message = defaultMessage
+    let status = null
 
-    if (error.response) {
-      // Server responded with error status
-      const status = error.response.status
+    // Xử lý formatted error object từ handleError (có status và data)
+    if (error.status && error.data) {
+      status = error.status
+      const data = error.data
+
+      switch (status) {
+        case 400:
+          title = 'Dữ liệu không hợp lệ'
+          message = data?.message || error.message || 'Vui lòng kiểm tra lại thông tin'
+          break
+        case 401:
+          title = 'Chưa đăng nhập'
+          message = 'Vui lòng đăng nhập lại'
+          break
+        case 403:
+          title = 'Không có quyền truy cập'
+          message = 'Bạn không có quyền thực hiện hành động này'
+          break
+        case 404:
+          title = 'Không tìm thấy'
+          message = data?.message || error.message || 'Dữ liệu không tồn tại'
+          break
+        case 409:
+          title = 'Không thể thực hiện'
+          message = data?.message || error.message || 'Dữ liệu đang được sử dụng ở nơi khác'
+          break
+        case 422:
+          title = 'Dữ liệu không hợp lệ'
+          message = data?.message || error.message || 'Vui lòng kiểm tra lại thông tin'
+          break
+        case 500:
+          title = 'Lỗi máy chủ'
+          message = 'Máy chủ đang gặp sự cố, vui lòng thử lại sau'
+          break
+        default:
+          title = `Lỗi ${status}`
+          message = data?.message || error.message || defaultMessage
+      }
+    } else if (error.response) {
+      // Server responded with error status (axios error object)
+      status = error.response.status
       const data = error.response.data
 
       switch (status) {
@@ -314,6 +354,10 @@ class ToastService {
         case 404:
           title = 'Không tìm thấy'
           message = data?.message || 'Dữ liệu không tồn tại'
+          break
+        case 409:
+          title = 'Không thể thực hiện'
+          message = data?.message || 'Dữ liệu đang được sử dụng ở nơi khác'
           break
         case 422:
           title = 'Dữ liệu không hợp lệ'

@@ -624,10 +624,7 @@ const bulkUpdateStatus = async () => {
       await adminStore.updateOrderStatus(orderId, bulkStatus.value)
     }
     
-    toastService.success('Thành công',{
-      message: `Đã cập nhật ${selectedOrders.value.length} đơn hàng thành công!`,
-      duration: 3000
-    })
+    toastService.success('Thành công', `Đã cập nhật ${selectedOrders.value.length} đơn hàng thành công!`, { duration: 3000 })
     
     // Clear selection and refresh list
     selectedOrders.value = []
@@ -744,10 +741,7 @@ const exportToExcel = () => {
     // Download file
     XLSX.writeFile(workbook, filename)
     
-    toastService.success('Thành công',{
-      message: `Đã export ${exportData.length} đơn hàng thành công!`,
-      duration: 3000
-    })
+    toastService.success('Thành công', `Đã export ${exportData.length} đơn hàng thành công!`, { duration: 3000 })
   } catch (error) {
     logger.error('Lỗi khi export Excel:', error)
     toastService.apiError(error, 'Không thể export dữ liệu')
@@ -828,10 +822,7 @@ const handleStatusUpdate = async () => {
     // Refresh danh sách đơn hàng để đảm bảo dữ liệu đồng bộ với backend
     await fetchOrders()
     
-    toastService.success('Thành công',{
-      message: `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`,
-      duration: 3000
-    })
+    toastService.success('Thành công', `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`, { duration: 3000 })
     
     showStatusConfirm.value = false
   } catch (error) {

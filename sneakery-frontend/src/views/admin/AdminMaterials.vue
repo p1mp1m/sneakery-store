@@ -434,12 +434,7 @@ const saveMaterial = async () => {
     }
     await fetchMaterials();
     closeModal();
-    toastService.success('Thành công',{
-      message: `${
-        isEditMode.value ? "Cập nhật" : "Thêm"
-      } chất liệu thành công!`,
-      duration: 3000,
-    });
+    toastService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} chất liệu thành công!`, { duration: 3000 });
   } catch (error) {
     logger.error("Error saving material:", error);
     toastService.apiError(error, "Lỗi khi lưu chất liệu")
@@ -460,10 +455,7 @@ const deleteMaterial = async () => {
     await fetchMaterials();
     showDeleteModal.value = false;
     materialToDelete.value = null;
-    toastService.success('Thành công',{
-      message: "Xóa chất liệu thành công!",
-      duration: 3000,
-    });
+    toastService.success('Thành công', "Xóa chất liệu thành công!", { duration: 3000 });
   } catch (error) {
     logger.error("Error deleting material:", error);
     toastService.apiError(error, "Lỗi khi xóa chất liệu")
