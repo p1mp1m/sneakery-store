@@ -12,14 +12,13 @@
         <!-- Stock Badge -->
         <div v-if="product.totalStock !== null && product.totalStock !== undefined" class="stock-badge">
           <span 
-            class="stock-badge-number"
+            class="stock-badge-text"
             :class="{
-              'stock-low': product.totalStock > 0 && product.totalStock < 10,
-              'stock-out': product.totalStock === 0,
-              'stock-ok': product.totalStock >= 10
+              'stock-out': product.totalStock === 0 || !product.inStock,
+              'stock-ok': product.totalStock > 0 && product.inStock
             }"
           >
-            {{ product.totalStock }}
+            {{ product.totalStock > 0 && product.inStock ? 'Còn hàng' : 'Hết hàng' }}
           </span>
         </div>
 
@@ -31,31 +30,36 @@
         />
         
         <img 
-          :src="product.imageUrl || '/placeholder-image.png'" 
+          :src="product.mainImageUrl || product.imageUrl || '/placeholder-image.png'" 
           class="product-image" 
           :alt="product.name"
           loading="lazy"
         />
         <div class="product-overlay">
-          <button class="btn-icon btn-quick-view" @click.prevent="openQuickView" title="Xem nhanh">
+          <button 
+            class="btn-icon btn-quick-view" 
+            @click.prevent="openQuickView" 
+            title="Xem nhanh"
+          >
             <i class="material-icons">visibility</i>
           </button>
           <button 
             class="btn-icon btn-favorite" 
-            @click.prevent="toggleFavorite" 
+            @click.prevent="handleToggleFavorite" 
             title="Yêu thích"
-            :class="{ active: isFavorite }"
+            :class="{ active: isInWishlist }"
+            :disabled="isTogglingFavorite"
           >
-            <i class="material-icons">{{ isFavorite ? 'favorite' : 'favorite_border' }}</i>
-          </button>
-          <button class="btn-icon btn-cart" @click.prevent="addToCart" title="Thêm vào giỏ">
-            <i class="material-icons">shopping_cart</i>
+            <i class="material-icons" v-if="!isTogglingFavorite">
+              {{ isInWishlist ? 'favorite' : 'favorite_border' }}
+            </i>
+            <div v-else class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
           </button>
         </div>
       </div>
     
       <div class="product-info">
-        <span class="brand-name">{{ product.brandName || 'Unknown' }}</span>
+        <span class="brand-name">{{ getBrandName() }}</span>
         <h3 class="product-name">{{ product.name }}</h3>
         
         <!-- Rating -->
@@ -78,24 +82,45 @@
         
         <div class="product-footer">
           <div class="price-wrapper">
-            <span v-if="productFlashSale && product.priceSale" class="price-original">
-              {{ formatCurrency(product.price) }}
+            <span v-if="productFlashSale && originalPrice > 0 && finalPrice < originalPrice" class="price-original">
+              {{ formatCurrency(originalPrice) }}
             </span>
             <span class="price">{{ formatCurrency(finalPrice) }}</span>
           </div>
-          <button class="btn-add-cart" @click.prevent="addToCart">
-            <i class="material-icons">add_shopping_cart</i>
+          <button 
+            class="btn-add-cart" 
+            @click.prevent="handleQuickAddToCart"
+            :disabled="!canAddToCart || isAddingToCart"
+            :class="{ 'opacity-50 cursor-not-allowed': !canAddToCart || isAddingToCart }"
+            title="Thêm nhanh vào giỏ hàng"
+          >
+            <i class="material-icons" v-if="!isAddingToCart">add_shopping_cart</i>
+            <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </button>
         </div>
       </div>
     </div>
   </router-link>
+
+  <!-- Quick View Modal -->
+  <QuickViewModal
+    v-model:isOpen="showQuickView"
+    :productId="product.id"
+    @added-to-cart="handleQuickViewAddedToCart"
+  />
 </template>
   
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import { useCartStore } from '@/stores/cart';
+import { useWishlistStore } from '@/stores/wishlist';
 import { useFlashSaleStore } from '@/stores/flashSale';
+import toastService from '@/utils/toastService';
+import logger from '@/utils/logger';
 import FlashSaleBadge from '@/assets/components/common/FlashSaleBadge.vue';
+import QuickViewModal from '@/assets/components/common/QuickViewModal.vue';
 
 // Props
 const props = defineProps({
@@ -105,52 +130,287 @@ const props = defineProps({
   },
 });
 
-// Stores
+// Router & Stores
+const router = useRouter();
+const authStore = useAuthStore();
+const cartStore = useCartStore();
+const wishlistStore = useWishlistStore();
 const flashSaleStore = useFlashSaleStore();
 
 // Reactive state
-const isFavorite = ref(false);
+const isAddingToCart = ref(false);
+const isTogglingFavorite = ref(false);
+const showQuickView = ref(false);
+
+// Fetch flash sales on mount if not already loaded
+onMounted(async () => {
+  if (flashSaleStore.activeFlashSales.length === 0) {
+    try {
+      await flashSaleStore.fetchActiveFlashSales();
+    } catch (error) {
+      logger.warn('Failed to fetch flash sales in ProductCard:', error);
+    }
+  }
+});
+
+// Computed - Check if product is in wishlist
+const isInWishlist = computed(() => {
+  return wishlistStore.isInWishlist(props.product.id);
+});
 
 // Computed
 const productFlashSale = computed(() => {
   return flashSaleStore.getFlashSaleForProduct(props.product.id);
 });
 
+// Helper function to get product price from variants or direct price
+const getProductPrice = () => {
+  // If product has price directly
+  if (props.product.price !== null && props.product.price !== undefined && !isNaN(props.product.price)) {
+    return Number(props.product.price);
+  }
+  
+  // If has variants, get price from first available variant
+  if (props.product.variants && props.product.variants.length > 0) {
+    const firstVariant = firstAvailableVariant.value || props.product.variants[0];
+    if (firstVariant) {
+      // Prefer priceSale, fallback to priceBase
+      if (firstVariant.priceSale !== null && firstVariant.priceSale !== undefined && !isNaN(firstVariant.priceSale)) {
+        return Number(firstVariant.priceSale);
+      }
+      if (firstVariant.priceBase !== null && firstVariant.priceBase !== undefined && !isNaN(firstVariant.priceBase)) {
+        return Number(firstVariant.priceBase);
+      }
+    }
+  }
+  
+  // If has priceBase or priceSale directly
+  if (props.product.priceSale !== null && props.product.priceSale !== undefined && !isNaN(props.product.priceSale)) {
+    return Number(props.product.priceSale);
+  }
+  if (props.product.priceBase !== null && props.product.priceBase !== undefined && !isNaN(props.product.priceBase)) {
+    return Number(props.product.priceBase);
+  }
+  
+  return 0;
+};
+
 const finalPrice = computed(() => {
-  if (productFlashSale.value) {
+  const basePrice = getProductPrice();
+  if (productFlashSale.value && basePrice > 0) {
     return flashSaleStore.calculateDiscountedPrice(
-      props.product.price,
+      basePrice,
       productFlashSale.value.discountPercent
     );
   }
-  return props.product.price || props.product.priceBase || 0;
+  return basePrice;
+});
+
+// Get original price for display
+const originalPrice = computed(() => {
+  return getProductPrice();
+});
+
+// Lấy variant đầu tiên có stock > 0
+const firstAvailableVariant = computed(() => {
+  if (!props.product.variants || props.product.variants.length === 0) {
+    return null;
+  }
+  
+  // Tìm variant đầu tiên có stock > 0
+  const availableVariant = props.product.variants.find(
+    (v) => v.stockQuantity > 0 && (v.isActive !== false)
+  );
+  
+  // Nếu không tìm thấy, lấy variant đầu tiên
+  return availableVariant || props.product.variants[0];
+});
+
+// Kiểm tra sản phẩm có thể thêm vào giỏ hàng
+const canAddToCart = computed(() => {
+  // Kiểm tra stock
+  if (props.product.totalStock !== null && props.product.totalStock !== undefined) {
+    if (props.product.totalStock <= 0) return false;
+  }
+  
+  // Kiểm tra variants
+  if (props.product.variants && props.product.variants.length > 0) {
+    return firstAvailableVariant.value !== null;
+  }
+  
+  // Nếu không có variants, kiểm tra inStock
+  return props.product.inStock !== false;
 });
 
 // Methods
+const getBrandName = () => {
+  // Try multiple sources for brand name
+  if (props.product.brand?.name) {
+    return props.product.brand.name;
+  }
+  if (props.product.brandName) {
+    return props.product.brandName;
+  }
+  // Try to get from flash sale if available
+  if (productFlashSale.value?.brandName) {
+    return productFlashSale.value.brandName;
+  }
+  return 'Unknown';
+};
+
 const formatCurrency = (value) => {
   if (value === null || value === undefined) return '0 ₫';
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(numValue);
 };
 
-const toggleFavorite = (event) => {
+const handleToggleFavorite = async (event) => {
   event.preventDefault();
   event.stopPropagation();
-  isFavorite.value = !isFavorite.value;
-  // TODO: Implement favorite functionality
+  
+  if (!authStore.isAuthenticated) {
+    toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào yêu thích');
+    router.push({
+      path: '/login',
+      query: { redirect: router.currentRoute.value.fullPath }
+    });
+    return;
+  }
+  
+  if (isTogglingFavorite.value) return;
+  
+  isTogglingFavorite.value = true;
+  
+  try {
+    const result = await wishlistStore.toggleWishlist(props.product.id);
+    
+    if (result.action === 'added') {
+      toastService.success('Thành công', 'Đã thêm vào yêu thích');
+      logger.log('Product added to wishlist:', props.product.id);
+    } else {
+      toastService.success('Thành công', 'Đã xóa khỏi yêu thích');
+      logger.log('Product removed from wishlist:', props.product.id);
+    }
+  } catch (error) {
+    logger.error('Error toggling favorite:', error);
+    
+    // Xử lý lỗi cụ thể
+    if (error.response?.status === 401) {
+      toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào yêu thích');
+      router.push({
+        path: '/login',
+        query: { redirect: router.currentRoute.value.fullPath }
+      });
+    } else {
+      toastService.error('Lỗi', error.response?.data?.message || 'Không thể cập nhật yêu thích');
+    }
+  } finally {
+    isTogglingFavorite.value = false;
+  }
 };
 
-const addToCart = (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  // TODO: Implement add to cart functionality
-};
-
+// Quick View
 const openQuickView = (event) => {
   event.preventDefault();
   event.stopPropagation();
-  // TODO: Implement quick view functionality
+  showQuickView.value = true;
 };
+
+const handleQuickViewAddedToCart = () => {
+  // Refresh cart count after adding from quick view
+  cartStore.fetchCart().catch(() => {
+    // Silently fail
+  });
+};
+
+// Quick Add to Cart - Thêm nhanh vào giỏ hàng (nút lớn màu xanh ở footer)
+const handleQuickAddToCart = async (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  
+  // Kiểm tra sản phẩm có thể thêm vào giỏ hàng
+  if (!canAddToCart.value) {
+    toastService.error('Lỗi', 'Sản phẩm này hiện không có sẵn');
+    return;
+  }
+  
+  // Nếu sản phẩm có nhiều variants, redirect đến trang chi tiết để chọn
+  if (props.product.variants && props.product.variants.length > 1) {
+    try {
+      await router.push(`/home/products/${props.product.id}`);
+    } catch (navError) {
+      logger.error('Navigation error:', navError);
+      toastService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
+    }
+    return;
+  }
+  
+  // Lấy variant ID
+  let variantId = null;
+  if (props.product.variants && props.product.variants.length > 0) {
+    variantId = firstAvailableVariant.value?.id;
+    if (!variantId) {
+      toastService.error('Lỗi', 'Không tìm thấy biến thể sản phẩm');
+      return;
+    }
+  } else if (props.product.variantId) {
+    variantId = props.product.variantId;
+  } else {
+    // Nếu không có variant, redirect đến trang chi tiết
+    try {
+      await router.push(`/home/products/${props.product.id}`);
+    } catch (navError) {
+      logger.error('Navigation error:', navError);
+      toastService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
+    }
+    return;
+  }
+  
+  if (isAddingToCart.value) return;
+  
+  isAddingToCart.value = true;
+  
+  try {
+    // Sử dụng cart store để thêm vào giỏ hàng
+    await cartStore.addItem(variantId, 1);
+    toastService.success('Thành công', 'Đã thêm sản phẩm vào giỏ hàng');
+    logger.log('Product quick added to cart:', variantId);
+  } catch (error) {
+    logger.error('Error quick adding to cart:', error);
+    
+    // Xử lý lỗi cụ thể
+    if (error.response?.status === 401) {
+      toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
+      router.push({
+        path: '/login',
+        query: { redirect: router.currentRoute.value.fullPath }
+      });
+    } else if (error.response?.status === 400) {
+      toastService.error('Lỗi', error.response?.data?.message || 'Sản phẩm không có sẵn hoặc đã hết hàng');
+    } else {
+      toastService.error('Lỗi', error.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+    }
+  } finally {
+    isAddingToCart.value = false;
+  }
+};
+
+// Load wishlist status on mount
+onMounted(async () => {
+  if (authStore.isAuthenticated) {
+    try {
+      await wishlistStore.fetchWishlist();
+    } catch (error) {
+      // Silently fail - wishlist will be loaded when needed
+      logger.warn('Failed to fetch wishlist on mount:', error);
+    }
+  }
+});
+
+// Watch for product changes
+watch(() => props.product.id, () => {
+  // Product changed, wishlist status will update automatically via computed
+});
 </script>
 
 <style scoped>
@@ -243,29 +503,26 @@ const openQuickView = (event) => {
   z-index: 10;
 }
 
-.stock-badge-number {
+.stock-badge-text {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
+  white-space: nowrap;
+  letter-spacing: 0.025em;
 }
 
-.stock-badge-number.stock-ok {
+.stock-badge-text.stock-ok {
   background: linear-gradient(135deg, #10b981, #059669);
 }
 
-.stock-badge-number.stock-low {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.stock-badge-number.stock-out {
+.stock-badge-text.stock-out {
   background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
@@ -309,6 +566,18 @@ const openQuickView = (event) => {
 .btn-icon.active {
   background: #ef4444;
   color: white;
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-icon:disabled:hover {
+  transform: none;
+  background: white;
+  color: #374151;
 }
 
 .btn-icon i {

@@ -13,8 +13,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,7 @@ public class FlashSaleService {
     @Transactional(readOnly = true)
     public List<FlashSaleDto> getAllFlashSales() {
         log.info("Fetching all flash sales");
-        List<FlashSale> flashSales = flashSaleRepository.findAll();
+        List<FlashSale> flashSales = flashSaleRepository.findAllWithProduct();
         
         return flashSales.stream()
                 .map(this::convertToDto)
@@ -50,8 +52,23 @@ public class FlashSaleService {
     public List<FlashSaleDto> getActiveFlashSales() {
         log.info("Fetching active flash sales");
         LocalDateTime now = LocalDateTime.now();
+        log.info("Current time: {}", now);
         
         List<FlashSale> flashSales = flashSaleRepository.findActiveFlashSales(now);
+        log.info("Found {} active flash sales", flashSales.size());
+        
+        // Log details for debugging if no flash sales found
+        if (flashSales.isEmpty()) {
+            log.warn("No active flash sales found. Checking all flash sales...");
+            List<FlashSale> allFlashSales = flashSaleRepository.findAll();
+            log.info("Total flash sales in database: {}", allFlashSales.size());
+            allFlashSales.forEach(fs -> {
+                boolean isInTimeRange = now.isAfter(fs.getStartTime()) && now.isBefore(fs.getEndTime());
+                log.info("Flash Sale ID: {}, Product ID: {}, Start: {}, End: {}, IsActive: {}, InTimeRange: {}", 
+                    fs.getId(), fs.getProduct().getId(), fs.getStartTime(), fs.getEndTime(), 
+                    fs.getIsActive(), isInTimeRange);
+            });
+        }
         
         return flashSales.stream()
                 .map(this::convertToDto)
@@ -79,7 +96,7 @@ public class FlashSaleService {
         log.info("Creating flash sale for product ID: {}", dto.getProductId());
         
         // Validate product exists
-        Product product = productRepository.findById(dto.getProductId())
+        Product product = productRepository.findById(Objects.requireNonNull(dto.getProductId()))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
         
         // Validate dates
@@ -119,7 +136,7 @@ public class FlashSaleService {
     public FlashSaleDto updateFlashSale(Integer id, FlashSaleDto dto) {
         log.info("Updating flash sale ID: {}", id);
         
-        FlashSale flashSale = flashSaleRepository.findById(id)
+        FlashSale flashSale = flashSaleRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Flash sale không tồn tại"));
         
         flashSale.setDiscountPercent(dto.getDiscountPercent());
@@ -141,10 +158,10 @@ public class FlashSaleService {
     public void deleteFlashSale(Integer id) {
         log.info("Deleting flash sale ID: {}", id);
         
-        FlashSale flashSale = flashSaleRepository.findById(id)
+        FlashSale flashSale = flashSaleRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Flash sale không tồn tại"));
         
-        flashSaleRepository.delete(flashSale);
+        flashSaleRepository.delete(Objects.requireNonNull(flashSale));
         log.info("Deleted flash sale ID: {}", id);
     }
 
@@ -197,11 +214,29 @@ public class FlashSaleService {
      * Convert Entity to DTO
      */
     private FlashSaleDto convertToDto(FlashSale flashSale) {
+        Product product = flashSale.getProduct();
+        
+        // Calculate original price from product variants
+        // Use the minimum price from variants (or first variant if available)
+        BigDecimal originalPrice = BigDecimal.ZERO;
+        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+            originalPrice = product.getVariants().stream()
+                    .filter(v -> v.getPriceBase() != null)
+                    .map(v -> v.getPriceSale() != null && v.getPriceSale().compareTo(BigDecimal.ZERO) > 0 
+                            ? v.getPriceSale() 
+                            : v.getPriceBase())
+                    .min(BigDecimal::compareTo)
+                    .orElse(product.getVariants().get(0).getPriceBase());
+        }
+        
         return FlashSaleDto.builder()
                 .id(flashSale.getId())
-                .productId(flashSale.getProduct().getId())
-                .productName(flashSale.getProduct().getName())
-                .productSlug(flashSale.getProduct().getSlug())
+                .productId(product.getId())
+                .productName(product.getName())
+                .productSlug(product.getSlug())
+                .brandName(product.getBrand() != null ? product.getBrand().getName() : null)
+                .imageUrl(product.getMainImageUrl() != null ? product.getMainImageUrl() : null)
+                .originalPrice(originalPrice)
                 .discountPercent(flashSale.getDiscountPercent())
                 .startTime(flashSale.getStartTime())
                 .endTime(flashSale.getEndTime())

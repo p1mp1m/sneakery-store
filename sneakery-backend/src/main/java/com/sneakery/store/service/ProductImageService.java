@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -46,7 +47,7 @@ public class ProductImageService {
     @Transactional
     public ProductImageDto addProductImage(Long productId, ProductImageDto dto) {
         log.info("🌐 Adding image URL to product ID: {}", productId);
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findById(Objects.requireNonNull(productId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
 
         // Nếu set primary => clear ảnh primary cũ
@@ -69,7 +70,7 @@ public class ProductImageService {
                 .displayOrder(displayOrder)
                 .build();
 
-        productImageRepository.save(image);
+        productImageRepository.save(Objects.requireNonNull(image));
         log.info("✅ Added image from URL for product {}: {}", productId, dto.getImageUrl());
         return convertToDto(image);
     }
@@ -81,7 +82,7 @@ public class ProductImageService {
     @Transactional
     public ProductImageDto uploadImageFile(Long productId, MultipartFile file, boolean isPrimary, Integer displayOrder) {
         log.info("🖼️ Uploading local file for product ID: {}", productId);
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findById(Objects.requireNonNull(productId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
 
         // Upload lên Cloudinary → nhận url + publicId
@@ -111,7 +112,7 @@ public class ProductImageService {
                 .displayOrder(finalOrder)
                 .build();
 
-        ProductImage saved = productImageRepository.save(image);
+        ProductImage saved = productImageRepository.save(Objects.requireNonNull(image));
         log.info("✅ Uploaded image {} for product {}", imageUrl, productId);
         return convertToDto(saved);
     }
@@ -161,7 +162,7 @@ public class ProductImageService {
     // ==========================================================
     @Transactional
     public void deleteProductImage(Long imageId) {
-        ProductImage image = productImageRepository.findById(imageId)
+        ProductImage image = productImageRepository.findById(Objects.requireNonNull(imageId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Hình ảnh không tồn tại"));
 
         try {
@@ -191,11 +192,11 @@ public class ProductImageService {
     // ==========================================================
     @Transactional
     public ProductImageDto setPrimaryImage(Long imageId) {
-        ProductImage image = productImageRepository.findById(imageId)
+        ProductImage image = productImageRepository.findById(Objects.requireNonNull(imageId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Hình ảnh không tồn tại"));
         productImageRepository.clearPrimaryForProduct(image.getProduct().getId());
         image.setIsPrimary(true);
-        productImageRepository.save(image);
+        productImageRepository.save(Objects.requireNonNull(image));
         log.info("⭐ Set image {} as primary", imageId);
         return convertToDto(image);
     }

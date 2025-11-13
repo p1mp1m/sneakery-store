@@ -176,6 +176,16 @@
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
+
+        <!-- Bucket4j for Rate Limiting -->
+        <!-- TODO: Uncomment sau khi Maven dependencies được tải đầy đủ -->
+        <!-- 
+        <dependency>
+            <groupId>com.bucket4j</groupId>
+            <artifactId>bucket4j-core</artifactId>
+            <version>8.7.0</version>
+        </dependency>
+        -->
     </dependencies>
 
     <dependencyManagement>

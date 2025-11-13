@@ -23,7 +23,9 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, Integer> {
     @Query("SELECT fs FROM FlashSale fs " +
            "JOIN FETCH fs.product p " +
            "JOIN FETCH p.brand " +
-           "WHERE fs.isActive = true " +
+           "WHERE (fs.isActive IS NULL OR fs.isActive = true) " +
+           "AND (p.isActive IS NULL OR p.isActive = true) " +
+           "AND p.deletedAt IS NULL " +
            "AND fs.startTime <= :now " +
            "AND fs.endTime > :now " +
            "ORDER BY fs.endTime ASC")
@@ -45,8 +47,10 @@ public interface FlashSaleRepository extends JpaRepository<FlashSale, Integer> {
     /**
      * Lấy tất cả flash sales (admin)
      */
-    @Query("SELECT fs FROM FlashSale fs " +
-           "JOIN FETCH fs.product " +
+    @Query("SELECT DISTINCT fs FROM FlashSale fs " +
+           "JOIN FETCH fs.product p " +
+           "JOIN FETCH p.brand " +
+           "LEFT JOIN FETCH p.variants " +
            "ORDER BY fs.startTime DESC")
     List<FlashSale> findAllWithProduct();
 

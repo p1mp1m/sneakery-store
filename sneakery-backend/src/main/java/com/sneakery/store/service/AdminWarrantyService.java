@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Service: AdminWarrantyService
@@ -68,7 +69,7 @@ public class AdminWarrantyService {
             return predicates;
         };
         
-        Page<Warranty> warranties = warrantyRepository.findAll(spec, pageable);
+        Page<Warranty> warranties = warrantyRepository.findAll(spec, Objects.requireNonNull(pageable));
         return warranties.map(this::convertToListDto);
     }
 
@@ -79,7 +80,7 @@ public class AdminWarrantyService {
     public AdminWarrantyDto getWarrantyById(Long id) {
         log.info("📄 Fetching warranty detail - ID: {}", id);
 
-        Warranty warranty = warrantyRepository.findById(id)
+        Warranty warranty = warrantyRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu bảo hành"));
 
         return convertToDto(warranty);
@@ -92,10 +93,10 @@ public class AdminWarrantyService {
     public AdminWarrantyDto updateWarrantyStatus(Long id, String status, Long adminId, String adminNote) {
         log.info("✅ Updating warranty status - ID: {}, status: {}, by admin: {}", id, status, adminId);
 
-        Warranty warranty = warrantyRepository.findById(id)
+        Warranty warranty = warrantyRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu bảo hành"));
 
-        User admin = userRepository.findById(adminId)
+        User admin = userRepository.findById(Objects.requireNonNull(adminId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
 
         warranty.setStatus(status);
@@ -119,10 +120,10 @@ public class AdminWarrantyService {
     public AdminWarrantyDto processWarranty(Long id, Long adminId, String resolutionNote, String warrantyType) {
         log.info("🔧 Processing warranty - ID: {}, by admin: {}", id, adminId);
 
-        Warranty warranty = warrantyRepository.findById(id)
+        Warranty warranty = warrantyRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu bảo hành"));
 
-        User admin = userRepository.findById(adminId)
+        User admin = userRepository.findById(Objects.requireNonNull(adminId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
 
         warranty.setStatus("processing");

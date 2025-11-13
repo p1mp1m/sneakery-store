@@ -41,6 +41,13 @@ public class Warranty {
     @EqualsAndHashCode.Exclude
     private Product product;
 
+    // Quan hệ với ProductVariant (nullable - có thể bảo hành cho toàn bộ sản phẩm)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private ProductVariant variant;
+
     @Column(name = "issue_description", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String issueDescription;
 
@@ -49,6 +56,9 @@ public class Warranty {
 
     @Column(name = "warranty_type", length = 50)
     private String warrantyType; // repair, replace
+
+    @Column(name = "warranty_months")
+    private Integer warrantyMonths; // Số tháng bảo hành (default 12)
 
     @Column(name = "images_json", columnDefinition = "NVARCHAR(MAX)")
     private String imagesJson; // JSON array of image URLs
@@ -69,6 +79,15 @@ public class Warranty {
     @Column(name = "processed_at")
     private LocalDateTime processedAt;
 
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "purchase_date")
+    private LocalDateTime purchaseDate;
+
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -77,10 +96,21 @@ public class Warranty {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+        if (submittedAt == null) {
+            submittedAt = now;
+        }
         if (status == null) {
             status = "pending";
+        }
+        if (warrantyMonths == null) {
+            warrantyMonths = 12; // Default 12 months
         }
     }
 

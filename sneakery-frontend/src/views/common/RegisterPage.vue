@@ -198,22 +198,35 @@ const registerForm = ref({
 const validateForm = () => {
   errors.value = {};
   
+  // Full name validation
   if (!registerForm.value.fullName?.trim()) {
     errors.value.fullName = 'Vui lòng nhập họ tên';
     return false;
   }
   
+  if (registerForm.value.fullName.trim().length < 2) {
+    errors.value.fullName = 'Họ tên phải có ít nhất 2 ký tự';
+    return false;
+  }
+  
+  if (registerForm.value.fullName.trim().length > 100) {
+    errors.value.fullName = 'Họ tên không được vượt quá 100 ký tự';
+    return false;
+  }
+  
+  // Email validation
   if (!registerForm.value.email?.trim()) {
     errors.value.email = 'Vui lòng nhập email';
     return false;
   }
   
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(registerForm.value.email)) {
+  if (!emailRegex.test(registerForm.value.email.trim())) {
     errors.value.email = 'Email không đúng định dạng';
     return false;
   }
   
+  // Password validation
   if (!registerForm.value.password) {
     errors.value.password = 'Vui lòng nhập mật khẩu';
     return false;
@@ -222,6 +235,21 @@ const validateForm = () => {
   if (registerForm.value.password.length < 6) {
     errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự';
     return false;
+  }
+  
+  if (registerForm.value.password.length > 128) {
+    errors.value.password = 'Mật khẩu không được vượt quá 128 ký tự';
+    return false;
+  }
+  
+  // Phone number validation (optional but validate format if provided)
+  if (registerForm.value.phoneNumber && registerForm.value.phoneNumber.trim()) {
+    const phoneRegex = /^[0-9]{10,11}$/;
+    const cleanedPhone = registerForm.value.phoneNumber.trim().replace(/[\s\-\(\)]/g, '');
+    if (!phoneRegex.test(cleanedPhone)) {
+      errors.value.phoneNumber = 'Số điện thoại không hợp lệ (10-11 chữ số)';
+      return false;
+    }
   }
   
   return true;

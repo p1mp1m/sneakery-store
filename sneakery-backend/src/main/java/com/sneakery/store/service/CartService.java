@@ -19,9 +19,51 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service xử lý giỏ hàng cho User
+ * 
+ * <p>Service này cung cấp các chức năng quản lý giỏ hàng cho user:
+ * <ul>
+ *   <li>Lấy giỏ hàng của user</li>
+ *   <li>Thêm/Cập nhật sản phẩm vào giỏ hàng</li>
+ *   <li>Xóa sản phẩm khỏi giỏ hàng</li>
+ *   <li>Xóa toàn bộ giỏ hàng</li>
+ * </ul>
+ * 
+ * <p><b>Về giỏ hàng:</b>
+ * <ul>
+ *   <li>Mỗi user có 1 giỏ hàng duy nhất</li>
+ *   <li>Giỏ hàng được tự động tạo khi user thêm sản phẩm đầu tiên</li>
+ *   <li>Giỏ hàng sẽ bị xóa sau khi checkout thành công</li>
+ *   <li>Mỗi item trong giỏ hàng tương ứng với 1 variant (size, màu sắc)</li>
+ * </ul>
+ * 
+ * <p><b>Về tồn kho:</b>
+ * <ul>
+ *   <li>Khi thêm sản phẩm vào giỏ hàng, hệ thống sẽ kiểm tra tồn kho</li>
+ *   <li>Số lượng trong giỏ hàng không được vượt quá tồn kho</li>
+ *   <li>Nếu tồn kho không đủ, sẽ throw ApiException</li>
+ * </ul>
+ * 
+ * <p><b>Ví dụ sử dụng:</b>
+ * <pre>
+ * // Lấy giỏ hàng
+ * CartDto cart = cartService.getCartByUserId(userId);
+ * 
+ * // Thêm sản phẩm vào giỏ hàng
+ * AddToCartRequestDto request = new AddToCartRequestDto();
+ * request.setVariantId(1L);
+ * request.setQuantity(2);
+ * CartDto updatedCart = cartService.addItemToCart(userId, request);
+ * </pre>
+ * 
+ * @author Sneakery Store Team
+ * @since 1.0
+ */
 @Service
 @RequiredArgsConstructor
 public class CartService {
@@ -31,7 +73,31 @@ public class CartService {
     private final ProductVariantRepository variantRepository;
 
     /**
-     * API 1: Lấy giỏ hàng của user
+     * Lấy giỏ hàng của user
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Lấy hoặc tạo giỏ hàng của user</li>
+     *   <li>Sử dụng query tối ưu để load tất cả items trong 1 lần</li>
+     *   <li>Chuyển đổi sang DTO và trả về</li>
+     * </ol>
+     * 
+     * <p><b>Về dữ liệu trả về:</b>
+     * <ul>
+     *   <li>Bao gồm tất cả items trong giỏ hàng: sản phẩm, variant, số lượng, giá</li>
+     *   <li>Bao gồm tổng tiền của giỏ hàng</li>
+     *   <li>Sử dụng query tối ưu (findByUserIdWithDetails) để load tất cả dữ liệu trong 1 lần</li>
+     * </ul>
+     * 
+     * @param userId ID của user cần lấy giỏ hàng
+     * @return CartDto chứa thông tin giỏ hàng (nếu chưa có giỏ hàng, sẽ tạo mới rỗng)
+     * 
+     * @example
+     * <pre>
+     * CartDto cart = cartService.getCartByUserId(userId);
+     * System.out.println(cart.getItems().size()); // Số lượng items trong giỏ hàng
+     * System.out.println(cart.getTotalAmount()); // Tổng tiền giỏ hàng
+     * </pre>
      */
     @Transactional(readOnly = true)
     public CartDto getCartByUserId(Long userId) {
@@ -42,14 +108,51 @@ public class CartService {
     }
 
     /**
-     * API 2: Thêm/Cập nhật sản phẩm vào giỏ
+     * Thêm/Cập nhật sản phẩm vào giỏ hàng
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Lấy hoặc tạo giỏ hàng của user</li>
+     *   <li>Kiểm tra variant có tồn tại và còn tồn kho không</li>
+     *   <li>Nếu variant đã có trong giỏ hàng: Cập nhật số lượng</li>
+     *   <li>Nếu variant chưa có trong giỏ hàng: Thêm mới</li>
+     *   <li>Kiểm tra tồn kho đủ cho số lượng mới</li>
+     *   <li>Tính lại tổng tiền giỏ hàng</li>
+     *   <li>Lưu vào database</li>
+     *   <li>Trả về giỏ hàng sau khi cập nhật</li>
+     * </ol>
+     * 
+     * <p><b>Lưu ý:</b>
+     * <ul>
+     *   <li>Nếu variant đã có trong giỏ hàng, số lượng sẽ được cập nhật (không cộng dồn)</li>
+     *   <li>Số lượng phải > 0 và <= tồn kho của variant</li>
+     *   <li>Nếu tồn kho không đủ, sẽ throw ApiException</li>
+     *   <li>Sau khi cập nhật, tổng tiền giỏ hàng sẽ được tính lại tự động</li>
+     * </ul>
+     * 
+     * @param userId ID của user đang thêm sản phẩm
+     * @param requestDto DTO chứa thông tin sản phẩm cần thêm:
+     *                   - variantId: ID của variant (bắt buộc)
+     *                   - quantity: Số lượng (bắt buộc, phải > 0)
+     * @return CartDto chứa giỏ hàng sau khi cập nhật
+     * @throws ApiException nếu variant không tồn tại, hết tồn kho, hoặc validation thất bại
+     * 
+     * @example
+     * <pre>
+     * AddToCartRequestDto request = new AddToCartRequestDto();
+     * request.setVariantId(1L); // Variant: Nike Air Max 90 - Size 40 - Đỏ
+     * request.setQuantity(2); // Thêm 2 đôi
+     * 
+     * CartDto cart = cartService.addItemToCart(userId, request);
+     * System.out.println(cart.getItems().size()); // Số lượng items trong giỏ hàng
+     * </pre>
      */
     @Transactional
     public CartDto addItemToCart(Long userId, AddToCartRequestDto requestDto) {
         Cart cart = getOrCreateCart(userId);
         
         // Tìm biến thể sản phẩm
-        ProductVariant variant = variantRepository.findById(requestDto.getVariantId())
+        ProductVariant variant = variantRepository.findById(Objects.requireNonNull(requestDto.getVariantId()))
             .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
 
         // Kiểm tra số lượng tồn kho
@@ -135,7 +238,7 @@ public class CartService {
         Cart cart = getOrCreateGuestCart(sessionId);
         
         // Tìm biến thể sản phẩm
-        ProductVariant variant = variantRepository.findById(requestDto.getVariantId())
+        ProductVariant variant = variantRepository.findById(Objects.requireNonNull(requestDto.getVariantId()))
             .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
 
         // Kiểm tra số lượng tồn kho
@@ -194,7 +297,7 @@ public class CartService {
      */
     private Cart getOrCreateCart(Long userId) {
         return cartRepository.findByUserId(userId).orElseGet(() -> {
-            User user = userRepository.findById(userId)
+            User user = userRepository.findById(Objects.requireNonNull(userId))
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
             
             Cart newCart = new Cart();

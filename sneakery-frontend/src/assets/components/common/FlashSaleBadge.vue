@@ -8,7 +8,7 @@
 
     <!-- Discount Percentage -->
     <div class="discount-percentage">
-      -{{ flashSale.discountPercent }}%
+      -{{ formatDiscountPercent(flashSale.discountPercent) }}%
     </div>
 
     <!-- Countdown Timer (if active) -->
@@ -107,6 +107,15 @@ const progressPercentage = computed(() => {
   return Math.min((sold / props.flashSale.quantityLimit) * 100, 100)
 })
 
+// Format discount percent (handle BigDecimal from backend)
+const formatDiscountPercent = (discountPercent) => {
+  if (!discountPercent) return 0
+  const discount = typeof discountPercent === 'number' 
+    ? discountPercent 
+    : parseFloat(discountPercent) || 0
+  return Math.round(discount)
+}
+
 // Update current time every second
 const startTimer = () => {
   intervalId = setInterval(() => {
@@ -131,6 +140,122 @@ onUnmounted(() => {
 })
 </script>
 
+<style scoped>
+.flash-sale-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  background: linear-gradient(135deg, #f97316, #ef4444, #ec4899);
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 120px;
+}
 
+.flash-sale-badge.compact {
+  top: 8px;
+  left: 8px;
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  min-width: 100px;
+}
 
+.flash-sale-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.flash-sale-header .material-icons {
+  font-size: 16px;
+  animation: pulse 2s infinite;
+}
+
+.flash-sale-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.discount-percentage {
+  font-size: 1rem;
+  font-weight: 900;
+  text-align: center;
+  margin: 4px 0;
+}
+
+.countdown-timer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.countdown-timer .timer-icon {
+  font-size: 14px;
+}
+
+.coming-soon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.coming-soon .material-icons {
+  font-size: 14px;
+}
+
+.quantity-progress {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: white;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.65rem;
+  text-align: center;
+  display: block;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+</style>
 

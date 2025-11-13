@@ -69,6 +69,15 @@ class UserService {
     }
   }
 
+  async cancelOrder(orderId) {
+    try {
+      const response = await userApi.put(`/orders/${orderId}/cancel`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   // ===== CART =====
   async getMyCart() {
     try {
@@ -301,6 +310,25 @@ class UserService {
   async deleteAddress(addressId) {
     try {
       await userApi.delete(`/addresses/${addressId}`)
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  // ===== PROFILE =====
+  async updateProfile(profileData) {
+    try {
+      const response = await userApi.put('/auth/profile', profileData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
+  async changePassword(passwordData) {
+    try {
+      const response = await userApi.post('/auth/change-password', passwordData)
+      return response.data
     } catch (error) {
       throw this.handleError(error)
     }

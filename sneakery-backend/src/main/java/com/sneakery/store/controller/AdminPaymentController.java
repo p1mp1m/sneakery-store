@@ -4,6 +4,7 @@ import com.sneakery.store.dto.PaymentDto;
 import com.sneakery.store.entity.Order;
 import com.sneakery.store.entity.OrderStatusHistory;
 import com.sneakery.store.entity.Payment;
+import com.sneakery.store.exception.PaymentNotFoundException;
 import com.sneakery.store.repository.OrderRepository;
 import com.sneakery.store.repository.OrderStatusHistoryRepository;
 import com.sneakery.store.repository.PaymentRepository;
@@ -92,7 +93,7 @@ public class AdminPaymentController {
         
         // Sử dụng method với @EntityGraph để eager load Order
         Payment payment = paymentRepository.findByIdWithOrder(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy payment với id: " + id));
+                .orElseThrow(() -> new PaymentNotFoundException(id));
         
         return ResponseEntity.ok(mapToDto(payment));
     }
@@ -107,7 +108,7 @@ public class AdminPaymentController {
         
         // Sử dụng method với @EntityGraph để eager load Order
         Payment payment = paymentRepository.findByIdWithOrder(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy payment"));
+                .orElseThrow(() -> new PaymentNotFoundException(id));
         
         payment.setStatus(status);
         
@@ -174,7 +175,7 @@ public class AdminPaymentController {
         
         // Sử dụng method với @EntityGraph để eager load Order
         Payment payment = paymentRepository.findByIdWithOrder(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy payment"));
+                .orElseThrow(() -> new PaymentNotFoundException(id));
         
         payment.setStatus("refunded");
         Payment refundedPayment = paymentRepository.save(payment);

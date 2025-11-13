@@ -3,6 +3,7 @@ package com.sneakery.store.controller;
 import com.sneakery.store.dto.LoyaltyDto;
 import com.sneakery.store.entity.LoyaltyPoint;
 import com.sneakery.store.entity.User;
+import com.sneakery.store.exception.UserNotFoundException;
 import com.sneakery.store.repository.LoyaltyPointRepository;
 import com.sneakery.store.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Admin Loyalty Controller
@@ -124,8 +126,8 @@ public class AdminLoyaltyController {
         
         log.info("⭐ Adjusting loyalty points for user {}: {} points", userId, points);
         
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        User user = userRepository.findById(Objects.requireNonNull(userId))
+            .orElseThrow(() -> new UserNotFoundException(userId));
         
         LoyaltyPoint loyaltyPoint = new LoyaltyPoint();
         loyaltyPoint.setUser(user);

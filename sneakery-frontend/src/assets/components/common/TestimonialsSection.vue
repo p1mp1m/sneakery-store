@@ -74,14 +74,14 @@
         </div>
       </div>
 
-      <!-- View All Button -->
+      <!-- View All Reviews Button -->
       <div class="text-center">
         <router-link 
-          to="/reviews" 
+          to="/home/reviews" 
           class="view-all-btn inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
         >
+          <i class="material-icons">rate_review</i>
           Xem tất cả đánh giá
-          <i class="material-icons">arrow_forward</i>
         </router-link>
       </div>
     </div>
@@ -90,9 +90,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import reviewService from '@/services/reviewService';
+import logger from '@/utils/logger';
 
 const testimonials = ref([]);
+const loading = ref(false);
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -101,69 +103,37 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('vi-VN', options);
 };
 
-onMounted(async () => {
+const fetchTestimonials = async () => {
+  loading.value = true;
   try {
-    const response = await axios.get('http://localhost:8080/api/admin/reviews', {
-      params: {
-        page: 0,
-        size: 6,
-        isApproved: true,
-        minRating: 4
-      }
-    });
-
-    if (response.data && response.data.content) {
-      testimonials.value = response.data.content.slice(0, 6).map(review => ({
-        id: review.id,
-        rating: review.rating,
-        comment: review.reviewText || review.body || 'Sản phẩm chất lượng tốt!',
-        userName: review.userName || 'Khách hàng',
-        isVerified: review.isVerifiedPurchase || false,
-        productName: review.productName,
-        brandName: review.brandName || '',
-        productImage: review.productImage || '/placeholder-image.png',
-        date: review.createdAt
-      }));
-    }
-  } catch (error) {
-    console.error('Error loading testimonials:', error);
-    // Fallback data for demo
-    testimonials.value = [
-      {
-        id: 1,
-        rating: 5,
-        comment: 'Giày rất đẹp, chất lượng tốt, đúng với mô tả. Giao hàng nhanh và nhân viên tư vấn nhiệt tình!',
-        userName: 'Nguyễn Văn A',
-        isVerified: true,
-        productName: 'Nike Air Max 90',
-        brandName: 'Nike',
-        productImage: '/placeholder-image.png',
-        date: new Date().toISOString()
-      },
-      {
-        id: 2,
-        rating: 5,
-        comment: 'Sản phẩm hàng chính hãng, đóng gói cẩn thận. Đã mua nhiều đôi rồi và rất hài lòng với chất lượng!',
-        userName: 'Trần Thị B',
-        isVerified: true,
-        productName: 'Adidas Ultraboost',
-        brandName: 'Adidas',
-        productImage: '/placeholder-image.png',
-        date: new Date().toISOString()
-      },
-      {
-        id: 3,
-        rating: 5,
-        comment: 'Giày vừa chân, thiết kế đẹp. Giá cả hợp lý so với chất lượng. Sẽ quay lại mua thêm!',
-        userName: 'Lê Văn C',
-        isVerified: true,
-        productName: 'Jordan 1 Retro',
-        brandName: 'Jordan',
-        productImage: '/placeholder-image.png',
-        date: new Date().toISOString()
-      }
-    ];
+    // Lấy tối đa 3 reviews đã được duyệt cho homepage
+    const response = await reviewService.getApprovedReviews(0, 3);
+    
+    // Map data từ API sang format của component
+    testimonials.value = (response.content || []).map(review => ({
+      id: review.id,
+      rating: review.rating || 5,
+      comment: review.comment || review.body || '',
+      userName: review.userName || 'Khách hàng',
+      isVerified: review.isVerifiedPurchase || false,
+      productName: review.productName || 'Sản phẩm',
+      brandName: review.brandName || 'Thương hiệu',
+      productImage: review.productImage || '/placeholder-image.png',
+      date: review.createdAt || new Date().toISOString()
+    }));
+    
+    logger.log('Fetched testimonials for homepage:', testimonials.value.length);
+  } catch (err) {
+    logger.error('Error fetching testimonials:', err);
+    // Fallback to empty array if API fails
+    testimonials.value = [];
+  } finally {
+    loading.value = false;
   }
+};
+
+onMounted(() => {
+  fetchTestimonials();
 });
 </script>
 

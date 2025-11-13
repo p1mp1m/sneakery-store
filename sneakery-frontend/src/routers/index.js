@@ -40,7 +40,20 @@ const routes = [
       {
         path: "products/:id",
         name: "product-detail",
-        component: () => import("../views/common/ProductDetailPage.vue"),
+        component: () => import("../views/common/ProductDetailPage.vue").catch(() => {
+          // Fallback nếu import thất bại
+          return import("../views/common/ProductListPage.vue");
+        }),
+      },
+      {
+        path: "flash-sale",
+        name: "flash-sale",
+        component: () => import("../views/common/FlashSalePage.vue"),
+      },
+      {
+        path: "reviews",
+        name: "reviews",
+        component: () => import("../views/common/ReviewsPage.vue"),
       },
     ],
   },
@@ -74,7 +87,10 @@ const routes = [
   {
     path: '/checkout',
     name: 'Checkout',
-    component: () => import('../views/user/CheckoutPage.vue'),
+    component: () => import('../views/user/CheckoutPage.vue').catch(() => {
+      // Fallback nếu import thất bại
+      return import('../views/user/CartPage.vue');
+    }),
   },
   // User routes (Protected - chỉ dành cho user đã đăng nhập)
   ...userRoutes,

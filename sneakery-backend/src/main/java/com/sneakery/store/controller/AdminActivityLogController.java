@@ -16,6 +16,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 /**
  * Admin Activity Log Controller
  * Quản lý nhật ký hoạt động cho admin audit trail
@@ -94,7 +96,7 @@ public class AdminActivityLogController {
     public ResponseEntity<ActivityLogDto> getLogById(@PathVariable Long id) {
         log.info("📋 Fetching activity log ID: {}", id);
         
-        ActivityLog log = activityLogRepository.findById(id)
+        ActivityLog log = activityLogRepository.findById(Objects.requireNonNull(id))
             .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Activity log not found with id: " + id));
         
         return ResponseEntity.ok(mapToDto(log));
@@ -154,11 +156,12 @@ public class AdminActivityLogController {
     public ResponseEntity<String> deleteLog(@PathVariable Long id) {
         log.info("🗑️ Deleting activity log ID: {}", id);
         
-        if (!activityLogRepository.existsById(id)) {
+        Long nonNullId = Objects.requireNonNull(id);
+        if (!activityLogRepository.existsById(nonNullId)) {
             return ResponseEntity.notFound().build();
         }
         
-        activityLogRepository.deleteById(id);
+        activityLogRepository.deleteById(nonNullId);
         return ResponseEntity.ok("Đã xóa nhật ký hoạt động thành công");
     }
 }

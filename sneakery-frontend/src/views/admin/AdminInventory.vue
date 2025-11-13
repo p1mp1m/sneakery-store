@@ -161,8 +161,14 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+        <div class="space-y-4" role="status" aria-live="polite">
+          <LoadingSkeleton
+            v-for="n in 6"
+            :key="n"
+            type="list"
+          />
+          <span class="sr-only">Đang tải dữ liệu</span>
+        </div>
       </div>
 
       <!-- Empty State -->
@@ -195,7 +201,14 @@
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                    <img v-if="product.image" :src="product.image" :alt="product.name" class="w-full h-full object-cover">
+                    <img 
+                      v-if="product.image" 
+                      :src="product.image" 
+                      :alt="product.name" 
+                      class="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
                     <i v-else class="material-icons text-gray-400 dark:text-gray-500">image</i>
                   </div>
                   <div>
@@ -239,13 +252,28 @@
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
-                  <button @click="viewInventoryHistory(product)" class="p-1.5 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors" title="Lịch sử">
+                  <button 
+                    @click="viewInventoryHistory(product)" 
+                    class="p-1.5 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors" 
+                    title="Lịch sử"
+                    aria-label="Xem lịch sử tồn kho của sản phẩm"
+                  >
                     <i class="material-icons text-base">history</i>
                   </button>
-                  <button @click="adjustStock(product)" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Điều chỉnh">
+                  <button 
+                    @click="adjustStock(product)" 
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
+                    title="Điều chỉnh"
+                    aria-label="Điều chỉnh tồn kho sản phẩm"
+                  >
                     <i class="material-icons text-base">edit</i>
                   </button>
-                  <button @click="restockProduct(product)" class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" title="Nhập hàng">
+                  <button 
+                    @click="restockProduct(product)" 
+                    class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" 
+                    title="Nhập hàng"
+                    aria-label="Nhập hàng cho sản phẩm"
+                  >
                     <i class="material-icons text-base">add_shopping_cart</i>
                   </button>
                 </div>
@@ -371,8 +399,14 @@
             </div>
             
             <div v-if="loadingHistory" class="flex flex-col items-center justify-center p-12">
-              <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải lịch sử...</p>
+              <div class="space-y-2" role="status" aria-live="polite">
+                <LoadingSkeleton
+                  v-for="n in 3"
+                  :key="n"
+                  type="list"
+                />
+                <span class="sr-only">Đang tải lịch sử</span>
+              </div>
             </div>
             
             <div v-else-if="inventoryHistory.length === 0" class="flex flex-col items-center justify-center p-12">
@@ -421,6 +455,9 @@ import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
+import logger from '@/utils/logger'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import { formatPrice, formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
 
 // Stores
 const adminStore = useAdminStore()
@@ -504,10 +541,69 @@ const paginatedProducts = computed(() => {
 const fetchProducts = async () => {
   loading.value = true
   try {
-    const result = await adminStore.fetchProducts(0, 100, { isActive: true })
-    products.value = result.content || []
+    logger.log('🔍 Fetching inventory variants...')
+    
+    // Fetch inventory variants using product-variants endpoint which returns DTOs
+    // Use a large size to get all variants, or handle pagination
+    const result = await adminStore.fetchProductVariants(0, 10000, {})
+    
+    logger.log('📦 Inventory API response:', result)
+    logger.log('Response type:', typeof result)
+    logger.log('Response keys:', result ? Object.keys(result) : 'null')
+    
+    // Handle different response formats
+    let variants = []
+    if (Array.isArray(result)) {
+      // If result is directly an array
+      variants = result
+    } else if (result && result.content) {
+      // If result is a Page object with content
+      variants = result.content
+    } else if (result && Array.isArray(result.data)) {
+      // If result is wrapped in data
+      variants = result.data
+    } else if (result && result.content && Array.isArray(result.content)) {
+      variants = result.content
+    }
+    
+    logger.log(`✅ Found ${variants.length} variants`)
+    logger.log('First variant sample:', variants[0])
+    
+    if (variants.length === 0) {
+      logger.warn('⚠️ No variants found in response')
+      products.value = []
+      return
+    }
+    
+    products.value = variants.map(variant => {
+      const transformed = {
+        id: variant.id,
+        name: variant.productName || variant.product?.name || 'N/A',
+        sku: variant.sku || 'N/A',
+        size: variant.size || 'N/A',
+        color: variant.color || 'N/A',
+        brandName: variant.brandName || variant.product?.brand?.name || variant.brand?.name || 'N/A',
+        stockQuantity: variant.stockQuantity !== undefined && variant.stockQuantity !== null ? Number(variant.stockQuantity) : 0,
+        lowStockThreshold: variant.lowStockThreshold !== undefined && variant.lowStockThreshold !== null ? Number(variant.lowStockThreshold) : 10,
+        costPrice: variant.costPrice ? Number(variant.costPrice) : 0,
+        priceBase: variant.priceBase ? Number(variant.priceBase) : 0,
+        image: variant.imageUrl || variant.product?.imageUrl || variant.product?.mainImageUrl || null,
+        updatedAt: variant.updatedAt || variant.createdAt || new Date().toISOString()
+      }
+      return transformed
+    })
+    
+    logger.log(`✅ Transformed ${products.value.length} products for display`)
+    logger.log('First transformed product:', products.value[0])
   } catch (error) {
-    toastService.error('Lỗi','Không thể tải danh sách sản phẩm')
+    logger.error('❌ Error fetching inventory:', error)
+    logger.error('Error stack:', error.stack)
+    if (error.response) {
+      logger.error('Error response status:', error.response.status)
+      logger.error('Error response data:', error.response.data)
+    }
+    toastService.apiError(error, 'Không thể tải danh sách tồn kho')
+    products.value = []
   } finally {
     loading.value = false
   }
@@ -519,7 +615,7 @@ const fetchInventoryLogs = async () => {
     const result = await adminStore.fetchInventoryLogs(0, 50, {})
     inventoryHistory.value = result.content || []
   } catch (error) {
-    console.error('Error loading inventory logs:', error)
+    logger.error('Error loading inventory logs:', error)
   } finally {
     loadingHistory.value = false
   }
@@ -643,7 +739,7 @@ const viewInventoryHistory = async (product) => {
     const result = await adminStore.fetchInventoryLogs(0, 50, { variantId: product.id })
     inventoryHistory.value = result.content || []
   } catch (error) {
-    console.error('Error loading inventory history:', error)
+    logger.error('Error loading inventory history:', error)
     inventoryHistory.value = []
   } finally {
     loadingHistory.value = false
@@ -687,8 +783,8 @@ const exportInventory = (format) => {
       toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
-    console.error('Export error:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
+    logger.error('Export error:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 
@@ -728,23 +824,11 @@ const getChangeTypeText = (type) => {
 }
 
 const formatNumber = (num) => {
-  return new Intl.NumberFormat('vi-VN').format(num)
+  if (num === null || num === undefined || isNaN(num)) return '0'
+  return new Intl.NumberFormat('vi-VN').format(Number(num))
 }
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(value)
-}
-
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('vi-VN')
-}
-
-const formatDateTime = (dateString) => {
-  return new Date(dateString).toLocaleString('vi-VN')
-}
+// formatCurrency, formatDate, formatDateTime đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

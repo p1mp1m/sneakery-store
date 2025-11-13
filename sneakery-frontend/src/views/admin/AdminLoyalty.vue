@@ -160,8 +160,14 @@
       </div>
 
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+        <div class="space-y-4" role="status" aria-live="polite">
+          <LoadingSkeleton
+            v-for="n in 5"
+            :key="n"
+            type="list"
+          />
+          <span class="sr-only">Đang tải dữ liệu</span>
+        </div>
       </div>
 
       <div v-else-if="filteredPoints.length === 0" class="flex flex-col items-center justify-center p-12">
@@ -373,6 +379,9 @@ import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
+import logger from '@/utils/logger'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import { formatDate, formatDateTime } from '@/utils/formatters'
 
 // Stores
 const adminStore = useAdminStore()
@@ -475,12 +484,12 @@ const paginatedPoints = computed(() => {
 const fetchPoints = async () => {
   loading.value = true
   try {
-    console.log('🔍 Fetching loyalty users...')
+    logger.log('🔍 Fetching loyalty users...')
     const result = await adminStore.fetchLoyaltyUsers(currentPage.value, pageSize.value, {})
-    console.log('📦 API Result:', result)
+    logger.log('📦 API Result:', result)
     
     const loyaltyDtos = result?.content || []
-    console.log('📊 Loyalty DTOs received:', loyaltyDtos.length, loyaltyDtos)
+    logger.log('📊 Loyalty DTOs received:', loyaltyDtos.length, loyaltyDtos)
     
     // Map LoyaltyDto directly to points format
     points.value = loyaltyDtos.map(dto => ({
@@ -499,11 +508,11 @@ const fetchPoints = async () => {
       createdAt: dto.createdAt || new Date().toISOString()
     }))
     
-    console.log('✅ Points mapped:', points.value.length, 'items')
-    console.log('📊 Points sample:', points.value.slice(0, 3))
+    logger.log('✅ Points mapped:', points.value.length, 'items')
+    logger.log('📊 Points sample:', points.value.slice(0, 3))
   } catch (error) {
-    console.error('❌ Error fetching loyalty:', error)
-    toastService.error('Lỗi','Không thể tải danh sách điểm thưởng: ' + (error.message || 'Unknown error'))
+    logger.error('❌ Error fetching loyalty:', error)
+    toastService.apiError(error, 'Không thể tải danh sách điểm thưởng')
   } finally {
     loading.value = false
   }
@@ -595,8 +604,8 @@ const exportLoyalty = (format) => {
       toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
-    console.error('Export error:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
+    logger.error('Export error:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 
@@ -679,13 +688,7 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('vi-VN').format(num)
 }
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('vi-VN')
-}
-
-const formatDateTime = (dateString) => {
-  return new Date(dateString).toLocaleString('vi-VN')
-}
+// formatDate và formatDateTime đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

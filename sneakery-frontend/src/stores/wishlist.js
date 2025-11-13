@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import userService from '@/services/userService'
+import logger from '@/utils/logger'
 
 export const useWishlistStore = defineStore('wishlist', () => {
   // State
@@ -39,7 +40,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
       return data
     } catch (err) {
       error.value = err.response?.data?.message || 'Không thể tải wishlist'
-      console.error('Error fetching wishlist:', err)
+      logger.error('Error fetching wishlist:', err)
       throw err
     } finally {
       loading.value = false
@@ -59,7 +60,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
       return data
     } catch (err) {
       error.value = err.response?.data?.message || 'Không thể thêm vào wishlist'
-      console.error('Error adding to wishlist:', err)
+      logger.error('Error adding to wishlist:', err)
       throw err
     } finally {
       loading.value = false
@@ -82,7 +83,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
       )
     } catch (err) {
       error.value = err.response?.data?.message || 'Không thể xóa khỏi wishlist'
-      console.error('Error removing from wishlist:', err)
+      logger.error('Error removing from wishlist:', err)
       throw err
     } finally {
       loading.value = false
@@ -123,7 +124,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
       wishlistItems.value = []
     } catch (err) {
       error.value = err.response?.data?.message || 'Không thể xóa wishlist'
-      console.error('Error clearing wishlist:', err)
+      logger.error('Error clearing wishlist:', err)
       throw err
     } finally {
       loading.value = false

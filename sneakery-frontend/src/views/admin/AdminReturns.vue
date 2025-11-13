@@ -171,7 +171,13 @@
               </td>
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
-                  <img :src="item.productImage" :alt="item.productName" class="w-12 h-12 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
+                  <img 
+                    :src="item.productImage" 
+                    :alt="item.productName" 
+                    class="w-12 h-12 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                    loading="lazy"
+                    decoding="async"
+                  />
                   <div>
                     <strong class="text-sm font-medium text-gray-900 dark:text-gray-100 block">{{ item.productName }}</strong>
                     <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.variant }}</p>
@@ -274,6 +280,8 @@
                   :src="img" 
                   alt="Return image"
                   class="w-24 h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>
@@ -300,6 +308,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
+import logger from '@/utils/logger'
+import { formatPrice, formatDate, formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -338,8 +348,8 @@ const fetchReturns = async () => {
     returns.value = result.content || []
     updateStats()
   } catch (error) {
-    console.error('Lỗi tải dữ liệu:', error)
-    toastService.error('Lỗi','Lỗi khi tải danh sách yêu cầu trả hàng')
+    logger.error('Lỗi tải dữ liệu:', error)
+    toastService.apiError(error, 'Lỗi khi tải danh sách yêu cầu trả hàng')
   } finally {
     loading.value = false
   }
@@ -376,8 +386,8 @@ const approveReturn = async (item) => {
     toastService.success('Thành công','Đã duyệt yêu cầu trả hàng!')
     fetchReturns()
   } catch (error) {
-    console.error('Lỗi khi duyệt yêu cầu:', error)
-    toastService.error('Lỗi','Lỗi khi duyệt yêu cầu trả hàng')
+    logger.error('Lỗi khi duyệt yêu cầu:', error)
+    toastService.apiError(error, 'Lỗi khi duyệt yêu cầu trả hàng')
   }
 }
 
@@ -390,8 +400,8 @@ const rejectReturn = async (item) => {
     toastService.success('Thành công','Đã từ chối yêu cầu trả hàng!')
     fetchReturns()
   } catch (error) {
-    console.error('Lỗi khi từ chối yêu cầu:', error)
-    toastService.error('Lỗi','Lỗi khi từ chối yêu cầu trả hàng')
+    logger.error('Lỗi khi từ chối yêu cầu:', error)
+    toastService.apiError(error, 'Lỗi khi từ chối yêu cầu trả hàng')
   }
 }
 
@@ -430,19 +440,7 @@ const getStatusText = (status) => {
   return statuses[status] || status
 }
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
-}
-
-const formatDate = (dateString) => {
-  return new Intl.DateTimeFormat('vi-VN', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(dateString))
-}
+// formatPrice và formatDate đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

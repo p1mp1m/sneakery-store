@@ -4,8 +4,14 @@
  */
 
 import axios from 'axios';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// Lấy access token từ localStorage
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 class LoyaltyService {
     /**
@@ -13,18 +19,15 @@ class LoyaltyService {
      */
     async getBalance() {
         try {
-            const token = localStorage.getItem('token');
             const response = await axios.get(
-                `${API_BASE_URL}/loyalty/balance`,
+                `${API_ENDPOINTS.LOYALTY.BASE}/balance`,
                 {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
             return response.data;
         } catch (error) {
-            console.error('❌ Failed to fetch loyalty balance:', error);
+            logger.error('Failed to fetch loyalty balance:', error);
             throw error;
         }
     }
@@ -34,18 +37,15 @@ class LoyaltyService {
      */
     async getHistory() {
         try {
-            const token = localStorage.getItem('token');
             const response = await axios.get(
-                `${API_BASE_URL}/loyalty/history`,
+                `${API_ENDPOINTS.LOYALTY.BASE}/history`,
                 {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
             return response.data;
         } catch (error) {
-            console.error('❌ Failed to fetch loyalty history:', error);
+            logger.error('Failed to fetch loyalty history:', error);
             throw error;
         }
     }

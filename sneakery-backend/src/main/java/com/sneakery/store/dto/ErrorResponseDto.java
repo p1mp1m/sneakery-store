@@ -19,6 +19,7 @@ public class ErrorResponseDto {
     private String error; // Ví dụ: "Not Found", "Bad Request"
     private String message;
     private String path;
+    private String errorCode; // Error code để frontend có thể xử lý cụ thể (ví dụ: "ORDER_NOT_FOUND", "CART_NOT_FOUND")
     
     // Dùng cho lỗi Validation (xác thực)
     private Map<String, List<String>> validationErrors;

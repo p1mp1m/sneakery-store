@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 /**
  * Notification Service
  * Quản lý real-time notifications cho users
@@ -73,7 +75,7 @@ public class NotificationService {
     public Notification createNotification(Long userId, String type, String title, String message, String link) {
         log.info("Creating notification for user {}: {}", userId, title);
         
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
         
         Notification notification = new Notification();

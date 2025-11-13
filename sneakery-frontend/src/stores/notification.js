@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import userService from '@/services/userService';
+import logger from '@/utils/logger';
 
 export const useNotificationStore = defineStore('notification', () => {
     // State
@@ -42,10 +43,10 @@ export const useNotificationStore = defineStore('notification', () => {
             currentPage.value = data.number;
             totalPages.value = data.totalPages;
             
-            console.log(`✅ Fetched ${data.content.length} notifications`);
+            logger.log(`✅ Fetched ${data.content.length} notifications`);
         } catch (err) {
             error.value = err.response?.data?.message || 'Không thể tải thông báo';
-            console.error('❌ Error fetching notifications:', err);
+            logger.error('❌ Error fetching notifications:', err);
         } finally {
             loading.value = false;
         }
@@ -58,9 +59,9 @@ export const useNotificationStore = defineStore('notification', () => {
         try {
             const count = await userService.getUnreadCount();
             unreadCount.value = count;
-            console.log(`✅ Unread notifications: ${count}`);
+            logger.log(`✅ Unread notifications: ${count}`);
         } catch (err) {
-            console.error('❌ Error fetching unread count:', err);
+            logger.error('❌ Error fetching unread count:', err);
         }
     };
 
@@ -83,9 +84,9 @@ export const useNotificationStore = defineStore('notification', () => {
                 unreadCount.value--;
             }
             
-            console.log(`✅ Marked notification ${notificationId} as read`);
+            logger.log(`✅ Marked notification ${notificationId} as read`);
         } catch (err) {
-            console.error(`❌ Error marking notification ${notificationId} as read:`, err);
+            logger.error(`❌ Error marking notification ${notificationId} as read:`, err);
             throw err;
         }
     };
@@ -105,9 +106,9 @@ export const useNotificationStore = defineStore('notification', () => {
             
             unreadCount.value = 0;
             
-            console.log('✅ Marked all notifications as read');
+            logger.log('✅ Marked all notifications as read');
         } catch (err) {
-            console.error('❌ Error marking all notifications as read:', err);
+            logger.error('❌ Error marking all notifications as read:', err);
             throw err;
         }
     };

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @Entity
-@Table(name = "product_images")
+@Table(name = "Product_Images")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

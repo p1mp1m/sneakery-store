@@ -153,6 +153,8 @@
                     :src="sale.productImage" 
                     :alt="sale.productName"
                     class="w-12 h-12 rounded-lg object-cover bg-gray-100 dark:bg-gray-700"
+                    loading="lazy"
+                    decoding="async"
                     @error="handleImageError"
                   />
                   <div class="min-w-0">
@@ -394,6 +396,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
+import logger from '@/utils/logger'
+import { formatCurrency, formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -520,16 +524,44 @@ const loadFlashSales = async () => {
     
     // Load flash sales from API
     const salesResult = await adminStore.fetchFlashSales()
-    flashSales.value = salesResult || []
+    const rawFlashSales = salesResult || []
     
-    // Load products for dropdown
+    // Load products for dropdown and to get product prices
     const productsResult = await adminStore.fetchProducts(0, 100, { isActive: true })
-    availableProducts.value = productsResult.content || []
+    const allProducts = productsResult.content || []
+    availableProducts.value = allProducts
     
-    console.log('✅ Flash sales loaded from API')
+    // Transform flash sale data to match UI format
+    flashSales.value = rawFlashSales.map(sale => {
+      // Use originalPrice from API if available (now included in FlashSaleDto)
+      const originalPrice = sale.originalPrice ? Number(sale.originalPrice) : 0
+      const discountPercent = sale.discountPercent ? Number(sale.discountPercent) : 0
+      const discountAmount = (originalPrice * discountPercent) / 100
+      const flashSalePrice = originalPrice > 0 ? originalPrice - discountAmount : 0
+      
+      // Find product for additional info if needed
+      const product = allProducts.find(p => p.id === sale.productId)
+      
+      return {
+        id: sale.id,
+        productId: sale.productId,
+        productName: sale.productName || product?.name || 'N/A',
+        brandName: sale.brandName || product?.brandName || 'N/A',
+        productImage: sale.imageUrl || product?.mainImageUrl || product?.imageUrl || product?.image || null,
+        originalPrice: originalPrice,
+        discountPercentage: discountPercent,
+        flashSalePrice: flashSalePrice,
+        quantity: sale.quantityLimit ?? 0,
+        startTime: sale.startTime,
+        endTime: sale.endTime,
+        isActive: sale.isActive ?? true
+      }
+    })
+    
+    logger.log('✅ Flash sales loaded from API', flashSales.value)
   } catch (error) {
-    console.error('Lỗi khi tải danh sách flash sales:', error)
-    toastService.error('Lỗi','Không thể tải danh sách flash sales')
+    logger.error('Lỗi khi tải danh sách flash sales:', error)
+    toastService.apiError(error, 'Không thể tải danh sách flash sales')
   } finally {
     loading.value = false
   }
@@ -583,13 +615,26 @@ const openCreateModal = () => {
 
 const openEditModal = (sale) => {
   isEditMode.value = true
+  // Format datetime for datetime-local input (YYYY-MM-DDTHH:mm)
+  const formatDateTimeLocal = (dateString) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return ''
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
+  
   formData.value = {
     id: sale.id,
     productId: sale.productId,
-    discountPercentage: sale.discountPercentage,
-    quantity: sale.quantity,
-    startTime: sale.startTime.slice(0, 16),
-    endTime: sale.endTime.slice(0, 16)
+    discountPercentage: sale.discountPercentage || 0,
+    quantity: sale.quantity || 0,
+    startTime: formatDateTimeLocal(sale.startTime),
+    endTime: formatDateTimeLocal(sale.endTime)
   }
   showModal.value = true
 }
@@ -609,12 +654,14 @@ const closeModal = () => {
 const saveFlashSale = async () => {
   saving.value = true
   try {
+    // Transform to API format (discountPercent instead of discountPercentage, quantityLimit instead of quantity)
     const flashSaleData = {
-      productId: formData.value.productId,
-      discountPercentage: formData.value.discountPercentage,
-      quantity: formData.value.quantity,
-      startTime: formData.value.startTime + ':00',
-      endTime: formData.value.endTime + ':00'
+      productId: Number(formData.value.productId),
+      discountPercent: Number(formData.value.discountPercentage),
+      quantityLimit: Number(formData.value.quantity),
+      // Parse datetime-local format to ISO string
+      startTime: formData.value.startTime ? new Date(formData.value.startTime).toISOString() : null,
+      endTime: formData.value.endTime ? new Date(formData.value.endTime).toISOString() : null
     }
     
     if (isEditMode.value) {
@@ -628,8 +675,8 @@ const saveFlashSale = async () => {
     closeModal()
     loadFlashSales()
   } catch (error) {
-    console.error('Error saving flash sale:', error)
-    toastService.error('Lỗi','Lỗi khi lưu Flash Sale')
+    logger.error('Error saving flash sale:', error)
+    toastService.apiError(error, 'Lỗi khi lưu Flash Sale')
   } finally {
     saving.value = false
   }
@@ -649,8 +696,8 @@ const deleteFlashSale = async () => {
     toastService.success('Thành công','Xóa Flash Sale thành công!')
     loadFlashSales()
   } catch (error) {
-    console.error('Error deleting flash sale:', error)
-    toastService.error('Lỗi','Lỗi khi xóa Flash Sale')
+    logger.error('Error deleting flash sale:', error)
+    toastService.apiError(error, 'Lỗi khi xóa Flash Sale')
   } finally {
     deleting.value = false
   }
@@ -662,24 +709,7 @@ const resetFilters = () => {
   currentPage.value = 1
 }
 
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(value)
-}
-
-const formatDateTime = (dateString) => {
-  if (!dateString) return '—'
-  const date = new Date(dateString)
-  return date.toLocaleString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+// formatCurrency và formatDateTime đã được import từ @/utils/formatters
 
 const handleImageError = (e) => {
   e.target.src = '/placeholder-image.png'

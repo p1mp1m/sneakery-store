@@ -4,8 +4,14 @@
  */
 
 import axios from 'axios';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// Lấy access token từ localStorage
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 class FlashSaleService {
     /**
@@ -13,10 +19,15 @@ class FlashSaleService {
      */
     async getActiveFlashSales() {
         try {
-            const response = await axios.get(`${API_BASE_URL}/flash-sales/active`);
+            const response = await axios.get(API_ENDPOINTS.FLASH_SALES.ACTIVE);
+            logger.log('Flash sales API response:', response.data);
             return response.data;
         } catch (error) {
-            console.error('❌ Failed to fetch active flash sales:', error);
+            logger.error('Failed to fetch active flash sales:', error);
+            if (error.response) {
+                logger.error('Response status:', error.response.status);
+                logger.error('Response data:', error.response.data);
+            }
             throw error;
         }
     }
@@ -26,13 +37,13 @@ class FlashSaleService {
      */
     async getFlashSaleByProductId(productId) {
         try {
-            const response = await axios.get(`${API_BASE_URL}/flash-sales/product/${productId}`);
+            const response = await axios.get(API_ENDPOINTS.FLASH_SALES.BY_PRODUCT(productId));
             return response.data;
         } catch (error) {
             if (error.response && error.response.status === 404) {
                 return null; // No flash sale for this product
             }
-            console.error(`❌ Failed to fetch flash sale for product ${productId}:`, error);
+            logger.error(`Failed to fetch flash sale for product ${productId}:`, error);
             throw error;
         }
     }
@@ -42,19 +53,17 @@ class FlashSaleService {
      */
     async createFlashSale(flashSaleData) {
         try {
-            const token = localStorage.getItem('token');
             const response = await axios.post(
-                `${API_BASE_URL}/admin/flash-sales`,
+                API_ENDPOINTS.ADMIN_FLASH_SALES.BASE,
                 flashSaleData,
                 {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
+            logger.log('Flash sale created successfully');
             return response.data;
         } catch (error) {
-            console.error('❌ Failed to create flash sale:', error);
+            logger.error('Failed to create flash sale:', error);
             throw error;
         }
     }
@@ -64,19 +73,17 @@ class FlashSaleService {
      */
     async updateFlashSale(id, flashSaleData) {
         try {
-            const token = localStorage.getItem('token');
             const response = await axios.put(
-                `${API_BASE_URL}/admin/flash-sales/${id}`,
+                API_ENDPOINTS.ADMIN_FLASH_SALES.BY_ID(id),
                 flashSaleData,
                 {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
+            logger.log(`Flash sale ${id} updated successfully`);
             return response.data;
         } catch (error) {
-            console.error(`❌ Failed to update flash sale ${id}:`, error);
+            logger.error(`Failed to update flash sale ${id}:`, error);
             throw error;
         }
     }
@@ -86,17 +93,15 @@ class FlashSaleService {
      */
     async deleteFlashSale(id) {
         try {
-            const token = localStorage.getItem('token');
             await axios.delete(
-                `${API_BASE_URL}/admin/flash-sales/${id}`,
+                API_ENDPOINTS.ADMIN_FLASH_SALES.BY_ID(id),
                 {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeader()
                 }
             );
+            logger.log(`Flash sale ${id} deleted successfully`);
         } catch (error) {
-            console.error(`❌ Failed to delete flash sale ${id}:`, error);
+            logger.error(`Failed to delete flash sale ${id}:`, error);
             throw error;
         }
     }

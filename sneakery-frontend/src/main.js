@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia' // 👈 1. Import Pinia
 import axios from 'axios'
 import toastService from '@/utils/toastService'
+import logger from '@/utils/logger'
 
 // Import Tailwind CSS FIRST - before other styles
 import './assets/styles/tailwind.css'
@@ -59,7 +60,7 @@ axios.interceptors.response.use(
     
     // Xử lý lỗi network
     if (!error.response) {
-      console.error('❌ Network Error:', error.message);
+      logger.error('❌ Network Error:', error.message);
       toastService.error('Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
     }
     
@@ -76,5 +77,14 @@ app.use(pinia) // 👈 3. Sử dụng Pinia
 import { useThemeStore } from '@/stores/theme'
 const themeStore = useThemeStore()
 themeStore.initTheme()
+
+// ═══════════════════════════════════════════════════════════════════════
+// 🧪 EXPOSE TOAST SERVICE FOR TESTING (Development only)
+// ═══════════════════════════════════════════════════════════════════════
+if (import.meta.env.DEV) {
+  window.toastService = toastService
+  console.log('🧪 Toast Service exposed to window.toastService for testing')
+  console.log('💡 Try: toastService.success("Test", "Hello World!")')
+}
 
 app.mount('#app')

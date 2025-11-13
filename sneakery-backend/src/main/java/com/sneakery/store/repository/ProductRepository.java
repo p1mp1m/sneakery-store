@@ -56,9 +56,10 @@ List<Product> findByIdInWithBrandAndCategories(@Param("ids") List<Long> ids);
 
     @Query(value = "SELECT DISTINCT p FROM Product p " +
             "LEFT JOIN FETCH p.brand " +
+            "LEFT JOIN FETCH p.categories " +
             "LEFT JOIN FETCH p.variants " +
-            "WHERE p.deletedAt IS NULL",
-            countQuery = "SELECT COUNT(DISTINCT p) FROM Product p WHERE p.deletedAt IS NULL")
+            "WHERE p.deletedAt IS NULL AND (p.isActive = true OR p.isActive IS NULL)",
+            countQuery = "SELECT COUNT(DISTINCT p) FROM Product p WHERE p.deletedAt IS NULL AND (p.isActive = true OR p.isActive IS NULL)")
     Page<Product> findAllWithDetails(Pageable pageable);
 
     @Query("SELECT p FROM Product p " +
@@ -86,4 +87,11 @@ List<Product> findByIdInWithBrandAndCategories(@Param("ids") List<Long> ids);
      */
     @Query("SELECT COUNT(p) FROM Product p WHERE (p.isActive = false OR p.isActive IS NULL) AND p.deletedAt IS NULL")
     Long countInactiveProducts();
+
+    /**
+     * Count products by brand ID (for validation before deleting brand)
+     * Excludes soft deleted products
+     */
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.brand.id = :brandId AND p.deletedAt IS NULL")
+    Long countByBrandId(@Param("brandId") Integer brandId);
 }

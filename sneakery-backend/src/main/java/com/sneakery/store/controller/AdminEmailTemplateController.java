@@ -1,6 +1,7 @@
 package com.sneakery.store.controller;
 
 import com.sneakery.store.entity.EmailTemplate;
+import com.sneakery.store.exception.EmailTemplateNotFoundException;
 import com.sneakery.store.repository.EmailTemplateRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Admin Email Template Controller
@@ -64,8 +66,8 @@ public class AdminEmailTemplateController {
     public ResponseEntity<EmailTemplate> getTemplateById(@PathVariable Integer id) {
         log.info("📧 Fetching email template ID: {}", id);
         
-        EmailTemplate template = emailTemplateRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Email template not found with id: " + id));
+        EmailTemplate template = emailTemplateRepository.findById(Objects.requireNonNull(id))
+            .orElseThrow(() -> new EmailTemplateNotFoundException(id));
         
         return ResponseEntity.ok(template);
     }
@@ -93,11 +95,12 @@ public class AdminEmailTemplateController {
     ) {
         log.info("📧 Updating email template ID: {}", id);
         
-        if (!emailTemplateRepository.existsById(id)) {
+        Integer nonNullId = Objects.requireNonNull(id);
+        if (!emailTemplateRepository.existsById(nonNullId)) {
             return ResponseEntity.notFound().build();
         }
         
-        template.setId(id);
+        template.setId(nonNullId);
         EmailTemplate updatedTemplate = emailTemplateRepository.save(template);
         return ResponseEntity.ok(updatedTemplate);
     }
@@ -110,11 +113,12 @@ public class AdminEmailTemplateController {
     public ResponseEntity<String> deleteTemplate(@PathVariable Integer id) {
         log.info("🗑️ Deleting email template ID: {}", id);
         
-        if (!emailTemplateRepository.existsById(id)) {
+        Integer nonNullId = Objects.requireNonNull(id);
+        if (!emailTemplateRepository.existsById(nonNullId)) {
             return ResponseEntity.notFound().build();
         }
         
-        emailTemplateRepository.deleteById(id);
+        emailTemplateRepository.deleteById(nonNullId);
         return ResponseEntity.ok("Đã xóa email template thành công");
     }
 
@@ -126,8 +130,8 @@ public class AdminEmailTemplateController {
     public ResponseEntity<EmailTemplate> toggleTemplateStatus(@PathVariable Integer id) {
         log.info("📧 Toggling email template status ID: {}", id);
         
-        EmailTemplate template = emailTemplateRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Email template not found with id: " + id));
+        EmailTemplate template = emailTemplateRepository.findById(Objects.requireNonNull(id))
+            .orElseThrow(() -> new EmailTemplateNotFoundException(id));
         
         template.setIsActive(!Boolean.TRUE.equals(template.getIsActive()));
         EmailTemplate updatedTemplate = emailTemplateRepository.save(template);
@@ -146,8 +150,8 @@ public class AdminEmailTemplateController {
     ) {
         log.info("📧 Sending test email with template ID: {}", id);
         
-        EmailTemplate template = emailTemplateRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Email template not found with id: " + id));
+        EmailTemplate template = emailTemplateRepository.findById(Objects.requireNonNull(id))
+            .orElseThrow(() -> new EmailTemplateNotFoundException(id));
         
         String recipientEmail = testData.getOrDefault("email", "admin@test.com");
         log.info("   To: {}", recipientEmail);

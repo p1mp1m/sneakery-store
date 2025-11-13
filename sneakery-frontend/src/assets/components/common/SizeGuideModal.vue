@@ -95,6 +95,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import toastService from '@/utils/toastService';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import axios from 'axios';
 
 const props = defineProps({
@@ -159,10 +161,10 @@ watch(() => props.brandId, (newBrandId) => {
 
 const loadBrands = async () => {
   try {
-    const response = await axios.get('http://localhost:8080/api/admin/brands');
+    const response = await axios.get(API_ENDPOINTS.ADMIN_PRODUCTS.BRANDS);
     brands.value = response.data;
   } catch (error) {
-    console.error('Error loading brands:', error);
+    logger.error('Error loading brands:', error);
   }
 };
 
@@ -173,10 +175,10 @@ const loadSizeCharts = async () => {
     if (selectedBrandId.value) params.brandId = selectedBrandId.value;
     if (selectedCategory.value) params.category = selectedCategory.value;
 
-    const response = await axios.get('http://localhost:8080/api/size-charts', { params });
+    const response = await axios.get(API_ENDPOINTS.SIZE_CHARTS.BASE, { params });
     sizeCharts.value = response.data || [];
   } catch (error) {
-    console.error('Error loading size charts:', error);
+    logger.error('Error loading size charts:', error);
     toastService.error('Lỗi','Không thể tải bảng size');
   } finally {
     loading.value = false;

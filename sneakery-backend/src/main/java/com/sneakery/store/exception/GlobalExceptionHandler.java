@@ -38,15 +38,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ApiException ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDto errorDto = ErrorResponseDto.builder()
+        HttpStatus status = ex.getStatus();
+        ErrorResponseDto.ErrorResponseDtoBuilder builder = ErrorResponseDto.builder()
                 .timestamp(LocalDateTime.now())
-                .status(ex.getStatus().value())
-                .error(ex.getStatus().getReasonPhrase())
+                .status(status.value())
+                .error(status.getReasonPhrase())
                 .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
+                .path(request.getRequestURI());
+        
+        // Thêm errorCode nếu có
+        if (ex.getErrorCode() != null) {
+            builder.errorCode(ex.getErrorCode());
+        }
+        
+        ErrorResponseDto errorDto = builder.build();
 
-        return new ResponseEntity<>(errorDto, ex.getStatus());
+        return new ResponseEntity<>(errorDto, status);
     }
 
     /**
@@ -104,7 +111,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * 4. Bắt tất cả các lỗi 500 (lỗi server) khác
+     * 4. Bắt lỗi 'DataIntegrityViolationException' (lỗi foreign key constraint, unique constraint...)
+     * Đây là lỗi khi vi phạm ràng buộc dữ liệu trong database
+     */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponseDto> handleDataIntegrityViolationException(
+            org.springframework.dao.DataIntegrityViolationException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Data integrity violation at {}: {}", request.getRequestURI(), ex.getMessage());
+        
+        // Kiểm tra xem có phải foreign key constraint không
+        String message = ex.getMessage();
+        String userMessage = "Không thể thực hiện thao tác này vì dữ liệu đang được sử dụng ở nơi khác.";
+        
+        if (message != null) {
+            if (message.contains("foreign key") || message.contains("FK_") || message.contains("REFERENCES")) {
+                userMessage = "Không thể xóa vì dữ liệu đang được sử dụng. Vui lòng xóa hoặc cập nhật các dữ liệu liên quan trước.";
+            } else if (message.contains("unique constraint") || message.contains("UNIQUE") || message.contains("duplicate")) {
+                userMessage = "Dữ liệu đã tồn tại. Vui lòng kiểm tra lại.";
+            }
+        }
+        
+        ErrorResponseDto errorDto = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error(HttpStatus.CONFLICT.getReasonPhrase())
+                .message(userMessage)
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.CONFLICT);
+    }
+
+    /**
+     * 5. Bắt tất cả các lỗi 500 (lỗi server) khác
      * (Ví dụ: NullPointerException, lỗi CSDL...)
      * 
      * Security: Không expose internal error details ra ngoài.

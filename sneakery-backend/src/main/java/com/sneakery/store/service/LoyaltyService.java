@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Loyalty Points Service
@@ -85,7 +86,7 @@ public class LoyaltyService {
         loyaltyPoint.setUser(order.getUser());
         loyaltyPoint.setPoints(points);
         loyaltyPoint.setTransactionType("earn");
-        loyaltyPoint.setEarnedFromOrderId(order.getId());
+        loyaltyPoint.setEarnedFromOrder(order);
         loyaltyPoint.setDescription(String.format("Tích điểm từ đơn hàng %s", order.getOrderNumber()));
         loyaltyPoint.setExpiresAt(LocalDateTime.now().plusYears(1)); // Hết hạn sau 1 năm
         
@@ -106,7 +107,7 @@ public class LoyaltyService {
         log.info("🎁 Redeeming {} points for user {}", pointsToUse, userId);
         
         // Validate user
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
         
         // Check balance
@@ -134,7 +135,7 @@ public class LoyaltyService {
         redemption.setUser(user);
         redemption.setPoints(pointsToUse);
         redemption.setTransactionType("redeem");
-        redemption.setRedeemedInOrderId(order.getId());
+        redemption.setRedeemedInOrder(order);
         redemption.setDescription(String.format("Đổi điểm cho đơn hàng %s", order.getOrderNumber()));
         
         loyaltyPointRepository.save(redemption);
@@ -155,7 +156,7 @@ public class LoyaltyService {
     public void awardBonusPoints(Long userId, int points, String reason) {
         log.info("🎉 Awarding {} bonus points to user {}", points, userId);
         
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
         
         LoyaltyPoint bonus = new LoyaltyPoint();

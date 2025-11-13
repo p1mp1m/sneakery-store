@@ -112,6 +112,7 @@
 import { ref, watch, onUnmounted } from "vue";
 // import toastService from "@/utils/toastService";
 import toastService from "@/utils/toastService";
+import { buildApiUrl } from "@/config/api";
 
 /**
  * Component này chỉ hiển thị và quản lý preview ảnh.
@@ -135,7 +136,7 @@ const getImageUrl = (url) => {
   
   // Nếu là relative URL (bắt đầu bằng /), prefix với backend URL
   if (url.startsWith('/')) {
-    return `http://localhost:8080${url}`;
+    return buildApiUrl(url);
   }
   
   return url;

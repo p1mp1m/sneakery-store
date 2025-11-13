@@ -16,11 +16,14 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center py-20">
-        <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mb-4"></div>
-          <p class="text-gray-600 dark:text-gray-400 font-medium">Đang tải danh sách yêu thích...</p>
-        </div>
+      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" role="status" aria-live="polite">
+        <LoadingSkeleton
+          v-for="n in 8"
+          :key="n"
+          type="card"
+          :show-image="true"
+        />
+        <span class="sr-only">Đang tải danh sách yêu thích</span>
       </div>
 
       <!-- Empty State -->
@@ -215,6 +218,8 @@ import toastService from '@/utils/toastService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useAuthStore } from '@/stores/auth';
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue';
+import { formatCurrency } from '@/utils/formatters';
 
 const router = useRouter();
 const wishlistStore = useWishlistStore();
@@ -237,10 +242,7 @@ onMounted(async () => {
   }
 });
 
-const formatCurrency = (value) => {
-  if (value === null || value === undefined) return '0 ₫';
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-};
+// formatCurrency đã được import từ @/utils/formatters
 
 const formatDate = (dateString) => {
   if (!dateString) return '';

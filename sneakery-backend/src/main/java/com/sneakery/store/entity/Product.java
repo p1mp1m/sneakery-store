@@ -22,7 +22,7 @@ public class Product {
     @Column(name = "product_code", unique = true, length = 50)
     private String code; 
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 

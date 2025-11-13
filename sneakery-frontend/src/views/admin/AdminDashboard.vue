@@ -1,46 +1,5 @@
 <template>
   <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
-    <!-- Toast Notifications -->
-    <transition-group 
-      name="toast" 
-      tag="div" 
-      class="fixed top-20 right-4 z-[10000] flex flex-col gap-2 max-w-sm"
-      enter-active-class="transition-all duration-300 ease-out"
-      leave-active-class="transition-all duration-300 ease-in"
-      enter-from-class="opacity-0 translate-x-20"
-      enter-to-class="opacity-100 translate-x-0"
-      leave-from-class="opacity-100 translate-x-0"
-      leave-to-class="opacity-0 -translate-x-20"
-    >
-      <div 
-        v-for="notification in notifications" 
-        :key="notification.id"
-        class="flex items-start gap-3 p-3 rounded-xl shadow-lg backdrop-blur-sm border-l-4 min-w-[280px]"
-        :class="{
-          'bg-white dark:bg-gray-800 border-green-500': notification.type === 'success',
-          'bg-white dark:bg-gray-800 border-red-500': notification.type === 'error',
-          'bg-white dark:bg-gray-800 border-yellow-500': notification.type === 'warning',
-          'bg-white dark:bg-gray-800 border-blue-500': notification.type === 'info'
-        }"
-      >
-        <i class="material-icons text-xl flex-shrink-0" 
-          :class="{
-            'text-green-500': notification.type === 'success',
-            'text-red-500': notification.type === 'error',
-            'text-yellow-500': notification.type === 'warning',
-            'text-blue-500': notification.type === 'info'
-          }"
-        >{{ getNotificationIcon(notification.type) }}</i>
-        <div class="flex-1 min-w-0">
-          <p class="font-semibold text-sm mb-1 text-gray-900 dark:text-gray-100">{{ notification.title }}</p>
-          <p class="text-xs text-gray-600 dark:text-gray-400">{{ notification.message }}</p>
-        </div>
-        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 transition-colors" @click="removeNotification(notification.id)">
-          <i class="material-icons text-lg">close</i>
-        </button>
-      </div>
-    </transition-group>
-
     <!-- Header -->
     <div class="p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
@@ -113,7 +72,12 @@
 
       <!-- Refresh Controls -->
       <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-        <button @click="manualRefresh" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" title="Làm mới dữ liệu">
+        <button 
+          @click="manualRefresh" 
+          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" 
+          title="Làm mới dữ liệu"
+          aria-label="Làm mới dữ liệu dashboard"
+        >
           <i class="material-icons text-sm">refresh</i>
           <span>Làm mới</span>
         </button>
@@ -124,6 +88,7 @@
             ? 'text-white bg-purple-600 hover:bg-purple-700' 
             : 'text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'"
           :title="autoRefreshEnabled ? 'Tắt tự động làm mới' : 'Bật tự động làm mới'"
+          :aria-label="autoRefreshEnabled ? 'Tắt tự động làm mới dữ liệu' : 'Bật tự động làm mới dữ liệu'"
         >
           <i class="material-icons text-sm" :class="{ 'animate-spin': autoRefreshEnabled }">{{ autoRefreshEnabled ? 'sync' : 'sync_disabled' }}</i>
           <span>{{ autoRefreshEnabled ? 'Tự động: Bật' : 'Tự động: Tắt' }}</span>
@@ -356,7 +321,7 @@
           <i class="material-icons text-purple-600 dark:text-purple-400 text-lg">history</i>
           Hoạt động gần đây
         </h2>
-        <button class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all duration-200" @click="showNotification('info', 'Xem tất cả', 'Chức năng đang được phát triển')">
+        <button class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all duration-200" @click="toastService.info('Xem tất cả', 'Chức năng đang được phát triển')">
           <span>Xem tất cả</span>
           <i class="material-icons text-sm">arrow_forward</i>
         </button>
@@ -399,7 +364,7 @@
               <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">{{ activity.text }}</p>
               <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatRelativeTime(activity.timestamp) }}</span>
             </div>
-            <button class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100" @click="showNotification('info', 'Chi tiết', activity.text)">
+            <button class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100" @click="toastService.info('Chi tiết', activity.text)">
               <i class="material-icons text-sm">visibility</i>
             </button>
           </div>
@@ -419,6 +384,9 @@ import LineChart from '@/assets/components/charts/LineChart.vue';
 import BarChart from '@/assets/components/charts/BarChart.vue';
 import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue';
 import DateRangePicker from '@/assets/components/admin/DateRangePicker.vue';
+import logger from '@/utils/logger';
+import { formatPrice, formatCurrency, formatRelativeTime } from '@/utils/formatters';
+import toastService from '@/utils/toastService';
 
 const router = useRouter();
 const adminStore = useAdminStore();
@@ -430,12 +398,10 @@ const loading = ref(false);
 const selectedPeriod = ref('7d');
 const currentTime = ref('');
 const currentDate = ref('');
-const notifications = ref([]);
 const showProfileMenu = ref(false);
 const autoRefreshEnabled = ref(true);
 const autoRefreshIntervalSeconds = ref(60); // OPTIMIZED: Tăng từ 30s lên 60s để giảm server load
 const lastRefreshTime = ref(null);
-let notificationIdCounter = 0;
 let autoRefreshInterval = null;
 
 const stats = ref({
@@ -541,38 +507,7 @@ const topProductsChart = ref({
 
 const recentActivities = ref([]);
 
-const showNotification = (type, title, message) => {
-  const id = ++notificationIdCounter;
-  notifications.value.push({ id, type, title, message });
-  setTimeout(() => removeNotification(id), 5000);
-};
-
-const removeNotification = (id) => {
-  const index = notifications.value.findIndex(n => n.id === id);
-  if (index > -1) notifications.value.splice(index, 1);
-};
-
-const getNotificationIcon = (type) => {
-  const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
-  return icons[type] || 'info';
-};
-
-const formatCurrency = (value) => {
-  if (value === null || value === undefined) return '0 ₫';
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-};
-
-const formatRelativeTime = (timestamp) => {
-  const now = new Date();
-  const diff = now - new Date(timestamp);
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  if (minutes < 1) return 'Vừa xong';
-  if (minutes < 60) return `${minutes} phút trước`;
-  if (hours < 24) return `${hours} giờ trước`;
-  return `${days} ngày trước`;
-};
+// formatCurrency và formatRelativeTime đã được import từ @/utils/formatters
 
 const updateDateTime = () => {
   const now = new Date();
@@ -613,10 +548,10 @@ const loadDashboardData = async (silent = false) => {
     await loadRecentActivities();
     
     lastRefreshTime.value = new Date();
-    if (!silent) showNotification('success', 'Thành công', 'Đã tải dữ liệu dashboard');
+    if (!silent) toastService.success('Thành công', 'Đã tải dữ liệu dashboard');
   } catch (error) {
-    console.error('Error loading dashboard data:', error);
-    if (!silent) showNotification('error', 'Lỗi', 'Không thể tải dữ liệu dashboard');
+    logger.error('Error loading dashboard data:', error);
+    if (!silent) toastService.apiError(error, 'Không thể tải dữ liệu dashboard');
   } finally {
     if (!silent) loading.value = false;
   }
@@ -624,23 +559,23 @@ const loadDashboardData = async (silent = false) => {
 
 const loadBadges = async () => {
   try {
-    console.log('🔄 Loading badges...');
+    logger.log('🔄 Loading badges...');
     const badgesData = await AdminService.getDashboardBadges();
-    console.log('📊 Badges data:', badgesData);
+    logger.log('📊 Badges data:', badgesData);
     badges.value = badgesData || {};
   } catch (error) {
-    console.error('❌ Error loading badges:', error);
+    logger.error('❌ Error loading badges:', error);
     badges.value = {};
   }
 };
 
 const loadChartsData = async () => {
   try {
-    console.log('🔄 Loading charts data for period:', selectedPeriod.value);
+    logger.log('🔄 Loading charts data for period:', selectedPeriod.value);
     
     // Load revenue chart
     const revenueData = await AdminService.getRevenueAnalytics(selectedPeriod.value);
-    console.log('📊 Revenue data:', revenueData);
+    logger.log('📊 Revenue data:', revenueData);
     if (revenueData && revenueData.data && revenueData.data.length > 0) {
       const labels = revenueData.data.map(item => {
         const date = new Date(item.date);
@@ -659,9 +594,9 @@ const loadChartsData = async () => {
           tension: 0.4
         }]
       };
-      console.log('✅ Revenue chart loaded:', revenueChart.value);
+      logger.log('✅ Revenue chart loaded:', revenueChart.value);
     } else {
-      console.warn('⚠️ No revenue data available');
+      logger.warn('⚠️ No revenue data available');
       // Set empty data
       revenueChart.value = {
         labels: [],
@@ -678,7 +613,7 @@ const loadChartsData = async () => {
     
     // Load order status chart
     const orderStatusData = await AdminService.getOrderStatusAnalytics();
-    console.log('📊 Order status data:', orderStatusData);
+    logger.log('📊 Order status data:', orderStatusData);
     if (orderStatusData && orderStatusData.data && orderStatusData.data.length > 0) {
       const labels = orderStatusData.data.map(item => item.label || item.status);
       const data = orderStatusData.data.map(item => item.count || 0);
@@ -702,9 +637,9 @@ const loadChartsData = async () => {
           borderWidth: 2
         }]
       };
-      console.log('✅ Order status chart loaded:', orderStatusChart.value);
+      logger.log('✅ Order status chart loaded:', orderStatusChart.value);
     } else {
-      console.warn('⚠️ No order status data available');
+      logger.warn('⚠️ No order status data available');
       orderStatusChart.value = {
         labels: [],
         datasets: [{
@@ -718,7 +653,7 @@ const loadChartsData = async () => {
     
     // Load top products chart
     const topProductsData = await AdminService.getTopProducts(selectedPeriod.value);
-    console.log('📊 Top products data:', topProductsData);
+    logger.log('📊 Top products data:', topProductsData);
     if (topProductsData && topProductsData.topProducts && topProductsData.topProducts.length > 0) {
       const labels = topProductsData.topProducts.map(p => p.name || 'Unknown').slice(0, 5);
       const data = topProductsData.topProducts.map(p => p.totalSold || 0).slice(0, 5);
@@ -733,9 +668,9 @@ const loadChartsData = async () => {
           borderWidth: 1
         }]
       };
-      console.log('✅ Top products chart loaded:', topProductsChart.value);
+      logger.log('✅ Top products chart loaded:', topProductsChart.value);
     } else {
-      console.warn('⚠️ No top products data available');
+      logger.warn('⚠️ No top products data available');
       topProductsChart.value = {
         labels: [],
         datasets: [{
@@ -748,7 +683,7 @@ const loadChartsData = async () => {
       };
     }
   } catch (error) {
-    console.error('❌ Error loading charts data:', error);
+    logger.error('❌ Error loading charts data:', error);
     // Set empty data on error
     revenueChart.value = {
       labels: [],
@@ -785,9 +720,9 @@ const loadChartsData = async () => {
 
 const loadRecentActivities = async () => {
   try {
-    console.log('🔄 Loading recent activities...');
+    logger.log('🔄 Loading recent activities...');
     const activitiesData = await AdminService.getRecentActivities(10);
-    console.log('📊 Activities data:', activitiesData);
+    logger.log('📊 Activities data:', activitiesData);
     if (activitiesData && activitiesData.activities && activitiesData.activities.length > 0) {
       recentActivities.value = activitiesData.activities.map(activity => ({
         id: activity.id,
@@ -795,13 +730,13 @@ const loadRecentActivities = async () => {
         text: activity.text || 'Hoạt động mới',
         timestamp: activity.timestamp ? new Date(activity.timestamp) : new Date()
       }));
-      console.log('✅ Recent activities loaded:', recentActivities.value);
+      logger.log('✅ Recent activities loaded:', recentActivities.value);
     } else {
-      console.warn('⚠️ No activities data available');
+      logger.warn('⚠️ No activities data available');
       recentActivities.value = [];
     }
   } catch (error) {
-    console.error('❌ Error loading recent activities:', error);
+    logger.error('❌ Error loading recent activities:', error);
     recentActivities.value = [];
   }
 };
@@ -826,16 +761,16 @@ const toggleAutoRefresh = () => {
   autoRefreshEnabled.value = !autoRefreshEnabled.value;
   if (autoRefreshEnabled.value) {
     startAutoRefresh();
-    showNotification('success', 'Tự động làm mới', `Đã bật tự động làm mới mỗi ${autoRefreshIntervalSeconds.value} giây`);
+    toastService.success('Tự động làm mới', `Đã bật tự động làm mới mỗi ${autoRefreshIntervalSeconds.value} giây`);
   } else {
     stopAutoRefresh();
-    showNotification('info', 'Tự động làm mới', 'Đã tắt tự động làm mới');
+    toastService.info('Tự động làm mới', 'Đã tắt tự động làm mới');
   }
 };
 
 const manualRefresh = () => {
   loadDashboardData();
-  showNotification('info', 'Làm mới', 'Đang tải lại dữ liệu...');
+  toastService.info('Làm mới', 'Đang tải lại dữ liệu...');
 };
 
 const changePeriod = async (period) => {
@@ -843,10 +778,10 @@ const changePeriod = async (period) => {
   loading.value = true;
   try {
     await loadChartsData();
-    showNotification('info', 'Thay đổi chu kỳ', `Đang hiển thị dữ liệu ${period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày'}`);
+    toastService.info('Thay đổi chu kỳ', `Đang hiển thị dữ liệu ${period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày'}`);
   } catch (error) {
-    console.error('Error changing period:', error);
-    showNotification('error', 'Lỗi', 'Không thể tải dữ liệu cho chu kỳ này');
+    logger.error('Error changing period:', error);
+    toastService.apiError(error, 'Không thể tải dữ liệu cho chu kỳ này');
   } finally {
     loading.value = false;
   }
@@ -858,7 +793,7 @@ const toggleProfileMenu = () => {
 
 const handleProfileEdit = () => {
   showProfileMenu.value = false;
-  showNotification('info', 'Hồ sơ', 'Chức năng đang được phát triển');
+  toastService.info('Hồ sơ', 'Chức năng đang được phát triển');
 };
 
 const handleSettings = () => {
@@ -868,12 +803,12 @@ const handleSettings = () => {
 
 const handleChangePassword = () => {
   showProfileMenu.value = false;
-  showNotification('info', 'Đổi mật khẩu', 'Chức năng đang được phát triển');
+  toastService.info('Đổi mật khẩu', 'Chức năng đang được phát triển');
 };
 
 const handleLogout = () => {
   showProfileMenu.value = false;
-  showNotification('success', 'Đăng xuất', 'Đang đăng xuất...');
+  toastService.success('Đăng xuất', 'Đang đăng xuất...');
   setTimeout(() => {
     authStore.logout();
     adminStore.reset();
@@ -893,7 +828,7 @@ const applyCustomDateRange = (range) => {
   selectedPeriod.value = 'custom';
   if (range && range.start && range.end) {
     customDateRange.value = range;
-    showNotification('info', 'Thay đổi khoảng thời gian', `Đang hiển thị dữ liệu từ ${new Date(range.start).toLocaleDateString('vi-VN')} đến ${new Date(range.end).toLocaleDateString('vi-VN')}`);
+    toastService.info('Thay đổi khoảng thời gian', `Đang hiển thị dữ liệu từ ${new Date(range.start).toLocaleDateString('vi-VN')} đến ${new Date(range.end).toLocaleDateString('vi-VN')}`);
     // Reload data with custom date range
     loadDashboardData();
   }
@@ -901,7 +836,7 @@ const applyCustomDateRange = (range) => {
 
 const exportReports = async () => {
   try {
-    showNotification('info', 'Xuất báo cáo', 'Đang tạo báo cáo...');
+    toastService.info('Xuất báo cáo', 'Đang tạo báo cáo...');
     
     // Create CSV content
     const csvContent = [
@@ -929,10 +864,10 @@ const exportReports = async () => {
     link.click();
     document.body.removeChild(link);
     
-    showNotification('success', 'Xuất báo cáo', 'Đã xuất báo cáo thành công!');
+    toastService.success('Xuất báo cáo', 'Đã xuất báo cáo thành công!');
   } catch (error) {
-    console.error('Error exporting reports:', error);
-    showNotification('error', 'Lỗi', 'Không thể xuất báo cáo');
+    logger.error('Error exporting reports:', error);
+    toastService.apiError(error, 'Không thể xuất báo cáo');
   }
 };
 
@@ -944,7 +879,7 @@ onMounted(() => {
   updateDateTime();
   timeInterval = setInterval(updateDateTime, 1000);
   startAutoRefresh();
-  setTimeout(() => showNotification('info', 'Chào mừng!', 'Chào mừng bạn quay trở lại Admin Dashboard'), 500);
+  setTimeout(() => toastService.info('Chào mừng!', 'Chào mừng bạn quay trở lại Admin Dashboard'), 500);
   handleClickOutside = (e) => {
     if (!e.target.closest('.relative')) showProfileMenu.value = false;
   };

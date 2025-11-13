@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * Service quản lý users cho Admin
@@ -49,7 +50,7 @@ public class AdminUserService {
      */
     @Transactional(readOnly = true)
     public UserDto getUserById(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
         return convertToDto(user);
     }
@@ -59,7 +60,7 @@ public class AdminUserService {
      */
     @Transactional
     public UserDto updateUserStatus(Long userId, Boolean isActive) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
         
         user.setIsActive(isActive);
@@ -73,7 +74,7 @@ public class AdminUserService {
      */
     @Transactional
     public UserDto updateUserRole(Long userId, String role) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
         
         // Validate role
@@ -114,7 +115,7 @@ public class AdminUserService {
                 .createdAt(LocalDateTime.now())
                 .build();
         
-        User savedUser = userRepository.save(user);
+        User savedUser = userRepository.save(Objects.requireNonNull(user));
         return convertToDto(savedUser);
     }
 
@@ -123,7 +124,7 @@ public class AdminUserService {
      */
     @Transactional
     public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
         
         // Soft delete: set deletedAt thay vì xóa thật

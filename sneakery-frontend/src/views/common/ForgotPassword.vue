@@ -79,6 +79,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import toastService from '@/utils/toastService';
 import axios from 'axios';
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
 const router = useRouter();
 const loading = ref(false);
@@ -122,7 +123,7 @@ const handleForgotPassword = async () => {
   
   try {
     const { data } = await axios.post(
-      `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+      buildApiUrl(API_ENDPOINTS.AUTH.FORGOT_PASSWORD),
       { email: forgotForm.value.email }
     );
     toastService.success('Thành công', data?.message || 'Liên kết đặt lại đã được gửi!');

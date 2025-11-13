@@ -128,8 +128,14 @@
     <!-- Table -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+        <div class="space-y-4" role="status" aria-live="polite">
+          <LoadingSkeleton
+            v-for="n in 5"
+            :key="n"
+            type="list"
+          />
+          <span class="sr-only">Đang tải dữ liệu</span>
+        </div>
       </div>
       
       <div v-else-if="coupons.length === 0" class="flex flex-col items-center justify-center p-12">
@@ -442,6 +448,9 @@ import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
 import adminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
+import logger from '@/utils/logger'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import { formatPrice, formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -512,8 +521,8 @@ const fetchCoupons = async () => {
     totalPages.value = result.totalPages || 0
     updateStats()
   } catch (error) {
-    console.error('Lỗi tải coupons:', error)
-    toastService.error('Lỗi','Không thể tải danh sách mã giảm giá')
+    logger.error('Lỗi tải coupons:', error)
+    toastService.apiError(error, 'Không thể tải danh sách mã giảm giá')
     
     // Set empty array để tránh undefined errors
     coupons.value = []
@@ -598,8 +607,8 @@ const saveCoupon = async () => {
     closeDialog()
     fetchCoupons()
   } catch (error) {
-    console.error('Lỗi lưu coupon:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi lưu mã giảm giá!')
+    logger.error('Lỗi lưu coupon:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi lưu mã giảm giá')
   } finally {
     saving.value = false
   }
@@ -611,8 +620,8 @@ const toggleCouponStatus = async (coupon) => {
     coupon.isActive = !coupon.isActive
     toastService.success('Thành công',`Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá "${coupon.code}" thành công!`)
   } catch (error) {
-    console.error('Lỗi toggle status:', error)
-    toastService.error('Lỗi','Không thể thay đổi trạng thái. Vui lòng thử lại!')
+    logger.error('Lỗi toggle status:', error)
+    toastService.apiError(error, 'Không thể thay đổi trạng thái')
   }
 }
 
@@ -624,24 +633,18 @@ const deleteCoupon = async (coupon) => {
     toastService.success('Thành công',`Đã xóa mã giảm giá "${coupon.code}" thành công!`)
     fetchCoupons()
   } catch (error) {
-    console.error('Lỗi xóa coupon:', error)
-    toastService.error('Lỗi','Không thể xóa mã giảm giá. Vui lòng thử lại!')
+    logger.error('Lỗi xóa coupon:', error)
+    toastService.apiError(error, 'Không thể xóa mã giảm giá')
   }
 }
 
 const copyCouponCode = async (code) => {
   try {
     await navigator.clipboard.writeText(code)
-    toastService.success('Thành công',{
-      message: `Đã sao chép mã: ${code}`,
-      duration: 2000
-    })
+    toastService.success('Thành công', `Đã sao chép mã: ${code}`, { duration: 2000 })
   } catch (error) {
-    console.error('Lỗi copy:', error)
-    toastService.error('Lỗi',{
-      message: 'Không thể sao chép mã!',
-      duration: 2000
-    })
+    logger.error('Lỗi copy:', error)
+    toastService.apiError(error, 'Không thể sao chép mã')
   }
 }
 
@@ -697,20 +700,7 @@ const getUsagePercentage = (coupon) => {
   return Math.min((coupon.usesCount / coupon.maxUses) * 100, 100)
 }
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
-}
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('vi-VN', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
-}
+// formatPrice và formatDate đã được import từ @/utils/formatters
 
 // Export functions
 const handleExport = (format) => {

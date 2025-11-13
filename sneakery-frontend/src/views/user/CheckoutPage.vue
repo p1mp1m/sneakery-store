@@ -16,11 +16,17 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="flex items-center justify-center py-20">
-        <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mb-4"></div>
-          <p class="text-gray-600 dark:text-gray-400 font-medium">Đang tải thông tin...</p>
+      <div v-if="loading" class="space-y-6" role="status" aria-live="polite">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-6">
+            <LoadingSkeleton type="custom" :lines="8" />
+            <LoadingSkeleton type="custom" :lines="6" />
+          </div>
+          <div>
+            <LoadingSkeleton type="custom" :lines="10" />
+          </div>
         </div>
+        <span class="sr-only">Đang tải thông tin thanh toán</span>
       </div>
 
       <!-- Checkout Content -->
@@ -88,10 +94,20 @@
                 <input
                   v-model="newAddress.phone"
                   type="tel"
-                  class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
+                  :class="[
+                    newAddress.phone && !validateVietnamesePhone(newAddress.phone)
+                      ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
+                      : 'border-gray-200 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500'
+                  ]"
                   placeholder="0912345678"
                   required
+                  @blur="newAddress.phone = formatPhoneNumber(newAddress.phone)"
                 />
+                <p v-if="newAddress.phone && !validateVietnamesePhone(newAddress.phone)" class="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
+                  <i class="material-icons text-xs">error</i>
+                  Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)
+                </p>
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Email (không bắt buộc)</label>
@@ -459,10 +475,14 @@
                     <span>{{ applyingCoupon ? 'Đang áp dụng...' : 'Áp dụng' }}</span>
                   </button>
                 </div>
-                <p v-if="couponDiscount > 0" class="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-1 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div v-if="couponError" class="text-sm text-red-600 dark:text-red-400 mt-2 flex items-center gap-1 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <i class="material-icons text-base">error</i>
+                  {{ couponError }}
+                </div>
+                <div v-if="appliedCoupon && couponDiscountAmount > 0" class="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-1 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <i class="material-icons text-base">check_circle</i>
-                  Đã áp dụng mã giảm giá: -{{ formatPrice(couponDiscount) }}
-                </p>
+                  Đã áp dụng mã giảm giá "{{ appliedCoupon.code }}": -{{ formatPrice(couponDiscountAmount) }}
+                </div>
               </div>
 
               <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-white dark:bg-gray-800/50">
@@ -532,27 +552,25 @@
 
             <!-- Price Breakdown -->
             <div class="space-y-3 mb-6">
-              <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span class="flex items-center gap-2">
-                  <i class="material-icons text-xs">inventory_2</i>
-                  Tạm tính
-                </span>
-                <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatPrice(cart?.subTotal || 0) }}</span>
-              </div>
-              <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span class="flex items-center gap-2">
-                  <i class="material-icons text-xs">local_shipping</i>
-                  Phí vận chuyển
-                </span>
-                <span :class="[
-                  'font-semibold',
-                  shippingFee === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'
-                ]">
-                  {{ shippingFee === 0 ? 'Miễn phí' : formatPrice(shippingFee) }}
-                </span>
-              </div>
+                <!-- Subtotal -->
+                <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                  <span class="flex items-center gap-2">
+                    <i class="material-icons text-xs">inventory_2</i>
+                    Tạm tính ({{ cart?.totalItems || 0 }} sản phẩm)
+                  </span>
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatPrice(cart?.subTotal || 0) }}</span>
+                </div>
 
-              <!-- Loyalty Points Section (only for authenticated users) -->
+                <!-- Coupon Discount -->
+                <div v-if="appliedCoupon && couponDiscountAmount > 0" class="flex justify-between text-sm text-green-600 dark:text-green-400">
+                  <span class="flex items-center gap-2">
+                    <i class="material-icons text-xs">local_offer</i>
+                    Giảm giá ({{ appliedCoupon.code }})
+                  </span>
+                  <span class="font-semibold">-{{ formatPrice(couponDiscountAmount) }}</span>
+                </div>
+
+                <!-- Loyalty Points Section (only for authenticated users) -->
               <div v-if="!isGuest" class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
                 <div class="flex items-center justify-between mb-2">
                   <label class="flex items-center gap-2 cursor-pointer">
@@ -593,13 +611,43 @@
                 </div>
               </div>
 
-              <div v-if="loyaltyDiscount > 0" class="flex justify-between text-sm text-green-600 dark:text-green-400">
-                <span>Giảm giá từ điểm thưởng</span>
-                <span>-{{ formatPrice(loyaltyDiscount) }}</span>
-              </div>
-              <div v-if="couponDiscount > 0" class="flex justify-between text-sm text-green-600 dark:text-green-400">
-                <span>Giảm giá từ mã giảm giá</span>
-                <span>-{{ formatPrice(couponDiscount) }}</span>
+                <!-- Loyalty Points Discount -->
+                <div v-if="loyaltyDiscount > 0" class="flex justify-between text-sm text-green-600 dark:text-green-400">
+                  <span class="flex items-center gap-2">
+                    <i class="material-icons text-xs">stars</i>
+                    Giảm giá từ điểm thưởng
+                  </span>
+                  <span class="font-semibold">-{{ formatPrice(loyaltyDiscount) }}</span>
+                </div>
+
+                <!-- Amount After Discount -->
+                <div v-if="(appliedCoupon && couponDiscountAmount > 0) || loyaltyDiscount > 0" class="flex justify-between text-xs text-gray-500 dark:text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <span class="italic">Sau giảm giá</span>
+                  <span class="italic font-medium">{{ formatPrice((cart?.subTotal || 0) - couponDiscountAmount - loyaltyDiscount) }}</span>
+                </div>
+
+                <!-- VAT (10%) -->
+                <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                  <span class="flex items-center gap-2">
+                    <i class="material-icons text-xs">receipt</i>
+                    VAT (10%)
+                  </span>
+                  <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatPrice(taxAmount) }}</span>
+                </div>
+
+                <!-- Shipping Fee -->
+                <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                  <span class="flex items-center gap-2">
+                    <i class="material-icons text-xs">local_shipping</i>
+                    Phí vận chuyển
+                  </span>
+                  <span :class="[
+                    'font-semibold',
+                    shippingFee === 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'
+                  ]">
+                    {{ shippingFee === 0 ? 'Miễn phí' : formatPrice(shippingFee) }}
+                  </span>
+                </div>
               </div>
 
               <div class="border-t-2 border-gray-300 dark:border-gray-600 pt-4 mt-4">
@@ -669,9 +717,19 @@
             <input
               v-model="newAddress.phone"
               type="tel"
-              class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
+              :class="[
+                newAddress.phone && !validateVietnamesePhone(newAddress.phone)
+                  ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
+                  : 'border-gray-200 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500'
+              ]"
               placeholder="0912345678"
+              @blur="newAddress.phone = formatPhoneNumber(newAddress.phone)"
             />
+            <p v-if="newAddress.phone && !validateVietnamesePhone(newAddress.phone)" class="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
+              <i class="material-icons text-xs">error</i>
+              Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)
+            </p>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Địa chỉ *</label>
@@ -718,7 +776,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -726,15 +783,23 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
+import { useCouponStore } from '@/stores/coupon';
 import { storeToRefs } from 'pinia';
 import toastService from '@/utils/toastService';
+import { API_ENDPOINTS } from '@/config/api';
+import logger from '@/utils/logger';
 import axios from 'axios';
 import userService from '@/services/userService';
 import * as guestCartService from '@/services/guestCartService';
+import couponService from '@/services/couponService';
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue';
+import { validateVietnamesePhone, formatPhoneNumber, validateAddress } from '@/utils/validators';
+import { formatPrice } from '@/utils/formatters';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const loyaltyStore = useLoyaltyStore();
+const couponStore = useCouponStore();
 const { currentBalance } = storeToRefs(loyaltyStore);
 
 // Check if user is authenticated
@@ -756,9 +821,15 @@ const addresses = ref([]);
 const selectedAddress = ref(null);
 const paymentMethod = ref('cod');
 const notes = ref('');
-const couponCode = ref('');
-const couponDiscount = ref(0);
 const applyingCoupon = ref(false);
+
+// Use coupon store state
+const couponCode = computed({
+  get: () => couponStore.couponCode,
+  set: (value) => { couponStore.couponCode = value; }
+});
+const couponError = computed(() => couponStore.couponError);
+const appliedCoupon = computed(() => couponStore.appliedCoupon);
 const shippingFee = ref(30000);
 const showAddressForm = ref(false);
 const newAddress = ref({
@@ -790,12 +861,35 @@ const loyaltyDiscount = computed(() => {
   return pointsToUse.value * 1000; // 1 point = 1000 VND
 });
 
+const couponDiscountAmount = computed(() => {
+  if (!cart.value || !appliedCoupon.value) return 0;
+  return couponService.calculateDiscount(appliedCoupon.value, cart.value.subTotal);
+});
+
+// Calculate VAT (10% on amount after discount)
+const taxAmount = computed(() => {
+  if (!cart.value) return 0;
+  const subTotalValue = Number(cart.value.subTotal) || 0;
+  const amountAfterDiscount = subTotalValue - Number(couponDiscountAmount.value) - Number(loyaltyDiscount.value);
+  // VAT 10% on amount after discount
+  return Math.max(0, amountAfterDiscount * 0.10);
+});
+
 const totalAmount = computed(() => {
   if (!cart.value) return 0;
   // Ensure subTotal is a number
   const subTotalValue = Number(cart.value.subTotal) || 0;
-  const subtotal = subTotalValue + Number(shippingFee.value) - Number(loyaltyDiscount.value) - Number(couponDiscount.value);
-  return Math.max(subtotal, 0);
+  
+  // Backend logic:
+  // 1. subtotal (giá sản phẩm)
+  // 2. amountAfterDiscount = subtotal - couponDiscount - loyaltyDiscount
+  // 3. taxAmount = amountAfterDiscount * 0.10 (VAT 10%)
+  // 4. total = amountAfterDiscount + shippingFee + taxAmount
+  
+  const amountAfterDiscount = subTotalValue - Number(couponDiscountAmount.value) - Number(loyaltyDiscount.value);
+  const total = amountAfterDiscount + Number(shippingFee.value) + Number(taxAmount.value);
+  
+  return Math.max(total, 0);
 });
 
 const selectedAddressData = computed(() => {
@@ -859,13 +953,13 @@ const fetchData = async () => {
           selectedAddress.value = addresses.value[0].id;
         }
       } catch (error) {
-        console.error('Error fetching addresses:', error);
+        logger.error('Error fetching addresses:', error);
         addresses.value = [];
         // Không throw error vì user có thể thêm địa chỉ mới
       }
     }
   } catch (error) {
-    console.error('Error fetching data:', error);
+    logger.error('Error fetching data:', error);
     toastService.error('Lỗi',error.response?.data?.message || 'Không thể tải thông tin');
     
     // Redirect to cart if error
@@ -882,13 +976,31 @@ const applyCoupon = async () => {
   
   try {
     applyingCoupon.value = true;
-    // Validate coupon code (có thể gọi API để validate)
-    // Tạm thời chấp nhận mọi mã, backend sẽ validate
-    toastService.success('Thành công','Mã giảm giá sẽ được áp dụng khi đặt hàng');
-    // Note: Backend sẽ tính discount, frontend chỉ hiển thị thông báo
+    couponStore.setError('');
+    
+    // Validate coupon code from API
+    const coupon = await couponService.validateCoupon(
+      couponCode.value.trim(),
+      cart.value.subTotal
+    );
+    
+    // Store coupon info in store
+    couponStore.setCoupon(couponCode.value.trim(), coupon);
+    
+    // Calculate discount
+    const discount = couponService.calculateDiscount(coupon, cart.value.subTotal);
+    
+    toastService.success(
+      'Thành công',
+      `Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${couponService.formatCurrency(discount)}`
+    );
+    
+    logger.log('Coupon applied:', coupon.code, 'Discount:', discount);
   } catch (error) {
-    console.error('Error applying coupon:', error);
-    toastService.error('Lỗi','Không thể áp dụng mã giảm giá');
+    logger.error('Error applying coupon:', error);
+    couponStore.setError(error.message || 'Không thể áp dụng mã giảm giá');
+    toastService.error('Lỗi', couponStore.couponError);
+    couponStore.clearCoupon();
   } finally {
     applyingCoupon.value = false;
   }
@@ -903,6 +1015,29 @@ const saveAddress = async () => {
     !newAddress.value.city
   ) {
     toastService.warning('Cảnh báo','Vui lòng điền đầy đủ các trường bắt buộc');
+    return;
+  }
+
+  // Validate phone number
+  if (!validateVietnamesePhone(newAddress.value.phone)) {
+    toastService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
+    return;
+  }
+
+  // Validate address format
+  if (!validateAddress(newAddress.value.line1)) {
+    toastService.error('Lỗi', 'Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)');
+    return;
+  }
+
+  // Validate district and city
+  if (!validateAddress(newAddress.value.district)) {
+    toastService.error('Lỗi', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
+    return;
+  }
+
+  if (!validateAddress(newAddress.value.city)) {
+    toastService.error('Lỗi', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
     return;
   }
 
@@ -925,7 +1060,7 @@ const saveAddress = async () => {
 
     toastService.success('Thành công','Đã thêm địa chỉ mới');
   } catch (error) {
-    console.error('Error saving address:', error);
+    logger.error('Error saving address:', error);
     toastService.error('Lỗi','Không thể thêm địa chỉ');
   }
 };
@@ -962,7 +1097,7 @@ const handleCheckout = async () => {
       };
 
       const response = await axios.post(
-        'http://localhost:8080/api/guest/checkout',
+        API_ENDPOINTS.CART.GUEST_CHECKOUT,
         guestCheckoutData
       );
 
@@ -971,9 +1106,15 @@ const handleCheckout = async () => {
       // Clear guest cart
       guestCartService.clearGuestCart();
 
+      // Clear coupon after successful checkout
+      couponStore.clearCoupon();
+      logger.log('Coupon cleared after successful guest checkout');
+
       // Redirect to home or show success page
       setTimeout(() => {
-        router.push({ name: 'Home' });
+        router.push({ name: 'home' }).catch(err => {
+          logger.error('Navigation error after guest checkout:', err);
+        });
       }, 1500);
     } else {
       // Authenticated user checkout
@@ -992,32 +1133,32 @@ const handleCheckout = async () => {
       // Clear user cart sau khi checkout thành công
       try {
         await userService.clearCart();
-        console.log('✅ Cart đã được xóa sau khi thanh toán');
+        logger.log('✅ Cart đã được xóa sau khi thanh toán');
       } catch (error) {
-        console.warn('⚠️ Không thể xóa cart (có thể đã được xóa tự động):', error);
+        logger.warn('⚠️ Không thể xóa cart (có thể đã được xóa tự động):', error);
         // Không hiển thị lỗi cho user vì backend đã xóa cart rồi
       }
 
+      // Clear coupon after successful checkout
+      couponStore.clearCoupon();
+      logger.log('Coupon cleared after successful checkout');
+
       // Redirect to orders
       setTimeout(() => {
-        router.push({ name: 'UserOrders' });
+        router.push({ name: 'UserOrders' }).catch(err => {
+          logger.error('Navigation error after checkout:', err);
+        });
       }, 1500);
     }
   } catch (error) {
-    console.error('Error during checkout:', error);
+    logger.error('Error during checkout:', error);
     toastService.error('Lỗi',error.message || error.response?.data?.message || 'Không thể đặt hàng');
   } finally {
     processing.value = false;
   }
 };
 
-const formatPrice = (price) => {
-  const numPrice = Number(price) || 0;
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(numPrice);
-};
+// Format function is now imported from @/utils/formatters
 
 // Watch points input
 watch(pointsToUse, (newVal) => {
@@ -1029,21 +1170,61 @@ watch(pointsToUse, (newVal) => {
   }
 });
 
+// Watch cart subtotal changes - revalidate coupon if needed
+watch(() => cart.value?.subTotal, async (newSubtotal, oldSubtotal) => {
+  // Only revalidate if subtotal actually changed and coupon is applied
+  if (appliedCoupon.value && newSubtotal && newSubtotal !== oldSubtotal) {
+    try {
+      const coupon = await couponService.validateCoupon(
+        couponCode.value,
+        newSubtotal
+      );
+      // Update coupon in store if validation passes
+      couponStore.setCoupon(couponCode.value, coupon);
+      logger.log('Coupon revalidated after subtotal change');
+    } catch (error) {
+      // If validation fails, clear coupon
+      logger.warn('Coupon validation failed after subtotal change:', error);
+      couponStore.clearCoupon();
+      toastService.warning('Cảnh báo', 'Mã giảm giá không còn hợp lệ với giá trị đơn hàng mới');
+    }
+  }
+}, { immediate: false });
+
 // Lifecycle
 onMounted(async () => {
   try {
+    // Initialize coupon store and load from storage
+    couponStore.init();
+    
     await fetchData();
+    
+    // Revalidate coupon if it exists and cart is loaded
+    if (appliedCoupon.value && cart.value?.subTotal) {
+      try {
+        const coupon = await couponService.validateCoupon(
+          couponCode.value,
+          cart.value.subTotal
+        );
+        couponStore.setCoupon(couponCode.value, coupon);
+        logger.log('Coupon revalidated on checkout page load');
+      } catch (error) {
+        logger.warn('Coupon validation failed on checkout page load:', error);
+        couponStore.clearCoupon();
+      }
+    }
+    
     // Load loyalty balance (only for authenticated users)
     if (!isGuest.value && authStore.isAuthenticated) {
       try {
         await loyaltyStore.fetchBalance();
       } catch (error) {
-        console.warn('Could not fetch loyalty balance:', error);
+        logger.warn('Could not fetch loyalty balance:', error);
         // Không block checkout nếu không load được balance
       }
     }
   } catch (error) {
-    console.error('Error in onMounted:', error);
+    logger.error('Error in onMounted:', error);
   }
 });
 </script>

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -163,9 +164,9 @@ public class EmailService {
                     MimeMessage message = mailSender.createMimeMessage();
                     MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
                     
-                    helper.setFrom(fromEmail);
-                    helper.setTo(to);
-                    helper.setSubject(subject);
+                    helper.setFrom(Objects.requireNonNull(fromEmail));
+                    helper.setTo(Objects.requireNonNull(to));
+                    helper.setSubject(Objects.requireNonNull(subject));
                     helper.setText(body, true);
                     
                     mailSender.send(message);
@@ -210,9 +211,9 @@ public class EmailService {
         try {
             MimeMessage msg = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, "UTF-8");
-            helper.setTo(user.getEmail());
-            helper.setSubject(subject);
-            helper.setText(html, true);
+            helper.setTo(Objects.requireNonNull(user.getEmail()));
+            helper.setSubject(Objects.requireNonNull(subject));
+            helper.setText(Objects.requireNonNull(html), true);
             mailSender.send(msg);
             log.info("✅ Reset password email sent to {}", user.getEmail());
         } catch (MessagingException e) {

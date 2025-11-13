@@ -88,6 +88,8 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import toastService from '@/utils/toastService'
+import { API_ENDPOINTS, buildApiUrl } from '@/config/api'
+import logger from '@/utils/logger'
 
 const router = useRouter()
 const route = useRoute()
@@ -143,14 +145,14 @@ const handleReset = async () => {
 
   try {
     // ✅ gửi đúng field BE mong đợi: "newPassword"
-    await axios.post(`${import.meta.env.VITE_API_URL}/auth/reset-password`, {
+    await axios.post(buildApiUrl(API_ENDPOINTS.AUTH.RESET_PASSWORD), {
       token,
       newPassword: form.value.password,
     })
     toastService.success('Thành công', 'Đặt lại mật khẩu thành công!')
     router.push('/login')
   } catch (err) {
-    console.error(err)
+    logger.error('Error resetting password:', err)
     toastService.error('Lỗi',
       err.response?.data?.message ||
         'Liên kết đã hết hạn hoặc không hợp lệ'

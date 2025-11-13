@@ -154,6 +154,8 @@
               :src="review.productImage" 
               :alt="review.productName"
               class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+              loading="lazy"
+              decoding="async"
               @error="handleImageError"
             />
             <div>
@@ -209,6 +211,8 @@
                 :src="image" 
                 :alt="`Review image ${index + 1}`"
                 class="w-20 h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
+                loading="lazy"
+                decoding="async"
                 @error="handleImageError"
               />
             </div>
@@ -390,6 +394,8 @@ import { useAdminStore } from '@/stores/admin'
 import toastService from '@/utils/toastService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
+import logger from '@/utils/logger'
+import { formatDate } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -488,11 +494,11 @@ const loadReviews = async () => {
     if (reviews.value.length === 0) {
       toastService.info('Thông tin','Chưa có đánh giá nào')
     } else {
-      console.log('✅ Reviews loaded from API:', reviews.value.length, 'reviews')
+      logger.log('✅ Reviews loaded from API:', reviews.value.length, 'reviews')
     }
   } catch (error) {
-    console.error('Error loading reviews:', error)
-    toastService.error('Lỗi','Lỗi khi tải danh sách đánh giá: ' + (error.message || 'Không thể kết nối đến server'))
+    logger.error('Error loading reviews:', error)
+    toastService.apiError(error, 'Lỗi khi tải danh sách đánh giá')
     reviews.value = []
     totalReviews.value = 0
   } finally {
@@ -506,8 +512,8 @@ const approveReview = async (review) => {
     review.isApproved = true
     toastService.success('Thành công','Đã duyệt đánh giá thành công!')
   } catch (error) {
-    console.error('Error approving review:', error)
-    toastService.error('Lỗi','Lỗi khi duyệt đánh giá')
+    logger.error('Error approving review:', error)
+    toastService.apiError(error, 'Lỗi khi duyệt đánh giá')
   }
 }
 
@@ -532,8 +538,8 @@ const saveReply = async () => {
     closeReplyModal()
     toastService.success('Thành công','Phản hồi đã được gửi thành công!')
   } catch (error) {
-    console.error('Error saving reply:', error)
-    toastService.error('Lỗi','Lỗi khi gửi phản hồi')
+    logger.error('Error saving reply:', error)
+    toastService.apiError(error, 'Lỗi khi gửi phản hồi')
   } finally {
     saving.value = false
   }
@@ -556,8 +562,8 @@ const deleteReview = async () => {
     reviewToDelete.value = null
     toastService.success('Thành công','Xóa đánh giá thành công!')
   } catch (error) {
-    console.error('Error deleting review:', error)
-    toastService.error('Lỗi','Lỗi khi xóa đánh giá')
+    logger.error('Error deleting review:', error)
+    toastService.apiError(error, 'Lỗi khi xóa đánh giá')
   } finally {
     deleting.value = false
   }
@@ -587,17 +593,7 @@ const resetFilters = () => {
   loadReviews() // Gọi lại loadReviews sau khi reset
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return '—'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('vi-VN', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+// formatDate đã được import từ @/utils/formatters
 
 const exportReviews = () => {
   try {
@@ -623,8 +619,8 @@ const exportReviews = () => {
     downloadCsv(exportData, 'reviews.csv')
     toastService.success('Thành công','Xuất CSV thành công!')
   } catch (error) {
-    console.error('Export error:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
+    logger.error('Export error:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 

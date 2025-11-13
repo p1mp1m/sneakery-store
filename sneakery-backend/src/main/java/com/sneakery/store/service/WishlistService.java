@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -53,11 +54,11 @@ public class WishlistService {
         log.info("Adding product {} to wishlist for user {}", productId, userId);
         
         // Kiểm tra user tồn tại
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
         
         // Kiểm tra product tồn tại và active
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findById(Objects.requireNonNull(productId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
         
         if (!product.getIsActive()) {
@@ -75,7 +76,7 @@ public class WishlistService {
                 .product(product)
                 .build();
         
-        wishlist = wishlistRepository.save(wishlist);
+        wishlist = wishlistRepository.save(Objects.requireNonNull(wishlist));
         log.info("Added product {} to wishlist successfully", productId);
         
         return convertToDto(wishlist);
@@ -121,7 +122,7 @@ public class WishlistService {
         log.info("Clearing wishlist for user {}", userId);
         
         List<Wishlist> wishlists = wishlistRepository.findByUserIdWithDetails(userId);
-        wishlistRepository.deleteAll(wishlists);
+        wishlistRepository.deleteAll(Objects.requireNonNull(wishlists));
         
         log.info("Cleared {} items from wishlist", wishlists.size());
     }

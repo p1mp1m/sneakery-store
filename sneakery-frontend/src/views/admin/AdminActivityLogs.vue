@@ -182,8 +182,14 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải nhật ký hoạt động...</p>
+        <div class="space-y-4" role="status" aria-live="polite">
+          <LoadingSkeleton
+            v-for="n in 5"
+            :key="n"
+            type="list"
+          />
+          <span class="sr-only">Đang tải nhật ký hoạt động</span>
+        </div>
       </div>
 
       <!-- Empty State -->
@@ -431,6 +437,9 @@ import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
+import logger from '@/utils/logger'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import { formatDate, formatDateTime } from '@/utils/formatters'
 
 // Stores
 const adminStore = useAdminStore()
@@ -539,12 +548,12 @@ const paginatedLogs = computed(() => {
 const fetchLogs = async () => {
   loading.value = true
   try {
-    console.log('🔍 Fetching activity logs...')
+    logger.log('🔍 Fetching activity logs...')
     const result = await adminStore.fetchActivityLogs(currentPage.value, pageSize.value, {})
-    console.log('📦 API Result:', result)
+    logger.log('📦 API Result:', result)
     
     const activityLogDtos = result.content || []
-    console.log('📊 Activity logs received:', activityLogDtos.length, activityLogDtos)
+    logger.log('📊 Activity logs received:', activityLogDtos.length, activityLogDtos)
     
     // Map ActivityLogDto to frontend format
     logs.value = activityLogDtos.map(dto => ({
@@ -564,11 +573,11 @@ const fetchLogs = async () => {
       createdAt: dto.createdAt
     }))
     
-    console.log('✅ Logs mapped:', logs.value.length, 'items')
-    console.log('📊 Logs sample:', logs.value.slice(0, 3))
+    logger.log('✅ Logs mapped:', logs.value.length, 'items')
+    logger.log('📊 Logs sample:', logs.value.slice(0, 3))
   } catch (error) {
-    console.error('❌ Error fetching logs:', error)
-    toastService.error('Lỗi','Không thể tải nhật ký hoạt động: ' + (error.message || 'Unknown error'))
+    logger.error('❌ Error fetching logs:', error)
+    toastService.apiError(error, 'Không thể tải nhật ký hoạt động')
   } finally {
     loading.value = false
   }
@@ -660,8 +669,8 @@ const exportLogs = (format) => {
       toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
-    console.error('Export error:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
+    logger.error('Export error:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 
@@ -747,13 +756,7 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('vi-VN').format(num)
 }
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('vi-VN')
-}
-
-const formatDateTime = (dateString) => {
-  return new Date(dateString).toLocaleString('vi-VN')
-}
+// formatDate và formatDateTime đã được import từ @/utils/formatters
 
 // Lifecycle
 onMounted(() => {

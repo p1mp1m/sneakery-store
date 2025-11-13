@@ -149,8 +149,14 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải danh sách đơn hàng...</p>
+      <div class="space-y-4" role="status" aria-live="polite">
+        <LoadingSkeleton
+          v-for="n in 5"
+          :key="n"
+          type="list"
+        />
+        <span class="sr-only">Đang tải danh sách đơn hàng</span>
+      </div>
     </div>
     
     <!-- Empty State -->
@@ -244,7 +250,7 @@
                 <select 
                   :value="getNormalizedStatusValue(order.status)"
                   @change="(e) => confirmStatusChange(order, e)"
-                  @input="(e) => { console.log('Input event:', e.target.value) }"
+                  @input="(e) => { logger.log('Input event:', e.target.value) }"
                   class="px-2 py-1 text-xs font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors cursor-pointer"
                   :class="getStatusSelectClass(getNormalizedStatusValue(order.status))"
                 >
@@ -266,6 +272,7 @@
                     @click="viewOrderDetail(order)" 
                     class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
                     title="Xem chi tiết"
+                    aria-label="Xem chi tiết đơn hàng"
                   >
                     <i class="material-icons text-base">visibility</i>
                   </button>
@@ -273,6 +280,7 @@
                     @click="handlePrintInvoice(order)" 
                     class="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors" 
                     title="In hóa đơn"
+                    aria-label="In hóa đơn đơn hàng"
                   >
                     <i class="material-icons text-base">print</i>
                   </button>
@@ -281,6 +289,7 @@
                     @click="handleCancelOrder(order)" 
                     class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
                     title="Hủy đơn hàng"
+                    aria-label="Hủy đơn hàng"
                   >
                     <i class="material-icons text-base">cancel</i>
                   </button>
@@ -403,7 +412,14 @@
                   <tr v-for="(item, index) in (selectedOrder.orderDetails || [])" :key="index">
                     <td>
                       <div class="product-info">
-                        <img v-if="item.imageUrl" :src="item.imageUrl" :alt="item.productName" class="product-image" />
+                        <img 
+                          v-if="item.imageUrl" 
+                          :src="item.imageUrl" 
+                          :alt="item.productName" 
+                          class="product-image" 
+                          loading="lazy" 
+                          decoding="async" 
+                        />
                         <div>
                           <div class="product-name">{{ item.productName }}</div>
                           <div class="product-brand">{{ item.brandName }}</div>
@@ -517,6 +533,9 @@ import * as XLSX from 'xlsx'
 import { printInvoice } from '@/utils/pdfGenerator'
 import { downloadCsv, prepareOrdersForExport } from '@/utils/exportHelpers'
 import AdminService from '@/services/adminService'
+import logger from '@/utils/logger'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
+import { formatPrice, formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
 
 const router = useRouter()
 const adminStore = useAdminStore()
@@ -605,21 +624,15 @@ const bulkUpdateStatus = async () => {
       await adminStore.updateOrderStatus(orderId, bulkStatus.value)
     }
     
-    toastService.success('Thành công',{
-      message: `Đã cập nhật ${selectedOrders.value.length} đơn hàng thành công!`,
-      duration: 3000
-    })
+    toastService.success('Thành công', `Đã cập nhật ${selectedOrders.value.length} đơn hàng thành công!`, { duration: 3000 })
     
     // Clear selection and refresh list
     selectedOrders.value = []
     bulkStatus.value = ''
     await fetchOrders()
   } catch (error) {
-    console.error('Lỗi khi cập nhật hàng loạt:', error)
-    toastService.error('Lỗi',{
-      message: 'Có lỗi xảy ra khi cập nhật đơn hàng!',
-      duration: 3000
-    })
+    logger.error('Lỗi khi cập nhật hàng loạt:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi cập nhật đơn hàng')
   } finally {
     loading.value = false
   }
@@ -652,8 +665,8 @@ const fetchOrders = async () => {
     // Calculate stats
     calculateStats()
   } catch (error) {
-    console.error('Lỗi khi tải danh sách đơn hàng:', error)
-    toastService.error('Lỗi','Không thể tải danh sách đơn hàng.')
+    logger.error('Lỗi khi tải danh sách đơn hàng:', error)
+    toastService.apiError(error, 'Không thể tải danh sách đơn hàng')
   } finally {
     loading.value = false
   }
@@ -728,16 +741,10 @@ const exportToExcel = () => {
     // Download file
     XLSX.writeFile(workbook, filename)
     
-    toastService.success('Thành công',{
-      message: `Đã export ${exportData.length} đơn hàng thành công!`,
-      duration: 3000
-    })
+    toastService.success('Thành công', `Đã export ${exportData.length} đơn hàng thành công!`, { duration: 3000 })
   } catch (error) {
-    console.error('Lỗi khi export Excel:', error)
-    toastService.error('Lỗi',{
-      message: 'Không thể export dữ liệu. Vui lòng thử lại!',
-      duration: 3000
-    })
+    logger.error('Lỗi khi export Excel:', error)
+    toastService.apiError(error, 'Không thể export dữ liệu')
   }
 }
 
@@ -746,7 +753,7 @@ const confirmStatusChange = (order, event) => {
     // Get the old and new status
     const select = event.target
     if (!select || !select.value) {
-      console.error('❌ Invalid select element or value')
+      logger.error('❌ Invalid select element or value')
       return
     }
     
@@ -757,7 +764,7 @@ const confirmStatusChange = (order, event) => {
     oldStatus.value = currentNormalizedStatus
     newStatus.value = selectedStatus
     
-    console.log('🔄 Status change triggered:', {
+    logger.log('🔄 Status change triggered:', {
       orderId: order.id,
       currentStatus: order.status,
       normalizedCurrent: currentNormalizedStatus,
@@ -769,7 +776,7 @@ const confirmStatusChange = (order, event) => {
     
     // If no change, do nothing
     if (oldStatus.value === newStatus.value) {
-      console.log('⚠️ No status change, ignoring')
+      logger.log('⚠️ No status change, ignoring')
       return
     }
     
@@ -780,12 +787,12 @@ const confirmStatusChange = (order, event) => {
     }
     
     // Show confirmation dialog
-    console.log('✅ Setting showStatusConfirm to true')
+    logger.log('✅ Setting showStatusConfirm to true')
     showStatusConfirm.value = true
-    console.log('✅ showStatusConfirm after setting:', showStatusConfirm.value)
+    logger.log('✅ showStatusConfirm after setting:', showStatusConfirm.value)
   } catch (error) {
-    console.error('❌ Error in confirmStatusChange:', error)
-    toastService.error('Lỗi','Có lỗi xảy ra khi thay đổi trạng thái')
+    logger.error('❌ Error in confirmStatusChange:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi thay đổi trạng thái')
   }
 }
 
@@ -799,7 +806,7 @@ const handleStatusUpdate = async () => {
     // Gọi API để cập nhật
     const updatedOrder = await adminStore.updateOrderStatus(orderId, newStatus.value)
     
-    console.log('✅ Cập nhật thành công:', updatedOrder)
+    logger.log('✅ Cập nhật thành công:', updatedOrder)
     
     // Update order trong danh sách orders.value
     const orderIndex = orders.value.findIndex(o => o.id === orderId)
@@ -815,22 +822,14 @@ const handleStatusUpdate = async () => {
     // Refresh danh sách đơn hàng để đảm bảo dữ liệu đồng bộ với backend
     await fetchOrders()
     
-    toastService.success('Thành công',{
-      message: `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`,
-      duration: 3000
-    })
+    toastService.success('Thành công', `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`, { duration: 3000 })
     
     showStatusConfirm.value = false
   } catch (error) {
-    console.error('❌ Lỗi khi cập nhật trạng thái:', error)
-    console.error('Error details:', error.response || error.message)
+    logger.error('❌ Lỗi khi cập nhật trạng thái:', error)
+    logger.error('Error details:', error.response || error.message)
     
-    // Hiển thị lỗi chi tiết hơn
-    const errorMessage = error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái. Vui lòng thử lại!'
-    toastService.error('Lỗi',{
-      message: `Lỗi: ${errorMessage}`,
-      duration: 5000
-    })
+    toastService.apiError(error, 'Không thể cập nhật trạng thái đơn hàng')
     
     // Restore old status on error
     const orderIndex = orders.value.findIndex(o => o.id === orderId)
@@ -926,8 +925,8 @@ const handleCancelOrder = async (order) => {
     toastService.success('Thành công','Đã hủy đơn hàng thành công!')
     await fetchOrders()
   } catch (error) {
-    console.error('Lỗi khi hủy đơn hàng:', error)
-    toastService.error('Lỗi','Không thể hủy đơn hàng. Vui lòng thử lại!')
+    logger.error('Lỗi khi hủy đơn hàng:', error)
+    toastService.apiError(error, 'Không thể hủy đơn hàng')
   }
 }
 
@@ -941,8 +940,8 @@ const exportOrderToPDF = (order) => {
     handlePrintInvoice(order)
     toastService.success('Thành công','Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
-    console.error('Error exporting to PDF:', error)
-    toastService.error('Lỗi','Không thể export PDF. Vui lòng thử lại!')
+    logger.error('Error exporting to PDF:', error)
+    toastService.apiError(error, 'Không thể export PDF')
   }
 }
 
@@ -960,8 +959,8 @@ const handlePrintInvoice = (order) => {
     printInvoice(order)
     toastService.success('Thành công','Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
-    console.error('Error printing invoice:', error)
-    toastService.error('Lỗi','Không thể in hóa đơn. Vui lòng thử lại!')
+    logger.error('Error printing invoice:', error)
+    toastService.apiError(error, 'Không thể in hóa đơn')
   }
 }
 
@@ -970,24 +969,7 @@ const changePage = (page) => {
   fetchOrders()
 }
 
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
-}
-
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('vi-VN')
-}
-
-const formatDateTime = (date) => {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleString('vi-VN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+// formatCurrency, formatDate, formatDateTime đã được import từ @/utils/formatters
 
 const getPaymentMethodLabel = (method) => {
   const labels = {

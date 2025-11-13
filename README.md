@@ -91,6 +91,14 @@ mvn clean install
 
 ### 🎨 **Bước 4: Cài đặt Frontend**
 
+1. **Copy file cấu hình (tùy chọn):**
+```bash
+# Windows (PowerShell)
+Copy-Item sneakery-frontend\.env.example sneakery-frontend\.env
+```
+> **💡 Lưu ý:** Trong development mode, Vite proxy tự động xử lý `/api` requests, nên không cần cấu hình `.env`. Chỉ cần khi deploy production.
+
+2. **Cài đặt dependencies:**
 ```bash
 cd sneakery-frontend
 npm install
@@ -146,14 +154,30 @@ Mật khẩu: password
 - ✅ Kiểm tra SQL Server đã mở chưa
 - ✅ Kiểm tra password trong `application.properties`
 - ✅ Kiểm tra đã chạy file SQL tạo database chưa
+- ✅ Kiểm tra Java version: `java -version` (phải là Java 17+)
+- ✅ Kiểm tra Maven version: `mvn -version`
 
 ### ❌ Port 8080 đã được sử dụng
 - Thêm vào `application.properties`: `server.port=8081`
+- Hoặc đóng ứng dụng đang dùng port 8080
 
 ### ❌ Frontend không kết nối được Backend
 - ✅ Chạy Backend trước (phải thấy "Started")
 - ✅ Kiểm tra http://localhost:8080/api hoạt động
+- ✅ Kiểm tra CORS settings trong Backend
 - ✅ Xóa cache browser và F5 lại
+- ✅ Kiểm tra console browser có lỗi gì không
+
+### ❌ Lỗi "Cannot connect to database"
+- ✅ Kiểm tra SQL Server đang chạy
+- ✅ Kiểm tra connection string trong `application.properties`
+- ✅ Kiểm tra username/password SQL Server
+- ✅ Kiểm tra database `sneakery_db` đã được tạo chưa
+
+### ❌ Lỗi "JWT token invalid"
+- ✅ Kiểm tra JWT secret trong `application.properties`
+- ✅ Đăng nhập lại để lấy token mới
+- ✅ Kiểm tra token có hết hạn không (thường là 24 giờ)
 
 ### ❌ Lỗi npm install
 ```bash
@@ -168,19 +192,97 @@ mvn clean
 mvn install
 ```
 
+### ❌ Swagger UI không hiển thị
+- ✅ Kiểm tra Backend đã chạy chưa
+- ✅ Truy cập: http://localhost:8080/swagger-ui.html
+- ✅ Kiểm tra dependency `springdoc-openapi` trong `pom.xml`
+
 ---
 
 ## 📊 Kiểm tra hệ thống
 
 - 🌐 **Frontend:** http://localhost:5173
 - 🔧 **Backend API:** http://localhost:8080/api
-- 📖 **API Docs:** http://localhost:8080/swagger-ui.html
+- 📖 **Swagger UI (API Docs):** http://localhost:8080/swagger-ui.html
+- 📄 **OpenAPI JSON:** http://localhost:8080/v3/api-docs
 
 ---
 
 ## 📚 Tài liệu cho Developers
 
-Nếu bạn là developer trong team, xem thêm:
+### 🏗️ Kiến trúc hệ thống
+
+```
+┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+│   Frontend  │  ────►  │   Backend   │  ────►  │   Database  │
+│  (Vue.js)   │         │ (Spring Boot)│         │ (SQL Server)│
+│  Port 5173  │         │  Port 8080  │         │  Port 1433  │
+└─────────────┘         └─────────────┘         └─────────────┘
+```
+
+### 📖 API Documentation
+
+- **Swagger UI:** http://localhost:8080/swagger-ui.html
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
+- **Tất cả API endpoints đã có JavaDoc tiếng Việt** trong source code
+
+### 📝 Code Documentation
+
+- **JavaDoc:** Tất cả controllers và services đã có JavaDoc tiếng Việt chi tiết
+- **Swagger Annotations:** Tất cả controllers đã có Swagger annotations với mô tả đầy đủ
+- **Code Comments:** Code được comment rõ ràng, dễ hiểu cho người mới
+
+### 🔍 Cấu trúc Project
+
+```
+sneakery-store/
+├── sneakery-backend/          # Backend (Spring Boot)
+│   ├── src/main/java/
+│   │   └── com/sneakery/store/
+│   │       ├── controller/   # REST Controllers
+│   │       ├── service/       # Business Logic
+│   │       ├── repository/   # Data Access
+│   │       ├── entity/       # Database Entities
+│   │       ├── dto/          # Data Transfer Objects
+│   │       └── config/       # Configuration
+│   └── src/main/resources/
+│       └── application.properties
+├── sneakery-frontend/         # Frontend (Vue.js)
+└── sneakery-database/         # Database Scripts
+```
+
+### 🧪 Testing
+
+- **Unit Tests:** (Đang phát triển)
+- **Integration Tests:** (Đang phát triển)
+- **Test Coverage:** Mục tiêu > 70%
+
+### 🔐 Security
+
+- **JWT Authentication:** Tất cả API endpoints yêu cầu đăng nhập (trừ public endpoints)
+- **Role-based Access Control:** ADMIN, MODERATOR, USER roles
+- **Input Validation:** Tất cả DTOs đã có validation annotations
+
+### ⚡ Performance
+
+- **Caching:** Brands, Categories, Products được cache với Caffeine
+- **Database Indexes:** Đã tối ưu với 20+ composite indexes
+- **Query Optimization:** Sử dụng eager loading để tránh N+1 queries
+
+### 📋 Coding Standards
+
+- **Java Code Style:** Tuân thủ Java conventions
+- **Naming Conventions:** 
+  - Controllers: `*Controller`
+  - Services: `*Service`
+  - DTOs: `*Dto`
+  - Entities: PascalCase (không có suffix)
+
+### 🚀 Deployment
+
+- **Backend:** Spring Boot JAR file
+- **Frontend:** Build với `npm run build`
+- **Database:** SQL Server migration scripts
 
 > ⚠️ **Quy tắc:** KHÔNG BAO GIỜ commit trực tiếp vào `main`. Luôn tạo branch mới!
 
