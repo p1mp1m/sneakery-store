@@ -3,7 +3,7 @@
     <div class="max-w-[1920px] mx-auto w-full p-4 md:p-6 space-y-4 md:space-y-6">
       <!-- Premium Header with Gradient -->
       <div class="relative overflow-hidden p-6 bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 rounded-2xl shadow-2xl border border-purple-200 dark:border-purple-800">
-        <div class="absolute inset-0 opacity-10">
+       <div class="absolute inset-0 opacity-10 pointer-events-none">
           <div class="absolute inset-0" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px);"></div>
         </div>
         <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -92,7 +92,7 @@
           <!-- Enhanced Search Section -->
           <div class="space-y-3 mb-4 md:mb-6">
             <div class="relative group">
-              <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur-xl"></div>
+               <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur-xl pointer-events-none"></div>
               <i class="material-icons absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 group-focus-within:text-purple-500 transition-colors">search</i>
               <input
                 v-model="searchQuery"
@@ -366,24 +366,6 @@
             </transition-group>
           </div>
 
-          <!-- Cart Summary with Premium Design -->
-          <div class="space-y-1.5 py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-gray-600 dark:text-gray-400 font-medium">Tạm tính:</span>
-              <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatCurrency(subtotal) }}</span>
-            </div>
-            <div v-if="discountAmount > 0" class="flex items-center justify-between text-xs">
-              <span class="text-gray-600 dark:text-gray-400 font-medium">Giảm giá:</span>
-              <span class="text-red-600 dark:text-red-400 font-semibold">-{{ formatCurrency(discountAmount) }}</span>
-            </div>
-            <div class="flex items-center justify-between pt-1.5 border-t border-gray-200 dark:border-gray-700">
-              <span class="text-sm font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
-              <span class="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                {{ formatCurrency(totalAmount) }}
-              </span>
-            </div>
-          </div>
-
           <!-- Discount Section with Premium Design -->
           <div class="py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Mã giảm giá</label>
@@ -404,6 +386,26 @@
               </button>
             </div>
           </div>
+          
+          <!-- Cart Summary with Premium Design -->
+          <div class="space-y-1.5 py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Tạm tính:</span>
+              <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatCurrency(subtotal) }}</span>
+            </div>
+            <div v-if="discountAmount > 0" class="flex items-center justify-between text-xs">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Giảm giá:</span>
+              <span class="text-red-600 dark:text-red-400 font-semibold">-{{ formatCurrency(discountAmount) }}</span>
+            </div>
+            <div class="flex items-center justify-between pt-1.5 border-t border-gray-200 dark:border-gray-700">
+              <span class="text-sm font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
+              <span class="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                {{ formatCurrency(totalAmount) }}
+              </span>
+            </div>
+          </div>
+
+          
 
           <!-- Payment Section with Premium Design -->
           <div class="py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
@@ -1849,7 +1851,13 @@ onUnmounted(() => {
 .cart-item-move {
   transition: transform 0.3s ease;
 }
-
+/* Test search */
+.modal-leave-active,
+.modal-leave-to,
+.modal-enter-active,
+.modal-enter-from {
+  pointer-events: none !important;
+}
 /* Badge Animation */
 @keyframes pulse-badge {
   0%, 100% {

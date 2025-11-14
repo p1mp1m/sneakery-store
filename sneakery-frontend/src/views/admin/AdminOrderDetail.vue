@@ -81,47 +81,64 @@
 
     <!-- Order Detail Content -->
     <div v-else-if="order" class="space-y-4">
-      <!-- Customer Info -->
-      <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="material-icons text-purple-600 dark:text-purple-400">person</i>
-          Thông tin khách hàng
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Tên khách hàng:</span>
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">{{ order.customerName || 'N/A' }}</p>
-          </div>
-          <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Email:</span>
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">{{ order.customerEmail || 'N/A' }}</p>
-          </div>
-          <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Ngày đặt:</span>
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">{{ formatDateTime(order.createdAt) }}</p>
-          </div>
-          <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Tổng tiền:</span>
-            <p class="text-xl font-bold text-purple-600 dark:text-purple-400 mt-1">{{ formatCurrency(order.totalAmount) }}</p>
-          </div>
-        </div>
+     <!-- Customer Info + Shipping Address Combined -->
+<div v-if="order" class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+
+  <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+    <i class="material-icons text-purple-600 dark:text-purple-400">person</i>
+    Thông tin khách hàng & giao hàng
+  </h3>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Customer Info LEFT -->
+    <div class="space-y-4">
+      <div>
+        <span class="text-sm text-gray-600 dark:text-gray-400">Tên khách hàng:</span>
+        <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">
+          {{ order.customerName || 'N/A' }}
+        </p>
       </div>
 
-      <!-- Shipping Address -->
-      <div v-if="order.addressShipping" class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="material-icons text-purple-600 dark:text-purple-400">local_shipping</i>
-          Địa chỉ giao hàng
-        </h3>
-        <div class="space-y-1 text-gray-700 dark:text-gray-300">
-          <p class="font-medium">{{ order.addressShipping.recipientName }}</p>
-          <p>{{ order.addressShipping.phone }}</p>
-          <p>{{ order.addressShipping.line1 }}</p>
-          <p v-if="order.addressShipping.line2">{{ order.addressShipping.line2 }}</p>
-          <p>{{ order.addressShipping.ward }}, {{ order.addressShipping.district }}, {{ order.addressShipping.city }}</p>
-          <p v-if="order.addressShipping.postalCode">Mã bưu điện: {{ order.addressShipping.postalCode }}</p>
-        </div>
+      <div>
+        <span class="text-sm text-gray-600 dark:text-gray-400">Email:</span>
+        <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">
+          {{ order.customerEmail || 'N/A' }}
+        </p>
       </div>
+
+      <div>
+        <span class="text-sm text-gray-600 dark:text-gray-400">Ngày đặt:</span>
+        <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">
+          {{ formatDateTime(order.createdAt) }}
+        </p>
+      </div>
+
+      <div>
+        <span class="text-sm text-gray-600 dark:text-gray-400">Tổng tiền:</span>
+        <p class="text-xl font-bold text-purple-600 dark:text-purple-400 mt-1">
+          {{ formatCurrency(order.totalAmount) }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Shipping Address RIGHT -->
+    <div v-if="order.addressShipping" class="space-y-1 text-gray-700 dark:text-gray-300">
+      <p class="font-medium">{{ order.addressShipping.recipientName }}</p>
+      <p>{{ order.addressShipping.phone }}</p>
+      <p>{{ order.addressShipping.line1 }}</p>
+      <p v-if="order.addressShipping.line2">{{ order.addressShipping.line2 }}</p>
+
+      <p>{{ order.addressShipping.ward }}, {{ order.addressShipping.district }}, {{ order.addressShipping.city }}</p>
+
+      <p v-if="order.addressShipping.postalCode">
+        Mã bưu điện: {{ order.addressShipping.postalCode }}
+      </p>
+    </div>
+
+  </div>
+
+</div>
 
       <!-- Order Items -->
       <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
@@ -154,6 +171,7 @@
                     <div>
                       <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.productName }}</div>
                       <div class="text-xs text-gray-500 dark:text-gray-400">{{ item.brandName || 'N/A' }}</div>
+                       <span class="text-xs text-gray-500 dark:text-gray-400">SKU: {{ item.sku || 'N/A' }}</span>
                     </div>
                   </div>
                 </td>

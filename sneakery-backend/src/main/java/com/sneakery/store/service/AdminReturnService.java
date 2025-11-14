@@ -39,12 +39,12 @@ public class AdminReturnService {
     public Page<AdminReturnListDto> getAllReturns(
             String search,
             String status,
+            String reason,
             Pageable pageable
     ) {
         log.info("🔍 Fetching returns with filters - search: {}, status: {}", search, status);
 
-        Page<ReturnRequest> returns = returnRequestRepository.findAllWithFilters(status, search, pageable);
-
+        Page<ReturnRequest> returns = returnRequestRepository.findAllWithFilters(status, search, reason, pageable);
         return returns.map(this::convertToListDto);
     }
 

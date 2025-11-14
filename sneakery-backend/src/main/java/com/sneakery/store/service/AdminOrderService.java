@@ -188,6 +188,7 @@ public class AdminOrderService {
             return CartItemDto.builder()
                     .variantId(v.getId())
                     .productName(productName)
+                    .sku(v.getSku() != null ? v.getSku() : detail.getVariantSku())
                     .brandName(brandName)
                     .size(v.getSize() != null ? v.getSize() : detail.getSize() != null ? detail.getSize() : "")
                     .color(v.getColor() != null ? v.getColor() : detail.getColor() != null ? detail.getColor() : "")
