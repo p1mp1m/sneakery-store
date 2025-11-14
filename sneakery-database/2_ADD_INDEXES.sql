@@ -89,10 +89,12 @@ END
 GO
 
 -- Composite index cho product_id + stock_quantity (Admin: low stock alerts)
+-- Lưu ý: Filtered index không thể sử dụng column reference trong WHERE clause
+-- Sử dụng điều kiện đơn giản hơn với giá trị cụ thể hoặc chỉ filter is_active
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_variants_product_stock_low' AND object_id = OBJECT_ID('Product_Variants'))
 BEGIN
     CREATE INDEX idx_variants_product_stock_low ON Product_Variants(product_id, stock_quantity) 
-    WHERE stock_quantity <= low_stock_threshold AND is_active = 1;
+    WHERE is_active = 1 AND stock_quantity < 50;
     PRINT '  - Created index: idx_variants_product_stock_low on Product_Variants(product_id, stock_quantity)';
 END
 ELSE
@@ -253,12 +255,41 @@ END
 GO
 
 -- Full-Text Index cho Products.name và Products.description
+-- Tạo unique index cho Products.id nếu chưa có (yêu cầu cho full-text index)
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UQ_Products_Id_FullText' AND object_id = OBJECT_ID('Products'))
+BEGIN
+    -- Kiểm tra xem có unique constraint/index trên id chưa
+    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID('Products') AND is_unique = 1 AND is_primary_key = 1)
+    BEGIN
+        CREATE UNIQUE INDEX UQ_Products_Id_FullText ON Products(id);
+        PRINT '  - Created unique index: UQ_Products_Id_FullText on Products(id)';
+    END
+END
+GO
+
+-- Full-Text Index cho Products.name và Products.description
 IF NOT EXISTS (SELECT * FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID('Products'))
 BEGIN
-    CREATE FULLTEXT INDEX ON Products(name, description)
-    KEY INDEX PK__Products__id ON ftCatalog_Sneakery
-    WITH (CHANGE_TRACKING = AUTO);
-    PRINT '  - Created Full-Text Index on Products(name, description)';
+    DECLARE @PKIndexName NVARCHAR(255);
+    
+    -- Lấy tên của PRIMARY KEY index
+    SELECT TOP 1 @PKIndexName = i.name
+    FROM sys.indexes i
+    INNER JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+    INNER JOIN sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+    WHERE i.object_id = OBJECT_ID('Products')
+      AND i.is_primary_key = 1
+      AND c.name = 'id';
+    
+    IF @PKIndexName IS NOT NULL
+    BEGIN
+        EXEC('CREATE FULLTEXT INDEX ON Products(name, description) KEY INDEX [' + @PKIndexName + '] ON ftCatalog_Sneakery WITH (CHANGE_TRACKING = AUTO)');
+        PRINT '  - Created Full-Text Index on Products(name, description)';
+    END
+    ELSE
+    BEGIN
+        PRINT '  - Warning: Could not find PRIMARY KEY index for Products table';
+    END
 END
 ELSE
 BEGIN

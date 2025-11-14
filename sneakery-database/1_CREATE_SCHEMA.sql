@@ -59,6 +59,7 @@ CREATE TABLE Users (
     google_id NVARCHAR(255),
     facebook_id NVARCHAR(255),
     last_login_at DATETIME2,
+    address NVARCHAR(500),
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2,
     deleted_at DATETIME2
@@ -158,6 +159,7 @@ CREATE TABLE Products (
     avg_rating DECIMAL(3,2),
     review_count INT DEFAULT 0,
     main_image_url NVARCHAR(500),
+    price_range NVARCHAR(500),
     published_at DATETIME2,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2,

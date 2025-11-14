@@ -215,7 +215,9 @@ public class CouponService {
             predicates.add(cb.or(maxUsesNull, usesCountLessThanMax));
             
             // Sắp xếp theo endAt ASC (sắp hết hạn trước)
-            query.orderBy(cb.asc(root.get("endAt")));
+            if (query != null) {
+                query.orderBy(cb.asc(root.get("endAt")));
+            }
             
             return cb.and(predicates.toArray(new Predicate[0]));
         };

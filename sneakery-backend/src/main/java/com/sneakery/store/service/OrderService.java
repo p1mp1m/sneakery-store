@@ -739,6 +739,7 @@ public class OrderService {
         }
         
         // 4. Lấy user
+        @SuppressWarnings("null")
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
         
@@ -761,6 +762,7 @@ public class OrderService {
                 .build();
         
         // 6. Lưu ReturnRequest
+        @SuppressWarnings("null")
         ReturnRequest savedReturnRequest = returnRequestRepository.save(returnRequest);
         log.info("✅ Return request #{} created successfully for order #{}", savedReturnRequest.getId(), orderId);
         

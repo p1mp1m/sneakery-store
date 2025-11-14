@@ -5,6 +5,7 @@ import com.sneakery.store.entity.*;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.*;
 import com.sneakery.store.util.CodeGenerator;
+import com.sneakery.store.util.PriceRangeConverter;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
