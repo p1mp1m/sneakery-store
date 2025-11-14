@@ -39,6 +39,9 @@ public class User implements UserDetails { // Implement UserDetails để tích 
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "address", length = 500)
+    private String address;
+
     // SỬA LỖI: Thêm các cột còn thiếu
     @Column(name = "is_active", columnDefinition = "BIT DEFAULT 1")
     private Boolean isActive;

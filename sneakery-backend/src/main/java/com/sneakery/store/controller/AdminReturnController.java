@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.AdminReturnDto;
 import com.sneakery.store.dto.AdminReturnListDto;
+import com.sneakery.store.entity.User;
 import com.sneakery.store.service.AdminReturnService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +72,8 @@ public class AdminReturnController {
     ) {
         log.info("📍 PUT /api/admin/returns/{}/status - status: {}", id, request.getStatus());
 
-        Long adminId = Long.parseLong(authentication.getName());
+        // Get admin ID from authentication principal (User entity)
+        Long adminId = getAdminIdFromAuthentication(authentication);
         AdminReturnDto updated = adminReturnService.updateReturnStatus(
                 id, request.getStatus(), adminId, request.getAdminNote()
         );
@@ -90,10 +92,22 @@ public class AdminReturnController {
     ) {
         log.info("📍 POST /api/admin/returns/{}/refund", id);
 
-        Long adminId = Long.parseLong(authentication.getName());
+        // Get admin ID from authentication principal (User entity)
+        Long adminId = getAdminIdFromAuthentication(authentication);
         AdminReturnDto updated = adminReturnService.processRefund(id, adminId);
 
         return ResponseEntity.ok(updated);
+    }
+
+    /**
+     * Helper method to get admin ID from Authentication
+     */
+    private Long getAdminIdFromAuthentication(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User) {
+            return ((User) principal).getId();
+        }
+        throw new IllegalStateException("Cannot get admin ID from authentication. Principal is not User entity.");
     }
 
     // Inner class for request body

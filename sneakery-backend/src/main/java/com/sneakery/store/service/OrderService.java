@@ -4,6 +4,7 @@ import com.sneakery.store.dto.*;
 import com.sneakery.store.entity.*;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.*;
+import com.sneakery.store.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -72,6 +75,7 @@ public class OrderService {
     private final CouponService couponService;
     private final LoyaltyService loyaltyService;
     private final OrderStatusHistoryRepository statusHistoryRepository;
+    private final ReturnRequestRepository returnRequestRepository;
 
     /**
      * Xử lý Checkout - Tạo đơn hàng từ giỏ hàng
@@ -163,18 +167,15 @@ public class OrderService {
             ProductVariant variant = cartItem.getVariant();
             
             // 7.1. Kiểm tra tồn kho (quan trọng)
+            // Đối với online/offline orders: chỉ kiểm tra, KHÔNG trừ kho ngay
+            // Kho sẽ được trừ khi order status = "Completed"
             if (variant.getStockQuantity() < cartItem.getQuantity()) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "Sản phẩm " + variant.getProduct().getName() + " không đủ hàng");
             }
             
-            // 7.2. Giảm tồn kho
-            int quantityBefore = variant.getStockQuantity();
-            int quantityChange = -cartItem.getQuantity();
-            variant.setStockQuantity(quantityBefore + quantityChange);
-            variantRepository.save(variant);
-            
-            // Note: Inventory log sẽ được tạo tự động bởi trigger trg_ProductVariants_InventoryLog
-            // khi stock_quantity thay đổi. Chúng ta chỉ cần đảm bảo stock được cập nhật đúng.
+            // 7.2. KHÔNG trừ kho ở đây cho online/offline orders
+            // Kho sẽ được trừ khi order status được cập nhật thành "Completed" trong AdminOrderService.updateOrderStatus
+            // Note: POS orders sẽ trừ kho ngay khi tạo (xem AdminOrderService.createPOSOrder)
 
             // 7.3. Tạo OrderDetail (chốt giá)
             OrderDetail detail = new OrderDetail();
@@ -410,17 +411,17 @@ public class OrderService {
         for (CartItem cartItem : cart.getItems()) {
             ProductVariant variant = cartItem.getVariant();
             
-            // 7.1. Kiểm tra tồn kho
+            // 7.1. Kiểm tra tồn kho (quan trọng)
+            // Đối với guest/online/offline orders: chỉ kiểm tra, KHÔNG trừ kho ngay
+            // Kho sẽ được trừ khi order status = "Completed"
             if (variant.getStockQuantity() < cartItem.getQuantity()) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, 
                     "Sản phẩm " + variant.getProduct().getName() + " không đủ hàng");
             }
             
-            // 7.2. Giảm tồn kho
-            int quantityBefore = variant.getStockQuantity();
-            int quantityChange = -cartItem.getQuantity();
-            variant.setStockQuantity(quantityBefore + quantityChange);
-            variantRepository.save(variant);
+            // 7.2. KHÔNG trừ kho ở đây cho guest/online/offline orders
+            // Kho sẽ được trừ khi order status được cập nhật thành "Completed" trong AdminOrderService.updateOrderStatus
+            // Note: POS orders sẽ trừ kho ngay khi tạo (xem AdminOrderService.createPOSOrder)
 
             // 7.3. Tạo OrderDetail (chốt giá)
             OrderDetail detail = new OrderDetail();
@@ -691,6 +692,104 @@ public class OrderService {
         return convertToOrderDto(savedOrder, null);
     }
 
+    /**
+     * Tạo yêu cầu đổi trả cho đơn hàng
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Kiểm tra đơn hàng có thuộc về user không</li>
+     *   <li>Kiểm tra đơn hàng đã hoàn thành (delivered) chưa</li>
+     *   <li>Kiểm tra đơn hàng đã có return request chưa</li>
+     *   <li>Tạo ReturnRequest mới với status = "pending"</li>
+     * </ol>
+     * 
+     * <p><b>Lưu ý:</b>
+     * <ul>
+     *   <li>Chỉ cho phép tạo return request khi đơn hàng đã hoàn thành (delivered)</li>
+     *   <li>Mỗi đơn hàng chỉ có thể có 1 return request</li>
+     *   <li>Return request sẽ có status = "pending" khi tạo</li>
+     * </ul>
+     * 
+     * @param orderId ID của đơn hàng
+     * @param userId ID của user hiện tại
+     * @param requestDto DTO chứa thông tin return request (reason, note, images)
+     * @return ReturnRequestDto của return request vừa tạo
+     * @throws ApiException nếu không tìm thấy đơn hàng, đơn hàng không thuộc về user, đơn hàng chưa hoàn thành, hoặc đơn hàng đã có return request
+     */
+    @Transactional
+    public ReturnRequestDto createReturnRequest(Long orderId, Long userId, CreateReturnRequestDto requestDto) {
+        log.info("📦 Creating return request for order #{} by user {}", orderId, userId);
+        
+        // 1. Kiểm tra đơn hàng có thuộc về user không
+        Order order = orderRepository.findByIdAndUserIdWithDetails(orderId, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng"));
+        
+        // 2. Kiểm tra đơn hàng đã hoàn thành (delivered) chưa
+        String currentStatus = order.getStatus() != null ? order.getStatus().toLowerCase() : "";
+        if (!"delivered".equals(currentStatus)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                "Chỉ có thể tạo yêu cầu đổi trả khi đơn hàng đã hoàn thành. Trạng thái hiện tại: " + order.getStatus());
+        }
+        
+        // 3. Kiểm tra đơn hàng đã có return request chưa
+        if (returnRequestRepository.existsByOrderId(orderId)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                "Đơn hàng này đã có yêu cầu đổi trả. Vui lòng kiểm tra lại.");
+        }
+        
+        // 4. Lấy user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
+        
+        // 5. Tạo ReturnRequest
+        // Combine reason and note if note exists
+        String reason = requestDto.getReason();
+        if (requestDto.getNote() != null && !requestDto.getNote().trim().isEmpty()) {
+            reason = reason + "\n\nGhi chú: " + requestDto.getNote();
+        }
+        
+        ReturnRequest returnRequest = ReturnRequest.builder()
+                .order(order)
+                .user(user)
+                .reason(reason)
+                .status("pending") // Mặc định là pending
+                .imagesJson(requestDto.getImages() != null && !requestDto.getImages().isEmpty() 
+                    ? JsonUtil.stringListToJson(requestDto.getImages()) 
+                    : null) // Convert images list to JSON, or null if empty
+                .adminNote(null) // Admin note sẽ được set sau khi admin duyệt
+                .build();
+        
+        // 6. Lưu ReturnRequest
+        ReturnRequest savedReturnRequest = returnRequestRepository.save(returnRequest);
+        log.info("✅ Return request #{} created successfully for order #{}", savedReturnRequest.getId(), orderId);
+        
+        // 7. Convert và trả về ReturnRequestDto
+        return convertToReturnRequestDto(savedReturnRequest);
+    }
+    
+    /**
+     * Convert ReturnRequest entity to ReturnRequestDto
+     */
+    private ReturnRequestDto convertToReturnRequestDto(ReturnRequest returnRequest) {
+        List<String> images = JsonUtil.parseJsonToStringList(returnRequest.getImagesJson());
+        
+        return ReturnRequestDto.builder()
+                .id(returnRequest.getId())
+                .orderId(returnRequest.getOrder().getId())
+                .userId(returnRequest.getUser().getId())
+                .customerName(returnRequest.getUser().getFullName())
+                .customerEmail(returnRequest.getUser().getEmail())
+                .reason(returnRequest.getReason())
+                .status(returnRequest.getStatus())
+                .images(images)
+                .adminNote(returnRequest.getAdminNote())
+                .approvedByName(returnRequest.getApprovedBy() != null ? returnRequest.getApprovedBy().getFullName() : null)
+                .approvedAt(returnRequest.getApprovedAt())
+                .createdAt(returnRequest.getCreatedAt())
+                .updatedAt(returnRequest.getUpdatedAt())
+                .build();
+    }
+
     // =================================================================
     // HÀM HELPER (MAPPER)
     // =================================================================
@@ -706,12 +805,31 @@ public class OrderService {
                     .sum();
         }
 
+        // Fetch return request nếu có
+        ReturnRequestSummaryDto returnRequestSummary = null;
+        Optional<ReturnRequest> returnRequestOpt = returnRequestRepository.findByOrderIdWithDetails(order.getId());
+        if (returnRequestOpt.isPresent()) {
+            ReturnRequest returnRequest = returnRequestOpt.get();
+            // Truncate reason nếu quá dài (chỉ hiển thị 50 ký tự đầu)
+            String reason = returnRequest.getReason();
+            if (reason != null && reason.length() > 50) {
+                reason = reason.substring(0, 50) + "...";
+            }
+            returnRequestSummary = ReturnRequestSummaryDto.builder()
+                    .id(returnRequest.getId())
+                    .status(returnRequest.getStatus())
+                    .createdAt(returnRequest.getCreatedAt())
+                    .reason(reason)
+                    .build();
+        }
+
         return OrderSummaryDto.builder()
                 .id(order.getId())
                 .status(order.getStatus())
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
                 .totalItems(totalItems)
+                .returnRequest(returnRequestSummary)
                 .build();
     }
     
@@ -756,6 +874,25 @@ public class OrderService {
             couponCode = order.getCoupon().getCode();
         }
 
+        // Convert status histories (nếu có)
+        List<OrderStatusHistoryDto> statusHistories = new ArrayList<>();
+        if (order.getStatusHistories() != null && !order.getStatusHistories().isEmpty()) {
+            statusHistories = order.getStatusHistories().stream()
+                    .map(h -> OrderStatusHistoryDto.builder()
+                            .id(h.getId())
+                            .status(h.getStatus())
+                            .changedAt(h.getChangedAt())
+                            .build())
+                    .collect(Collectors.toList());
+        }
+
+        // Fetch return request nếu có
+        ReturnRequestDto returnRequestDto = null;
+        Optional<ReturnRequest> returnRequestOpt = returnRequestRepository.findByOrderIdWithDetails(order.getId());
+        if (returnRequestOpt.isPresent()) {
+            returnRequestDto = convertToReturnRequestDto(returnRequestOpt.get());
+        }
+
         return OrderDto.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
@@ -768,6 +905,8 @@ public class OrderService {
                 .addressShipping(convertToAddressDto(order.getAddressShipping()))
                 .payment(paymentDto)
                 .orderDetails(detailDtos)
+                .statusHistories(statusHistories)
+                .returnRequest(returnRequestDto)
                 .build();
     }
     

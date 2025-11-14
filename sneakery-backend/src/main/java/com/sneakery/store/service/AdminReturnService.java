@@ -55,7 +55,8 @@ public class AdminReturnService {
     public AdminReturnDto getReturnById(Long id) {
         log.info("📄 Fetching return detail - ID: {}", id);
 
-        ReturnRequest returnRequest = returnRequestRepository.findById(Objects.requireNonNull(id))
+        // Use findByIdWithDetails to load all necessary relationships (order, user, approvedBy)
+        ReturnRequest returnRequest = returnRequestRepository.findByIdWithDetails(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
 
         return convertToDto(returnRequest);
@@ -68,24 +69,42 @@ public class AdminReturnService {
     public AdminReturnDto updateReturnStatus(Long id, String status, Long adminId, String adminNote) {
         log.info("✅ Updating return status - ID: {}, status: {}, by admin: {}", id, status, adminId);
 
-        ReturnRequest returnRequest = returnRequestRepository.findById(Objects.requireNonNull(id))
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
+        try {
+            // Load return request with all relationships
+            ReturnRequest returnRequest = returnRequestRepository.findByIdWithDetails(Objects.requireNonNull(id))
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
 
-        User admin = userRepository.findById(Objects.requireNonNull(adminId))
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
+            User admin = userRepository.findById(Objects.requireNonNull(adminId))
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
 
-        returnRequest.setStatus(status);
-        if (adminNote != null && !adminNote.trim().isEmpty()) {
-            returnRequest.setAdminNote(adminNote);
+            // Update fields
+            returnRequest.setStatus(status);
+            if (adminNote != null && !adminNote.trim().isEmpty()) {
+                returnRequest.setAdminNote(adminNote);
+            }
+
+            if ("approved".equals(status) || "rejected".equals(status)) {
+                returnRequest.setApprovedBy(admin);
+                returnRequest.setApprovedAt(LocalDateTime.now());
+            }
+
+            // Save entity
+            returnRequestRepository.save(returnRequest);
+            
+            // Reload with all relationships to ensure they are properly loaded after save
+            ReturnRequest updated = returnRequestRepository.findByIdWithDetails(id)
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả sau khi cập nhật"));
+            
+            // Convert to DTO
+            return convertToDto(updated);
+            
+        } catch (ApiException e) {
+            log.error("Error updating return status: {}", e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error updating return status - ID: {}, status: {}", id, status, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi khi cập nhật trạng thái: " + e.getMessage());
         }
-
-        if ("approved".equals(status) || "rejected".equals(status)) {
-            returnRequest.setApprovedBy(admin);
-            returnRequest.setApprovedAt(LocalDateTime.now());
-        }
-
-        ReturnRequest updated = returnRequestRepository.save(returnRequest);
-        return convertToDto(updated);
     }
 
     /**
@@ -95,7 +114,8 @@ public class AdminReturnService {
     public AdminReturnDto processRefund(Long id, Long adminId) {
         log.info("💰 Processing refund - ID: {}, by admin: {}", id, adminId);
 
-        ReturnRequest returnRequest = returnRequestRepository.findById(Objects.requireNonNull(id))
+        // Use findByIdWithDetails to load all necessary relationships (order, user, approvedBy)
+        ReturnRequest returnRequest = returnRequestRepository.findByIdWithDetails(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
 
         if (!"approved".equals(returnRequest.getStatus())) {
@@ -109,8 +129,12 @@ public class AdminReturnService {
         returnRequest.setStatus("completed");
         returnRequest.setApprovedBy(admin);
 
-        ReturnRequest updated = returnRequestRepository.save(returnRequest);
-        return convertToDto(updated);
+        // Save entity (changes will be flushed when transaction commits)
+        // Note: We use the entity loaded with findByIdWithDetails, so all relationships are already loaded
+        ReturnRequest saved = returnRequestRepository.save(returnRequest);
+        
+        // Convert to DTO using the saved entity (relationships are already loaded from findByIdWithDetails)
+        return convertToDto(saved);
     }
 
     // ===== HELPER METHODS =====
@@ -170,7 +194,22 @@ public class AdminReturnService {
     }
 
     private AdminReturnDto convertToDto(ReturnRequest returnRequest) {
+        if (returnRequest == null) {
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Return request is null");
+        }
+
         List<String> images = parseJsonImages(returnRequest.getImagesJson());
+
+        // Validate required relationships
+        if (returnRequest.getOrder() == null) {
+            log.error("Return request #{} has null order", returnRequest.getId());
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Return request has no associated order");
+        }
+
+        if (returnRequest.getUser() == null) {
+            log.error("Return request #{} has null user", returnRequest.getId());
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Return request has no associated user");
+        }
 
         return AdminReturnDto.builder()
                 .id(returnRequest.getId())

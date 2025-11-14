@@ -224,60 +224,6 @@
               </div>
             </div>
 
-            <!-- Khoảng giá -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Giá từ (VNĐ)
-                </label>
-                <input
-                  v-model.number="localFormData.priceFrom"
-                  @input="handlePriceFromInput"
-                  type="number"
-                  min="0"
-                  step="1000"
-                  class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
-                  :class="formErrors.priceFrom ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'"
-                  placeholder="Ví dụ: 1000000"
-                />
-                <span
-                  v-if="formErrors.priceFrom"
-                  class="text-sm text-red-600 dark:text-red-400"
-                  >{{ formErrors.priceFrom }}</span
-                >
-              </div>
-
-              <div class="space-y-2">
-                <label
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Giá đến (VNĐ)
-                </label>
-                <input
-                  v-model.number="localFormData.priceTo"
-                  @input="handlePriceToInput"
-                  type="number"
-                  min="0"
-                  step="1000"
-                  class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
-                  :class="formErrors.priceTo ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'"
-                  placeholder="Ví dụ: 5000000"
-                />
-                <span
-                  v-if="formErrors.priceTo"
-                  class="text-sm text-red-600 dark:text-red-400"
-                  >{{ formErrors.priceTo }}</span
-                >
-                <span
-                  v-if="!formErrors.priceTo && localFormData.priceFrom && localFormData.priceTo"
-                  class="text-xs text-gray-500 dark:text-gray-400"
-                  >Khoảng giá: {{ formatCurrency(localFormData.priceFrom) }} - {{ formatCurrency(localFormData.priceTo) }}</span
-                >
-              </div>
-            </div>
-
             <!-- Mô tả -->
             <div class="space-y-2">
               <label
@@ -645,8 +591,6 @@ watch(
         categoryIds: [],
         materialId: null,
         shoeSoleId: null,
-        priceFrom: null,
-        priceTo: null,
         variants: [],
       };
 
@@ -681,8 +625,6 @@ watch(
         categoryIds: [],
         materialId: null,
         shoeSoleId: null,
-        priceFrom: null,
-        priceTo: null,
         variants: [],
       };
       emit("update:formData", { ...localFormData.value });
@@ -803,46 +745,6 @@ const handleSubmit = () => {
   emit("submit", { ...localFormData.value });
 };
 
-const handlePriceFromInput = () => {
-  // Validate giá từ
-  if (localFormData.value.priceFrom !== null && localFormData.value.priceFrom < 0) {
-    localFormData.value.priceFrom = 0;
-  }
-  // Validate giá từ <= giá đến (nếu có)
-  if (
-    localFormData.value.priceFrom !== null &&
-    localFormData.value.priceTo !== null &&
-    localFormData.value.priceFrom > localFormData.value.priceTo
-  ) {
-    // Tự động điều chỉnh giá đến nếu giá từ lớn hơn
-    localFormData.value.priceTo = localFormData.value.priceFrom;
-  }
-};
-
-const handlePriceToInput = () => {
-  // Validate giá đến
-  if (localFormData.value.priceTo !== null && localFormData.value.priceTo < 0) {
-    localFormData.value.priceTo = 0;
-  }
-  // Validate giá từ <= giá đến (nếu có)
-  if (
-    localFormData.value.priceFrom !== null &&
-    localFormData.value.priceTo !== null &&
-    localFormData.value.priceFrom > localFormData.value.priceTo
-  ) {
-    // Tự động điều chỉnh giá từ nếu giá đến nhỏ hơn
-    localFormData.value.priceFrom = localFormData.value.priceTo;
-  }
-};
-
-// Format currency helper
-const formatCurrency = (value) => {
-  if (!value && value !== 0) return "0 đ";
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(value);
-};
 
 const handleClose = () => {
   emit("update:visible", false);

@@ -2,8 +2,10 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.CheckoutRequestDto;
 import com.sneakery.store.dto.CouponDto;
+import com.sneakery.store.dto.CreateReturnRequestDto;
 import com.sneakery.store.dto.OrderDto;
 import com.sneakery.store.dto.OrderSummaryDto;
+import com.sneakery.store.dto.ReturnRequestDto;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.service.CouponService;
 import com.sneakery.store.service.OrderService;
@@ -172,6 +174,130 @@ public class OrderController {
     }
 
     /**
+     * Validate coupon code (Public endpoint for authenticated users)
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Validate coupon code từ CouponService</li>
+     *   <li>Kiểm tra coupon có active, trong thời gian hiệu lực, và còn lượt sử dụng</li>
+     *   <li>Trả về thông tin coupon nếu hợp lệ</li>
+     * </ol>
+     * 
+     * <p><b>Lưu ý:</b> Endpoint này yêu cầu đăng nhập nhưng không yêu cầu ADMIN role.
+     * 
+     * @param code Mã coupon cần validate
+     * @return ResponseEntity chứa CouponDto nếu hợp lệ (HTTP 200 OK)
+     * @throws ApiException nếu coupon không tồn tại, đã hết hạn, hoặc không hợp lệ
+     */
+    @Operation(summary = "Validate coupon code", description = "Validate mã giảm giá. Endpoint công khai cho user đã đăng nhập.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Coupon hợp lệ"),
+        @ApiResponse(responseCode = "400", description = "Coupon không hợp lệ hoặc đã hết hạn"),
+        @ApiResponse(responseCode = "404", description = "Coupon không tồn tại")
+    })
+    @GetMapping("/coupons/validate/{code}")
+    public ResponseEntity<CouponDto> validateCoupon(@PathVariable String code) {
+        log.info("📍 GET /api/orders/coupons/validate/{}", code);
+        CouponDto coupon = couponService.validateCouponCode(code);
+        return ResponseEntity.ok(coupon);
+    }
+
+    /**
+     * Lấy danh sách coupons đang hoạt động (cho user chọn)
+     */
+    @Operation(summary = "Get active coupons", description = "Lấy danh sách mã giảm giá đang hoạt động. Endpoint công khai cho user đã đăng nhập.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Danh sách coupons đang hoạt động")
+    })
+    @GetMapping("/coupons/active")
+    public ResponseEntity<List<CouponDto>> getActiveCoupons() {
+        log.info("📍 GET /api/orders/coupons/active");
+        List<CouponDto> coupons = couponService.getActiveCoupons();
+        return ResponseEntity.ok(coupons);
+    }
+
+    /**
+     * Tạo yêu cầu đổi trả cho đơn hàng
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Kiểm tra đơn hàng có thuộc về user không</li>
+     *   <li>Kiểm tra đơn hàng đã hoàn thành (delivered) chưa</li>
+     *   <li>Kiểm tra đơn hàng đã có return request chưa</li>
+     *   <li>Tạo ReturnRequest mới với status = "pending"</li>
+     * </ol>
+     * 
+     * <p><b>Lưu ý:</b>
+     * <ul>
+     *   <li>Chỉ cho phép tạo return request khi đơn hàng đã hoàn thành (delivered)</li>
+     *   <li>Mỗi đơn hàng chỉ có thể có 1 return request</li>
+     *   <li>Return request sẽ có status = "pending" khi tạo</li>
+     * </ul>
+     * 
+     * @param userPrincipal User hiện tại (tự động lấy từ JWT token)
+     * @param orderId ID của đơn hàng cần tạo return request
+     * @param requestDto DTO chứa thông tin return request (reason, note, images)
+     * @return ResponseEntity chứa ReturnRequestDto của return request vừa tạo (HTTP 200 OK)
+     * @throws ApiException nếu không tìm thấy đơn hàng, đơn hàng không thuộc về user, đơn hàng chưa hoàn thành, hoặc đơn hàng đã có return request
+     */
+    @Operation(summary = "Tạo yêu cầu đổi trả", description = "Tạo yêu cầu đổi trả cho đơn hàng. Chỉ cho phép khi đơn hàng đã hoàn thành.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tạo yêu cầu đổi trả thành công"),
+        @ApiResponse(responseCode = "400", description = "Đơn hàng chưa hoàn thành hoặc đã có return request"),
+        @ApiResponse(responseCode = "404", description = "Không tìm thấy đơn hàng")
+    })
+    @PostMapping("/{orderId}/return")
+    public ResponseEntity<ReturnRequestDto> createReturnRequest(
+            @AuthenticationPrincipal User userPrincipal,
+            @PathVariable Long orderId,
+            @Valid @RequestBody CreateReturnRequestDto requestDto
+    ) {
+        log.info("📍 POST /api/orders/{}/return - User: {}", orderId, userPrincipal.getId());
+        ReturnRequestDto returnRequest = orderService.createReturnRequest(orderId, userPrincipal.getId(), requestDto);
+        return ResponseEntity.ok(returnRequest);
+    }
+
+    /**
+     * Hủy đơn hàng (chỉ cho phép khi đơn hàng đang ở trạng thái "pending")
+     * 
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Kiểm tra đơn hàng có thuộc về user hiện tại không</li>
+     *   <li>Kiểm tra đơn hàng có đang ở trạng thái "pending" không</li>
+     *   <li>Nếu có, cập nhật trạng thái đơn hàng thành "cancelled"</li>
+     *   <li>Hoàn trả tồn kho cho các sản phẩm trong đơn hàng</li>
+     *   <li>Trả về OrderDto sau khi hủy</li>
+     * </ol>
+     * 
+     * <p><b>Lưu ý:</b>
+     * <ul>
+     *   <li>Chỉ cho phép hủy khi đơn hàng đang ở trạng thái "pending" (chờ xác nhận)</li>
+     *   <li>Nếu đơn hàng đã được xác nhận hoặc đang xử lý, không cho phép hủy</li>
+     *   <li>Sẽ hoàn trả tồn kho cho các sản phẩm trong đơn hàng</li>
+     * </ul>
+     * 
+     * @param userPrincipal User hiện tại (tự động lấy từ JWT token)
+     * @param orderId ID của đơn hàng cần hủy
+     * @return ResponseEntity chứa OrderDto của đơn hàng sau khi hủy (HTTP 200 OK)
+     * @throws ApiException nếu không tìm thấy đơn hàng, đơn hàng không thuộc về user, hoặc đơn hàng không thể hủy
+     */
+    @Operation(summary = "Hủy đơn hàng", description = "Hủy đơn hàng. Chỉ cho phép khi đơn hàng đang ở trạng thái 'Chờ xác nhận'.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Hủy đơn hàng thành công"),
+        @ApiResponse(responseCode = "400", description = "Đơn hàng không thể hủy (không ở trạng thái pending)"),
+        @ApiResponse(responseCode = "404", description = "Không tìm thấy đơn hàng")
+    })
+    @PutMapping("/{orderId}/cancel")
+    public ResponseEntity<OrderDto> cancelOrder(
+            @AuthenticationPrincipal User userPrincipal,
+            @PathVariable Long orderId
+    ) {
+        log.info("📍 PUT /api/orders/{}/cancel - User: {}", orderId, userPrincipal.getId());
+        OrderDto order = orderService.cancelOrder(orderId, userPrincipal.getId());
+        return ResponseEntity.ok(order);
+    }
+
+    /**
      * Lấy thông tin chi tiết đơn hàng theo ID
      * 
      * <p>Phương thức này sẽ:
@@ -212,75 +338,6 @@ public class OrderController {
     ) {
         log.info("📍 GET /api/orders/{} - User: {}", orderId, userPrincipal.getId());
         OrderDto order = orderService.getMyOrderById(orderId, userPrincipal.getId());
-        return ResponseEntity.ok(order);
-    }
-
-    /**
-     * Validate coupon code (Public endpoint for authenticated users)
-     * 
-     * <p>Phương thức này sẽ:
-     * <ol>
-     *   <li>Validate coupon code từ CouponService</li>
-     *   <li>Kiểm tra coupon có active, trong thời gian hiệu lực, và còn lượt sử dụng</li>
-     *   <li>Trả về thông tin coupon nếu hợp lệ</li>
-     * </ol>
-     * 
-     * <p><b>Lưu ý:</b> Endpoint này yêu cầu đăng nhập nhưng không yêu cầu ADMIN role.
-     * 
-     * @param code Mã coupon cần validate
-     * @return ResponseEntity chứa CouponDto nếu hợp lệ (HTTP 200 OK)
-     * @throws ApiException nếu coupon không tồn tại, đã hết hạn, hoặc không hợp lệ
-     */
-    @Operation(summary = "Validate coupon code", description = "Validate mã giảm giá. Endpoint công khai cho user đã đăng nhập.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Coupon hợp lệ"),
-        @ApiResponse(responseCode = "400", description = "Coupon không hợp lệ hoặc đã hết hạn"),
-        @ApiResponse(responseCode = "404", description = "Coupon không tồn tại")
-    })
-    @GetMapping("/coupons/validate/{code}")
-    public ResponseEntity<CouponDto> validateCoupon(@PathVariable String code) {
-        log.info("📍 GET /api/orders/coupons/validate/{}", code);
-        CouponDto coupon = couponService.validateCouponCode(code);
-        return ResponseEntity.ok(coupon);
-    }
-
-    /**
-     * Hủy đơn hàng (chỉ cho phép khi đơn hàng đang ở trạng thái "pending")
-     * 
-     * <p>Phương thức này sẽ:
-     * <ol>
-     *   <li>Kiểm tra đơn hàng có thuộc về user hiện tại không</li>
-     *   <li>Kiểm tra đơn hàng có đang ở trạng thái "pending" không</li>
-     *   <li>Nếu có, cập nhật trạng thái đơn hàng thành "cancelled"</li>
-     *   <li>Hoàn trả tồn kho cho các sản phẩm trong đơn hàng</li>
-     *   <li>Trả về OrderDto sau khi hủy</li>
-     * </ol>
-     * 
-     * <p><b>Lưu ý:</b>
-     * <ul>
-     *   <li>Chỉ cho phép hủy khi đơn hàng đang ở trạng thái "pending" (chờ xác nhận)</li>
-     *   <li>Nếu đơn hàng đã được xác nhận hoặc đang xử lý, không cho phép hủy</li>
-     *   <li>Sẽ hoàn trả tồn kho cho các sản phẩm trong đơn hàng</li>
-     * </ul>
-     * 
-     * @param userPrincipal User hiện tại (tự động lấy từ JWT token)
-     * @param orderId ID của đơn hàng cần hủy
-     * @return ResponseEntity chứa OrderDto của đơn hàng sau khi hủy (HTTP 200 OK)
-     * @throws ApiException nếu không tìm thấy đơn hàng, đơn hàng không thuộc về user, hoặc đơn hàng không thể hủy
-     */
-    @Operation(summary = "Hủy đơn hàng", description = "Hủy đơn hàng. Chỉ cho phép khi đơn hàng đang ở trạng thái 'Chờ xác nhận'.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Hủy đơn hàng thành công"),
-        @ApiResponse(responseCode = "400", description = "Đơn hàng không thể hủy (không ở trạng thái pending)"),
-        @ApiResponse(responseCode = "404", description = "Không tìm thấy đơn hàng")
-    })
-    @PutMapping("/{orderId}/cancel")
-    public ResponseEntity<OrderDto> cancelOrder(
-            @AuthenticationPrincipal User userPrincipal,
-            @PathVariable Long orderId
-    ) {
-        log.info("📍 PUT /api/orders/{}/cancel - User: {}", orderId, userPrincipal.getId());
-        OrderDto order = orderService.cancelOrder(orderId, userPrincipal.getId());
         return ResponseEntity.ok(order);
     }
 }

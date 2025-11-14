@@ -46,7 +46,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Các API Public (Không cần đăng nhập)
+                        // 1. Cho phép OPTIONS requests (CORS preflight) - không cần authentication
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        
+                        // 2. Các API Public (Không cần đăng nhập)
                         .requestMatchers("/api/auth/**").permitAll() // API Đăng nhập/Đăng ký/Reset Password
                         // TestController chỉ hoạt động trong dev profile (đã có @Profile("dev"))
                         // Không cần permitAll ở đây vì @Profile sẽ tự động disable trong production

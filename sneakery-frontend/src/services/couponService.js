@@ -74,6 +74,23 @@ class CouponService {
     }
 
     /**
+     * Get list of active coupons
+     * @returns {Promise<Array>} List of active coupons
+     */
+    async getActiveCoupons() {
+        try {
+            const response = await axios.get(
+                buildApiUrl(API_ENDPOINTS.ORDERS.ACTIVE_COUPONS)
+            );
+            return response.data || [];
+        } catch (error) {
+            logger.error('Error fetching active coupons:', error);
+            // Return empty array if error (don't block user flow)
+            return [];
+        }
+    }
+
+    /**
      * Format currency
      * @param {number} amount - Amount to format
      * @returns {string} Formatted currency string

@@ -276,6 +276,13 @@
                   <i class="material-icons text-sm">{{ getSortIcon("variantCount") }}</i>
                 </div>
               </th>
+              <!-- 🆕 Khoảng giá -->
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('priceFrom')">
+                <div class="flex items-center gap-1">
+                  <span>Khoảng giá</span>
+                  <i class="material-icons text-sm">{{ getSortIcon("priceFrom") }}</i>
+                </div>
+              </th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('stockQuantity')">
                 <div class="flex items-center gap-1">
                   <span>Kho</span>
@@ -328,6 +335,30 @@
                 <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                   {{ product.variantCount || 0 }} variants
                 </span>
+              </td>
+
+              <!-- 🆕 Cột khoảng giá -->
+              <td class="px-4 py-4">
+                <div v-if="(product.priceFrom !== null && product.priceFrom !== undefined) || (product.priceTo !== null && product.priceTo !== undefined)" class="text-sm text-gray-900 dark:text-gray-100">
+                  <div v-if="(product.priceFrom !== null && product.priceFrom !== undefined) && (product.priceTo !== null && product.priceTo !== undefined)" class="flex items-center gap-1">
+                    <span class="font-medium text-purple-600 dark:text-purple-400">{{ formatPriceWithoutUnit(product.priceFrom) }}</span>
+                    <i class="material-icons text-xs text-gray-400">arrow_forward</i>
+                    <span class="font-medium text-purple-600 dark:text-purple-400">{{ formatPriceWithoutUnit(product.priceTo) }}</span>
+                  </div>
+                  <div v-else-if="product.priceFrom !== null && product.priceFrom !== undefined" class="text-gray-600 dark:text-gray-400">
+                    <span class="flex items-center gap-1">
+                      <span>Từ</span>
+                      <span class="font-medium text-purple-600 dark:text-purple-400">{{ formatPriceWithoutUnit(product.priceFrom) }}</span>
+                    </span>
+                  </div>
+                  <div v-else-if="product.priceTo !== null && product.priceTo !== undefined" class="text-gray-600 dark:text-gray-400">
+                    <span class="flex items-center gap-1">
+                      <span>Đến</span>
+                      <span class="font-medium text-purple-600 dark:text-purple-400">{{ formatPriceWithoutUnit(product.priceTo) }}</span>
+                    </span>
+                  </div>
+                </div>
+                <span v-else class="text-xs text-gray-400 dark:text-gray-500 italic">—</span>
               </td>
 
               <td class="px-4 py-4">
@@ -1381,8 +1412,6 @@ const formData = ref({
   mainImageUrl: null, // 🆕 Danh sách ảnh sản phẩm (gallery)
   materialId: null, // 🆕
   shoeSoleId: null, // 🆕
-  priceFrom: null, // 🆕 Giá từ
-  priceTo: null, // 🆕 Giá đến
   variants: [],
 });
 
@@ -1738,8 +1767,6 @@ const openEditModal = async (product) => {
         categoryIds: detailData.categories?.map((c) => c.id) || [],
         materialId: detailData.materialId ?? null,
         shoeSoleId: detailData.shoeSoleId ?? null,
-        priceFrom: detailData.priceFrom ?? null,
-        priceTo: detailData.priceTo ?? null,
         variants:
           detailData.variants?.map((v) => ({
             id: v.id,
@@ -1804,8 +1831,6 @@ const openEditModal = async (product) => {
       categoryIds: [],
       materialId: null,
       shoeSoleId: null,
-      priceFrom: product.priceFrom ?? null,
-      priceTo: product.priceTo ?? null,
       variants: [],
     };
     initialProductImages.value = [];
@@ -1851,8 +1876,6 @@ const closeModal = () => {
     // 🆕 reset 2 field mới
     materialId: null,
     shoeSoleId: null,
-    priceFrom: null,
-    priceTo: null,
     variants: [],
   };
   // 🧹 Cleanup blob URL khi đóng modal
@@ -2010,34 +2033,6 @@ const handleSubmit = async (submittedData = null) => {
     //     stockQuantity: Number(v.stockQuantity) || 0,
     //   })),
     // };
-    // ==================== [VALIDATE KHOẢNG GIÁ] ====================
-    // Validate giá từ và giá đến
-    if (dataToSubmit.priceFrom !== null && dataToSubmit.priceFrom !== undefined) {
-      if (dataToSubmit.priceFrom < 0) {
-        toastService.warning('Cảnh báo', 'Giá từ không được âm');
-        return;
-      }
-    }
-
-    if (dataToSubmit.priceTo !== null && dataToSubmit.priceTo !== undefined) {
-      if (dataToSubmit.priceTo < 0) {
-        toastService.warning('Cảnh báo', 'Giá đến không được âm');
-        return;
-      }
-    }
-
-    if (
-      dataToSubmit.priceFrom !== null &&
-      dataToSubmit.priceFrom !== undefined &&
-      dataToSubmit.priceTo !== null &&
-      dataToSubmit.priceTo !== undefined
-    ) {
-      if (dataToSubmit.priceFrom > dataToSubmit.priceTo) {
-        toastService.warning('Cảnh báo', 'Giá từ phải nhỏ hơn hoặc bằng giá đến');
-        return;
-      }
-    }
-
     // ==================== [4] TẠO / CẬP NHẬT SẢN PHẨM ====================
     const productPayload = {
       id: dataToSubmit.id || null,
@@ -2048,8 +2043,6 @@ const handleSubmit = async (submittedData = null) => {
       categoryIds: dataToSubmit.categoryIds,
       materialId: dataToSubmit.materialId,
       shoeSoleId: dataToSubmit.shoeSoleId,
-      priceFrom: dataToSubmit.priceFrom !== null && dataToSubmit.priceFrom !== undefined ? Number(dataToSubmit.priceFrom) : null,
-      priceTo: dataToSubmit.priceTo !== null && dataToSubmit.priceTo !== undefined ? Number(dataToSubmit.priceTo) : null,
       isActive: dataToSubmit.isActive ?? true,
 
       variants: dataToSubmit.variants.map((v) => ({
@@ -2256,8 +2249,6 @@ const handleSubmit = async (submittedData = null) => {
             categoryIds: formData.value.categoryIds,
             materialId: formData.value.materialId,
             shoeSoleId: formData.value.shoeSoleId,
-            priceFrom: formData.value.priceFrom,
-            priceTo: formData.value.priceTo,
             isActive: formData.value.isActive,
             mainImageUrl: finalPrimary.previewUrl, // 🧩 thêm trường mới
             variants: formData.value.variants.map((v) => ({
@@ -2812,6 +2803,16 @@ const exportToExcel = () => {
 
 // ===== HELPERS =====
 // formatCurrency và formatPrice đã được import từ @/utils/formatters
+
+// Format giá không có đơn vị "đ"
+const formatPriceWithoutUnit = (price) => {
+  if (price === null || price === undefined) return '';
+  const numPrice = Number(price) || 0;
+  return new Intl.NumberFormat('vi-VN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(numPrice);
+};
 
 // Lifecycle
 onMounted(async () => {

@@ -655,6 +655,15 @@
                 placeholder="Tìm kiếm theo tên, email, số điện thoại..."
               />
             </div>
+            <div class="mb-4">
+              <button
+                @click="showCreateCustomerModal = true"
+                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                <i class="material-icons text-base">person_add</i>
+                Thêm khách hàng mới
+              </button>
+            </div>
             <div v-if="loadingCustomers" class="flex flex-col items-center justify-center p-8">
               <div class="relative">
                 <div class="w-12 h-12 border-4 border-purple-200 dark:border-purple-800 rounded-full"></div>
@@ -790,6 +799,101 @@
             >
               <i class="material-icons text-xl">add_shopping_cart</i>
               Thêm vào giỏ
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Premium Create Customer Modal -->
+    <transition name="modal">
+      <div v-if="showCreateCustomerModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click="closeCreateCustomerModal">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full border border-gray-200 dark:border-gray-700 transform transition-all" @click.stop>
+          <div class="flex items-center justify-between p-6 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <i class="material-icons text-white">person_add</i>
+              </div>
+              Thêm khách hàng mới
+            </h2>
+            <button 
+              @click="closeCreateCustomerModal" 
+              class="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 hover:scale-110"
+            >
+              <i class="material-icons text-xl">close</i>
+            </button>
+          </div>
+          
+          <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Email *</label>
+              <input 
+                v-model="newCustomer.email"
+                type="email" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="user@example.com"
+              />
+              <span v-if="customerFormErrors.email" class="text-xs text-red-600 dark:text-red-400">{{ customerFormErrors.email }}</span>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Mật khẩu *</label>
+              <input 
+                v-model="newCustomer.password"
+                type="password" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Tối thiểu 6 ký tự"
+              />
+              <span v-if="customerFormErrors.password" class="text-xs text-red-600 dark:text-red-400">{{ customerFormErrors.password }}</span>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Họ tên *</label>
+              <input 
+                v-model="newCustomer.fullName"
+                type="text" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Nguyễn Văn A"
+              />
+              <span v-if="customerFormErrors.fullName" class="text-xs text-red-600 dark:text-red-400">{{ customerFormErrors.fullName }}</span>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số điện thoại</label>
+              <input 
+                v-model="newCustomer.phoneNumber"
+                type="tel" 
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="0123456789"
+              />
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Địa chỉ</label>
+              <textarea 
+                v-model="newCustomer.address"
+                rows="3"
+                class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                placeholder="Nhập địa chỉ (tùy chọn)"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 p-6 border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50">
+            <button 
+              @click="closeCreateCustomerModal" 
+              class="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm font-semibold hover:scale-105"
+            >
+              <i class="material-icons text-xl">close</i>
+              Hủy
+            </button>
+            <button 
+              @click="handleCreateCustomer" 
+              class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="creatingCustomer"
+            >
+              <i class="material-icons text-xl" :class="{ 'animate-spin': creatingCustomer }">{{ creatingCustomer ? 'hourglass_empty' : 'save' }}</i>
+              {{ creatingCustomer ? 'Đang tạo...' : 'Tạo khách hàng' }}
             </button>
           </div>
         </div>
@@ -944,6 +1048,20 @@ const loadingCustomers = ref(false)
 const customerSearchTimeout = ref(null)
 const isSearchingCustomers = ref(false) // Phân biệt giữa gợi ý và kết quả tìm kiếm
 const badgeAnimationKey = ref(0) // Key để trigger animation khi badge thay đổi
+
+// Create customer modal state
+const showCreateCustomerModal = ref(false)
+const creatingCustomer = ref(false)
+const newCustomer = ref({
+  email: '',
+  password: '',
+  fullName: '',
+  phoneNumber: '',
+  address: '',
+  role: 'USER', // Mặc định là USER cho khách hàng
+  isActive: true // Mặc định là true
+})
+const customerFormErrors = ref({})
 
 // Shortcuts data
 const shortcuts = [
@@ -1271,6 +1389,96 @@ const selectCustomer = async (customer) => {
     logger.error('Error loading loyalty points:', error)
     selectedCustomerLoyaltyPoints.value = 0
     toastService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
+  }
+}
+
+// Tạo khách hàng mới
+const closeCreateCustomerModal = () => {
+  showCreateCustomerModal.value = false
+  newCustomer.value = {
+    email: '',
+    password: '',
+    fullName: '',
+    phoneNumber: '',
+    address: '',
+    role: 'USER',
+    isActive: true
+  }
+  customerFormErrors.value = {}
+}
+
+const validateCreateCustomer = () => {
+  customerFormErrors.value = {}
+  
+  if (!newCustomer.value.email || !newCustomer.value.email.trim()) {
+    customerFormErrors.value.email = 'Email không được để trống'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.value.email)) {
+    customerFormErrors.value.email = 'Email không hợp lệ'
+  }
+  
+  if (!newCustomer.value.password || !newCustomer.value.password.trim()) {
+    customerFormErrors.value.password = 'Mật khẩu không được để trống'
+  } else if (newCustomer.value.password.length < 6) {
+    customerFormErrors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
+  }
+  
+  if (!newCustomer.value.fullName || !newCustomer.value.fullName.trim()) {
+    customerFormErrors.value.fullName = 'Họ tên không được để trống'
+  } else if (newCustomer.value.fullName.trim().length < 2) {
+    customerFormErrors.value.fullName = 'Họ tên phải có ít nhất 2 ký tự'
+  }
+  
+  // Không validate address (tùy chọn)
+  
+  return Object.keys(customerFormErrors.value).length === 0
+}
+
+const handleCreateCustomer = async () => {
+  if (!validateCreateCustomer()) {
+    toastService.warning('Cảnh báo','Vui lòng kiểm tra lại thông tin form!')
+    return
+  }
+
+  try {
+    creatingCustomer.value = true
+    
+    // Chuẩn bị data để tạo user
+    const userData = {
+      email: newCustomer.value.email.trim(),
+      password: newCustomer.value.password,
+      fullName: newCustomer.value.fullName.trim(),
+      phoneNumber: newCustomer.value.phoneNumber?.trim() || null,
+      address: newCustomer.value.address?.trim() || null,
+      role: 'USER', // Luôn là USER cho khách hàng
+      isActive: true // Mặc định là true
+    }
+    
+    const createdUser = await adminStore.createUser(userData)
+    
+    toastService.success('Thành công',`Đã tạo khách hàng "${createdUser.fullName || createdUser.email}" thành công!`)
+    
+    // Tự động chọn khách hàng vừa tạo
+    await selectCustomer(createdUser)
+    
+    // Đóng modal tạo khách hàng
+    closeCreateCustomerModal()
+    
+    // Refresh danh sách khách hàng
+    await loadSuggestedCustomers()
+    
+  } catch (error) {
+    logger.error('Lỗi khi tạo khách hàng:', error)
+    toastService.apiError(error, 'Không thể tạo khách hàng')
+    
+    // Hiển thị lỗi cụ thể nếu có
+    if (error?.response?.data?.validationErrors) {
+      const validationErrors = error.response.data.validationErrors
+      Object.keys(validationErrors).forEach(key => {
+        customerFormErrors.value[key] = Array.isArray(validationErrors[key]) ? validationErrors[key][0] : validationErrors[key]
+      })
+    }
+  } finally {
+    creatingCustomer.value = false
   }
 }
 
@@ -1699,6 +1907,9 @@ const handleKeydown = (event) => {
   
   // Esc: Close modals
   if (event.key === 'Escape') {
+    if (showCreateCustomerModal.value) {
+      closeCreateCustomerModal()
+    }
     if (showCustomerModal.value) {
       showCustomerModal.value = false
     }

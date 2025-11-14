@@ -188,6 +188,45 @@ public class CouponService {
     }
 
     /**
+     * Lấy danh sách coupons đang hoạt động (cho user chọn)
+     */
+    @Transactional(readOnly = true)
+    public List<CouponDto> getActiveCoupons() {
+        LocalDateTime now = LocalDateTime.now();
+        
+        Specification<Coupon> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            
+            // Chỉ lấy coupons đang active
+            predicates.add(cb.equal(root.get("isActive"), true));
+            
+            // Đã bắt đầu (startAt <= now)
+            predicates.add(cb.lessThanOrEqualTo(root.get("startAt"), now));
+            
+            // Chưa hết hạn (endAt >= now)
+            predicates.add(cb.greaterThanOrEqualTo(root.get("endAt"), now));
+            
+            // Chưa hết lượt dùng (maxUses IS NULL OR usesCount < maxUses)
+            Predicate maxUsesNull = cb.isNull(root.get("maxUses"));
+            Predicate usesCountLessThanMax = cb.and(
+                cb.isNotNull(root.get("maxUses")),
+                cb.lessThan(root.get("usesCount"), root.get("maxUses"))
+            );
+            predicates.add(cb.or(maxUsesNull, usesCountLessThanMax));
+            
+            // Sắp xếp theo endAt ASC (sắp hết hạn trước)
+            query.orderBy(cb.asc(root.get("endAt")));
+            
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        
+        List<Coupon> coupons = couponRepository.findAll(spec);
+        return coupons.stream()
+                .map(this::convertToDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
      * Convert Entity to DTO
      */
     private CouponDto convertToDto(Coupon coupon) {

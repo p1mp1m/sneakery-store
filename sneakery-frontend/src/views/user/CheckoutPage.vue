@@ -457,23 +457,40 @@
                   <i class="material-icons text-purple-600 dark:text-purple-400 text-base">local_offer</i>
                   Mã giảm giá (không bắt buộc)
                 </h3>
-                <div class="flex gap-2">
-                  <input
-                    v-model="couponCode"
-                    type="text"
-                    placeholder="Nhập mã giảm giá"
-                    class="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
-                    :disabled="applyingCoupon"
-                  />
-                  <button
-                    @click="applyCoupon"
-                    :disabled="applyingCoupon || !couponCode"
-                    class="px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
+                <div class="flex gap-2 mb-2">
+                  <select
+                    v-model="selectedCouponCode"
+                    @change="onCouponSelected"
+                    class="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all max-w-full text-sm truncate"
+                    :disabled="couponApplied || loadingActiveCoupons"
+                    style="max-width: 100%;"
                   >
-                    <div v-if="applyingCoupon" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    <i v-else class="material-icons text-lg">local_offer</i>
-                    <span>{{ applyingCoupon ? 'Đang áp dụng...' : 'Áp dụng' }}</span>
+                    <option value="">-- Chọn mã giảm giá --</option>
+                    <option
+                      v-for="coupon in activeCoupons"
+                      :key="coupon.id"
+                      :value="coupon.code"
+                      :disabled="coupon.minOrderAmount && cart?.subTotal < coupon.minOrderAmount"
+                      :title="getCouponFullText(coupon)"
+                    >
+                      {{ getCouponDisplayText(coupon) }}
+                    </option>
+                  </select>
+                  <button
+                    v-if="couponApplied"
+                    @click="removeCoupon"
+                    class="px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
+                  >
+                    <i class="material-icons text-lg">close</i>
+                    <span>Xóa</span>
                   </button>
+                </div>
+                <div v-if="loadingActiveCoupons" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  <div class="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent"></div>
+                  Đang tải danh sách mã giảm giá...
+                </div>
+                <div v-if="!loadingActiveCoupons && activeCoupons.length === 0" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Hiện không có mã giảm giá nào đang hoạt động
                 </div>
                 <div v-if="couponError" class="text-sm text-red-600 dark:text-red-400 mt-2 flex items-center gap-1 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
                   <i class="material-icons text-base">error</i>
@@ -822,12 +839,16 @@ const selectedAddress = ref(null);
 const paymentMethod = ref('cod');
 const notes = ref('');
 const applyingCoupon = ref(false);
+const activeCoupons = ref([]);
+const loadingActiveCoupons = ref(false);
+const selectedCouponCode = ref('');
 
 // Use coupon store state
 const couponCode = computed({
   get: () => couponStore.couponCode,
   set: (value) => { couponStore.couponCode = value; }
 });
+const couponApplied = computed(() => couponStore.hasCoupon);
 const couponError = computed(() => couponStore.couponError);
 const appliedCoupon = computed(() => couponStore.appliedCoupon);
 const shippingFee = ref(30000);
@@ -971,21 +992,47 @@ const fetchData = async () => {
   }
 };
 
-const applyCoupon = async () => {
-  if (!couponCode.value || !cart.value) return;
-  
+const fetchActiveCoupons = async () => {
+  try {
+    loadingActiveCoupons.value = true;
+    const coupons = await couponService.getActiveCoupons();
+    activeCoupons.value = coupons || [];
+    
+    // Nếu có coupon đã apply, set selectedCouponCode
+    if (appliedCoupon.value) {
+      selectedCouponCode.value = appliedCoupon.value.code;
+    }
+  } catch (error) {
+    logger.error('Error fetching active coupons:', error);
+    // Không hiển thị error cho user vì không block flow
+    activeCoupons.value = [];
+  } finally {
+    loadingActiveCoupons.value = false;
+  }
+};
+
+const onCouponSelected = async () => {
+  if (!selectedCouponCode.value) {
+    // Nếu chọn "-- Chọn mã giảm giá --", xóa coupon
+    if (couponApplied.value) {
+      removeCoupon();
+    }
+    return;
+  }
+
+  // Apply coupon khi user chọn từ dropdown
   try {
     applyingCoupon.value = true;
     couponStore.setError('');
     
     // Validate coupon code from API
     const coupon = await couponService.validateCoupon(
-      couponCode.value.trim(),
+      selectedCouponCode.value.trim(),
       cart.value.subTotal
     );
     
     // Store coupon info in store
-    couponStore.setCoupon(couponCode.value.trim(), coupon);
+    couponStore.setCoupon(selectedCouponCode.value.trim(), coupon);
     
     // Calculate discount
     const discount = couponService.calculateDiscount(coupon, cart.value.subTotal);
@@ -999,11 +1046,77 @@ const applyCoupon = async () => {
   } catch (error) {
     logger.error('Error applying coupon:', error);
     couponStore.setError(error.message || 'Không thể áp dụng mã giảm giá');
-    toastService.error('Lỗi', couponStore.couponError);
     couponStore.clearCoupon();
+    selectedCouponCode.value = '';
+    toastService.error('Lỗi', couponStore.couponError);
   } finally {
     applyingCoupon.value = false;
   }
+};
+
+const removeCoupon = () => {
+  couponStore.clearCoupon();
+  selectedCouponCode.value = '';
+  toastService.info('Thông tin','Đã xóa mã giảm giá');
+};
+
+// Helper functions for coupon display
+const getCouponDisplayText = (coupon, maxLength = 40) => {
+  let text = coupon.code;
+  
+  // Thêm giá trị giảm giá (ngắn gọn)
+  if (coupon.discountType === 'percent') {
+    text += ` (${coupon.value}%`;
+    if (coupon.maxDiscountAmount) {
+      const maxAmount = formatPrice(coupon.maxDiscountAmount);
+      // Rút ngắn formatPrice nếu quá dài
+      if (maxAmount.length > 15) {
+        text += ` - Max ${(coupon.maxDiscountAmount / 1000000).toFixed(0)}M`;
+      } else {
+        text += ` - Max ${maxAmount}`;
+      }
+    }
+    text += ')';
+  } else {
+    const amount = formatPrice(coupon.value);
+    // Rút ngắn formatPrice nếu quá dài
+    if (amount.length > 15) {
+      text += ` (${(coupon.value / 1000000).toFixed(0)}M)`;
+    } else {
+      text += ` (${amount})`;
+    }
+  }
+  
+  // Nếu text quá dài, truncate
+  if (text.length > maxLength) {
+    text = text.substring(0, maxLength - 3) + '...';
+  }
+  
+  return text;
+};
+
+const getCouponFullText = (coupon) => {
+  let text = coupon.code;
+  
+  if (coupon.description) {
+    text += ` - ${coupon.description}`;
+  }
+  
+  if (coupon.discountType === 'percent') {
+    text += ` (${coupon.value}%`;
+    if (coupon.maxDiscountAmount) {
+      text += ` - Tối đa ${formatPrice(coupon.maxDiscountAmount)}`;
+    }
+    text += ')';
+  } else {
+    text += ` (${formatPrice(coupon.value)})`;
+  }
+  
+  if (coupon.minOrderAmount) {
+    text += ` - Áp dụng cho đơn từ ${formatPrice(coupon.minOrderAmount)}`;
+  }
+  
+  return text;
 };
 
 const saveAddress = async () => {
@@ -1199,6 +1312,9 @@ onMounted(async () => {
     
     await fetchData();
     
+    // Fetch active coupons for dropdown
+    await fetchActiveCoupons();
+    
     // Revalidate coupon if it exists and cart is loaded
     if (appliedCoupon.value && cart.value?.subTotal) {
       try {
@@ -1207,10 +1323,12 @@ onMounted(async () => {
           cart.value.subTotal
         );
         couponStore.setCoupon(couponCode.value, coupon);
+        selectedCouponCode.value = couponCode.value;
         logger.log('Coupon revalidated on checkout page load');
       } catch (error) {
         logger.warn('Coupon validation failed on checkout page load:', error);
         couponStore.clearCoupon();
+        selectedCouponCode.value = '';
       }
     }
     

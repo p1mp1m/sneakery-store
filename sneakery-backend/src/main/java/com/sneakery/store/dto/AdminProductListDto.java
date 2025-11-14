@@ -37,10 +37,10 @@ public class AdminProductListDto {
     @Schema(description = "ID loại đế giày của sản phẩm", example = "3")
     private Integer shoeSoleId;
 
-    @Schema(description = "Giá từ (VNĐ)", example = "1000000")
+    @Schema(description = "Giá từ (VNĐ) - tính từ giá min của các biến thể", example = "1000000")
     private Integer priceFrom;
 
-    @Schema(description = "Giá đến (VNĐ)", example = "5000000")
+    @Schema(description = "Giá đến (VNĐ) - tính từ giá max của các biến thể", example = "5000000")
     private Integer priceTo;
 
     private Integer variantCount; // Số lượng variants
