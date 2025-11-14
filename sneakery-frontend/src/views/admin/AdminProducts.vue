@@ -332,18 +332,13 @@
 
               <td class="px-4 py-4">
                 <span
-                  class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full"
+                  class="inline-flex items-center justify-center px-2 py-1 text-xs font-semibold rounded-full min-w-[40px]"
                   :class="{
-                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getStockClass(product) === 'in-stock',
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': getStockClass(product) === 'low-stock',
-                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getStockClass(product) === 'out-of-stock'
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getTotalStock(product) > 0,
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getTotalStock(product) === 0
                   }"
                 >
-                  <i class="material-icons text-sm">{{ getStockIcon(product) }}</i>
-                  {{ getStockStatusText(product) }}
-                  <small style="margin-left: 4px; opacity: 0.8">
-                    ({{ getTotalStock(product) }})
-                  </small>
+                  {{ getTotalStock(product) }}
                 </span>
               </td>
 
@@ -1181,6 +1176,7 @@ const soles = ref([]); // Danh sách loại đế giày
 const stats = ref(null);
 const loading = ref(false);
 const actionLoading = ref(false); // 🆕 Loading riêng cho duplicate/delete actions
+const loadingProductDetail = ref(false); // 🆕 Loading riêng cho việc load chi tiết product khi edit
 const currentPage = ref(0);
 const sortBy = ref("id"); // Default sort column
 const sortOrder = ref("desc"); // 'asc' or 'desc'
@@ -1385,6 +1381,8 @@ const formData = ref({
   mainImageUrl: null, // 🆕 Danh sách ảnh sản phẩm (gallery)
   materialId: null, // 🆕
   shoeSoleId: null, // 🆕
+  priceFrom: null, // 🆕 Giá từ
+  priceTo: null, // 🆕 Giá đến
   variants: [],
 });
 
@@ -1677,6 +1675,8 @@ const openCreateModal = () => {
     categoryIds: [],
     materialId: null,
     shoeSoleId: null,
+    priceFrom: null,
+    priceTo: null,
     variants: [],
   };
   formErrors.value = {};
@@ -1688,17 +1688,42 @@ const editingProduct = ref(null);
 const openEditModal = async (product) => {
   isEditMode.value = true;
   editingProduct.value = null;
-  loading.value = true;
+  loadingProductDetail.value = true; // ✅ Dùng loading riêng, không ảnh hưởng đến bảng
 
   try {
-    await Promise.all([
-      adminStore.fetchBrands?.(),
-      adminStore.fetchCategories?.(),
-      adminStore.fetchMaterials?.(),
-      adminStore.fetchSoles?.(),
-    ]);
+    // ✅ Chỉ fetch khi dữ liệu chưa có (đã được load ở onMounted rồi)
+    // Tránh gọi lại các API này vì chúng set loading.value = true trong store
+    // và có thể trigger reload danh sách sản phẩm
+    const fetchPromises = [];
+    if (!brands.value || brands.value.length === 0) {
+      fetchPromises.push(adminStore.fetchBrands?.());
+    }
+    if (!categories.value || categories.value.length === 0) {
+      fetchPromises.push(adminStore.fetchCategories?.());
+    }
+    if (!materials.value || materials.value.length === 0) {
+      fetchPromises.push(adminStore.fetchMaterials?.());
+    }
+    if (!soles.value || soles.value.length === 0) {
+      fetchPromises.push(adminStore.fetchSoles?.());
+    }
+    
+    // Chỉ await nếu có promise nào cần chạy
+    if (fetchPromises.length > 0) {
+      await Promise.all(fetchPromises);
+      // Update local refs sau khi fetch
+      brands.value = adminStore.brands;
+      categories.value = adminStore.categories;
+      materials.value = adminStore.materials;
+      soles.value = adminStore.soles;
+    }
 
     const detailData = await adminStore.getProductById(product.id);
+
+    // Debug: Log data nhận được từ API (có thể xóa sau khi test)
+    // console.log("🔍 Detail data từ API:", detailData);
+    // console.log("🔍 priceFrom:", detailData.priceFrom);
+    // console.log("🔍 priceTo:", detailData.priceTo);
 
     // ⚠️ Quan trọng: Luôn tạo object mới để Vue detect change
     editingProduct.value = JSON.parse(
@@ -1713,6 +1738,8 @@ const openEditModal = async (product) => {
         categoryIds: detailData.categories?.map((c) => c.id) || [],
         materialId: detailData.materialId ?? null,
         shoeSoleId: detailData.shoeSoleId ?? null,
+        priceFrom: detailData.priceFrom ?? null,
+        priceTo: detailData.priceTo ?? null,
         variants:
           detailData.variants?.map((v) => ({
             id: v.id,
@@ -1726,6 +1753,14 @@ const openEditModal = async (product) => {
           })) || [],
       })
     );
+
+    // Debug logs (có thể xóa sau khi test)
+    // console.log("🔍 editingProduct sau khi map:", editingProduct.value);
+    // console.log("🔍 editingProduct.priceFrom:", editingProduct.value.priceFrom);
+    // console.log("🔍 editingProduct.priceTo:", editingProduct.value.priceTo);
+
+    // ✅ Đảm bảo formData cũng được cập nhật
+    formData.value = { ...editingProduct.value };
 
     // 🟢 Bổ sung phần LOAD ẢNH từ API
     const { data: imageData } = await axios.get(
@@ -1769,13 +1804,15 @@ const openEditModal = async (product) => {
       categoryIds: [],
       materialId: null,
       shoeSoleId: null,
+      priceFrom: product.priceFrom ?? null,
+      priceTo: product.priceTo ?? null,
       variants: [],
     };
     initialProductImages.value = [];
     productImages.value = [];
     showModal.value = true;
   } finally {
-    loading.value = false;
+    loadingProductDetail.value = false; // ✅ Dùng loading riêng
   }
 };
 
@@ -1814,6 +1851,8 @@ const closeModal = () => {
     // 🆕 reset 2 field mới
     materialId: null,
     shoeSoleId: null,
+    priceFrom: null,
+    priceTo: null,
     variants: [],
   };
   // 🧹 Cleanup blob URL khi đóng modal
@@ -1971,6 +2010,34 @@ const handleSubmit = async (submittedData = null) => {
     //     stockQuantity: Number(v.stockQuantity) || 0,
     //   })),
     // };
+    // ==================== [VALIDATE KHOẢNG GIÁ] ====================
+    // Validate giá từ và giá đến
+    if (dataToSubmit.priceFrom !== null && dataToSubmit.priceFrom !== undefined) {
+      if (dataToSubmit.priceFrom < 0) {
+        toastService.warning('Cảnh báo', 'Giá từ không được âm');
+        return;
+      }
+    }
+
+    if (dataToSubmit.priceTo !== null && dataToSubmit.priceTo !== undefined) {
+      if (dataToSubmit.priceTo < 0) {
+        toastService.warning('Cảnh báo', 'Giá đến không được âm');
+        return;
+      }
+    }
+
+    if (
+      dataToSubmit.priceFrom !== null &&
+      dataToSubmit.priceFrom !== undefined &&
+      dataToSubmit.priceTo !== null &&
+      dataToSubmit.priceTo !== undefined
+    ) {
+      if (dataToSubmit.priceFrom > dataToSubmit.priceTo) {
+        toastService.warning('Cảnh báo', 'Giá từ phải nhỏ hơn hoặc bằng giá đến');
+        return;
+      }
+    }
+
     // ==================== [4] TẠO / CẬP NHẬT SẢN PHẨM ====================
     const productPayload = {
       id: dataToSubmit.id || null,
@@ -1981,6 +2048,8 @@ const handleSubmit = async (submittedData = null) => {
       categoryIds: dataToSubmit.categoryIds,
       materialId: dataToSubmit.materialId,
       shoeSoleId: dataToSubmit.shoeSoleId,
+      priceFrom: dataToSubmit.priceFrom !== null && dataToSubmit.priceFrom !== undefined ? Number(dataToSubmit.priceFrom) : null,
+      priceTo: dataToSubmit.priceTo !== null && dataToSubmit.priceTo !== undefined ? Number(dataToSubmit.priceTo) : null,
       isActive: dataToSubmit.isActive ?? true,
 
       variants: dataToSubmit.variants.map((v) => ({
@@ -2187,6 +2256,8 @@ const handleSubmit = async (submittedData = null) => {
             categoryIds: formData.value.categoryIds,
             materialId: formData.value.materialId,
             shoeSoleId: formData.value.shoeSoleId,
+            priceFrom: formData.value.priceFrom,
+            priceTo: formData.value.priceTo,
             isActive: formData.value.isActive,
             mainImageUrl: finalPrimary.previewUrl, // 🧩 thêm trường mới
             variants: formData.value.variants.map((v) => ({

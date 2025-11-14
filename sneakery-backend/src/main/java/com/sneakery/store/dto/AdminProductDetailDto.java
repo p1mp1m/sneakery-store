@@ -27,6 +27,13 @@ public class AdminProductDetailDto {
 
     @Schema(description = "ID loại đế giày của sản phẩm", example = "3")
     private Integer shoeSoleId;
+
+    @Schema(description = "Giá từ (VNĐ)", example = "1000000")
+    private Integer priceFrom;
+
+    @Schema(description = "Giá đến (VNĐ)", example = "5000000")
+    private Integer priceTo;
+
     private Set<CategoryDto> categories;
     private List<AdminVariantRequestDto> variants; // Dùng lại DTO request cho tiện
 }

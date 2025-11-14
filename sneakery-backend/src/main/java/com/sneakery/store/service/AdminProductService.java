@@ -5,6 +5,7 @@ import com.sneakery.store.entity.*;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.*;
 import com.sneakery.store.util.CodeGenerator;
+import com.sneakery.store.util.PriceRangeConverter;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -147,6 +148,7 @@ public class AdminProductService {
         productValidationUtil.validateProductNameUniqueness(requestDto.getName(), requestDto.getBrandId(), null);
         productValidationUtil.validateSkuUniqueness(requestDto.getVariants(), null);
         productValidationUtil.validateVariantPrices(requestDto.getVariants());
+        productValidationUtil.validatePriceRange(requestDto.getPriceFrom(), requestDto.getPriceTo());
         
         // 1️⃣ Lấy Brand
         Brand brand = brandRepository.findById(Objects.requireNonNull(requestDto.getBrandId()))
@@ -182,6 +184,10 @@ public class AdminProductService {
         product.setCategories(categories);
         product.setMaterial(material);
         product.setShoeSole(shoeSole);
+
+        // 🆕 5.1️⃣ Convert priceFrom/priceTo thành priceRange JSON
+        String priceRangeJson = PriceRangeConverter.toJsonString(requestDto.getPriceFrom(), requestDto.getPriceTo());
+        product.setPriceRange(priceRangeJson);
 
         // 6️⃣ Sinh mã sản phẩm tự động
         Long lastId = productRepository.findMaxId();
@@ -253,6 +259,7 @@ public class AdminProductService {
         productValidationUtil.validateProductNameUniqueness(requestDto.getName(), requestDto.getBrandId(), productId);
         productValidationUtil.validateSkuUniqueness(requestDto.getVariants(), productId);
         productValidationUtil.validateVariantPrices(requestDto.getVariants());
+        productValidationUtil.validatePriceRange(requestDto.getPriceFrom(), requestDto.getPriceTo());
 
         // 2️⃣ Lấy Brand
         Brand brand = brandRepository.findById(Objects.requireNonNull(requestDto.getBrandId()))
@@ -288,6 +295,10 @@ public class AdminProductService {
         product.setMaterial(material);
         product.setShoeSole(shoeSole);
         product.setMainImageUrl(requestDto.getMainImageUrl());
+
+        // 🆕 6.1️⃣ Convert priceFrom/priceTo thành priceRange JSON
+        String priceRangeJson = PriceRangeConverter.toJsonString(requestDto.getPriceFrom(), requestDto.getPriceTo());
+        product.setPriceRange(priceRangeJson);
 
 
         // 7️⃣ Cập nhật variants
@@ -409,6 +420,12 @@ private AdminProductListDto convertToListDto(Product product) {
                 .mapToInt(v -> Optional.ofNullable(v.getStockQuantity()).orElse(0))
                 .sum();
     }
+
+    // 🆕 Convert priceRange JSON thành priceFrom/priceTo
+    PriceRangeConverter.PriceRange priceRange = PriceRangeConverter.fromJsonString(product.getPriceRange());
+    Integer priceFrom = priceRange != null ? priceRange.getFromAsInteger() : null;
+    Integer priceTo = priceRange != null ? priceRange.getToAsInteger() : null;
+
     return AdminProductListDto.builder()
             .id(product.getId())
             .code(product.getCode()) // 🆕 Thêm dòng này để hiển thị mã sản phẩm
@@ -422,6 +439,8 @@ private AdminProductListDto convertToListDto(Product product) {
             .categories(categoryDtos)
             .materialId(product.getMaterial() != null ? product.getMaterial().getId() : null)
             .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
+            .priceFrom(priceFrom)
+            .priceTo(priceTo)
             .mainImageUrl(product.getMainImageUrl())
             .build();
 }
@@ -675,6 +694,25 @@ private AdminProductListDto convertToListDto(Product product) {
                 return dto;
             }).collect(Collectors.toList());
 
+        // ✅ Tính tổng tồn kho
+        int totalStock = 0;
+        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+            totalStock = product.getVariants().stream()
+                    .mapToInt(v -> Optional.ofNullable(v.getStockQuantity()).orElse(0))
+                    .sum();
+        }
+
+        // 🆕 Convert priceRange JSON thành priceFrom/priceTo
+        PriceRangeConverter.PriceRange priceRange = PriceRangeConverter.fromJsonString(product.getPriceRange());
+        Integer priceFrom = priceRange != null ? priceRange.getFromAsInteger() : null;
+        Integer priceTo = priceRange != null ? priceRange.getToAsInteger() : null;
+        
+        // Debug log
+        if (product.getPriceRange() != null) {
+            log.debug("Product ID {} - priceRange JSON: {}, parsed - from: {}, to: {}", 
+                product.getId(), product.getPriceRange(), priceFrom, priceTo);
+        }
+
         return AdminProductDetailDto.builder()
                 .id(product.getId())
                 .brandId(product.getBrand().getId())
@@ -682,8 +720,11 @@ private AdminProductListDto convertToListDto(Product product) {
                 .slug(product.getSlug())
                 .description(product.getDescription())
                 .isActive(product.getIsActive())
+                .totalStock(totalStock)
                 .materialId(product.getMaterial() != null ? product.getMaterial().getId() : null)
                 .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
+                .priceFrom(priceFrom)
+                .priceTo(priceTo)
                 .categories(categoryDtos)
                 .variants(variantDtos)
                 .mainImageUrl(product.getMainImageUrl()) // ✅ Trả về ảnh bìa chính

@@ -83,6 +83,9 @@ public class Product {
     @Column(name = "main_image_url", length = 500)
     private String mainImageUrl;
 
+    @Column(name = "price_range", length = 500)
+    private String priceRange; // Lưu dạng JSON: {"from": 1000000, "to": 5000000}
+
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
