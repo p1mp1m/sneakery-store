@@ -298,7 +298,6 @@ public class AdminProductService {
         product.setShoeSole(shoeSole);
         product.setMainImageUrl(requestDto.getMainImageUrl());
 
-
         // 7️⃣ Cập nhật variants
         updateProductVariants(product, requestDto.getVariants());
 
@@ -428,6 +427,31 @@ private AdminProductListDto convertToListDto(Product product) {
                 .mapToInt(v -> Optional.ofNullable(v.getStockQuantity()).orElse(0))
                 .sum();
     }
+
+    // 🆕 Tính giá min/max từ các biến thể (variants)
+    // Logic: Lấy giá thực tế (priceSale nếu có, không thì priceBase) từ tất cả variants
+    Integer priceFrom = null;
+    Integer priceTo = null;
+    if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+        java.util.List<Integer> prices = product.getVariants().stream()
+                .map(variant -> {
+                    // Ưu tiên dùng priceSale nếu có, không thì dùng priceBase
+                    if (variant.getPriceSale() != null && variant.getPriceSale().compareTo(java.math.BigDecimal.ZERO) > 0) {
+                        return variant.getPriceSale().intValue();
+                    } else if (variant.getPriceBase() != null) {
+                        return variant.getPriceBase().intValue();
+                    }
+                    return null;
+                })
+                .filter(price -> price != null && price > 0)
+                .collect(java.util.stream.Collectors.toList());
+        
+        if (!prices.isEmpty()) {
+            priceFrom = prices.stream().mapToInt(Integer::intValue).min().orElse(0);
+            priceTo = prices.stream().mapToInt(Integer::intValue).max().orElse(0);
+        }
+    }
+
     return AdminProductListDto.builder()
             .id(product.getId())
             .code(product.getCode()) // 🆕 Thêm dòng này để hiển thị mã sản phẩm
@@ -441,6 +465,8 @@ private AdminProductListDto convertToListDto(Product product) {
             .categories(categoryDtos)
             .materialId(product.getMaterial() != null ? product.getMaterial().getId() : null)
             .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
+            .priceFrom(priceFrom)
+            .priceTo(priceTo)
             .mainImageUrl(product.getMainImageUrl())
             .build();
 }
@@ -712,6 +738,25 @@ private AdminProductListDto convertToListDto(Product product) {
                 return dto;
             }).collect(Collectors.toList());
 
+        // ✅ Tính tổng tồn kho
+        int totalStock = 0;
+        if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+            totalStock = product.getVariants().stream()
+                    .mapToInt(v -> Optional.ofNullable(v.getStockQuantity()).orElse(0))
+                    .sum();
+        }
+
+        // 🆕 Convert priceRange JSON thành priceFrom/priceTo
+        PriceRangeConverter.PriceRange priceRange = PriceRangeConverter.fromJsonString(product.getPriceRange());
+        Integer priceFrom = priceRange != null ? priceRange.getFromAsInteger() : null;
+        Integer priceTo = priceRange != null ? priceRange.getToAsInteger() : null;
+        
+        // Debug log
+        if (product.getPriceRange() != null) {
+            log.debug("Product ID {} - priceRange JSON: {}, parsed - from: {}, to: {}", 
+                product.getId(), product.getPriceRange(), priceFrom, priceTo);
+        }
+
         return AdminProductDetailDto.builder()
                 .id(product.getId())
                 .brandId(product.getBrand().getId())
@@ -719,8 +764,11 @@ private AdminProductListDto convertToListDto(Product product) {
                 .slug(product.getSlug())
                 .description(product.getDescription())
                 .isActive(product.getIsActive())
+                .totalStock(totalStock)
                 .materialId(product.getMaterial() != null ? product.getMaterial().getId() : null)
                 .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
+                .priceFrom(priceFrom)
+                .priceTo(priceTo)
                 .categories(categoryDtos)
                 .variants(variantDtos)
                 .mainImageUrl(product.getMainImageUrl()) // ✅ Trả về ảnh bìa chính

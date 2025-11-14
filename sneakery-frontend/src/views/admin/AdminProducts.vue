@@ -330,6 +330,13 @@
                   <i class="material-icons text-sm" aria-hidden="true">{{ getSortIcon("variantCount") }}</i>
                 </button>
               </th>
+              <!-- 🆕 Khoảng giá -->
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('priceFrom')">
+                <div class="flex items-center gap-1">
+                  <span>Khoảng giá</span>
+                  <i class="material-icons text-sm">{{ getSortIcon("priceFrom") }}</i>
+                </div>
+              </th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">
                 <button
                   @click="sortColumn('stockQuantity')"
@@ -397,20 +404,39 @@
                 </span>
               </td>
 
+              <!-- 🆕 Cột khoảng giá -->
+              <td class="px-4 py-4">
+                <div v-if="(product.priceFrom !== null && product.priceFrom !== undefined) || (product.priceTo !== null && product.priceTo !== undefined)" class="text-sm text-gray-900 dark:text-gray-100">
+                  <div v-if="(product.priceFrom !== null && product.priceFrom !== undefined) && (product.priceTo !== null && product.priceTo !== undefined)" class="flex items-center gap-1">
+                    <span class="font-medium text-purple-600 dark:text-purple-400">{{ formatPriceWithoutUnit(product.priceFrom) }}</span>
+                    <i class="material-icons text-xs text-gray-400">arrow_forward</i>
+                    <span class="font-medium text-purple-600 dark:text-purple-400">{{ formatPriceWithoutUnit(product.priceTo) }}</span>
+                  </div>
+                  <div v-else-if="product.priceFrom !== null && product.priceFrom !== undefined" class="text-gray-600 dark:text-gray-400">
+                    <span class="flex items-center gap-1">
+                      <span>Từ</span>
+                      <span class="font-medium text-purple-600 dark:text-purple-400">{{ formatPriceWithoutUnit(product.priceFrom) }}</span>
+                    </span>
+                  </div>
+                  <div v-else-if="product.priceTo !== null && product.priceTo !== undefined" class="text-gray-600 dark:text-gray-400">
+                    <span class="flex items-center gap-1">
+                      <span>Đến</span>
+                      <span class="font-medium text-purple-600 dark:text-purple-400">{{ formatPriceWithoutUnit(product.priceTo) }}</span>
+                    </span>
+                  </div>
+                </div>
+                <span v-else class="text-xs text-gray-400 dark:text-gray-500 italic">—</span>
+              </td>
+
               <td class="px-4 py-4">
                 <span
-                  class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full"
+                  class="inline-flex items-center justify-center px-2 py-1 text-xs font-semibold rounded-full min-w-[40px]"
                   :class="{
-                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getStockClass(product) === 'in-stock',
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': getStockClass(product) === 'low-stock',
-                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getStockClass(product) === 'out-of-stock'
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': getTotalStock(product) > 0,
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': getTotalStock(product) === 0
                   }"
                 >
-                  <i class="material-icons text-sm">{{ getStockIcon(product) }}</i>
-                  {{ getStockStatusText(product) }}
-                  <small style="margin-left: 4px; opacity: 0.8">
-                    ({{ getTotalStock(product) }})
-                  </small>
+                  {{ getTotalStock(product) }}
                 </span>
               </td>
 
@@ -1357,6 +1383,7 @@ const soles = ref([]); // Danh sách loại đế giày
 const stats = ref(null);
 const loading = ref(false);
 const actionLoading = ref(false); // 🆕 Loading riêng cho duplicate/delete actions
+const loadingProductDetail = ref(false); // 🆕 Loading riêng cho việc load chi tiết product khi edit
 const currentPage = ref(0);
 const sortBy = ref("id"); // Default sort column
 const sortOrder = ref("desc"); // 'asc' or 'desc'
@@ -1862,6 +1889,8 @@ const openCreateModal = () => {
     categoryIds: [],
     materialId: null,
     shoeSoleId: null,
+    priceFrom: null,
+    priceTo: null,
     variants: [],
   };
   formErrors.value = {};
@@ -1873,17 +1902,42 @@ const editingProduct = ref(null);
 const openEditModal = async (product) => {
   isEditMode.value = true;
   editingProduct.value = null;
-  loading.value = true;
+  loadingProductDetail.value = true; // ✅ Dùng loading riêng, không ảnh hưởng đến bảng
 
   try {
-    await Promise.all([
-      adminStore.fetchBrands?.(),
-      adminStore.fetchCategories?.(),
-      adminStore.fetchMaterials?.(),
-      adminStore.fetchSoles?.(),
-    ]);
+    // ✅ Chỉ fetch khi dữ liệu chưa có (đã được load ở onMounted rồi)
+    // Tránh gọi lại các API này vì chúng set loading.value = true trong store
+    // và có thể trigger reload danh sách sản phẩm
+    const fetchPromises = [];
+    if (!brands.value || brands.value.length === 0) {
+      fetchPromises.push(adminStore.fetchBrands?.());
+    }
+    if (!categories.value || categories.value.length === 0) {
+      fetchPromises.push(adminStore.fetchCategories?.());
+    }
+    if (!materials.value || materials.value.length === 0) {
+      fetchPromises.push(adminStore.fetchMaterials?.());
+    }
+    if (!soles.value || soles.value.length === 0) {
+      fetchPromises.push(adminStore.fetchSoles?.());
+    }
+    
+    // Chỉ await nếu có promise nào cần chạy
+    if (fetchPromises.length > 0) {
+      await Promise.all(fetchPromises);
+      // Update local refs sau khi fetch
+      brands.value = adminStore.brands;
+      categories.value = adminStore.categories;
+      materials.value = adminStore.materials;
+      soles.value = adminStore.soles;
+    }
 
     const detailData = await adminStore.getProductById(product.id);
+
+    // Debug: Log data nhận được từ API (có thể xóa sau khi test)
+    // console.log("🔍 Detail data từ API:", detailData);
+    // console.log("🔍 priceFrom:", detailData.priceFrom);
+    // console.log("🔍 priceTo:", detailData.priceTo);
 
     // ⚠️ Quan trọng: Luôn tạo object mới để Vue detect change
     editingProduct.value = JSON.parse(
@@ -1911,6 +1965,14 @@ const openEditModal = async (product) => {
           })) || [],
       })
     );
+
+    // Debug logs (có thể xóa sau khi test)
+    // console.log("🔍 editingProduct sau khi map:", editingProduct.value);
+    // console.log("🔍 editingProduct.priceFrom:", editingProduct.value.priceFrom);
+    // console.log("🔍 editingProduct.priceTo:", editingProduct.value.priceTo);
+
+    // ✅ Đảm bảo formData cũng được cập nhật
+    formData.value = { ...editingProduct.value };
 
     // 🟢 Bổ sung phần LOAD ẢNH từ API
     const { data: imageData } = await axios.get(
@@ -1961,7 +2023,7 @@ const openEditModal = async (product) => {
     productImages.value = [];
     showModal.value = true;
   } finally {
-    loading.value = false;
+    loadingProductDetail.value = false; // ✅ Dùng loading riêng
   }
 };
 
@@ -3088,6 +3150,16 @@ const bulkExport = () => {
 
 // ===== HELPERS =====
 // formatCurrency và formatPrice đã được import từ @/utils/formatters
+
+// Format giá không có đơn vị "đ"
+const formatPriceWithoutUnit = (price) => {
+  if (price === null || price === undefined) return '';
+  const numPrice = Number(price) || 0;
+  return new Intl.NumberFormat('vi-VN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(numPrice);
+};
 
 // Lifecycle
 onMounted(async () => {

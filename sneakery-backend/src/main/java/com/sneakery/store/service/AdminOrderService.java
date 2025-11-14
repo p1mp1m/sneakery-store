@@ -78,7 +78,46 @@ public class AdminOrderService {
         String normalizedStatus = normalizeOrderStatus(newStatus);
         log.info("🔄 Updating order #{} status: {} -> {}", orderId, order.getStatus(), normalizedStatus);
         
+        String oldStatus = order.getStatus();
         order.setStatus(normalizedStatus);
+        
+        // Kiểm tra xem có phải POS order không (orderNumber bắt đầu bằng "POS-")
+        boolean isPOSOrder = order.getOrderNumber() != null && order.getOrderNumber().startsWith("POS-");
+        
+        // Đối với online/offline orders: trừ kho khi status = "completed" (delivered)
+        // POS orders đã được trừ kho khi tạo, không cần trừ lại
+        if (!isPOSOrder && "delivered".equalsIgnoreCase(normalizedStatus) && !"delivered".equalsIgnoreCase(oldStatus)) {
+            log.info("📦 Deducting stock for online/offline order #{} (status changed to Completed)", orderId);
+            
+            // Load orderDetails để trừ kho
+            for (OrderDetail detail : order.getOrderDetails()) {
+                ProductVariant variant = detail.getVariant();
+                // Nếu variant null (lazy loading chưa trigger), cần load lại
+                // Nhưng thường thì orderDetails đã được load với variant rồi từ findByIdWithDetails
+                if (variant == null) {
+                    log.warn("⚠️ Variant is null for order detail ID: {}. Order details may not be loaded properly.", detail.getId());
+                    continue;
+                }
+                
+                // Kiểm tra tồn kho trước khi trừ
+                int currentStock = variant.getStockQuantity();
+                int quantityToDeduct = detail.getQuantity();
+                
+                if (currentStock < quantityToDeduct) {
+                    log.error("❌ Insufficient stock for variant {}: Current={}, Required={}", 
+                            variant.getId(), currentStock, quantityToDeduct);
+                    throw new ApiException(HttpStatus.BAD_REQUEST, 
+                            String.format("Sản phẩm %s không đủ hàng để hoàn thành đơn hàng. Tồn kho: %d, Yêu cầu: %d",
+                                    detail.getProductName(), currentStock, quantityToDeduct));
+                }
+                
+                // Trừ kho
+                variant.setStockQuantity(currentStock - quantityToDeduct);
+                variantRepository.save(variant);
+                log.info("✅ Deducted {} units from variant {} (new stock: {})", 
+                        quantityToDeduct, variant.getId(), variant.getStockQuantity());
+            }
+        }
         
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(order);

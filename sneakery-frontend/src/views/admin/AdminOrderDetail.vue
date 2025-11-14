@@ -28,9 +28,27 @@
             {{ getStatusLabel(order.status) }}
           </span>
           <button
+            v-if="order && getNextStep(order.status)"
+            @click="confirmStatusChange(order, getNextStep(order.status))"
+            class="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors text-sm font-medium"
+            :title="`Chuyển sang: ${getStatusLabel(getNextStep(order.status))}`"
+          >
+            <i class="material-icons text-base">arrow_forward</i>
+            Tiếp theo: {{ getStatusLabel(getNextStep(order.status)) }}
+          </button>
+          <button
+            v-if="order && getPreviousStep(order.status)"
+            @click="confirmStatusChange(order, getPreviousStep(order.status))"
+            class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+            :title="`Quay lại: ${getStatusLabel(getPreviousStep(order.status))}`"
+          >
+            <i class="material-icons text-base">arrow_back</i>
+            Quay lại: {{ getStatusLabel(getPreviousStep(order.status)) }}
+          </button>
+          <button
             v-if="order"
             @click="handlePrintInvoice(order)"
-            class="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors text-sm font-medium"
+            class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
           >
             <i class="material-icons text-base">print</i>
             In hóa đơn
@@ -81,6 +99,65 @@
 
     <!-- Order Detail Content -->
     <div v-else-if="order" class="space-y-4">
+      <!-- Status Step Flow -->
+      <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <i class="material-icons text-purple-600 dark:text-purple-400">timeline</i>
+          Trạng thái đơn hàng
+        </h3>
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto pb-2">
+            <div
+              v-for="(step, index) in ORDER_STATUS_STEPS"
+              :key="step"
+              class="flex items-center flex-shrink-0"
+            >
+              <div
+                class="flex flex-col items-center gap-2"
+                :class="{ 'opacity-50': getStatusStepIndex(order.status) < index }"
+              >
+                <div
+                  class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all"
+                  :class="
+                    getStatusStepIndex(order.status) === index
+                      ? 'bg-purple-500 text-white shadow-lg scale-110'
+                      : getStatusStepIndex(order.status) > index
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                  "
+                >
+                  <i
+                    v-if="getStatusStepIndex(order.status) > index"
+                    class="material-icons text-base"
+                  >check</i>
+                  <span v-else>{{ index + 1 }}</span>
+                </div>
+                <span
+                  class="text-xs font-medium text-center whitespace-nowrap"
+                  :class="
+                    getStatusStepIndex(order.status) === index
+                      ? 'text-purple-600 dark:text-purple-400 font-semibold'
+                      : getStatusStepIndex(order.status) > index
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-gray-500 dark:text-gray-400'
+                  "
+                >
+                  {{ getStatusLabel(step) }}
+                </span>
+              </div>
+              <i
+                v-if="index < ORDER_STATUS_STEPS.length - 1"
+                class="material-icons text-gray-300 dark:text-gray-600 mx-2"
+                :class="{
+                  'text-emerald-400': getStatusStepIndex(order.status) > index,
+                  'text-purple-400': getStatusStepIndex(order.status) === index
+                }"
+              >arrow_forward</i>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Customer Info -->
       <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -242,26 +319,219 @@
         </div>
       </div>
     </div>
+
+    <!-- Status Change Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showStatusConfirm"
+      type="warning"
+      title="Xác nhận thay đổi trạng thái"
+      :message="`Bạn có chắc chắn muốn thay đổi trạng thái đơn hàng #${orderToUpdate?.id} từ '${getStatusLabel(oldStatus)}' sang '${getStatusLabel(newStatus)}'?`"
+      description="Hành động này sẽ cập nhật trạng thái đơn hàng."
+      confirm-text="Xác nhận"
+      cancel-text="Hủy"
+      :loading="updating"
+      @confirm="handleStatusUpdate"
+      @cancel="handleCancelStatusChange"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAdminStore } from '@/stores/admin'
 import AdminService from '@/services/adminService'
 import notificationService from '@/utils/notificationService'
 import { printInvoice } from '@/utils/pdfGenerator'
 import logger from '@/utils/logger'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { formatPrice, formatCurrency, formatDateTime } from '@/utils/formatters'
+import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
+const adminStore = useAdminStore()
 
 const orderId = ref(route.params.id)
 const order = ref(null)
 const loading = ref(false)
 const error = ref(null)
+
+// Status change confirmation
+const showStatusConfirm = ref(false)
+const orderToUpdate = ref(null)
+const oldStatus = ref('')
+const newStatus = ref('')
+const updating = ref(false)
+
+// Định nghĩa flow steps theo thứ tự
+const ORDER_STATUS_STEPS = [
+  'Pending',      // 0: Chờ xử lý
+  'Confirmed',    // 1: Đã xác nhận
+  'Processing',   // 2: Đang xử lý
+  'Packed',       // 3: Đã đóng gói
+  'Shipped',      // 4: Đã gửi hàng
+  'Completed'     // 5: Hoàn thành
+]
+
+// Normalize status
+const normalizeStatusForDisplay = (status) => {
+  if (!status) return status
+  const statusMap = {
+    'pending': 'Pending',
+    'processing': 'Processing',
+    'shipped': 'Shipped',
+    'delivered': 'Completed',
+    'cancelled': 'Cancelled',
+    'confirmed': 'Confirmed',
+    'packed': 'Packed',
+    'refunded': 'Refunded'
+  }
+  return statusMap[status.toLowerCase()] || status
+}
+
+const getNormalizedStatusValue = (status) => {
+  const normalized = normalizeStatusForDisplay(status)
+  const validOptions = ['Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled', 'Confirmed', 'Packed', 'Refunded']
+  return validOptions.includes(normalized) ? normalized : 'Pending'
+}
+
+// Lấy index của status trong flow
+const getStatusStepIndex = (status) => {
+  const normalized = getNormalizedStatusValue(status)
+  return ORDER_STATUS_STEPS.indexOf(normalized)
+}
+
+// Lấy step tiếp theo (nếu có)
+const getNextStep = (currentStatus) => {
+  const currentIndex = getStatusStepIndex(currentStatus)
+  if (currentIndex === -1 || currentIndex >= ORDER_STATUS_STEPS.length - 1) {
+    return null // Đã ở bước cuối
+  }
+  return ORDER_STATUS_STEPS[currentIndex + 1]
+}
+
+// Lấy step trước đó (nếu có)
+const getPreviousStep = (currentStatus) => {
+  const currentIndex = getStatusStepIndex(currentStatus)
+  if (currentIndex <= 0) {
+    return null // Đã ở bước đầu
+  }
+  
+  // Completed có thể quay về Processing
+  const normalized = getNormalizedStatusValue(currentStatus)
+  if (normalized === 'Completed') {
+    return 'Processing'
+  }
+  
+  return ORDER_STATUS_STEPS[currentIndex - 1]
+}
+
+// Kiểm tra xem có thể chuyển đến status mới không
+const canChangeToStatus = (currentStatus, targetStatus) => {
+  const currentIndex = getStatusStepIndex(currentStatus)
+  const newIndex = getStatusStepIndex(targetStatus)
+  
+  if (currentIndex === -1 || newIndex === -1) {
+    return false // Status không hợp lệ
+  }
+  
+  // Cho phép chuyển đến step tiếp theo
+  if (newIndex === currentIndex + 1) {
+    return true
+  }
+  
+  // Cho phép quay lại step trước đó
+  if (newIndex === currentIndex - 1) {
+    return true
+  }
+  
+  // Completed có thể quay về Processing
+  if (getNormalizedStatusValue(currentStatus) === 'Completed' && targetStatus === 'Processing') {
+    return true
+  }
+  
+  return false
+}
+
+const confirmStatusChange = (order, targetStatus) => {
+  try {
+    if (!targetStatus) {
+      return
+    }
+    
+    const currentNormalizedStatus = getNormalizedStatusValue(order.status)
+    
+    // Kiểm tra xem có thể chuyển đổi không
+    if (!canChangeToStatus(currentNormalizedStatus, targetStatus)) {
+      toastService.warning('Cảnh báo', 'Không thể chuyển đổi trạng thái này. Vui lòng chuyển đổi theo thứ tự bước.')
+      return
+    }
+    
+    // If no change, do nothing
+    if (currentNormalizedStatus === targetStatus) {
+      return
+    }
+    
+    // Normalize cả hai để so sánh đúng
+    oldStatus.value = currentNormalizedStatus
+    newStatus.value = targetStatus
+    
+    // Store order reference and original status
+    orderToUpdate.value = { ...order } // Clone để tránh mutation
+    if (!orderToUpdate.value._originalStatus) {
+      orderToUpdate.value._originalStatus = currentNormalizedStatus
+    }
+    
+    // Show confirmation dialog
+    showStatusConfirm.value = true
+  } catch (error) {
+    logger.error('❌ Error in confirmStatusChange:', error)
+    toastService.apiError(error, 'Có lỗi xảy ra khi thay đổi trạng thái')
+  }
+}
+
+const handleStatusUpdate = async () => {
+  const orderId = orderToUpdate.value.id
+  const previousStatus = oldStatus.value
+  
+  try {
+    updating.value = true
+    
+    // Gọi API để cập nhật
+    const updatedOrder = await adminStore.updateOrderStatus(orderId, newStatus.value)
+    
+    logger.log('✅ Cập nhật thành công:', updatedOrder)
+    
+    // Update order
+    order.value = { ...order.value, status: newStatus.value }
+    
+    // Refresh order detail
+    await fetchOrderDetail()
+    
+    toastService.success('Thành công', `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`, { duration: 3000 })
+    
+    showStatusConfirm.value = false
+  } catch (error) {
+    logger.error('❌ Lỗi khi cập nhật trạng thái:', error)
+    logger.error('Error details:', error.response || error.message)
+    
+    toastService.apiError(error, 'Không thể cập nhật trạng thái đơn hàng')
+    
+    // Restore old status on error
+    order.value = { ...order.value, status: previousStatus }
+  } finally {
+    updating.value = false
+  }
+}
+
+const handleCancelStatusChange = () => {
+  // Restore the old status
+  if (orderToUpdate.value) {
+    orderToUpdate.value.status = oldStatus.value
+  }
+  showStatusConfirm.value = false
+}
 
 // Fetch order detail
 const fetchOrderDetail = async () => {
@@ -301,21 +571,6 @@ const getStatusLabel = (status) => {
     'Refunded': 'Đã hoàn tiền'
   }
   return labels[normalized] || normalized || status
-}
-
-const normalizeStatusForDisplay = (status) => {
-  if (!status) return status
-  const statusMap = {
-    'pending': 'Pending',
-    'processing': 'Processing',
-    'shipped': 'Shipped',
-    'delivered': 'Completed',
-    'cancelled': 'Cancelled',
-    'confirmed': 'Confirmed',
-    'packed': 'Packed',
-    'refunded': 'Refunded'
-  }
-  return statusMap[status.toLowerCase()] || status
 }
 
 const getStatusBadgeClass = (status) => {

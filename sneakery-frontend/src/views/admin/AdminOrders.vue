@@ -247,23 +247,30 @@
               </td>
               <td class="px-4 py-4 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(order.totalAmount) }}</td>
               <td class="px-4 py-4">
-                <select 
-                  :value="getNormalizedStatusValue(order.status)"
-                  @change="(e) => confirmStatusChange(order, e)"
-                  @input="(e) => { logger.log('Input event:', e.target.value) }"
-                  class="px-2 py-1 text-xs font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors cursor-pointer"
-                  :class="getStatusSelectClass(getNormalizedStatusValue(order.status))"
-                >
-                  <option value="Pending">Chờ xử lý</option>
-                  <option value="Processing">Đang xử lý</option>
-                  <option value="Shipped">Đã gửi hàng</option>
-                  <option value="Completed">Hoàn thành</option>
-                  <option value="Cancelled">Đã hủy</option>
-                  <!-- Thêm các option khác để đảm bảo match -->
-                  <option value="Confirmed">Đã xác nhận</option>
-                  <option value="Packed">Đã đóng gói</option>
-                  <option value="Refunded">Đã hoàn tiền</option>
-                </select>
+                <div class="flex items-center gap-2">
+                  <span
+                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                    :class="getStatusBadgeClass(getNormalizedStatusValue(order.status))"
+                  >
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                  <button
+                    v-if="getNextStep(order.status)"
+                    @click="confirmStatusChange(order, getNextStep(order.status))"
+                    class="p-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
+                    :title="`Chuyển sang: ${getStatusLabel(getNextStep(order.status))}`"
+                  >
+                    <i class="material-icons text-sm">arrow_forward</i>
+                  </button>
+                  <button
+                    v-if="getPreviousStep(order.status)"
+                    @click="confirmStatusChange(order, getPreviousStep(order.status))"
+                    class="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded transition-colors"
+                    :title="`Quay lại: ${getStatusLabel(getPreviousStep(order.status))}`"
+                  >
+                    <i class="material-icons text-sm">arrow_back</i>
+                  </button>
+                </div>
               </td>
               <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">{{ formatDate(order.createdAt) }}</td>
               <td class="px-4 py-4 text-center">
@@ -800,37 +807,96 @@ const exportToExcel = () => {
   }
 }
 
-const confirmStatusChange = (order, event) => {
+// Định nghĩa flow steps theo thứ tự
+const ORDER_STATUS_STEPS = [
+  'Pending',      // 0: Chờ xử lý
+  'Confirmed',    // 1: Đã xác nhận
+  'Processing',   // 2: Đang xử lý
+  'Packed',       // 3: Đã đóng gói
+  'Shipped',      // 4: Đã gửi hàng
+  'Completed'     // 5: Hoàn thành
+]
+
+// Lấy index của status trong flow
+const getStatusStepIndex = (status) => {
+  const normalized = getNormalizedStatusValue(status)
+  return ORDER_STATUS_STEPS.indexOf(normalized)
+}
+
+// Lấy step tiếp theo (nếu có)
+const getNextStep = (currentStatus) => {
+  const currentIndex = getStatusStepIndex(currentStatus)
+  if (currentIndex === -1 || currentIndex >= ORDER_STATUS_STEPS.length - 1) {
+    return null // Đã ở bước cuối
+  }
+  return ORDER_STATUS_STEPS[currentIndex + 1]
+}
+
+// Lấy step trước đó (nếu có)
+const getPreviousStep = (currentStatus) => {
+  const currentIndex = getStatusStepIndex(currentStatus)
+  if (currentIndex <= 0) {
+    return null // Đã ở bước đầu
+  }
+  
+  // Completed có thể quay về Processing
+  const normalized = getNormalizedStatusValue(currentStatus)
+  if (normalized === 'Completed') {
+    return 'Processing'
+  }
+  
+  return ORDER_STATUS_STEPS[currentIndex - 1]
+}
+
+// Kiểm tra xem có thể chuyển đến status mới không
+const canChangeToStatus = (currentStatus, newStatus) => {
+  const currentIndex = getStatusStepIndex(currentStatus)
+  const newIndex = getStatusStepIndex(newStatus)
+  
+  if (currentIndex === -1 || newIndex === -1) {
+    return false // Status không hợp lệ
+  }
+  
+  // Cho phép chuyển đến step tiếp theo
+  if (newIndex === currentIndex + 1) {
+    return true
+  }
+  
+  // Cho phép quay lại step trước đó
+  if (newIndex === currentIndex - 1) {
+    return true
+  }
+  
+  // Completed có thể quay về Processing
+  if (getNormalizedStatusValue(currentStatus) === 'Completed' && newStatus === 'Processing') {
+    return true
+  }
+  
+  return false
+}
+
+const confirmStatusChange = (order, targetStatus) => {
   try {
-    // Get the old and new status
-    const select = event.target
-    if (!select || !select.value) {
-      logger.error('❌ Invalid select element or value')
+    if (!targetStatus) {
       return
     }
     
     const currentNormalizedStatus = getNormalizedStatusValue(order.status)
-    const selectedStatus = select.value
+    
+    // Kiểm tra xem có thể chuyển đổi không
+    if (!canChangeToStatus(currentNormalizedStatus, targetStatus)) {
+      toastService.warning('Cảnh báo', 'Không thể chuyển đổi trạng thái này. Vui lòng chuyển đổi theo thứ tự bước.')
+      return
+    }
+    
+    // If no change, do nothing
+    if (currentNormalizedStatus === targetStatus) {
+      return
+    }
     
     // Normalize cả hai để so sánh đúng
     oldStatus.value = currentNormalizedStatus
-    newStatus.value = selectedStatus
-    
-    logger.log('🔄 Status change triggered:', {
-      orderId: order.id,
-      currentStatus: order.status,
-      normalizedCurrent: currentNormalizedStatus,
-      selectedStatus: selectedStatus,
-      oldStatus: oldStatus.value,
-      newStatus: newStatus.value,
-      showStatusConfirmBefore: showStatusConfirm.value
-    })
-    
-    // If no change, do nothing
-    if (oldStatus.value === newStatus.value) {
-      logger.log('⚠️ No status change, ignoring')
-      return
-    }
+    newStatus.value = targetStatus
     
     // Store order reference and original status
     orderToUpdate.value = { ...order } // Clone để tránh mutation
@@ -839,9 +905,7 @@ const confirmStatusChange = (order, event) => {
     }
     
     // Show confirmation dialog
-    logger.log('✅ Setting showStatusConfirm to true')
     showStatusConfirm.value = true
-    logger.log('✅ showStatusConfirm after setting:', showStatusConfirm.value)
   } catch (error) {
     logger.error('❌ Error in confirmStatusChange:', error)
     notificationService.apiError(error, 'Có lỗi xảy ra khi thay đổi trạng thái')
@@ -928,20 +992,20 @@ const getNormalizedStatusValue = (status) => {
   return validOptions.includes(normalized) ? normalized : 'Pending'
 }
 
-// Get CSS classes cho select dropdown dựa trên status - với màu sắc phân biệt rõ ràng
-const getStatusSelectClass = (status) => {
+// Get CSS classes cho status badge
+const getStatusBadgeClass = (status) => {
   const statusClassMap = {
-    'Pending': 'bg-amber-50 text-black dark:bg-amber-900/40 dark:text-white border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/50',
-    'Processing': 'bg-blue-50 text-black dark:bg-blue-900/40 dark:text-white border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/50',
-    'Confirmed': 'bg-indigo-50 text-black dark:bg-indigo-900/40 dark:text-white border-indigo-300 dark:border-indigo-700 hover:bg-indigo-100 dark:hover:bg-indigo-900/50',
-    'Packed': 'bg-purple-50 text-black dark:bg-purple-900/40 dark:text-white border-purple-300 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-900/50',
-    'Shipped': 'bg-cyan-50 text-black dark:bg-cyan-900/40 dark:text-white border-cyan-300 dark:border-cyan-700 hover:bg-cyan-100 dark:hover:bg-cyan-900/50',
-    'Completed': 'bg-emerald-50 text-black dark:bg-emerald-900/40 dark:text-white border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/50',
-    'Cancelled': 'bg-rose-50 text-black dark:bg-rose-900/40 dark:text-white border-rose-300 dark:border-rose-700 hover:bg-rose-100 dark:hover:bg-rose-900/50',
-    'Refunded': 'bg-orange-50 text-black dark:bg-orange-900/40 dark:text-white border-orange-300 dark:border-orange-700 hover:bg-orange-100 dark:hover:bg-orange-900/50'
+    'Pending': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+    'Processing': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    'Confirmed': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
+    'Packed': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+    'Shipped': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
+    'Completed': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
+    'Cancelled': 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400',
+    'Refunded': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
   }
   
-  return statusClassMap[status] || 'bg-gray-50 text-black dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600'
+  return statusClassMap[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
 }
 
 const getStatusLabel = (status) => {

@@ -70,6 +70,7 @@ export const API_ENDPOINTS = {
     BY_ID: (id) => `/api/orders/${id}`,
     CHECKOUT: '/api/orders/checkout',
     VALIDATE_COUPON: (code) => `/api/orders/coupons/validate/${code}`,
+    ACTIVE_COUPONS: '/api/orders/coupons/active',
     CANCEL: (id) => `/api/orders/${id}/cancel`,
   },
   

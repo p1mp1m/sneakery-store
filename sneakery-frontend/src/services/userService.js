@@ -78,6 +78,16 @@ class UserService {
     }
   }
 
+  // ===== RETURNS =====
+  async createReturnRequest(orderId, returnData) {
+    try {
+      const response = await userApi.post(`/orders/${orderId}/return`, returnData)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   // ===== CART =====
   async getMyCart() {
     try {

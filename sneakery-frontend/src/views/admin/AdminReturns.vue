@@ -110,10 +110,10 @@
             </label>
             <select v-model="filters.reason" @change="fetchReturns" class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
               <option value="">Tất cả</option>
-              <option value="defective">Lỗi sản phẩm</option>
-              <option value="wrong_item">Giao sai hàng</option>
-              <option value="size_issue">Không vừa size</option>
-              <option value="changed_mind">Đổi ý</option>
+              <option value="Lỗi sản phẩm">Lỗi sản phẩm</option>
+              <option value="Giao sai hàng">Giao sai hàng</option>
+              <option value="Không vừa size">Không vừa size</option>
+              <option value="Đổi ý">Đổi ý</option>
               <option value="other">Khác</option>
             </select>
           </div>
@@ -186,7 +186,7 @@
                 </div>
               </td>
               <td class="px-4 py-4">
-                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">{{ getReasonText(item.reason) }}</span>
+                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">{{ getReasonText(item.reason, false) }}</span>
                 <p v-if="item.note" class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ item.note }}</p>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
@@ -194,30 +194,40 @@
               </td>
               <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{{ formatDate(item.createdAt) }}</td>
               <td class="px-4 py-4 whitespace-nowrap">
-                <span 
-                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': item.status === 'pending',
-                    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': item.status === 'approved' || item.status === 'in_transit' || item.status === 'received',
-                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': item.status === 'completed',
-                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': item.status === 'rejected'
-                  }"
-                >
-                  {{ getStatusText(item.status) }}
-                </span>
+                <div class="flex items-center gap-2">
+                  <span 
+                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                    :class="getReturnStatusBadgeClass(item.status)"
+                  >
+                    {{ getReturnStatusText(item.status) }}
+                  </span>
+                  <!-- Nút chuyển tiếp (nếu có) -->
+                  <template v-if="getReturnNextSteps(item.status) && getReturnNextSteps(item.status).length > 0">
+                    <button
+                      v-for="nextStep in getReturnNextSteps(item.status)"
+                      :key="nextStep"
+                      @click="confirmStatusChange(item, nextStep)"
+                      class="p-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
+                      :title="`Chuyển sang: ${getReturnStatusText(nextStep)}`"
+                    >
+                      <i class="material-icons text-sm">arrow_forward</i>
+                    </button>
+                  </template>
+                  <!-- Nút quay lại (nếu có) -->
+                  <button
+                    v-if="getReturnPreviousStep(item.status)"
+                    @click="confirmStatusChange(item, getReturnPreviousStep(item.status))"
+                    class="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded transition-colors"
+                    :title="`Quay lại: ${getReturnStatusText(getReturnPreviousStep(item.status))}`"
+                  >
+                    <i class="material-icons text-sm">arrow_back</i>
+                  </button>
+                </div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   <button @click="viewReturnDetail(item)" class="p-1.5 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors" title="Xem chi tiết">
                     <i class="material-icons text-base">visibility</i>
-                  </button>
-                  <button 
-                    v-if="item.status === 'pending'" 
-                    @click="approveReturn(item)" 
-                    class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" 
-                    title="Duyệt"
-                  >
-                    <i class="material-icons text-base">check_circle</i>
                   </button>
                   <button 
                     v-if="item.status === 'pending'" 
@@ -301,6 +311,20 @@
         </div>
       </div>
     </div>
+
+    <!-- Status Change Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showStatusConfirm"
+      type="warning"
+      title="Xác nhận thay đổi trạng thái"
+      :message="`Bạn có chắc chắn muốn thay đổi trạng thái yêu cầu trả hàng #${returnToUpdate?.id} từ '${getReturnStatusText(oldReturnStatus)}' sang '${getReturnStatusText(newReturnStatus)}'?`"
+      description="Hành động này sẽ cập nhật trạng thái yêu cầu trả hàng."
+      confirm-text="Xác nhận"
+      cancel-text="Hủy"
+      :loading="updating"
+      @confirm="handleReturnStatusUpdate"
+      @cancel="handleCancelReturnStatusChange"
+    />
   </div>
 </template>
 
@@ -310,6 +334,7 @@ import { useAdminStore } from '@/stores/admin'
 import notificationService from '@/utils/notificationService'
 import logger from '@/utils/logger'
 import { formatPrice, formatDate, formatDateTime } from '@/utils/formatters'
+import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 
 const adminStore = useAdminStore()
 
@@ -318,6 +343,13 @@ const loading = ref(false)
 const showDetailDialog = ref(false)
 const selectedReturn = ref(null)
 const returns = ref([])
+
+// Status change confirmation
+const showStatusConfirm = ref(false)
+const returnToUpdate = ref(null)
+const oldReturnStatus = ref('')
+const newReturnStatus = ref('')
+const updating = ref(false)
 
 const filters = reactive({
   search: '',
@@ -331,6 +363,47 @@ const stats = reactive({
   completed: 0,
   rejected: 0
 })
+
+// Định nghĩa flow steps cho Return
+// Flow: Chờ xử lý -> Đã xác nhận -> Đang xử lý -> Đã hoàn tiền (hoặc Đã đóng gói)
+const RETURN_STATUS_STEPS = {
+  'pending': {
+    label: 'Chờ xử lý',
+    next: ['approved'], // Chỉ có thể chuyển đến "Đã xác nhận"
+    previous: null,
+    isFinal: false
+  },
+  'approved': {
+    label: 'Đã xác nhận',
+    next: ['processing'], // Chỉ có thể chuyển đến "Đang xử lý"
+    previous: 'pending',
+    isFinal: false
+  },
+  'processing': {
+    label: 'Đang xử lý',
+    next: ['refunded'], // Có 2 option: Đã hoàn tiền hoặc Đã đóng gói
+    previous: 'approved',
+    isFinal: false
+  },
+  'packed': {
+    label: 'Đã đóng gói',
+    next: ['refunded'], // Chỉ có thể chuyển đến "Đã hoàn tiền"
+    previous: 'processing',
+    isFinal: false
+  },
+  'refunded': {
+    label: 'Đã hoàn tiền',
+    next: null, // Bước cuối cùng, không thể chuyển tiếp
+    previous: null,
+    isFinal: true
+  },
+  'rejected': {
+    label: 'Từ chối',
+    next: null,
+    previous: null,
+    isFinal: true
+  }
+}
 
 // Methods
 const fetchReturns = async () => {
@@ -378,17 +451,107 @@ const viewReturnDetail = (item) => {
   showDetailDialog.value = true
 }
 
-const approveReturn = async (item) => {
-  if (!confirm('Bạn có chắc muốn duyệt yêu cầu này?')) return
+// Lấy các bước tiếp theo có thể chuyển đến
+const getReturnNextSteps = (currentStatus) => {
+  const step = RETURN_STATUS_STEPS[currentStatus]
+  return step ? step.next : []
+}
+
+// Lấy bước trước đó (nếu có)
+const getReturnPreviousStep = (currentStatus) => {
+  const step = RETURN_STATUS_STEPS[currentStatus]
+  return step ? step.previous : null
+}
+
+// Kiểm tra xem có thể chuyển đến status mới không
+const canChangeReturnToStatus = (currentStatus, targetStatus) => {
+  const step = RETURN_STATUS_STEPS[currentStatus]
+  if (!step || step.isFinal) {
+    return false // Không thể chuyển từ bước cuối
+  }
+  
+  // Kiểm tra targetStatus có trong danh sách next không
+  if (step.next && step.next.includes(targetStatus)) {
+    return true
+  }
+  
+  // Cho phép quay lại bước trước
+  if (step.previous === targetStatus) {
+    return true
+  }
+  
+  // Nếu đang ở "Đã đóng gói", có thể chuyển đến "Đã hoàn tiền"
+  if (currentStatus === 'packed' && targetStatus === 'refunded') {
+    return true
+  }
+  
+  return false
+}
+
+const confirmStatusChange = (returnItem, targetStatus) => {
+  try {
+    if (!targetStatus) {
+      return
+    }
+    
+    // Kiểm tra xem có thể chuyển đổi không
+    if (!canChangeReturnToStatus(returnItem.status, targetStatus)) {
+      notificationService.warning('Cảnh báo', 'Không thể chuyển đổi trạng thái này. Vui lòng chuyển đổi theo thứ tự bước.')
+      return
+    }
+    
+    // If no change, do nothing
+    if (returnItem.status === targetStatus) {
+      return
+    }
+    
+    // Normalize cả hai để so sánh đúng
+    oldReturnStatus.value = returnItem.status
+    newReturnStatus.value = targetStatus
+    
+    // Store return reference
+    returnToUpdate.value = { ...returnItem }
+    
+    // Show confirmation dialog
+    showStatusConfirm.value = true
+  } catch (error) {
+    logger.error('❌ Error in confirmStatusChange:', error)
+    notificationService.apiError(error, 'Có lỗi xảy ra khi thay đổi trạng thái')
+  }
+}
+
+const handleReturnStatusUpdate = async () => {
+  const returnId = returnToUpdate.value.id
+  const previousStatus = oldReturnStatus.value
   
   try {
-    await adminStore.approveReturn(item.id)
-    notificationService.success('Thành công','Đã duyệt yêu cầu trả hàng!')
-    fetchReturns()
+    updating.value = true
+    
+    // Gọi API để cập nhật
+    await adminStore.updateReturnStatus(returnId, newReturnStatus.value, '')
+    
+    logger.log('✅ Cập nhật thành công')
+    
+    // Refresh danh sách
+    await fetchReturns()
+    
+    notificationService.success('Thành công', `Đã cập nhật trạng thái yêu cầu trả hàng #${returnId} từ '${getReturnStatusText(previousStatus)}' sang '${getReturnStatusText(newReturnStatus.value)}' thành công!`)
+    
+    showStatusConfirm.value = false
   } catch (error) {
-    logger.error('Lỗi khi duyệt yêu cầu:', error)
-    notificationService.apiError(error, 'Lỗi khi duyệt yêu cầu trả hàng')
+    logger.error('❌ Lỗi khi cập nhật trạng thái:', error)
+    notificationService.apiError(error, 'Không thể cập nhật trạng thái yêu cầu trả hàng')
+  } finally {
+    updating.value = false
   }
+}
+
+const handleCancelReturnStatusChange = () => {
+  // Restore the old status
+  if (returnToUpdate.value) {
+    returnToUpdate.value.status = oldReturnStatus.value
+  }
+  showStatusConfirm.value = false
 }
 
 const rejectReturn = async (item) => {
@@ -405,40 +568,71 @@ const rejectReturn = async (item) => {
   }
 }
 
-const getReasonText = (reason) => {
+const getReasonText = (reason, includeNote = true) => {
+  if (!reason) return reason;
+  
+  // Parse reason: if it contains "\n\nGhi chú:", split it
+  const noteSeparator = '\n\nGhi chú:';
+  const reasonCode = reason.includes(noteSeparator) 
+    ? reason.split(noteSeparator)[0].trim() 
+    : reason.trim();
+  
+  // Map reason code to Vietnamese text
   const reasons = {
     defective: 'Lỗi sản phẩm',
     wrong_item: 'Giao sai hàng',
     size_issue: 'Không vừa size',
     changed_mind: 'Đổi ý',
     other: 'Khác'
+  };
+  
+  const vietnameseReason = reasons[reasonCode] || reasonCode;
+  
+  // If there's a note and includeNote is true, include it
+  if (includeNote && reason.includes(noteSeparator)) {
+    const note = reason.split(noteSeparator)[1].trim();
+    return `${vietnameseReason}\n\nGhi chú: ${note}`;
   }
-  return reasons[reason] || reason
+  
+  return vietnameseReason;
 }
 
-const getStatusClass = (status) => {
-  const classes = {
-    pending: 'status-pending',
-    approved: 'status-processing',
-    in_transit: 'status-shipped',
-    received: 'status-processing',
-    completed: 'status-completed',
-    rejected: 'status-cancelled'
+const getReturnStatusBadgeClass = (status) => {
+  const classMap = {
+    'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    'approved': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
+    'processing': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    'packed': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+    'refunded': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
+    'completed': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    'rejected': 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400'
   }
-  return classes[status]
+  return classMap[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
 }
 
-const getStatusText = (status) => {
+const getReturnStatusText = (status) => {
+  const step = RETURN_STATUS_STEPS[status]
+  if (step) {
+    return step.label
+  }
+  
+  // Fallback cho các status cũ nếu có
   const statuses = {
     pending: 'Chờ duyệt',
-    approved: 'Đã duyệt',
-    in_transit: 'Đang vận chuyển',
-    received: 'Đã nhận hàng',
+    approved: 'Đã xác nhận',
+    processing: 'Đang xử lý',
+    packed: 'Đã đóng gói',
+    refunded: 'Đã hoàn tiền',
     completed: 'Hoàn thành',
-    rejected: 'Từ chối'
+    rejected: 'Từ chối',
+    in_transit: 'Đang vận chuyển',
+    received: 'Đã nhận hàng'
   }
   return statuses[status] || status
 }
+
+// Giữ lại hàm cũ để backward compatibility
+const getStatusText = (status) => getReturnStatusText(status)
 
 // formatPrice và formatDate đã được import từ @/utils/formatters
 

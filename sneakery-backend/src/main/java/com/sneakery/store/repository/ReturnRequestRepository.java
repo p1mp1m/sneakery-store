@@ -68,6 +68,16 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
     boolean existsByOrderId(Long orderId);
 
     /**
+     * Lấy return request theo orderId (cho user)
+     */
+    @Query("SELECT rr FROM ReturnRequest rr " +
+           "JOIN FETCH rr.order o " +
+           "JOIN FETCH rr.user u " +
+           "LEFT JOIN FETCH rr.approvedBy " +
+           "WHERE o.id = :orderId")
+    Optional<ReturnRequest> findByOrderIdWithDetails(@Param("orderId") Long orderId);
+
+    /**
      * Đếm số return requests pending (admin dashboard)
      */
     long countByStatus(String status);

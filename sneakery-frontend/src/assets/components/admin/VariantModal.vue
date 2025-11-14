@@ -71,7 +71,7 @@
                   'px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
                   errors.sku ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                 ]"
-                placeholder="Ví dụ: ADIDA-ULTRA22-WHI-42"
+                placeholder="Ví dụ: SNK-SHO-AZ-BLK-42"
                 required
                 @focus="isSkuFocused = true"
                 @blur="isSkuFocused = false; validateSku()"
@@ -343,7 +343,12 @@
             </div>
 
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Ngưỡng cảnh báo</label>
+              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Ngưỡng cảnh báo
+                <span class="text-gray-500 dark:text-gray-400 text-xs font-normal ml-1">
+                  (≤ {{ formData.stockQuantity || 0 }})
+                </span>
+              </label>
               <input
                 v-model.number="formData.lowStockThreshold"
                 type="number"
@@ -352,7 +357,8 @@
                   errors.lowStockThreshold ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                 ]"
                 placeholder="10"
-                min="0"
+                :min="0"
+                :max="formData.stockQuantity || 999999"
                 @blur="validateLowStockThreshold"
                 @input="validateLowStockThreshold"
               />
@@ -366,6 +372,9 @@
               >
                 <p v-if="errors.lowStockThreshold" class="text-xs text-red-500 dark:text-red-400 mt-1">
                   {{ errors.lowStockThreshold }}
+                </p>
+                <p v-else class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Hệ thống sẽ cảnh báo khi số lượng tồn kho ≤ ngưỡng này
                 </p>
               </transition>
             </div>
@@ -434,6 +443,7 @@ import {
   generateSku,
   extractBrandCode,
   extractModelCode,
+  extractCategoryCode,
   shortenColor,
 } from "@/utils/skuGenerator";
 
@@ -675,6 +685,10 @@ const validateStockQuantity = () => {
     return false;
   }
   errors.stockQuantity = "";
+  
+  // Khi stockQuantity thay đổi, validate lại lowStockThreshold
+  validateLowStockThreshold();
+  
   return true;
 };
 
@@ -688,10 +702,17 @@ const validateLowStockThreshold = () => {
       errors.lowStockThreshold = "Ngưỡng cảnh báo phải là số nguyên";
       return false;
     }
+    // Validate: Ngưỡng cảnh báo không được lớn hơn số lượng tồn kho
+    if (formData.stockQuantity !== null && formData.stockQuantity !== undefined) {
+      if (formData.lowStockThreshold > formData.stockQuantity) {
+        errors.lowStockThreshold = "Ngưỡng cảnh báo không được lớn hơn số lượng tồn kho";
+        return false;
+      }
+    }
   }
   errors.lowStockThreshold = "";
   return true;
-};
+};  
 
 // Validate tất cả fields
 const validateAll = () => {
@@ -889,7 +910,7 @@ watch(
 );
 
 // ====== AUTO GENERATE SKU ======
-// --- Watch sinh SKU ---
+// --- Watch sinh SKU với format mới: [Brand]-[Category]-[Model]-[Color]-[Size] ---
 watch(
   [() => formData.productId, () => formData.color, () => formData.size],
   ([pid, color, size]) => {
@@ -897,12 +918,21 @@ watch(
     const product = products.value.find((p) => p.id === pid);
     if (!product?.name) return;
 
-    const brandPart = extractBrandCode(product.name); // ADIDA / NIKE / CONVE ...
-    const modelPart = extractModelCode(product.name); // ULTRA22 / REACT55 ...
-    const colorPart = shortenColor(color); // WHI / RED / BLK ...
-    const sizePart = String(size).trim(); // 42
+    // Nếu size là chuỗi nhiều sizes (ví dụ: "38, 37"), chỉ lấy size đầu tiên để generate SKU
+    // SKU chỉ nên có 1 size, khi submit sẽ tạo nhiều variants riêng biệt
+    let singleSize = size;
+    if (typeof size === 'string' && size.includes(',')) {
+      // Lấy size đầu tiên từ chuỗi "38, 37" → "38"
+      singleSize = size.split(',')[0].trim();
+    }
+    
+    // Convert size sang số nếu có thể (loại bỏ ký tự không phải số)
+    singleSize = String(singleSize).replace(/[^0-9]/g, '');
+    if (!singleSize) return;
 
-    formData.sku = `${brandPart}-${modelPart}-${colorPart}-${sizePart}`;
+    // Generate SKU với format mới: [Brand]-[Category]-[Model]-[Color]-[Size]
+    // Ví dụ: SNK-SHO-AZ-BLK-42
+    formData.sku = generateSku(product, color, singleSize);
   }
 );
 
@@ -1046,7 +1076,7 @@ const handleSubmit = async () => {
 
     const variantList = sizes.map((size) => ({
       productId: formData.productId,
-      sku: generateSku(product?.name, formData.color, size),
+      sku: generateSku(product, formData.color, size), // Format mới: [Brand]-[Category]-[Model]-[Color]-[Size]
       color: formData.color,
       size,
       priceBase: formData.priceBase,

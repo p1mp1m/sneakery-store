@@ -21,4 +21,6 @@ public class OrderDto {
     private AddressDto addressShipping;
     private PaymentDto payment; // Lấy thanh toán đầu tiên
     private List<CartItemDto> orderDetails; // Dùng lại CartItemDto cho tiện
+    private List<OrderStatusHistoryDto> statusHistories; // Lịch sử thay đổi trạng thái
+    private ReturnRequestDto returnRequest; // Thông tin return request (nếu có)
 }

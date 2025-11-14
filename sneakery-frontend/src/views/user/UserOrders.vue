@@ -61,16 +61,34 @@
         >
           <!-- Order Header -->
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-            <div class="flex items-start gap-3">
+            <div class="flex items-start gap-3 flex-1">
               <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-sm">
                 <i class="material-icons text-white text-lg">receipt</i>
               </div>
-              <div>
+              <div class="flex-1 min-w-0">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Đơn hàng #{{ order.id }}</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                   <i class="material-icons text-xs">schedule</i>
                   {{ formatDate(order.createdAt) }}
                 </p>
+                <!-- Return Request Badge -->
+                <div v-if="order.returnRequest" class="mt-2">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-orange-500 text-white">
+                      HOÀN TRẢ
+                    </span>
+                    <span :class="[
+                      'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium',
+                      getReturnRequestBadgeClass(order.returnRequest.status)
+                    ]">
+                      <i class="material-icons text-sm">{{ getReturnRequestIcon(order.returnRequest.status) }}</i>
+                      {{ getReturnRequestText(order.returnRequest.status) }}
+                    </span>
+                  </div>
+                  <p v-if="order.returnRequest.reason" class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-1 line-clamp-2">
+                    {{ getReturnReasonText(order.returnRequest.reason, false) }}
+                  </p>
+                </div>
               </div>
             </div>
             <div>
@@ -144,38 +162,6 @@
         </div>
         
         <div class="p-6 space-y-6">
-          <!-- Order Status Timeline -->
-          <div>
-            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-              <i class="material-icons text-purple-600 dark:text-purple-400">timeline</i>
-              Trạng thái đơn hàng
-            </h4>
-            <div class="space-y-4">
-              <div
-                v-for="(history, index) in selectedOrder.statusHistories || []"
-                :key="history.id"
-                class="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div class="flex flex-col items-center flex-shrink-0">
-                  <div :class="[
-                    'w-10 h-10 rounded-full flex items-center justify-center shadow-sm',
-                    index === 0 ? 'bg-gradient-to-br from-purple-500 to-purple-600' : 'bg-gray-300 dark:bg-gray-600'
-                  ]">
-                    <i class="material-icons text-white text-sm">{{ getStatusIcon(history.status) }}</i>
-                  </div>
-                  <div v-if="index < (selectedOrder.statusHistories?.length || 0) - 1" class="w-0.5 h-full bg-gray-200 dark:bg-gray-600 mt-2 min-h-[40px]"></div>
-                </div>
-                <div class="flex-1 pb-4">
-                  <p class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ getStatusText(history.status) }}</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    <i class="material-icons text-xs">schedule</i>
-                    {{ formatDateTime(history.changedAt) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Order Items -->
           <div>
             <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -285,15 +271,198 @@
               <p class="text-sm text-gray-500 dark:text-gray-400 text-center">Chưa có thông tin thanh toán</p>
             </div>
           </div>
+
+          <!-- Return Request Info -->
+          <div v-if="selectedOrder.returnRequest">
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+              <i class="material-icons text-orange-600 dark:text-orange-400">assignment_return</i>
+              Thông tin hoàn trả
+            </h4>
+            <div class="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <i class="material-icons text-base">info</i>
+                  Trạng thái
+                </span>
+                <span :class="[
+                  'inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium',
+                  getReturnRequestBadgeClass(selectedOrder.returnRequest.status)
+                ]">
+                  <i class="material-icons text-sm">{{ getReturnRequestIcon(selectedOrder.returnRequest.status) }}</i>
+                  {{ getReturnRequestText(selectedOrder.returnRequest.status) }}
+                </span>
+              </div>
+              <div v-if="selectedOrder.returnRequest.reason" class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Lý do hoàn trả:</span>
+                <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{{ getReturnReasonText(selectedOrder.returnRequest.reason) }}</p>
+              </div>
+              <div v-if="selectedOrder.returnRequest.images && selectedOrder.returnRequest.images.length > 0" class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Hình ảnh đính kèm:</span>
+                <div class="grid grid-cols-3 gap-3">
+                  <div
+                    v-for="(image, index) in selectedOrder.returnRequest.images"
+                    :key="index"
+                    class="relative group"
+                  >
+                    <img
+                      :src="image"
+                      :alt="`Return image ${index + 1}`"
+                      class="w-full h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
+                      @click="viewImage(image)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div v-if="selectedOrder.returnRequest.adminNote" class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 block mb-2">Ghi chú từ admin:</span>
+                <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{{ selectedOrder.returnRequest.adminNote }}</p>
+              </div>
+              <div class="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <i class="material-icons text-xs">schedule</i>
+                  Yêu cầu được tạo: {{ formatDateTime(selectedOrder.returnRequest.createdAt) }}
+                </span>
+                <span v-if="selectedOrder.returnRequest.approvedAt" class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <i class="material-icons text-xs">check_circle</i>
+                  Đã duyệt: {{ formatDateTime(selectedOrder.returnRequest.approvedAt) }}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <div class="flex justify-between items-center p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <button
+            v-if="normalizeStatusForDisplay(selectedOrder.status) === 'Completed' && !selectedOrder.returnRequest"
+            @click="showReturnModal = true"
+            class="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
+          >
+            <i class="material-icons text-lg">assignment_return</i>
+            Hoàn trả
+          </button>
           <button 
             @click="showDetail = false" 
-            class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
+            class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2 ml-auto"
           >
             <i class="material-icons text-lg">close</i>
             Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Return Request Modal -->
+    <div v-if="showReturnModal" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showReturnModal = false">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200" @click.stop>
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <i class="material-icons text-orange-600 dark:text-orange-400">assignment_return</i>
+            Yêu cầu hoàn trả đơn hàng #{{ selectedOrder?.id }}
+          </h3>
+          <button 
+            @click="closeReturnModal" 
+            class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Đóng"
+          >
+            <i class="material-icons">close</i>
+          </button>
+        </div>
+        
+        <div class="p-6 space-y-6">
+          <!-- Return Form -->
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Lý do hoàn trả <span class="text-red-500">*</span>
+              </label>
+              <select
+                v-model="returnForm.reason"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                :class="{ 'border-red-500 dark:border-red-500': returnFormErrors.reason }"
+                required
+              >
+                <option value="">-- Chọn lý do --</option>
+                <option value="defective">Lỗi sản phẩm</option>
+                <option value="wrong_item">Giao sai hàng</option>
+                <option value="size_issue">Không vừa size</option>
+                <option value="changed_mind">Đổi ý</option>
+                <option value="other">Khác</option>
+              </select>
+              <p v-if="returnFormErrors.reason" class="text-sm text-red-600 dark:text-red-400 mt-1">{{ returnFormErrors.reason }}</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Ghi chú (không bắt buộc)
+              </label>
+              <textarea
+                v-model="returnForm.note"
+                rows="4"
+                placeholder="Mô tả chi tiết lý do hoàn trả..."
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Hình ảnh đính kèm (không bắt buộc)
+              </label>
+              <div class="flex flex-col gap-3">
+                <input
+                  type="file"
+                  ref="imageInput"
+                  @change="handleImageSelect"
+                  accept="image/*"
+                  multiple
+                  class="hidden"
+                />
+                <button
+                  @click="$refs.imageInput.click()"
+                  type="button"
+                  class="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-orange-500 dark:hover:border-orange-600 hover:text-orange-600 dark:hover:text-orange-400 transition-all flex items-center justify-center gap-2"
+                >
+                  <i class="material-icons text-lg">add_photo_alternate</i>
+                  Chọn hình ảnh
+                </button>
+                <div v-if="returnForm.images.length > 0" class="grid grid-cols-3 gap-3">
+                  <div
+                    v-for="(image, index) in returnForm.images"
+                    :key="index"
+                    class="relative group"
+                  >
+                    <img
+                      :src="image"
+                      :alt="`Return image ${index + 1}`"
+                      class="w-full h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                    />
+                    <button
+                      @click="removeImage(index)"
+                      class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <i class="material-icons text-sm">close</i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <button 
+            @click="closeReturnModal" 
+            class="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all flex items-center gap-2"
+          >
+            Hủy
+          </button>
+          <button
+            @click="submitReturnRequest"
+            :disabled="submittingReturn"
+            class="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
+          >
+            <div v-if="submittingReturn" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+            <i v-else class="material-icons text-lg">send</i>
+            {{ submittingReturn ? 'Đang gửi...' : 'Gửi yêu cầu' }}
           </button>
         </div>
       </div>
@@ -319,6 +488,17 @@ const loading = ref(true);
 const showDetail = ref(false);
 const selectedOrder = ref(null);
 let refreshInterval = null; // Polling interval
+
+// Return Request Modal State
+const showReturnModal = ref(false);
+const submittingReturn = ref(false);
+const returnForm = ref({
+  reason: '',
+  note: '',
+  images: [] // Array of image URLs (base64 or file URLs)
+});
+const returnFormErrors = ref({});
+const imageInput = ref(null);
 
 // Normalize status từ backend format sang frontend format để hiển thị
 const normalizeStatusForDisplay = (status) => {
@@ -353,9 +533,21 @@ const fetchOrders = async (silent = false) => {
       status: normalizeStatusForDisplay(order.status)
     }));
     
-    // KHÔNG update selectedOrder khi đang mở modal để tránh mất payment và các chi tiết
-    // selectedOrder chỉ được update khi user click "Xem chi tiết" (viewOrderDetail)
-    // Nếu cần refresh selectedOrder, phải gọi lại viewOrderDetail với orderId
+    // Update selectedOrder nếu đang mở chi tiết
+    if (showDetail.value && selectedOrder.value) {
+      const updatedOrder = orders.value.find(o => o.id === selectedOrder.value.id);
+      if (updatedOrder) {
+        // Giữ nguyên returnRequest và statusHistories từ selectedOrder nếu có
+        // Chỉ update các thông tin cơ bản từ order list
+        selectedOrder.value = {
+          ...selectedOrder.value,
+          ...updatedOrder,
+          status: normalizeStatusForDisplay(updatedOrder.status),
+          // Giữ nguyên returnRequest từ selectedOrder (chi tiết) nếu có, nếu không thì lấy từ updatedOrder
+          returnRequest: selectedOrder.value.returnRequest || updatedOrder.returnRequest
+        };
+      }
+    }
   } catch (error) {
     logger.error('Error fetching orders:', error);
     // Đảm bảo orders.value luôn là array, không bị undefined
@@ -564,6 +756,110 @@ const getPaymentStatusText = (status) => {
   return statusMap[status] || status;
 };
 
+// Return Request Helper Functions
+const getReturnRequestBadgeClass = (status) => {
+  if (!status) return 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400';
+  
+  const statusLower = status.toLowerCase();
+  const statusMap = {
+    'pending': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+    'approved': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+    'processing': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
+    'packed': 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400',
+    'refunded': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+    'rejected': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+  };
+  return statusMap[statusLower] || 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400';
+};
+
+const getReturnRequestIcon = (status) => {
+  if (!status) return 'help';
+  
+  const statusLower = status.toLowerCase();
+  const iconMap = {
+    'pending': 'schedule',
+    'approved': 'check_circle_outline',
+    'processing': 'autorenew',
+    'packed': 'inventory_2',
+    'refunded': 'check_circle',
+    'rejected': 'cancel',
+  };
+  return iconMap[statusLower] || 'help';
+};
+
+const getReturnRequestText = (status) => {
+  if (!status) return status;
+  
+  const statusLower = status.toLowerCase();
+  const statusMap = {
+    'pending': 'Chờ xử lý',
+    'approved': 'Đã xác nhận',
+    'processing': 'Đang xử lý',
+    'packed': 'Đã đóng gói',
+    'refunded': 'Đã hoàn tiền',
+    'rejected': 'Từ chối',
+  };
+  return statusMap[statusLower] || status;
+};
+
+// Map return reason code to Vietnamese text
+const getReturnReasonText = (reason, includeNote = true) => {
+  if (!reason) return reason;
+  
+  // Parse reason: if it contains "\n\nGhi chú:", split it
+  const noteSeparator = '\n\nGhi chú:';
+  const reasonCode = reason.includes(noteSeparator) 
+    ? reason.split(noteSeparator)[0].trim() 
+    : reason.trim();
+  
+  // Map reason code to Vietnamese text
+  const reasonMap = {
+    'defective': 'Lỗi sản phẩm',
+    'wrong_item': 'Giao sai hàng',
+    'size_issue': 'Không vừa size',
+    'changed_mind': 'Đổi ý',
+    'other': 'Khác',
+  };
+  
+  const vietnameseReason = reasonMap[reasonCode] || reasonCode;
+  
+  // If there's a note and includeNote is true, include it
+  if (includeNote && reason.includes(noteSeparator)) {
+    const note = reason.split(noteSeparator)[1].trim();
+    return `${vietnameseReason}\n\nGhi chú: ${note}`;
+  }
+  
+  return vietnameseReason;
+};
+
+// Get return reason note only (if exists)
+const getReturnReasonNote = (reason) => {
+  if (!reason) return null;
+  
+  const noteSeparator = '\n\nGhi chú:';
+  if (reason.includes(noteSeparator)) {
+    return reason.split(noteSeparator)[1].trim();
+  }
+  
+  return null;
+};
+
+// Get return reason code only (without note)
+const getReturnReasonCode = (reason) => {
+  if (!reason) return reason;
+  
+  const noteSeparator = '\n\nGhi chú:';
+  return reason.includes(noteSeparator) 
+    ? reason.split(noteSeparator)[0].trim() 
+    : reason.trim();
+};
+
+// View image in modal
+const viewImage = (imageUrl) => {
+  // TODO: Implement image viewer modal
+  window.open(imageUrl, '_blank');
+};
+
 // Format functions are now imported from @/utils/formatters
 
 // Lifecycle
@@ -607,6 +903,105 @@ const handleVisibilityChange = () => {
     }
   } else {
     stopPolling(); // Pause polling khi tab không visible
+  }
+};
+
+// Return Request Methods
+const closeReturnModal = () => {
+  showReturnModal.value = false;
+  returnForm.value = {
+    reason: '',
+    note: '',
+    images: []
+  };
+  returnFormErrors.value = {};
+};
+
+const handleImageSelect = (event) => {
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
+
+  Array.from(files).forEach(file => {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        returnForm.value.images.push(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Reset input để có thể chọn lại cùng file
+  event.target.value = '';
+};
+
+const removeImage = (index) => {
+  returnForm.value.images.splice(index, 1);
+};
+
+const validateReturnForm = () => {
+  returnFormErrors.value = {};
+
+  if (!returnForm.value.reason || !returnForm.value.reason.trim()) {
+    returnFormErrors.value.reason = 'Vui lòng chọn lý do hoàn trả';
+    return false;
+  }
+
+  return true;
+};
+
+const submitReturnRequest = async () => {
+  if (!validateReturnForm()) {
+    notificationService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin form');
+    return;
+  }
+
+  if (!selectedOrder.value) {
+    notificationService.error('Lỗi', 'Không tìm thấy đơn hàng');
+    return;
+  }
+
+  try {
+    submittingReturn.value = true;
+
+    // Prepare return request data (orderId is passed as path variable, not in body)
+    const returnData = {
+      reason: returnForm.value.reason,
+      note: returnForm.value.note || null,
+      images: returnForm.value.images.length > 0 ? returnForm.value.images : null
+    };
+
+    // Call API to create return request
+    await userService.createReturnRequest(selectedOrder.value.id, returnData);
+
+    notificationService.success('Thành công', 'Yêu cầu hoàn trả đã được gửi thành công! Chúng tôi sẽ xử lý trong thời gian sớm nhất.');
+
+    // Close modal and reset form
+    closeReturnModal();
+
+    // Refresh orders list
+    await fetchOrders();
+
+    // Close detail modal
+    showDetail.value = false;
+    selectedOrder.value = null;
+
+  } catch (error) {
+    logger.error('Error submitting return request:', error);
+    const errorMessage = error.response?.data?.message || error.message || 'Không thể gửi yêu cầu hoàn trả';
+    notificationService.error('Lỗi', errorMessage);
+
+    // Show validation errors if any
+    if (error.response?.data?.validationErrors) {
+      const validationErrors = error.response.data.validationErrors;
+      Object.keys(validationErrors).forEach(key => {
+        returnFormErrors.value[key] = Array.isArray(validationErrors[key]) 
+          ? validationErrors[key][0] 
+          : validationErrors[key];
+      });
+    }
+  } finally {
+    submittingReturn.value = false;
   }
 };
 </script>

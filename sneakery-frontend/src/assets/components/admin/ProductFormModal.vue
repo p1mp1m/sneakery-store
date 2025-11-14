@@ -546,6 +546,8 @@ const props = defineProps({
       categoryIds: [],
       materialId: null,
       shoeSoleId: null,
+      priceFrom: null,
+      priceTo: null,
       variants: [],
     }),
   },
@@ -607,6 +609,9 @@ const childCategories = computed(() => {
 watch(
   () => props.initialProduct,
   (product) => {
+    // Debug logs (có thể xóa sau khi test)
+    // console.log("🔄 ProductFormModal - Watch initialProduct triggered:", product);
+    // console.log("🔄 isEditMode:", props.isEditMode);
     if (props.isEditMode && product) {
       // 🧹 Reset sạch trước khi fill
       localFormData.value = {
@@ -623,13 +628,18 @@ watch(
       };
 
       // ✅ Fill dữ liệu từ product (clone object tránh mutate)
-      localFormData.value = JSON.parse(JSON.stringify(product));
+      const clonedProduct = JSON.parse(JSON.stringify(product));
+      localFormData.value = clonedProduct;
+
+      // Debug logs (có thể xóa sau khi test)
+      // console.log("✅ ProductFormModal - Loaded edit data:", localFormData.value);
+      // console.log("✅ ProductFormModal - priceFrom:", localFormData.value.priceFrom);
+      // console.log("✅ ProductFormModal - priceTo:", localFormData.value.priceTo);
 
       emit("update:formData", { ...localFormData.value });
-      console.log("✅ Loaded edit data:", localFormData.value);
     }
   },
-  { immediate: true, deep: false } // ⚠️ không dùng deep để tránh double-trigger
+  { immediate: true, deep: true } // ✅ Đổi thành deep: true để detect nested changes
 );
 
 // =======================
@@ -768,6 +778,7 @@ const handleSubmit = () => {
   emit("submit", { ...localFormData.value });
 };
 
+
 const handleClose = () => {
   emit("update:visible", false);
   emit("close");
@@ -782,6 +793,8 @@ const handleClose = () => {
     categoryIds: [],
     materialId: null,
     shoeSoleId: null,
+    priceFrom: null,
+    priceTo: null,
     variants: [],
   };
 };

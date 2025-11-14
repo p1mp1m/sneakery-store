@@ -175,7 +175,8 @@ export const useAdminStore = defineStore('admin', () => {
 
   const getProductById = async (id) => {
     try {
-      loading.value = true
+      // ✅ Không set loading ở đây để tránh trigger reload danh sách
+      // Mỗi component tự quản lý loading state của riêng mình
       error.value = null
       
       const product = await AdminService.getProductById(id)
@@ -183,8 +184,6 @@ export const useAdminStore = defineStore('admin', () => {
     } catch (err) {
       error.value = err.message || 'Lỗi khi tải chi tiết sản phẩm'
       throw err
-    } finally {
-      loading.value = false
     }
   }
 

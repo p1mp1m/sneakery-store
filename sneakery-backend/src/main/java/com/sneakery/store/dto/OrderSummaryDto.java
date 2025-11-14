@@ -16,4 +16,5 @@ public class OrderSummaryDto {
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
     private int totalItems; // Tổng số lượng sản phẩm trong đơn
+    private ReturnRequestSummaryDto returnRequest; // Thông tin return request (nếu có)
 }
