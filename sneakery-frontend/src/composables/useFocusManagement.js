@@ -1,12 +1,39 @@
-import { ref, nextTick, onMounted, onUnmounted } from 'vue'
-
 /**
  * Composable for managing focus in modals and dialogs
- * Ensures proper focus trap and restoration
+ * Ensures proper focus trapping and restoration for accessibility
+ * 
+ * @example
+ * ```javascript
+ * const { setupModalFocus, cleanupModalFocus, saveActiveElement } = useFocusManagement();
+ * 
+ * // When opening modal
+ * saveActiveElement();
+ * setupModalFocus(modalRef.value);
+ * 
+ * // When closing modal
+ * cleanupModalFocus(modalRef.value);
+ * ```
+ * 
+ * @returns {Object} Focus management utilities
+ * @returns {Function} returns.trapFocus - Trap focus within a container
+ * @returns {Function} returns.releaseFocusTrap - Release focus trap
+ * @returns {Function} returns.saveActiveElement - Save currently active element
+ * @returns {Function} returns.restoreFocus - Restore focus to previously active element
+ * @returns {Function} returns.focusFirst - Focus first element in container
+ * @returns {Function} returns.focusLast - Focus last element in container
+ * @returns {Function} returns.focusElement - Focus a specific element
+ * @returns {Function} returns.setupModalFocus - Setup focus management for a modal
+ * @returns {Function} returns.cleanupModalFocus - Cleanup focus management for a modal
+ * @returns {Function} returns.getFocusableElements - Get all focusable elements in container
  */
+
+import { ref, nextTick, onUnmounted } from 'vue';
+
 export function useFocusManagement() {
-  const focusableElements = ref([])
-  const previousActiveElement = ref(null)
+  const focusableElements = ref([]);
+  const previousActiveElement = ref(null);
+  const firstFocusableElement = ref(null);
+  const lastFocusableElement = ref(null);
 
   /**
    * Get all focusable elements within a container
@@ -14,185 +41,188 @@ export function useFocusManagement() {
    * @returns {HTMLElement[]} Array of focusable elements
    */
   const getFocusableElements = (container) => {
+    if (!container) return [];
+
     const focusableSelectors = [
       'a[href]',
       'button:not([disabled])',
       'textarea:not([disabled])',
       'input:not([disabled])',
       'select:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])'
-    ].join(', ')
+      '[tabindex]:not([tabindex="-1"])',
+      '[contenteditable="true"]'
+    ].join(', ');
 
-    return Array.from(container.querySelectorAll(focusableSelectors)).filter(
-      (el) => {
-        const style = window.getComputedStyle(el)
-        return style.display !== 'none' && style.visibility !== 'hidden'
-      }
-    )
-  }
+    const elements = Array.from(container.querySelectorAll(focusableSelectors));
+    
+    // Filter out hidden elements
+    return elements.filter(el => {
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden' && !el.hasAttribute('disabled');
+    });
+  };
 
   /**
-   * Trap focus within a modal/dialog
-   * @param {HTMLElement} container - Modal container element
+   * Trap focus within a container (for modals)
+   * @param {HTMLElement} container - Container element to trap focus in
    */
   const trapFocus = (container) => {
-    if (!container) return
+    if (!container) return;
 
-    focusableElements.value = getFocusableElements(container)
+    focusableElements.value = getFocusableElements(container);
+    
+    if (focusableElements.value.length === 0) return;
 
-    if (focusableElements.value.length === 0) return
-
-    // Save current active element
-    previousActiveElement.value = document.activeElement
+    firstFocusableElement.value = focusableElements.value[0];
+    lastFocusableElement.value = focusableElements.value[focusableElements.value.length - 1];
 
     // Focus first element
-    const firstElement = focusableElements.value[0]
-    firstElement?.focus()
+    nextTick(() => {
+      if (firstFocusableElement.value) {
+        firstFocusableElement.value.focus();
+      }
+    });
 
-    // Handle keyboard navigation
-    const handleKeyDown = (e) => {
-      if (e.key !== 'Tab') return
+    // Handle Tab key to cycle through focusable elements
+    const handleKeyDown = (event) => {
+      if (event.key !== 'Tab') return;
 
-      const firstElement = focusableElements.value[0]
-      const lastElement = focusableElements.value[focusableElements.value.length - 1]
+      if (focusableElements.value.length === 0) return;
 
-      if (e.shiftKey) {
-        // Shift + Tab
-        if (document.activeElement === firstElement) {
-          e.preventDefault()
-          lastElement?.focus()
+      if (event.shiftKey) {
+        // Shift + Tab: move backwards
+        if (document.activeElement === firstFocusableElement.value) {
+          event.preventDefault();
+          lastFocusableElement.value?.focus();
         }
       } else {
-        // Tab
-        if (document.activeElement === lastElement) {
-          e.preventDefault()
-          firstElement?.focus()
+        // Tab: move forwards
+        if (document.activeElement === lastFocusableElement.value) {
+          event.preventDefault();
+          firstFocusableElement.value?.focus();
         }
       }
-    }
+    };
 
-    container.addEventListener('keydown', handleKeyDown)
+    container.addEventListener('keydown', handleKeyDown);
 
-    // Return cleanup function
-    return () => {
-      container.removeEventListener('keydown', handleKeyDown)
-    }
-  }
+    // Store handler for cleanup
+    container._focusHandler = handleKeyDown;
+  };
 
   /**
-   * Restore focus to previous element
+   * Release focus trap
+   * @param {HTMLElement} container - Container element
+   */
+  const releaseFocusTrap = (container) => {
+    if (!container || !container._focusHandler) return;
+    container.removeEventListener('keydown', container._focusHandler);
+    delete container._focusHandler;
+  };
+
+  /**
+   * Save the currently active element (before opening modal)
+   */
+  const saveActiveElement = () => {
+    previousActiveElement.value = document.activeElement;
+  };
+
+  /**
+   * Restore focus to the previously active element (after closing modal)
    */
   const restoreFocus = () => {
-    if (previousActiveElement.value) {
-      previousActiveElement.value.focus()
-      previousActiveElement.value = null
+    if (previousActiveElement.value && previousActiveElement.value.focus) {
+      nextTick(() => {
+        previousActiveElement.value.focus();
+        previousActiveElement.value = null;
+      });
     }
-  }
+  };
 
   /**
    * Focus first element in container
    * @param {HTMLElement} container - Container element
    */
   const focusFirst = (container) => {
-    nextTick(() => {
-      if (!container) return
-      focusableElements.value = getFocusableElements(container)
-      focusableElements.value[0]?.focus()
-    })
-  }
+    if (!container) return;
+    const elements = getFocusableElements(container);
+    if (elements.length > 0) {
+      nextTick(() => {
+        elements[0].focus();
+      });
+    }
+  };
 
   /**
-   * Set ARIA attributes for modal
-   * @param {HTMLElement} modal - Modal element
-   * @param {HTMLElement} trigger - Trigger element (optional)
+   * Focus last element in container
+   * @param {HTMLElement} container - Container element
    */
-  const setupModal = (modal, trigger = null) => {
-    if (!modal) return
+  const focusLast = (container) => {
+    if (!container) return;
+    const elements = getFocusableElements(container);
+    if (elements.length > 0) {
+      nextTick(() => {
+        elements[elements.length - 1].focus();
+      });
+    }
+  };
 
-    modal.setAttribute('role', 'dialog')
-    modal.setAttribute('aria-modal', 'true')
+  /**
+   * Focus a specific element
+   * @param {HTMLElement|string} element - Element or selector
+   */
+  const focusElement = (element) => {
+    if (!element) return;
     
-    if (trigger) {
-      modal.setAttribute('aria-labelledby', trigger.id || 'modal-title')
+    const el = typeof element === 'string' 
+      ? document.querySelector(element)
+      : element;
+    
+    if (el && el.focus) {
+      nextTick(() => {
+        el.focus();
+      });
     }
+  };
 
-    // Return cleanup function
-    return () => {
-      restoreFocus()
+  /**
+   * Setup focus management for a modal
+   * @param {HTMLElement} modalElement - Modal element
+   * @param {HTMLElement} triggerElement - Element that triggered the modal (optional)
+   */
+  const setupModalFocus = (modalElement, triggerElement = null) => {
+    if (triggerElement) {
+      saveActiveElement();
     }
-  }
+    trapFocus(modalElement);
+  };
+
+  /**
+   * Cleanup focus management for a modal
+   * @param {HTMLElement} modalElement - Modal element
+   */
+  const cleanupModalFocus = (modalElement) => {
+    releaseFocusTrap(modalElement);
+    restoreFocus();
+  };
+
+  // Cleanup on unmount
+  onUnmounted(() => {
+    if (previousActiveElement.value) {
+      previousActiveElement.value = null;
+    }
+  });
 
   return {
     trapFocus,
+    releaseFocusTrap,
+    saveActiveElement,
     restoreFocus,
     focusFirst,
-    setupModal,
+    focusLast,
+    focusElement,
+    setupModalFocus,
+    cleanupModalFocus,
     getFocusableElements
-  }
+  };
 }
-
-/**
- * Composable for keyboard shortcuts
- */
-export function useKeyboardShortcuts() {
-  const shortcuts = ref(new Map())
-
-  /**
-   * Register a keyboard shortcut
-   * @param {string} key - Key combination (e.g., 'ctrl+k', 'Escape')
-   * @param {Function} callback - Callback function
-   * @param {Object} options - Options (preventDefault, stopPropagation)
-   */
-  const register = (key, callback, options = {}) => {
-    shortcuts.value.set(key, { callback, ...options })
-  }
-
-  /**
-   * Unregister a keyboard shortcut
-   * @param {string} key - Key combination
-   */
-  const unregister = (key) => {
-    shortcuts.value.delete(key)
-  }
-
-  /**
-   * Handle keydown event
-   * @param {KeyboardEvent} event - Keyboard event
-   */
-  const handleKeyDown = (event) => {
-    let key = event.key
-
-    // Build key string
-    if (event.ctrlKey || event.metaKey) key = `ctrl+${key.toLowerCase()}`
-    if (event.shiftKey) key = `shift+${key.toLowerCase()}`
-    if (event.altKey) key = `alt+${key.toLowerCase()}`
-
-    const shortcut = shortcuts.value.get(key)
-
-    if (shortcut) {
-      if (shortcut.preventDefault !== false) {
-        event.preventDefault()
-      }
-      if (shortcut.stopPropagation) {
-        event.stopPropagation()
-      }
-      shortcut.callback(event)
-    }
-  }
-
-  onMounted(() => {
-    document.addEventListener('keydown', handleKeyDown)
-  })
-
-  onUnmounted(() => {
-    document.removeEventListener('keydown', handleKeyDown)
-    shortcuts.value.clear()
-  })
-
-  return {
-    register,
-    unregister,
-    handleKeyDown
-  }
-}
-

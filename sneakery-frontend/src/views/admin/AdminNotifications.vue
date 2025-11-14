@@ -455,7 +455,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import logger from '@/utils/logger'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
@@ -524,13 +524,13 @@ const fetchNotifications = async () => {
     updateStats()
     
     if (notifications.value.length === 0) {
-      toastService.info('Thông tin','Chưa có thông báo nào')
+      notificationService.info('Thông tin','Chưa có thông báo nào')
     } else {
       logger.log('✅ Notifications loaded from API:', notifications.value.length, 'notifications')
     }
   } catch (error) {
     logger.error('Lỗi tải dữ liệu:', error)
-    toastService.apiError(error, 'Không thể tải danh sách thông báo')
+    notificationService.apiError(error, 'Không thể tải danh sách thông báo')
     notifications.value = []
     updateStats()
   } finally {
@@ -594,17 +594,17 @@ const saveNotification = async () => {
     
     if (editingNotification.value) {
       await adminStore.updateNotification(editingNotification.value.id, notificationData)
-      toastService.success('Thành công','Cập nhật thông báo thành công!')
+      notificationService.success('Thành công','Cập nhật thông báo thành công!')
     } else {
       await adminStore.createNotification(notificationData)
-      toastService.success('Thành công','Tạo thông báo thành công!')
+      notificationService.success('Thành công','Tạo thông báo thành công!')
     }
     
     closeDialog()
     fetchNotifications()
   } catch (error) {
     logger.error('Lỗi lưu:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi lưu thông báo')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi lưu thông báo')
   } finally {
     saving.value = false
   }
@@ -623,12 +623,12 @@ const deleteNotification = async (item) => {
     )
     
     await adminStore.deleteNotification(item.id)
-    toastService.success('Thành công','Đã xóa thông báo!')
+    notificationService.success('Thành công','Đã xóa thông báo!')
     fetchNotifications()
   } catch (error) {
     if (error !== 'cancel') {
       logger.error('Lỗi xóa:', error)
-      toastService.apiError(error, 'Có lỗi xảy ra khi xóa thông báo')
+      notificationService.apiError(error, 'Có lỗi xảy ra khi xóa thông báo')
     }
   }
 }

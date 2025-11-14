@@ -175,7 +175,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import GoogleButton from '@/assets/components/common/GoogleButton.vue';
 
 const router = useRouter();
@@ -266,7 +266,7 @@ const handleRegister = async () => {
   try {
     const response = await authStore.register(registerForm.value);
     successMessage.value = response + " Tự động chuyển đến trang đăng nhập...";
-    toastService.success('Thành công', 'Đăng ký thành công!');
+    notificationService.success('Thành công', 'Đăng ký thành công!');
     
     // Chuyển trang sau 2 giây
     setTimeout(() => {
@@ -274,13 +274,13 @@ const handleRegister = async () => {
     }, 2000);
   } catch (error) {
     serverError.value = error.response?.data?.message || 'Đã có lỗi xảy ra, vui lòng thử lại.';
-    toastService.error('Lỗi', serverError.value);
+    notificationService.error('Lỗi', serverError.value);
   } finally {
     loading.value = false;
   }
 };
 
 const handleGoogleLogin = () => {
-  toastService.info('Thông tin','Tính năng đăng ký Google sẽ được cập nhật sớm!');
+  notificationService.info('Thông tin','Tính năng đăng ký Google sẽ được cập nhật sớm!');
 };
 </script>

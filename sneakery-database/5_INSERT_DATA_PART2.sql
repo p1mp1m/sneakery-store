@@ -16,7 +16,7 @@ PRINT '=====================================================';
 PRINT '';
 
 -- =====================================================
--- 1. ORDERS (200 orders)
+-- 1. ORDERS (50 orders)
 -- =====================================================
 PRINT 'Inserting Orders...';
 
@@ -36,18 +36,18 @@ DECLARE @OrderDate DATETIME2;
 
 -- Get random users
 DECLARE @UserIds TABLE (id BIGINT);
-INSERT INTO @UserIds SELECT TOP 80 id FROM Users WHERE role = 'USER' ORDER BY NEWID();
+INSERT INTO @UserIds SELECT TOP 20 id FROM Users WHERE role = 'USER' ORDER BY NEWID();
 
 -- Get random addresses
 DECLARE @AddressIds TABLE (id BIGINT);
-INSERT INTO @AddressIds SELECT TOP 100 id FROM Addresses ORDER BY NEWID();
+INSERT INTO @AddressIds SELECT TOP 30 id FROM Addresses ORDER BY NEWID();
 
 -- Get coupons
 DECLARE @CouponIds TABLE (id INT);
 INSERT INTO @CouponIds SELECT id FROM Coupons WHERE is_active = 1;
 
--- Create 200 orders
-WHILE @OrderCounter <= 200
+-- Create 50 orders
+WHILE @OrderCounter <= 50
 BEGIN
     -- Random user (80% have user, 20% are POS orders)
     IF RAND() > 0.2
@@ -209,11 +209,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 200 orders with details, status histories, and payments';
+PRINT '  - Inserted 50 orders with details, status histories, and payments';
 GO
 
 -- =====================================================
--- 2. REVIEWS (150 reviews)
+-- 2. REVIEWS (30 reviews)
 -- =====================================================
 PRINT 'Inserting Reviews...';
 
@@ -226,7 +226,7 @@ DECLARE @ReviewTitle NVARCHAR(255);
 DECLARE @ReviewBody NVARCHAR(MAX);
 DECLARE @ReviewApproved BIT;
 
-WHILE @ReviewCounter <= 150
+WHILE @ReviewCounter <= 30
 BEGIN
     -- Get random product
     SELECT TOP 1 @ReviewProductId = id FROM Products ORDER BY NEWID();
@@ -295,11 +295,11 @@ CLOSE update_rating_cursor;
 DEALLOCATE update_rating_cursor;
 GO
 
-PRINT '  - Inserted 150 reviews and updated product ratings';
+PRINT '  - Inserted 30 reviews and updated product ratings';
 GO
 
 -- =====================================================
--- 3. WISHLISTS (80 wishlist items)
+-- 3. WISHLISTS (20 wishlist items)
 -- =====================================================
 PRINT 'Inserting Wishlists...';
 
@@ -307,7 +307,7 @@ DECLARE @WishlistCounter INT = 1;
 DECLARE @WishlistUserId BIGINT;
 DECLARE @WishlistProductId BIGINT;
 
-WHILE @WishlistCounter <= 80
+WHILE @WishlistCounter <= 20
 BEGIN
     SELECT TOP 1 @WishlistUserId = id FROM Users WHERE role = 'USER' ORDER BY NEWID();
     SELECT TOP 1 @WishlistProductId = id FROM Products ORDER BY NEWID();
@@ -322,11 +322,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 80 wishlist items';
+PRINT '  - Inserted 20 wishlist items';
 GO
 
 -- =====================================================
--- 4. CARTS (30 carts)
+-- 4. CARTS (15 carts)
 -- =====================================================
 PRINT 'Inserting Carts...';
 
@@ -334,7 +334,7 @@ DECLARE @CartCounter INT = 1;
 DECLARE @CartUserId BIGINT;
 DECLARE @CartId BIGINT;
 
-WHILE @CartCounter <= 30
+WHILE @CartCounter <= 15
 BEGIN
     SELECT TOP 1 @CartUserId = id FROM Users WHERE role = 'USER' ORDER BY NEWID();
     
@@ -369,11 +369,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 30 carts with items';
+PRINT '  - Inserted 15 carts with items';
 GO
 
 -- =====================================================
--- 5. LOYALTY_POINTS (300 transactions)
+-- 5. LOYALTY_POINTS (80 transactions)
 -- =====================================================
 PRINT 'Inserting Loyalty_Points...';
 
@@ -383,7 +383,7 @@ DECLARE @LoyaltyOrderId BIGINT;
 DECLARE @LoyaltyPoints INT;
 DECLARE @LoyaltyType NVARCHAR(20);
 
-WHILE @LoyaltyCounter <= 300
+WHILE @LoyaltyCounter <= 80
 BEGIN
     SELECT TOP 1 @LoyaltyUserId = id FROM Users WHERE role = 'USER' ORDER BY NEWID();
     
@@ -430,11 +430,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 300 loyalty point transactions';
+PRINT '  - Inserted 80 loyalty point transactions';
 GO
 
 -- =====================================================
--- 6. NOTIFICATIONS (200 notifications)
+-- 6. NOTIFICATIONS (50 notifications)
 -- =====================================================
 PRINT 'Inserting Notifications...';
 
@@ -446,7 +446,7 @@ DECLARE @NotifMessage NVARCHAR(MAX);
 DECLARE @NotifLink NVARCHAR(500);
 DECLARE @NotifRead BIT;
 
-WHILE @NotifCounter <= 200
+WHILE @NotifCounter <= 50
 BEGIN
     SELECT TOP 1 @NotifUserId = id FROM Users WHERE role = 'USER' ORDER BY NEWID();
     
@@ -498,11 +498,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 200 notifications';
+PRINT '  - Inserted 50 notifications';
 GO
 
 -- =====================================================
--- 7. INVENTORY_LOGS (100 logs)
+-- 7. INVENTORY_LOGS (30 logs)
 -- =====================================================
 PRINT 'Inserting Inventory_Logs...';
 
@@ -513,7 +513,7 @@ DECLARE @InvQtyBefore INT;
 DECLARE @InvQtyChange INT;
 DECLARE @InvQtyAfter INT;
 
-WHILE @InvLogCounter <= 100
+WHILE @InvLogCounter <= 30
 BEGIN
     SELECT TOP 1 @InvVariantId = id FROM Product_Variants ORDER BY NEWID();
     
@@ -556,11 +556,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 100 inventory logs';
+PRINT '  - Inserted 30 inventory logs';
 GO
 
 -- =====================================================
--- 8. ACTIVITY_LOGS (150 logs)
+-- 8. ACTIVITY_LOGS (30 logs)
 -- =====================================================
 PRINT 'Inserting Activity_Logs...';
 
@@ -570,7 +570,7 @@ DECLARE @ActivityAction NVARCHAR(50);
 DECLARE @ActivityEntityType NVARCHAR(50);
 DECLARE @ActivityEntityId BIGINT;
 
-WHILE @ActivityCounter <= 150
+WHILE @ActivityCounter <= 30
 BEGIN
     SELECT TOP 1 @ActivityUserId = id FROM Users WHERE role IN ('ADMIN', 'MODERATOR') ORDER BY NEWID();
     
@@ -621,11 +621,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 150 activity logs';
+PRINT '  - Inserted 30 activity logs';
 GO
 
 -- =====================================================
--- 9. WARRANTIES (20 warranties)
+-- 9. WARRANTIES (5 warranties)
 -- =====================================================
 PRINT 'Inserting Warranties...';
 
@@ -636,7 +636,7 @@ DECLARE @WarrantyProductId BIGINT;
 DECLARE @WarrantyVariantId BIGINT;
 DECLARE @WarrantyStatus NVARCHAR(20);
 
-WHILE @WarrantyCounter <= 20
+WHILE @WarrantyCounter <= 5
 BEGIN
     SELECT TOP 1 @WarrantyOrderId = id FROM Orders WHERE status = 'delivered' AND user_id IS NOT NULL ORDER BY NEWID();
     
@@ -670,11 +670,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 20 warranties';
+PRINT '  - Inserted 5 warranties';
 GO
 
 -- =====================================================
--- 10. RETURN_REQUESTS (10 requests)
+-- 10. RETURN_REQUESTS (3 requests)
 -- =====================================================
 PRINT 'Inserting Return_Requests...';
 
@@ -683,7 +683,7 @@ DECLARE @ReturnOrderId BIGINT;
 DECLARE @ReturnUserId BIGINT;
 DECLARE @ReturnStatus NVARCHAR(20);
 
-WHILE @ReturnCounter <= 10
+WHILE @ReturnCounter <= 3
 BEGIN
     SELECT TOP 1 @ReturnOrderId = id FROM Orders WHERE status = 'delivered' AND user_id IS NOT NULL ORDER BY NEWID();
     
@@ -708,7 +708,7 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 10 return requests';
+PRINT '  - Inserted 3 return requests';
 GO
 
 -- =====================================================
@@ -853,19 +853,19 @@ PRINT N'HOAN THANH INSERT DU LIEU GIAO DICH (PART 2)!';
 PRINT '=====================================================';
 PRINT '';
 PRINT N'Da insert thanh cong:';
-PRINT '  - 200 orders';
-PRINT '  - ~600 order details';
-PRINT '  - ~200 order status histories';
-PRINT '  - 200 payments';
-PRINT '  - 150 reviews';
-PRINT '  - 80 wishlists';
-PRINT '  - 30 carts with items';
-PRINT '  - 300 loyalty point transactions';
-PRINT '  - 200 notifications';
-PRINT '  - 100 inventory logs';
-PRINT '  - 150 activity logs';
-PRINT '  - 20 warranties';
-PRINT '  - 10 return requests';
+PRINT '  - 50 orders';
+PRINT '  - ~150 order details';
+PRINT '  - ~50 order status histories';
+PRINT '  - 50 payments';
+PRINT '  - 30 reviews';
+PRINT '  - 20 wishlists';
+PRINT '  - 15 carts with items';
+PRINT '  - 80 loyalty point transactions';
+PRINT '  - 50 notifications';
+PRINT '  - 30 inventory logs';
+PRINT '  - 30 activity logs';
+PRINT '  - 5 warranties';
+PRINT '  - 3 return requests';
 PRINT '  - System settings';
 PRINT '  - Email templates';
 PRINT '  - Size charts';
@@ -877,12 +877,92 @@ PRINT '';
 PRINT N'Tong ket:';
 PRINT '  - 10 brands';
 PRINT '  - 15 categories';
-PRINT '  - 50 products';
-PRINT '  - ~200 variants';
-PRINT '  - 100 users';
-PRINT '  - 200 orders';
-PRINT '  - 150 reviews';
+PRINT '  - 25 products';
+PRINT '  - ~100 variants';
+PRINT '  - 30 users';
+PRINT '  - 50 orders';
+PRINT '  - 30 reviews';
 PRINT '';
 PRINT N'Database da san sang su dung!';
+PRINT '';
+
+-- ============================================================
+-- MIGRATION: Đồng bộ Product.mainImageUrl từ ProductImage
+-- ============================================================
+-- Mục đích:
+-- 1. Set isPrimary=true cho ảnh đầu tiên nếu sản phẩm chưa có ảnh primary
+-- 2. Update Product.mainImageUrl từ ProductImage có isPrimary=true
+-- 3. Đảm bảo tất cả sản phẩm có ảnh đều có mainImageUrl
+-- ============================================================
+PRINT '=====================================================';
+PRINT N'DANG DONG BO ANH SAN PHAM...';
+PRINT '=====================================================';
+PRINT '';
+
+BEGIN TRANSACTION;
+
+-- [1] Set isPrimary=true cho ảnh đầu tiên của sản phẩm chưa có ảnh primary
+-- Lấy ảnh có displayOrder nhỏ nhất (hoặc id nhỏ nhất nếu không có displayOrder)
+UPDATE Product_Images
+SET is_primary = 1
+WHERE id IN (
+    SELECT MIN(pi.id)
+    FROM Product_Images pi
+    INNER JOIN Products p ON pi.product_id = p.id
+    WHERE NOT EXISTS (
+        SELECT 1 
+        FROM Product_Images pi2 
+        WHERE pi2.product_id = pi.product_id 
+        AND pi2.is_primary = 1
+    )
+    GROUP BY pi.product_id
+);
+
+PRINT N'  - Da set primary cho anh dau tien cua san pham chua co primary';
+
+-- [2] Update Product.mainImageUrl từ ProductImage có isPrimary=true
+UPDATE Products
+SET main_image_url = (
+    SELECT TOP 1 pi.image_url
+    FROM Product_Images pi
+    WHERE pi.product_id = Products.id
+    AND pi.is_primary = 1
+    ORDER BY pi.display_order ASC, pi.id ASC
+)
+WHERE EXISTS (
+    SELECT 1
+    FROM Product_Images pi
+    WHERE pi.product_id = Products.id
+    AND pi.is_primary = 1
+)
+AND (main_image_url IS NULL OR main_image_url = '');
+
+PRINT N'  - Da dong bo mainImageUrl cho san pham';
+
+-- [3] Log kết quả
+DECLARE @TotalProducts INT;
+DECLARE @ProductsWithMainImage INT;
+DECLARE @TotalPrimaryImages INT;
+
+SELECT 
+    @TotalProducts = COUNT(*),
+    @ProductsWithMainImage = SUM(CASE WHEN main_image_url IS NOT NULL AND main_image_url != '' THEN 1 ELSE 0 END)
+FROM Products
+WHERE deleted_at IS NULL;
+
+SELECT @TotalPrimaryImages = COUNT(*) FROM Product_Images WHERE is_primary = 1;
+
+PRINT '';
+PRINT N'Ket qua dong bo:';
+PRINT N'  - Tong san pham: ' + CAST(@TotalProducts AS NVARCHAR(10));
+PRINT N'  - San pham co mainImageUrl: ' + CAST(@ProductsWithMainImage AS NVARCHAR(10));
+PRINT N'  - Tong anh primary: ' + CAST(@TotalPrimaryImages AS NVARCHAR(10));
+PRINT '';
+
+COMMIT TRANSACTION;
+
+PRINT '=====================================================';
+PRINT N'HOAN THANH DONG BO ANH SAN PHAM!';
+PRINT '=====================================================';
 PRINT '';
 

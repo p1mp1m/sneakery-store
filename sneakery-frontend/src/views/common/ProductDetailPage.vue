@@ -42,7 +42,7 @@
               class="compact"
             />
             <img 
-              :src="selectedImage || product.imageUrl" 
+              :src="optimizedMainImage" 
               :alt="product.name"
               class="w-full h-full object-cover"
             />
@@ -56,11 +56,28 @@
             </button>
           </div>
           
-          <div class="flex gap-2 overflow-x-auto" v-if="product.variants && product.variants.length > 0">
+          <!-- Product Image Gallery -->
+          <div class="flex gap-2 overflow-x-auto" v-if="galleryImages.length > 0">
+            <img
+              v-for="(img, index) in galleryImages"
+              :key="index"
+              :src="getOptimizedThumbnail(img)"
+              :alt="`${product.name} - Image ${index + 1}`"
+              :class="[
+                'w-20 h-20 object-cover rounded-lg border-2 cursor-pointer transition-all',
+                selectedImage === img 
+                  ? 'border-purple-600 dark:border-purple-400' 
+                  : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600'
+              ]"
+              @click="selectImage(img)"
+            />
+          </div>
+          <!-- Fallback: Variant images nếu không có gallery -->
+          <div class="flex gap-2 overflow-x-auto" v-else-if="product.variants && product.variants.length > 0">
             <img
               v-for="(variant, index) in product.variants"
               :key="index"
-              :src="variant.imageUrl || product.imageUrl"
+              :src="getOptimizedThumbnail(variant.imageUrl || product.imageUrl)"
               :alt="`${product.name} - ${variant.color}`"
               :class="[
                 'w-20 h-20 object-cover rounded-lg border-2 cursor-pointer transition-all',
@@ -422,7 +439,7 @@
     <div v-if="showZoom" class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" @click="closeZoom">
       <button class="absolute top-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-900 hover:bg-gray-100 transition-colors text-2xl" @click="closeZoom">×</button>
       <div class="max-w-4xl w-full" @click.stop>
-        <img :src="selectedImage || product.imageUrl" :alt="product.name" class="w-full h-auto rounded-xl" />
+        <img :src="optimizedSelectedImage" :alt="product.name" class="w-full h-auto rounded-xl" />
       </div>
     </div>
   </div>
@@ -435,13 +452,14 @@ import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import { useFlashSaleStore } from '@/stores/flashSale';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
 import axios from 'axios';
 import FlashSaleBadge from '@/assets/components/common/FlashSaleBadge.vue';
 import productService from '@/services/productService';
 import ProductCard from '@/assets/components/products/ProductCard.vue';
+import { getOptimizedImageUrl } from '@/utils/cloudinaryHelper';
 
 const route = useRoute();
 const router = useRouter();
@@ -452,6 +470,7 @@ const { addProduct } = useRecentlyViewed();
 
 // State
 const product = ref(null);
+const productImages = ref([]); // Gallery images từ ProductImage API
 const loading = ref(true);
 const error = ref('');
 const selectedColor = ref('');
@@ -507,6 +526,9 @@ const fetchProduct = async () => {
     
     product.value = response.data;
     
+    // Fetch product images gallery
+    await fetchProductImages();
+    
     // Add to recently viewed with full product data
     // The composable will extract price and imageUrl correctly
     addProduct({
@@ -520,7 +542,18 @@ const fetchProduct = async () => {
       const firstVariant = product.value.variants[0];
       selectedColor.value = firstVariant.color;
       selectedSize.value = firstVariant.size;
-      selectedImage.value = firstVariant.imageUrl;
+    }
+    
+    // Set initial selected image: ưu tiên mainImageUrl, sau đó primary image, cuối cùng variant image
+    if (product.value.mainImageUrl) {
+      selectedImage.value = product.value.mainImageUrl;
+    } else if (productImages.value.length > 0) {
+      const primaryImage = productImages.value.find(img => img.isPrimary) || productImages.value[0];
+      selectedImage.value = primaryImage.imageUrl;
+    } else if (product.value.variants && product.value.variants.length > 0) {
+      selectedImage.value = product.value.variants[0].imageUrl || product.value.imageUrl;
+    } else {
+      selectedImage.value = product.value.imageUrl;
     }
 
     // Fetch related products
@@ -530,6 +563,20 @@ const fetchProduct = async () => {
     error.value = err.response?.data?.message || 'Không thể tải thông tin sản phẩm';
   } finally {
     loading.value = false;
+  }
+};
+
+// Fetch product images gallery
+const fetchProductImages = async () => {
+  if (!product.value?.id) return;
+  
+  try {
+    const response = await axios.get(`/api/products/${product.value.id}/images`);
+    productImages.value = response.data || [];
+    logger.log('Fetched product images:', productImages.value.length);
+  } catch (err) {
+    logger.warn('Error fetching product images:', err);
+    productImages.value = [];
   }
 };
 
@@ -596,6 +643,51 @@ const averageRating = computed(() => {
   const sum = reviews.value.reduce((acc, r) => acc + r.rating, 0);
   return sum / reviews.value.length;
 });
+
+// Computed - Gallery images (sorted by displayOrder)
+const galleryImages = computed(() => {
+  if (productImages.value.length > 0) {
+    return productImages.value
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+      .map(img => img.imageUrl);
+  }
+  return [];
+});
+
+// Computed - Optimized main image
+const optimizedMainImage = computed(() => {
+  const imageUrl = selectedImage.value || product.value?.mainImageUrl || product.value?.imageUrl || '';
+  if (!imageUrl) return '';
+  return getOptimizedImageUrl(imageUrl, {
+    width: 800,
+    height: 800,
+    quality: 'auto',
+    format: 'auto'
+  });
+});
+
+// Computed - Optimized selected image for zoom
+const optimizedSelectedImage = computed(() => {
+  const imageUrl = selectedImage.value || product.value?.mainImageUrl || product.value?.imageUrl || '';
+  if (!imageUrl) return '';
+  return getOptimizedImageUrl(imageUrl, {
+    width: 1200,
+    height: 1200,
+    quality: 'auto',
+    format: 'auto'
+  });
+});
+
+// Helper - Get optimized thumbnail
+const getOptimizedThumbnail = (imageUrl) => {
+  if (!imageUrl) return '';
+  return getOptimizedImageUrl(imageUrl, {
+    width: 80,
+    height: 80,
+    quality: 'auto',
+    format: 'auto'
+  });
+};
 
 // Fetch related products
 const fetchRelatedProducts = async () => {
@@ -664,30 +756,30 @@ const closeZoom = () => {
 
 const addToCart = async () => {
   if (!authStore.isAuthenticated) {
-    toastService.warning('Cảnh báo','Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+    notificationService.warning('Cảnh báo','Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
     router.push('/login');
     return;
   }
 
   if (!canAddToCart.value) {
-    toastService.error('Lỗi','Sản phẩm này hiện không có sẵn');
+    notificationService.error('Lỗi','Sản phẩm này hiện không có sẵn');
     return;
   }
 
   try {
     // Sử dụng cart store để thêm vào giỏ hàng
     await cartStore.addItem(selectedVariant.value.id, quantity.value);
-    toastService.success('Thành công', `Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
+    notificationService.success('Thành công', `Đã thêm ${quantity.value} sản phẩm vào giỏ hàng`);
     logger.log('Product added to cart:', selectedVariant.value.id);
   } catch (err) {
     logger.error('Error adding to cart:', err);
     
     // Nếu lỗi 401, yêu cầu đăng nhập
     if (err.response?.status === 401) {
-      toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
+      notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
       router.push('/login');
     } else {
-      toastService.error('Lỗi', err.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+      notificationService.error('Lỗi', err.response?.data?.message || 'Không thể thêm vào giỏ hàng');
     }
   }
 };

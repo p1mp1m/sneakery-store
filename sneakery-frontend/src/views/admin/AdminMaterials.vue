@@ -302,7 +302,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import toastService from "@/utils/toastService";
+import notificationService from '@/utils/notificationService';
 import { useAdminStore } from "@/stores/admin";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 import logger from "@/utils/logger";
@@ -377,7 +377,7 @@ const fetchMaterials = async () => {
     materials.value = result.content || result || [];
   } catch (error) {
     logger.error("Error fetching materials:", error);
-    toastService.apiError(error, "Lỗi khi tải danh sách chất liệu")
+    notificationService.apiError(error, "Lỗi khi tải danh sách chất liệu")
   } finally {
     loading.value = false;
   }
@@ -434,10 +434,10 @@ const saveMaterial = async () => {
     }
     await fetchMaterials();
     closeModal();
-    toastService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} chất liệu thành công!`, { duration: 3000 });
+    notificationService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} chất liệu thành công!`, { duration: 3000 });
   } catch (error) {
     logger.error("Error saving material:", error);
-    toastService.apiError(error, "Lỗi khi lưu chất liệu")
+    notificationService.apiError(error, "Lỗi khi lưu chất liệu")
   } finally {
     saving.value = false;
   }
@@ -455,10 +455,10 @@ const deleteMaterial = async () => {
     await fetchMaterials();
     showDeleteModal.value = false;
     materialToDelete.value = null;
-    toastService.success('Thành công', "Xóa chất liệu thành công!", { duration: 3000 });
+    notificationService.success('Thành công', "Xóa chất liệu thành công!", { duration: 3000 });
   } catch (error) {
     logger.error("Error deleting material:", error);
-    toastService.apiError(error, "Lỗi khi xóa chất liệu")
+    notificationService.apiError(error, "Lỗi khi xóa chất liệu")
   } finally {
     deleting.value = false;
   }

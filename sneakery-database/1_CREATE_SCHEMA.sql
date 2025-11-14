@@ -680,15 +680,12 @@ PRINT '';
 
 -- Users indexes
 CREATE INDEX idx_users_email ON Users(email);
-CREATE INDEX idx_users_role ON Users(role);
-CREATE INDEX idx_users_active ON Users(is_active);
 CREATE INDEX idx_users_deleted ON Users(deleted_at);
 CREATE INDEX idx_users_role_active ON Users(role, is_active);
 GO
 
 -- Brands indexes
 CREATE INDEX idx_brands_slug ON Brands(slug);
-CREATE INDEX idx_brands_active ON Brands(is_active);
 GO
 
 -- Categories indexes
@@ -700,28 +697,20 @@ GO
 
 -- Materials indexes
 CREATE INDEX idx_materials_slug ON Materials(slug);
-CREATE INDEX idx_materials_active ON Materials(is_active);
 GO
 
 -- Shoe_Soles indexes
 CREATE INDEX idx_shoe_soles_slug ON Shoe_Soles(slug);
-CREATE INDEX idx_shoe_soles_active ON Shoe_Soles(is_active);
 GO
 
 -- Products indexes
 CREATE INDEX idx_products_brand ON Products(brand_id);
 CREATE INDEX idx_products_slug ON Products(slug);
-CREATE INDEX idx_products_active ON Products(is_active);
-CREATE INDEX idx_products_featured ON Products(is_featured);
-CREATE INDEX idx_products_rating ON Products(avg_rating);
 CREATE INDEX idx_products_deleted ON Products(deleted_at);
-CREATE INDEX idx_products_material ON Products(material_id);
-CREATE INDEX idx_products_shoe_sole ON Products(shoe_sole_id);
-CREATE INDEX idx_products_name ON Products(name);
-CREATE INDEX idx_products_created_at ON Products(created_at);
 CREATE INDEX idx_products_brand_active ON Products(brand_id, is_active);
 CREATE INDEX idx_products_featured_active_created ON Products(is_featured, is_active, created_at DESC);
 CREATE INDEX idx_products_active_rating ON Products(is_active, avg_rating DESC);
+CREATE INDEX idx_products_active_deleted_created ON Products(is_active, deleted_at, created_at DESC);
 GO
 
 -- Product_Categories indexes
@@ -732,12 +721,9 @@ GO
 -- Product_Variants indexes
 CREATE INDEX idx_variants_product ON Product_Variants(product_id);
 CREATE INDEX idx_variants_sku ON Product_Variants(sku);
-CREATE INDEX idx_variants_stock ON Product_Variants(stock_quantity);
-CREATE INDEX idx_variants_active ON Product_Variants(is_active);
 CREATE INDEX idx_variants_product_stock ON Product_Variants(product_id, stock_quantity);
-CREATE INDEX idx_variants_price_base ON Product_Variants(price_base);
-CREATE INDEX idx_variants_price_sale ON Product_Variants(price_sale);
 CREATE INDEX idx_variants_product_active ON Product_Variants(product_id, is_active);
+CREATE INDEX idx_variants_product_active_stock ON Product_Variants(product_id, is_active, stock_quantity);
 GO
 
 -- Product_Images indexes
@@ -780,10 +766,9 @@ GO
 CREATE INDEX idx_orders_user ON Orders(user_id);
 CREATE INDEX idx_orders_number ON Orders(order_number);
 CREATE INDEX idx_orders_status ON Orders(status);
-CREATE INDEX idx_orders_created ON Orders(created_at DESC);
 CREATE INDEX idx_orders_status_created ON Orders(status, created_at DESC);
 CREATE INDEX idx_orders_user_status ON Orders(user_id, status);
-CREATE INDEX idx_orders_user_created ON Orders(user_id, created_at DESC);
+CREATE INDEX idx_orders_user_status_created ON Orders(user_id, status, created_at DESC);
 GO
 
 -- Order_Details indexes
@@ -800,31 +785,25 @@ CREATE INDEX idx_payments_order ON Payments(order_id);
 CREATE INDEX idx_payments_status ON Payments(status);
 CREATE INDEX idx_payments_transaction ON Payments(transaction_id);
 CREATE INDEX idx_payments_order_status ON Payments(order_id, status);
-CREATE INDEX idx_payments_status_created ON Payments(status, created_at DESC);
 GO
 
 -- Reviews indexes
 CREATE INDEX idx_reviews_product ON Reviews(product_id);
 CREATE INDEX idx_reviews_user ON Reviews(user_id);
 CREATE INDEX idx_reviews_approved ON Reviews(is_approved);
-CREATE INDEX idx_reviews_rating ON Reviews(rating);
 CREATE INDEX idx_reviews_product_approved ON Reviews(product_id, is_approved);
 CREATE INDEX idx_reviews_product_rating ON Reviews(product_id, rating);
 CREATE INDEX idx_reviews_user_product ON Reviews(user_id, product_id);
-CREATE INDEX idx_reviews_approved_created ON Reviews(is_approved, created_at DESC);
 GO
 
 -- Notifications indexes
 CREATE INDEX idx_notifications_user ON Notifications(user_id);
-CREATE INDEX idx_notifications_read ON Notifications(is_read);
-CREATE INDEX idx_notifications_created ON Notifications(created_at DESC);
 CREATE INDEX idx_notifications_user_read ON Notifications(user_id, is_read);
 CREATE INDEX idx_notifications_user_created ON Notifications(user_id, created_at DESC);
 GO
 
 -- Inventory_Logs indexes
 CREATE INDEX idx_inventory_logs_variant ON Inventory_Logs(variant_id);
-CREATE INDEX idx_inventory_logs_created ON Inventory_Logs(created_at DESC);
 CREATE INDEX idx_inventory_variant_created ON Inventory_Logs(variant_id, created_at DESC);
 GO
 
@@ -841,9 +820,7 @@ GO
 
 -- Loyalty_Points indexes
 CREATE INDEX idx_loyalty_user ON Loyalty_Points(user_id);
-CREATE INDEX idx_loyalty_expires ON Loyalty_Points(expires_at);
 CREATE INDEX idx_loyalty_user_type ON Loyalty_Points(user_id, transaction_type);
-CREATE INDEX idx_loyalty_user_created ON Loyalty_Points(user_id, created_at DESC);
 GO
 
 -- Return_Requests indexes
@@ -860,13 +837,11 @@ CREATE INDEX idx_warranty_status ON Warranties(status);
 GO
 
 -- System_Settings indexes
-CREATE INDEX idx_system_settings_type ON System_Settings(setting_type);
 CREATE INDEX idx_system_settings_key ON System_Settings(setting_key);
 GO
 
 -- Size_Charts indexes
 CREATE INDEX idx_sizechart_brand ON Size_Charts(brand_id);
-CREATE INDEX idx_sizechart_category ON Size_Charts(category);
 GO
 
 -- Newsletter_Subscriptions indexes

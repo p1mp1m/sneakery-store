@@ -211,10 +211,10 @@
             </div>
             
             <!-- Info khi đã hiển thị tất cả -->
-            <div v-if="!hasMoreProducts && products.length > 0" class="text-center pt-2">
+            <div v-if="!hasMoreProducts && displayedProducts.length > 0" class="text-center pt-2">
               <p class="text-xs text-gray-500 dark:text-gray-400">
-                Đang hiển thị {{ products.length }} sản phẩm
-                <span v-if="searchQuery.trim() || filterBrand || filterCategory">(kết quả tìm kiếm)</span>
+                Đang hiển thị {{ displayedProducts.length }} sản phẩm
+                <span v-if="searchQuery.trim() || filterBrand || filterCategory">(kết quả tìm kiếm/lọc)</span>
               </p>
             </div>
           </div>
@@ -901,7 +901,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import logger from '@/utils/logger'
 import { formatPrice, formatCurrency, formatDate } from '@/utils/formatters'
 
@@ -1036,7 +1036,7 @@ const loadData = async () => {
     
   } catch (error) {
     logger.error('Error loading data:', error)
-    toastService.apiError(error, 'Không thể tải dữ liệu')
+    notificationService.apiError(error, 'Không thể tải dữ liệu')
   } finally {
     loading.value = false
   }
@@ -1058,15 +1058,63 @@ const searchProducts = async () => {
       }
       
       const result = await adminStore.fetchProducts(0, 50, filters) // Giới hạn 50 khi search
-      products.value = result.content || result || []
+      let productsList = result.content || result || []
+      
+      // Enrich products với variants nếu cần (fetch detail cho những product không có price)
+      const productsNeedingDetails = productsList.filter(p => {
+        // Kiểm tra nếu không có price và không có variants hoặc variants rỗng
+        const hasPrice = p.price !== null && p.price !== undefined && !isNaN(p.price) && p.price > 0
+        const hasPriceBase = p.priceBase !== null && p.priceBase !== undefined && !isNaN(p.priceBase) && p.priceBase > 0
+        const hasPriceSale = p.priceSale !== null && p.priceSale !== undefined && !isNaN(p.priceSale) && p.priceSale > 0
+        const hasVariants = p.variants && Array.isArray(p.variants) && p.variants.length > 0
+        
+        return !hasPrice && !hasPriceBase && !hasPriceSale && !hasVariants
+      })
+      
+      if (productsNeedingDetails.length > 0 && productsNeedingDetails.length <= 20) {
+        // Chỉ fetch detail nếu số lượng không quá nhiều (tránh quá tải)
+        try {
+          const detailPromises = productsNeedingDetails.map(p => 
+            adminStore.getProductById(p.id).catch(() => null)
+          )
+          const details = await Promise.all(detailPromises)
+          
+          // Merge details vào products
+          productsList = productsList.map(product => {
+            const detail = details.find(d => d && d.id === product.id)
+            if (detail) {
+              return {
+                ...product,
+                variants: detail.variants || product.variants || [],
+                priceBase: detail.priceBase || product.priceBase,
+                priceSale: detail.priceSale || product.priceSale,
+                price: detail.price || product.price,
+                imageUrl: product.imageUrl || detail.variants?.[0]?.imageUrl || detail.imageUrl,
+                stockQuantity: detail.stockQuantity || product.stockQuantity,
+                totalStock: detail.totalStock || product.totalStock
+              }
+            }
+            return product
+          })
+        } catch (error) {
+          logger.warn('Could not fetch product details after search:', error)
+        }
+      }
+      
+      products.value = productsList
       showingAll.value = true // Khi search, hiển thị tất cả kết quả
       
       if (products.value.length === 0 && searchQuery.value.trim()) {
-        toastService.info('Thông tin', 'Không tìm thấy sản phẩm nào')
+        notificationService.info('Thông tin', 'Không tìm thấy sản phẩm nào')
       }
     } catch (error) {
       logger.error('Error searching products:', error)
-      toastService.apiError(error, 'Không thể tìm kiếm sản phẩm')
+      notificationService.apiError(error, 'Không thể tìm kiếm sản phẩm')
+      // Nếu có lỗi, vẫn giữ danh sách sản phẩm cũ để tránh mất dữ liệu
+      if (products.value.length === 0) {
+        // Chỉ load lại nếu không có sản phẩm nào
+        await loadData()
+      }
     } finally {
       loading.value = false
     }
@@ -1077,20 +1125,118 @@ const filterProducts = async () => {
   try {
     loading.value = true
     
-    const filters = {
-      isActive: true,
-      search: searchQuery.value,
-      brandId: filterBrand.value,
-      categoryId: filterCategory.value
+    // Nếu không có filter nào và không có search query, load lại dữ liệu ban đầu
+    const hasBrandFilter = filterBrand.value && filterBrand.value !== ''
+    const hasCategoryFilter = filterCategory.value && filterCategory.value !== ''
+    const hasSearchQuery = searchQuery.value && searchQuery.value.trim()
+    
+    if (!hasBrandFilter && !hasCategoryFilter && !hasSearchQuery) {
+      // Reset về trạng thái ban đầu
+      await loadData()
+      return
     }
     
-      const result = await adminStore.fetchProducts(0, 50, filters) // Giới hạn 50 khi filter
-      products.value = result.content || result || []
-      showingAll.value = true // Khi filter, hiển thị tất cả kết quả
+    // Build filters object - chỉ thêm brandId và categoryId nếu có giá trị
+    const filters = {
+      isActive: true
+    }
+    
+    // Thêm search nếu có
+    if (hasSearchQuery) {
+      filters.search = searchQuery.value.trim()
+    }
+    
+    // Convert brandId sang number nếu có giá trị
+    if (hasBrandFilter) {
+      const brandId = parseInt(filterBrand.value, 10)
+      if (!isNaN(brandId)) {
+        filters.brandId = brandId
+      }
+    }
+    
+    // Convert categoryId sang number nếu có giá trị
+    if (hasCategoryFilter) {
+      const categoryId = parseInt(filterCategory.value, 10)
+      if (!isNaN(categoryId)) {
+        filters.categoryId = categoryId
+      }
+    }
+    
+    const result = await adminStore.fetchProducts(0, 50, filters) // Giới hạn 50 khi filter
+    let productsList = result.content || result || []
+    
+    // Enrich products với variants nếu cần (fetch detail cho những product không có price)
+    const productsNeedingDetails = productsList.filter(p => {
+      // Kiểm tra nếu không có price và không có variants hoặc variants rỗng
+      const hasPrice = p.price !== null && p.price !== undefined && !isNaN(p.price) && p.price > 0
+      const hasPriceBase = p.priceBase !== null && p.priceBase !== undefined && !isNaN(p.priceBase) && p.priceBase > 0
+      const hasPriceSale = p.priceSale !== null && p.priceSale !== undefined && !isNaN(p.priceSale) && p.priceSale > 0
+      const hasVariants = p.variants && Array.isArray(p.variants) && p.variants.length > 0
+      
+      return !hasPrice && !hasPriceBase && !hasPriceSale && !hasVariants
+    })
+    
+    if (productsNeedingDetails.length > 0 && productsNeedingDetails.length <= 20) {
+      // Chỉ fetch detail nếu số lượng không quá nhiều (tránh quá tải)
+      try {
+        const detailPromises = productsNeedingDetails.map(p => 
+          adminStore.getProductById(p.id).catch(() => null)
+        )
+        const details = await Promise.all(detailPromises)
+        
+        // Merge details vào products
+        productsList = productsList.map(product => {
+          const detail = details.find(d => d && d.id === product.id)
+          if (detail) {
+            return {
+              ...product,
+              variants: detail.variants || product.variants || [],
+              priceBase: detail.priceBase || product.priceBase,
+              priceSale: detail.priceSale || product.priceSale,
+              price: detail.price || product.price,
+              imageUrl: product.imageUrl || detail.variants?.[0]?.imageUrl || detail.imageUrl,
+              stockQuantity: detail.stockQuantity || product.stockQuantity,
+              totalStock: detail.totalStock || product.totalStock
+            }
+          }
+          return product
+        })
+      } catch (error) {
+        logger.warn('Could not fetch product details after filter:', error)
+      }
+    }
+    
+    products.value = productsList
+    showingAll.value = true // Khi filter, hiển thị tất cả kết quả
+    
+    // Kiểm tra nếu không có sản phẩm nào sau khi filter
+    if (products.value.length === 0) {
+      const filterMessages = []
+      if (filterBrand.value) {
+        const selectedBrand = brands.value.find(b => b.id === parseInt(filterBrand.value, 10))
+        if (selectedBrand) filterMessages.push(`thương hiệu "${selectedBrand.name}"`)
+      }
+      if (filterCategory.value) {
+        const selectedCategory = categories.value.find(c => c.id === parseInt(filterCategory.value, 10))
+        if (selectedCategory) filterMessages.push(`danh mục "${selectedCategory.name}"`)
+      }
+      if (searchQuery.value && searchQuery.value.trim()) {
+        filterMessages.push(`từ khóa "${searchQuery.value.trim()}"`)
+      }
+      
+      if (filterMessages.length > 0) {
+        notificationService.info('Thông tin', `Không tìm thấy sản phẩm nào với ${filterMessages.join(' và ')}`)
+      }
+    }
     
   } catch (error) {
     logger.error('Error filtering products:', error)
-    toastService.apiError(error, 'Không thể lọc sản phẩm')
+    notificationService.apiError(error, 'Không thể lọc sản phẩm')
+    // Nếu có lỗi, vẫn giữ danh sách sản phẩm cũ để tránh mất dữ liệu
+    if (products.value.length === 0) {
+      // Chỉ load lại nếu không có sản phẩm nào
+      await loadData()
+    }
   } finally {
     loading.value = false
   }
@@ -1114,14 +1260,14 @@ const handleBarcodeSearch = async () => {
     if (foundProducts.length > 0) {
       addToCart(foundProducts[0])
       barcodeValue.value = ''
-      toastService.success('Thành công',`Đã thêm ${foundProducts[0].name} vào giỏ hàng`)
+      notificationService.success('Thành công',`Đã thêm ${foundProducts[0].name} vào giỏ hàng`)
     } else {
-      toastService.warning('Cảnh báo','Không tìm thấy sản phẩm với mã này')
+      notificationService.warning('Cảnh báo','Không tìm thấy sản phẩm với mã này')
     }
     
   } catch (error) {
     logger.error('Error searching barcode:', error)
-    toastService.apiError(error, 'Không thể tìm kiếm sản phẩm')
+    notificationService.apiError(error, 'Không thể tìm kiếm sản phẩm')
   } finally {
     loading.value = false
   }
@@ -1129,7 +1275,7 @@ const handleBarcodeSearch = async () => {
 
 const processOrder = async () => {
   if (cartItems.value.length === 0) {
-    toastService.warning('Cảnh báo','Giỏ hàng trống')
+    notificationService.warning('Cảnh báo','Giỏ hàng trống')
     return
   }
   
@@ -1164,7 +1310,7 @@ const processOrder = async () => {
     // Xóa localStorage sau khi thanh toán thành công
     localStorage.removeItem('pos_cart')
     
-    toastService.success('Thành công','Đơn hàng đã được tạo thành công')
+    notificationService.success('Thành công','Đơn hàng đã được tạo thành công')
     
   } catch (error) {
     logger.error('Error processing order:', error)
@@ -1190,7 +1336,7 @@ const processOrder = async () => {
     }
     
     // Show detailed error message
-    toastService.apiError(error, 'Không thể tạo đơn hàng')
+    notificationService.apiError(error, 'Không thể tạo đơn hàng')
   } finally {
     processing.value = false
   }
@@ -1205,7 +1351,7 @@ const resetCart = () => {
   badgeAnimationKey.value += 1 // Trigger animation
   // Xóa localStorage
   localStorage.removeItem('pos_cart')
-  toastService.info('Thông tin','Đã làm mới giỏ hàng')
+  notificationService.info('Thông tin','Đã làm mới giỏ hàng')
 }
 
 // Load danh sách khách hàng gợi ý
@@ -1246,7 +1392,7 @@ const searchCustomers = async () => {
       searchCustomersList.value = result.content || result || []
     } catch (error) {
       logger.error('Error searching customers:', error)
-      toastService.apiError(error, 'Không thể tìm kiếm khách hàng')
+      notificationService.apiError(error, 'Không thể tìm kiếm khách hàng')
       searchCustomersList.value = []
     } finally {
       loadingCustomers.value = false
@@ -1266,11 +1412,11 @@ const selectCustomer = async (customer) => {
   try {
     const balanceData = await adminStore.getUserLoyaltyBalance(customer.id)
     selectedCustomerLoyaltyPoints.value = balanceData.balance || 0
-    toastService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
+    notificationService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
   } catch (error) {
     logger.error('Error loading loyalty points:', error)
     selectedCustomerLoyaltyPoints.value = 0
-    toastService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
+    notificationService.success('Thành công',`Đã chọn khách hàng: ${customer.fullName || customer.email}`)
   }
 }
 
@@ -1319,7 +1465,7 @@ const selectProductForCart = (product) => {
   // Kiểm tra tồn kho tổng
   const availableStock = getProductStock(product)
   if (availableStock === 0) {
-    toastService.error('Lỗi','Sản phẩm này đã hết hàng')
+    notificationService.error('Lỗi','Sản phẩm này đã hết hàng')
     return
   }
   
@@ -1337,7 +1483,7 @@ const selectProductForCart = (product) => {
 // Chọn variant trong modal
 const selectVariant = (variant) => {
   if ((variant.stockQuantity || 0) === 0) {
-    toastService.warning('Cảnh báo','Biến thể này đã hết hàng')
+    notificationService.warning('Cảnh báo','Biến thể này đã hết hàng')
     return
   }
   selectedVariant.value = variant
@@ -1353,7 +1499,7 @@ const closeVariantModal = () => {
 // Thêm variant đã chọn vào giỏ
 const addSelectedVariantToCart = () => {
   if (!selectedVariant.value) {
-    toastService.warning('Cảnh báo','Vui lòng chọn biến thể')
+    notificationService.warning('Cảnh báo','Vui lòng chọn biến thể')
     return
   }
   addToCartWithVariant(selectedProduct.value, selectedVariant.value)
@@ -1375,12 +1521,12 @@ const addToCartWithVariant = (product, variant) => {
   }
   
   if (productPrice === 0) {
-    toastService.warning('Cảnh báo','Sản phẩm này chưa có giá. Vui lòng kiểm tra lại.')
+    notificationService.warning('Cảnh báo','Sản phẩm này chưa có giá. Vui lòng kiểm tra lại.')
     return
   }
   
   if (variantStock === 0) {
-    toastService.error('Lỗi','Sản phẩm này đã hết hàng')
+    notificationService.error('Lỗi','Sản phẩm này đã hết hàng')
     return
   }
   
@@ -1394,7 +1540,7 @@ const addToCartWithVariant = (product, variant) => {
   
   // Kiểm tra số lượng không vượt quá tồn kho
   if (quantityAfterAdd > variantStock) {
-    toastService.warning('Cảnh báo',
+    notificationService.warning('Cảnh báo',
       `Không đủ hàng. Tồn kho: ${variantStock}, Đã có trong giỏ: ${existingItem?.quantity || 0}, Yêu cầu: ${quantityAfterAdd}`
     )
     return
@@ -1403,7 +1549,7 @@ const addToCartWithVariant = (product, variant) => {
   if (existingItem) {
     existingItem.quantity += 1
     badgeAnimationKey.value += 1 // Trigger animation
-    toastService.success('Thành công',`Đã thêm ${product.name} vào giỏ hàng (${existingItem.quantity}/${variantStock})`)
+    notificationService.success('Thành công',`Đã thêm ${product.name} vào giỏ hàng (${existingItem.quantity}/${variantStock})`)
   } else {
     cartItems.value.push({
       id: product.id,
@@ -1417,14 +1563,14 @@ const addToCartWithVariant = (product, variant) => {
       color: variant?.color || null
     })
     badgeAnimationKey.value += 1 // Trigger animation
-    toastService.success('Thành công',`Đã thêm ${product.name} vào giỏ hàng (1/${variantStock})`)
+    notificationService.success('Thành công',`Đã thêm ${product.name} vào giỏ hàng (1/${variantStock})`)
   }
 }
 
 const removeFromCart = (index) => {
   cartItems.value.splice(index, 1)
   badgeAnimationKey.value += 1 // Trigger animation
-  toastService.info('Thông tin','Đã xóa sản phẩm khỏi giỏ hàng')
+  notificationService.info('Thông tin','Đã xóa sản phẩm khỏi giỏ hàng')
 }
 
 const updateQuantity = (index, quantity) => {
@@ -1438,7 +1584,7 @@ const updateQuantity = (index, quantity) => {
   // Kiểm tra stock nếu tăng số lượng
   if (quantity > item.quantity && item.stockQuantity !== undefined) {
     if (quantity > item.stockQuantity) {
-      toastService.warning('Cảnh báo',
+      notificationService.warning('Cảnh báo',
         `Không đủ hàng. Tồn kho: ${item.stockQuantity}, Yêu cầu: ${quantity}`
       )
       // Giữ nguyên số lượng cũ
@@ -1457,7 +1603,7 @@ const updateQuantity = (index, quantity) => {
 
 const applyDiscount = async () => {
   if (!discountCode.value || !discountCode.value.trim()) {
-    toastService.warning('Cảnh báo','Vui lòng nhập mã giảm giá')
+    notificationService.warning('Cảnh báo','Vui lòng nhập mã giảm giá')
     return
   }
   
@@ -1466,14 +1612,14 @@ const applyDiscount = async () => {
     const coupon = await adminStore.validateCoupon(discountCode.value.trim())
     
     if (!coupon || !coupon.isActive) {
-      toastService.error('Lỗi','Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa')
+      notificationService.error('Lỗi','Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa')
       discountAmount.value = 0
       return
     }
     
     // Kiểm tra minOrderAmount
     if (coupon.minOrderAmount && subtotal.value < coupon.minOrderAmount) {
-      toastService.warning('Cảnh báo',`Đơn hàng tối thiểu ${formatCurrency(coupon.minOrderAmount)} để áp dụng mã giảm giá`)
+      notificationService.warning('Cảnh báo',`Đơn hàng tối thiểu ${formatCurrency(coupon.minOrderAmount)} để áp dụng mã giảm giá`)
       discountAmount.value = 0
       return
     }
@@ -1500,11 +1646,11 @@ const applyDiscount = async () => {
     }
     
     discountAmount.value = calculatedDiscount
-    toastService.success('Thành công',`Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${formatCurrency(calculatedDiscount)}`)
+    notificationService.success('Thành công',`Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${formatCurrency(calculatedDiscount)}`)
     
   } catch (error) {
     logger.error('Error applying discount:', error)
-    toastService.apiError(error, 'Không thể áp dụng mã giảm giá')
+    notificationService.apiError(error, 'Không thể áp dụng mã giảm giá')
     discountAmount.value = 0
   }
 }
@@ -1640,7 +1786,7 @@ const loadSalesHistory = async () => {
     
   } catch (error) {
     logger.error('Error loading sales history:', error)
-    toastService.apiError(error, 'Không thể tải lịch sử bán hàng')
+    notificationService.apiError(error, 'Không thể tải lịch sử bán hàng')
     salesHistory.value = []
   } finally {
     loadingHistory.value = false
@@ -1755,7 +1901,7 @@ const loadCartFromLocalStorage = () => {
         selectedCustomerLoyaltyPoints.value = cartData.selectedCustomerLoyaltyPoints || null
         paymentMethod.value = cartData.paymentMethod || 'cash'
         
-        toastService.info('Thông tin','Đã khôi phục giỏ hàng từ phiên trước')
+        notificationService.info('Thông tin','Đã khôi phục giỏ hàng từ phiên trước')
       } else {
         // Xóa cart cũ
         localStorage.removeItem('pos_cart')

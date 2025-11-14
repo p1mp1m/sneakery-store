@@ -49,11 +49,18 @@ public class SecurityConfig {
                         // 1. Các API Public (Không cần đăng nhập)
                         .requestMatchers("/api/auth/**").permitAll() // API Đăng nhập/Đăng ký/Reset Password
                         // TestController chỉ hoạt động trong dev profile (đã có @Profile("dev"))
-                        // Không cần permitAll ở đây vì @Profile sẽ tự động disable trong production
+                        // Cho phép test endpoints trong dev (sẽ tự động disable trong production nhờ @Profile)
+                        .requestMatchers("/api/test/**").permitAll() // Test endpoints (chỉ hoạt động trong dev profile)
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll() // Swagger
 
                         // ✅ Cho phép GET public cho Product
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+
+                        // ✅ Cho phép GET public cho Flash Sales
+                        .requestMatchers(HttpMethod.GET, "/api/flash-sales/**").permitAll()
+
+                        // ✅ Cho phép GET public cho Reviews (approved testimonials)
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/approved").permitAll()
 
                         // ✅ Cho phép Guest APIs (không cần authentication)
                         .requestMatchers("/api/guest/**").permitAll()

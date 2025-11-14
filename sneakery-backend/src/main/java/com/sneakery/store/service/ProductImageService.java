@@ -6,6 +6,7 @@ import com.sneakery.store.entity.ProductImage;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.ProductImageRepository;
 import com.sneakery.store.repository.ProductRepository;
+import com.sneakery.store.util.CloudinaryUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +32,7 @@ public class ProductImageService {
     private final ProductImageRepository productImageRepository;
     private final ProductRepository productRepository;
     private final FileStorageService fileStorageService;
+    private final CloudinaryUtil cloudinaryUtil;
 
     // ==========================================================
     // [1] LẤY DANH SÁCH ẢNH CỦA SẢN PHẨM
@@ -70,9 +73,15 @@ public class ProductImageService {
                 .displayOrder(displayOrder)
                 .build();
 
-        productImageRepository.save(Objects.requireNonNull(image));
+        ProductImage saved = productImageRepository.save(Objects.requireNonNull(image));
+        
+        // 🔄 Tự động sync Product.mainImageUrl nếu là ảnh primary
+        if (Boolean.TRUE.equals(dto.getIsPrimary())) {
+            syncProductMainImageUrl(productId, dto.getImageUrl());
+        }
+        
         log.info("✅ Added image from URL for product {}: {}", productId, dto.getImageUrl());
-        return convertToDto(image);
+        return convertToDto(saved);
     }
 
     // ==========================================================
@@ -113,6 +122,12 @@ public class ProductImageService {
                 .build();
 
         ProductImage saved = productImageRepository.save(Objects.requireNonNull(image));
+        
+        // 🔄 Tự động sync Product.mainImageUrl nếu là ảnh primary
+        if (finalPrimary) {
+            syncProductMainImageUrl(productId, imageUrl);
+        }
+        
         log.info("✅ Uploaded image {} for product {}", imageUrl, productId);
         return convertToDto(saved);
     }
@@ -150,8 +165,14 @@ public class ProductImageService {
 
         // Xoá record DB + reorder
         Long pid = image.getProduct().getId();
+        boolean wasPrimary = Boolean.TRUE.equals(image.getIsPrimary());
         productImageRepository.delete(image);
         reorderDisplayOrder(pid);
+        
+        // 🔄 Nếu xóa ảnh primary, tự động sync ảnh primary mới (nếu có)
+        if (wasPrimary) {
+            syncProductMainImageUrlFromPrimary(pid);
+        }
 
         log.info("✅ Đã xoá ảnh [{}] của sản phẩm {}", imageUrl, productId);
     }
@@ -179,10 +200,16 @@ public class ProductImageService {
 
         // Xoá record trong DB
         Long productId = image.getProduct().getId();
+        boolean wasPrimary = Boolean.TRUE.equals(image.getIsPrimary());
         productImageRepository.delete(image);
 
         // Reorder lại thứ tự hiển thị
         reorderDisplayOrder(productId);
+        
+        // 🔄 Nếu xóa ảnh primary, tự động sync ảnh primary mới (nếu có)
+        if (wasPrimary) {
+            syncProductMainImageUrlFromPrimary(productId);
+        }
 
         log.info("✅ Đã xoá ảnh ID={} của sản phẩm {}", imageId, productId);
     }
@@ -194,11 +221,16 @@ public class ProductImageService {
     public ProductImageDto setPrimaryImage(Long imageId) {
         ProductImage image = productImageRepository.findById(Objects.requireNonNull(imageId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Hình ảnh không tồn tại"));
-        productImageRepository.clearPrimaryForProduct(image.getProduct().getId());
+        Long productId = image.getProduct().getId();
+        productImageRepository.clearPrimaryForProduct(productId);
         image.setIsPrimary(true);
-        productImageRepository.save(Objects.requireNonNull(image));
+        ProductImage saved = productImageRepository.save(Objects.requireNonNull(image));
+        
+        // 🔄 Tự động sync Product.mainImageUrl
+        syncProductMainImageUrl(productId, saved.getImageUrl());
+        
         log.info("⭐ Set image {} as primary", imageId);
-        return convertToDto(image);
+        return convertToDto(saved);
     }
 
     // ==========================================================
@@ -218,17 +250,148 @@ public class ProductImageService {
     }
 
     // ==========================================================
-    // [8] MAPPING ENTITY ↔ DTO
+    // [8] SYNC PRODUCT.MAIN_IMAGE_URL
+    // ==========================================================
+    /**
+     * Đồng bộ Product.mainImageUrl từ ProductImage có isPrimary=true
+     * 
+     * @param productId ID sản phẩm
+     * @param imageUrl URL ảnh primary (nếu đã biết)
+     */
+    private void syncProductMainImageUrl(Long productId, String imageUrl) {
+        try {
+            Product product = productRepository.findById(Objects.requireNonNull(productId))
+                    .orElse(null);
+            if (product != null) {
+                product.setMainImageUrl(imageUrl);
+                productRepository.save(product);
+                log.info("🔄 Synced Product.mainImageUrl for product {}: {}", productId, imageUrl);
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Không thể sync Product.mainImageUrl cho product {}: {}", productId, e.getMessage());
+        }
+    }
+
+    /**
+     * Đồng bộ Product.mainImageUrl từ ảnh primary hiện có (nếu có)
+     * Dùng khi xóa ảnh primary, cần tìm ảnh primary mới
+     */
+    private void syncProductMainImageUrlFromPrimary(Long productId) {
+        try {
+            Optional<ProductImage> primaryImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+            if (primaryImage.isPresent()) {
+                syncProductMainImageUrl(productId, primaryImage.get().getImageUrl());
+            } else {
+                // Không còn ảnh primary, set mainImageUrl = null
+                Product product = productRepository.findById(Objects.requireNonNull(productId)).orElse(null);
+                if (product != null) {
+                    product.setMainImageUrl(null);
+                    productRepository.save(product);
+                    log.info("🔄 Cleared Product.mainImageUrl for product {} (no primary image)", productId);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Không thể sync Product.mainImageUrl từ primary cho product {}: {}", productId, e.getMessage());
+        }
+    }
+
+    // ==========================================================
+    // [9] SYNC ALL PRODUCTS MAIN IMAGE URL
+    // ==========================================================
+    /**
+     * Đồng bộ Product.mainImageUrl cho tất cả sản phẩm
+     * Method này sẽ:
+     * 1. Set isPrimary=true cho ảnh đầu tiên nếu sản phẩm chưa có ảnh primary
+     * 2. Update Product.mainImageUrl từ ProductImage có isPrimary=true
+     * 
+     * @return Số lượng sản phẩm đã được sync
+     */
+    @Transactional
+    public int syncAllProductsMainImageUrl() {
+        log.info("🔄 Bắt đầu sync mainImageUrl cho tất cả sản phẩm...");
+        int syncedCount = 0;
+        int setPrimaryCount = 0;
+        
+        // Lấy tất cả sản phẩm (chưa bị xóa)
+        List<Product> products = productRepository.findAll().stream()
+                .filter(p -> p.getDeletedAt() == null)
+                .collect(Collectors.toList());
+        
+        log.info("📦 Tìm thấy {} sản phẩm cần sync", products.size());
+        
+        for (Product product : products) {
+            try {
+                Long productId = product.getId();
+                
+                // Kiểm tra xem có ảnh primary chưa
+                Optional<ProductImage> primaryImageOpt = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+                
+                if (primaryImageOpt.isEmpty()) {
+                    // Chưa có ảnh primary, set ảnh đầu tiên làm primary
+                    List<ProductImage> images = productImageRepository.findByProductIdOrderByDisplayOrderAsc(productId);
+                    if (!images.isEmpty()) {
+                        ProductImage firstImage = images.get(0);
+                        firstImage.setIsPrimary(true);
+                        productImageRepository.save(firstImage);
+                        setPrimaryCount++;
+                        log.debug("✅ Set primary cho ảnh đầu tiên của product {}", productId);
+                        
+                        // Sync mainImageUrl
+                        product.setMainImageUrl(firstImage.getImageUrl());
+                        productRepository.save(product);
+                        syncedCount++;
+                    }
+                } else {
+                    // Đã có ảnh primary, sync mainImageUrl
+                    ProductImage primaryImage = primaryImageOpt.get();
+                    String primaryUrl = primaryImage.getImageUrl();
+                    
+                    // Chỉ update nếu khác nhau hoặc null
+                    if (product.getMainImageUrl() == null || 
+                        !product.getMainImageUrl().equals(primaryUrl)) {
+                        product.setMainImageUrl(primaryUrl);
+                        productRepository.save(product);
+                        syncedCount++;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("⚠️ Lỗi khi sync product {}: {}", product.getId(), e.getMessage());
+            }
+        }
+        
+        log.info("✅ Hoàn thành sync: {} sản phẩm đã được sync, {} ảnh được set primary", 
+                syncedCount, setPrimaryCount);
+        return syncedCount;
+    }
+
+    // ==========================================================
+    // [10] MAPPING ENTITY ↔ DTO
     // ==========================================================
     private ProductImageDto convertToDto(ProductImage image) {
+        String imageUrl = image.getImageUrl();
+        
+        // Generate optimized URLs nếu là Cloudinary URL
+        String thumbnailUrl = null;
+        String mediumUrl = null;
+        String largeUrl = null;
+        
+        if (cloudinaryUtil != null && cloudinaryUtil.isCloudinaryUrl(imageUrl)) {
+            thumbnailUrl = cloudinaryUtil.generateThumbnailUrl(imageUrl);
+            mediumUrl = cloudinaryUtil.generateMediumUrl(imageUrl);
+            largeUrl = cloudinaryUtil.generateLargeUrl(imageUrl);
+        }
+        
         return ProductImageDto.builder()
                 .id(image.getId())
                 .productId(image.getProduct() != null ? image.getProduct().getId() : null)
-                .imageUrl(image.getImageUrl())
-                .cloudinaryPublicId(image.getCloudinaryPublicId()) // <<=== thêm
+                .imageUrl(imageUrl)
+                .cloudinaryPublicId(image.getCloudinaryPublicId())
                 .altText(image.getAltText())
                 .isPrimary(image.getIsPrimary())
                 .displayOrder(image.getDisplayOrder())
+                .thumbnailUrl(thumbnailUrl)
+                .mediumUrl(mediumUrl)
+                .largeUrl(largeUrl)
                 .build();
     }
 

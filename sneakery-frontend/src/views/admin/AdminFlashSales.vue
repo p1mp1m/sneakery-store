@@ -394,7 +394,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import logger from '@/utils/logger'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
@@ -561,7 +561,7 @@ const loadFlashSales = async () => {
     logger.log('✅ Flash sales loaded from API', flashSales.value)
   } catch (error) {
     logger.error('Lỗi khi tải danh sách flash sales:', error)
-    toastService.apiError(error, 'Không thể tải danh sách flash sales')
+    notificationService.apiError(error, 'Không thể tải danh sách flash sales')
   } finally {
     loading.value = false
   }
@@ -666,17 +666,17 @@ const saveFlashSale = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateFlashSale(formData.value.id, flashSaleData)
-      toastService.success('Thành công','Cập nhật Flash Sale thành công!')
+      notificationService.success('Thành công','Cập nhật Flash Sale thành công!')
     } else {
       await adminStore.createFlashSale(flashSaleData)
-      toastService.success('Thành công','Tạo Flash Sale thành công!')
+      notificationService.success('Thành công','Tạo Flash Sale thành công!')
     }
     
     closeModal()
     loadFlashSales()
   } catch (error) {
     logger.error('Error saving flash sale:', error)
-    toastService.apiError(error, 'Lỗi khi lưu Flash Sale')
+    notificationService.apiError(error, 'Lỗi khi lưu Flash Sale')
   } finally {
     saving.value = false
   }
@@ -693,11 +693,11 @@ const deleteFlashSale = async () => {
     await adminStore.deleteFlashSale(saleToDelete.value.id)
     showDeleteModal.value = false
     saleToDelete.value = null
-    toastService.success('Thành công','Xóa Flash Sale thành công!')
+    notificationService.success('Thành công','Xóa Flash Sale thành công!')
     loadFlashSales()
   } catch (error) {
     logger.error('Error deleting flash sale:', error)
-    toastService.apiError(error, 'Lỗi khi xóa Flash Sale')
+    notificationService.apiError(error, 'Lỗi khi xóa Flash Sale')
   } finally {
     deleting.value = false
   }

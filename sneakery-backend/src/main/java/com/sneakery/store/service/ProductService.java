@@ -169,14 +169,16 @@ public class ProductService {
                             return price != null ? price : BigDecimal.ZERO;
                         })));
 
-        // Lấy ảnh đại diện (ưu tiên từ product images, fallback variant image)
-        String imageUrl = Optional.ofNullable(product.getImages())
-                .filter(images -> !images.isEmpty())
-                .flatMap(images -> images.stream()
-                        .filter(img -> img != null && img.getIsPrimary() != null && img.getIsPrimary())
-                        .findFirst()
-                        .map(img -> img.getImageUrl() != null ? img.getImageUrl() : ""))
+        // Lấy ảnh đại diện (ưu tiên mainImageUrl, sau đó ProductImage primary, cuối cùng variant image)
+        String imageUrl = Optional.ofNullable(product.getMainImageUrl())
                 .filter(url -> !url.isEmpty())
+                .or(() -> Optional.ofNullable(product.getImages())
+                        .filter(images -> !images.isEmpty())
+                        .flatMap(images -> images.stream()
+                                .filter(img -> img != null && img.getIsPrimary() != null && img.getIsPrimary())
+                                .findFirst()
+                                .map(img -> img.getImageUrl() != null ? img.getImageUrl() : ""))
+                        .filter(url -> !url.isEmpty()))
                 .or(() -> representativeVariant
                         .map(ProductVariant::getImageUrl)
                         .filter(url -> url != null && !url.isEmpty()))

@@ -6,10 +6,12 @@ import com.sneakery.store.dto.CartItemDto;
 import com.sneakery.store.entity.Cart;
 import com.sneakery.store.entity.CartItem;
 import com.sneakery.store.entity.ProductVariant;
+import com.sneakery.store.entity.ProductImage;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.CartRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
+import com.sneakery.store.repository.ProductImageRepository;
 import com.sneakery.store.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -71,6 +73,7 @@ public class CartService {
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final ProductVariantRepository variantRepository;
+    private final ProductImageRepository productImageRepository;
 
     /**
      * Lấy giỏ hàng của user
@@ -353,6 +356,16 @@ public class CartService {
         ProductVariant variant = item.getVariant();
         BigDecimal unitPrice = getEffectivePrice(variant);
         
+        // Lấy imageUrl từ variant, nếu null hoặc rỗng thì lấy ảnh primary từ Product_Images
+        String imageUrl = variant.getImageUrl();
+        if ((imageUrl == null || imageUrl.isBlank()) && variant.getProduct() != null) {
+            Long productId = variant.getProduct().getId();
+            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+            if (coverImage.isPresent()) {
+                imageUrl = coverImage.get().getImageUrl();
+            }
+        }
+        
         return CartItemDto.builder()
                 .cartItemId(item.getId())
                 .variantId(variant.getId())
@@ -360,7 +373,7 @@ public class CartService {
                 .brandName(variant.getProduct().getBrand().getName())
                 .size(variant.getSize())
                 .color(variant.getColor())
-                .imageUrl(variant.getImageUrl())
+                .imageUrl(imageUrl)
                 .quantity(item.getQuantity())
                 .unitPrice(unitPrice)
                 .totalPrice(unitPrice.multiply(BigDecimal.valueOf(item.getQuantity())))

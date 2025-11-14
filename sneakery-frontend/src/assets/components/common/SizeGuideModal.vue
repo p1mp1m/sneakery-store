@@ -94,7 +94,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
 import axios from 'axios';
@@ -179,7 +179,7 @@ const loadSizeCharts = async () => {
     sizeCharts.value = response.data || [];
   } catch (error) {
     logger.error('Error loading size charts:', error);
-    toastService.error('Lỗi','Không thể tải bảng size');
+    notificationService.error('Lỗi','Không thể tải bảng size');
   } finally {
     loading.value = false;
   }

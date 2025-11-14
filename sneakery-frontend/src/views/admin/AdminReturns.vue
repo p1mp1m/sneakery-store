@@ -307,7 +307,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import logger from '@/utils/logger'
 import { formatPrice, formatDate, formatDateTime } from '@/utils/formatters'
 
@@ -349,7 +349,7 @@ const fetchReturns = async () => {
     updateStats()
   } catch (error) {
     logger.error('Lỗi tải dữ liệu:', error)
-    toastService.apiError(error, 'Lỗi khi tải danh sách yêu cầu trả hàng')
+    notificationService.apiError(error, 'Lỗi khi tải danh sách yêu cầu trả hàng')
   } finally {
     loading.value = false
   }
@@ -383,11 +383,11 @@ const approveReturn = async (item) => {
   
   try {
     await adminStore.approveReturn(item.id)
-    toastService.success('Thành công','Đã duyệt yêu cầu trả hàng!')
+    notificationService.success('Thành công','Đã duyệt yêu cầu trả hàng!')
     fetchReturns()
   } catch (error) {
     logger.error('Lỗi khi duyệt yêu cầu:', error)
-    toastService.apiError(error, 'Lỗi khi duyệt yêu cầu trả hàng')
+    notificationService.apiError(error, 'Lỗi khi duyệt yêu cầu trả hàng')
   }
 }
 
@@ -397,11 +397,11 @@ const rejectReturn = async (item) => {
   
   try {
     await adminStore.rejectReturn(item.id, reason)
-    toastService.success('Thành công','Đã từ chối yêu cầu trả hàng!')
+    notificationService.success('Thành công','Đã từ chối yêu cầu trả hàng!')
     fetchReturns()
   } catch (error) {
     logger.error('Lỗi khi từ chối yêu cầu:', error)
-    toastService.apiError(error, 'Lỗi khi từ chối yêu cầu trả hàng')
+    notificationService.apiError(error, 'Lỗi khi từ chối yêu cầu trả hàng')
   }
 }
 

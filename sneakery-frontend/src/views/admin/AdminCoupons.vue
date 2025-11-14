@@ -430,7 +430,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
@@ -496,7 +496,7 @@ const loadCoupons = async () => {
     coupons.value = response.content || []
     totalItems.value = response.totalElements || 0
   } catch (error) {
-    toastService.apiError(error, 'Lỗi khi tải danh sách coupon')
+    notificationService.apiError(error, 'Lỗi khi tải danh sách coupon')
   } finally {
     loading.value = false
   }
@@ -572,7 +572,7 @@ const editCoupon = (coupon) => {
 
 const viewCoupon = (coupon) => {
   // Implement view coupon details
-  toastService.info('Thông tin',`Xem chi tiết coupon: ${coupon.code}`)
+  notificationService.info('Thông tin',`Xem chi tiết coupon: ${coupon.code}`)
 }
 
 const saveCoupon = async () => {
@@ -580,15 +580,15 @@ const saveCoupon = async () => {
     submitting.value = true
     if (isEditMode.value) {
       await adminStore.updateCoupon(formData.value.id, formData.value)
-      toastService.success('Thành công','Cập nhật coupon thành công')
+      notificationService.success('Thành công','Cập nhật coupon thành công')
     } else {
       await adminStore.createCoupon(formData.value)
-      toastService.success('Thành công','Tạo coupon thành công')
+      notificationService.success('Thành công','Tạo coupon thành công')
     }
     closeModal()
     loadCoupons()
   } catch (error) {
-    toastService.apiError(error, 'Lỗi khi lưu coupon')
+    notificationService.apiError(error, 'Lỗi khi lưu coupon')
   } finally {
     submitting.value = false
   }
@@ -597,10 +597,10 @@ const saveCoupon = async () => {
 const toggleCouponStatus = async (coupon) => {
   try {
     await adminStore.toggleCouponStatus(coupon.id)
-    toastService.success('Thành công',`Đã ${coupon.is_active ? 'tắt' : 'bật'} coupon`)
+    notificationService.success('Thành công',`Đã ${coupon.is_active ? 'tắt' : 'bật'} coupon`)
     loadCoupons()
   } catch (error) {
-    toastService.apiError(error, 'Lỗi khi thay đổi trạng thái coupon')
+    notificationService.apiError(error, 'Lỗi khi thay đổi trạng thái coupon')
   }
 }
 
@@ -613,11 +613,11 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteCoupon(couponToDelete.value.id)
-    toastService.success('Thành công','Xóa coupon thành công')
+    notificationService.success('Thành công','Xóa coupon thành công')
     showDeleteModal.value = false
     loadCoupons()
   } catch (error) {
-    toastService.apiError(error, 'Lỗi khi xóa coupon')
+    notificationService.apiError(error, 'Lỗi khi xóa coupon')
   } finally {
     deleting.value = false
   }
@@ -630,7 +630,7 @@ const closeModal = () => {
 
 const copyCode = (code) => {
   navigator.clipboard.writeText(code)
-  toastService.success('Thành công','Đã sao chép mã coupon')
+  notificationService.success('Thành công','Đã sao chép mã coupon')
 }
 
 const exportCoupons = (format) => {
@@ -651,9 +651,9 @@ const exportCoupons = (format) => {
     } else {
       downloadJson(data, 'coupons')
     }
-    toastService.success('Thành công',`Đã xuất danh sách coupon (${format.toUpperCase()})`)
+    notificationService.success('Thành công',`Đã xuất danh sách coupon (${format.toUpperCase()})`)
   } catch (error) {
-    toastService.apiError(error, 'Lỗi khi xuất dữ liệu')
+    notificationService.apiError(error, 'Lỗi khi xuất dữ liệu')
   }
 }
 

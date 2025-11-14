@@ -250,9 +250,6 @@
       <router-view />
     </main>
 
-    <!-- Toast Container -->
-    <ToastContainer />
-
     <!-- Footer -->
     <footer class="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-auto">
       <div class="max-w-[1200px] mx-auto px-4 py-12 md:py-6">
@@ -328,7 +325,6 @@ import { useRouter } from 'vue-router';
 import { useTheme } from '@/composables/useTheme';
 import NotificationDropdown from '@/assets/components/common/NotificationDropdown.vue';
 import EnhancedSearch from '@/assets/components/common/EnhancedSearch.vue';
-import ToastContainer from '@/components/ToastContainer.vue';
 
 const authStore = useAuthStore();
 const adminStore = useAdminStore();

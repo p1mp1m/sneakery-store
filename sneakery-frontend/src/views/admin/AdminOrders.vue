@@ -520,6 +520,32 @@
       @confirm="handleStatusUpdate"
       @cancel="handleCancelStatusChange"
     />
+
+    <!-- Bulk Update Status Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showBulkUpdateConfirm"
+      type="warning"
+      title="Xác nhận cập nhật hàng loạt"
+      :message="`Bạn có chắc chắn muốn cập nhật ${selectedOrders.length} đơn hàng sang trạng thái '${getStatusLabel(bulkStatus)}'?`"
+      description="Hành động này sẽ cập nhật trạng thái cho tất cả đơn hàng đã chọn."
+      confirm-text="Xác nhận"
+      cancel-text="Hủy"
+      :loading="loading"
+      @confirm="bulkUpdateStatusConfirmed"
+    />
+
+    <!-- Cancel Order Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showCancelOrderConfirm"
+      type="danger"
+      title="Xác nhận hủy đơn hàng"
+      :message="`Bạn có chắc chắn muốn hủy đơn hàng #${orderToCancel?.id}?`"
+      description="Hành động này sẽ hủy đơn hàng và không thể hoàn tác."
+      confirm-text="Hủy đơn hàng"
+      cancel-text="Đóng"
+      :loading="false"
+      @confirm="handleCancelOrderConfirmed"
+    />
   </div>
 </template>
 
@@ -527,7 +553,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import * as XLSX from 'xlsx'
 import { printInvoice } from '@/utils/pdfGenerator'
@@ -536,9 +562,17 @@ import AdminService from '@/services/adminService'
 import logger from '@/utils/logger'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { formatPrice, formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
+import { useActivityLogger } from '@/composables/useActivityLogger'
 
 const router = useRouter()
 const adminStore = useAdminStore()
+
+// Activity logging
+const {
+  logOrderStatusChange,
+  logOrderCancel,
+  logBulkOrderOperation
+} = useActivityLogger()
 
 const orders = ref([])
 const loading = ref(false)
@@ -577,6 +611,13 @@ const oldStatus = ref('')
 const newStatus = ref('')
 const updating = ref(false)
 
+// Bulk update confirmation
+const showBulkUpdateConfirm = ref(false)
+
+// Cancel order confirmation
+const showCancelOrderConfirm = ref(false)
+const orderToCancel = ref(null)
+
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value))
 
 const isAllOrdersSelected = computed(() => {
@@ -606,16 +647,20 @@ const clearOrderSelection = () => {
   bulkStatus.value = ''
 }
 
-const bulkUpdateStatus = async () => {
+const bulkUpdateStatus = () => {
   if (!bulkStatus.value) {
-    toastService.warning('Cảnh báo','Vui lòng chọn trạng thái!')
+    notificationService.warning('Cảnh báo','Vui lòng chọn trạng thái!')
     return
   }
-
-  if (!confirm(`Bạn có chắc chắn muốn cập nhật ${selectedOrders.value.length} đơn hàng sang trạng thái "${getStatusLabel(bulkStatus.value)}"?`)) {
+  if (selectedOrders.value.length === 0) {
+    notificationService.warning('Cảnh báo','Vui lòng chọn ít nhất một đơn hàng!')
     return
   }
+  showBulkUpdateConfirm.value = true
+}
 
+const bulkUpdateStatusConfirmed = async () => {
+  showBulkUpdateConfirm.value = false
   try {
     loading.value = true
     
@@ -624,7 +669,14 @@ const bulkUpdateStatus = async () => {
       await adminStore.updateOrderStatus(orderId, bulkStatus.value)
     }
     
-    toastService.success('Thành công', `Đã cập nhật ${selectedOrders.value.length} đơn hàng thành công!`, { duration: 3000 })
+    notificationService.success('Thành công', `Đã cập nhật ${selectedOrders.value.length} đơn hàng thành công!`, { duration: 3000 })
+    
+    // Log activity
+    try {
+      await logBulkOrderOperation('UPDATE', selectedOrders.value.length, selectedOrders.value, bulkStatus.value);
+    } catch (err) {
+      console.warn('Failed to log bulk order update activity:', err);
+    }
     
     // Clear selection and refresh list
     selectedOrders.value = []
@@ -632,7 +684,7 @@ const bulkUpdateStatus = async () => {
     await fetchOrders()
   } catch (error) {
     logger.error('Lỗi khi cập nhật hàng loạt:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi cập nhật đơn hàng')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi cập nhật đơn hàng')
   } finally {
     loading.value = false
   }
@@ -666,7 +718,7 @@ const fetchOrders = async () => {
     calculateStats()
   } catch (error) {
     logger.error('Lỗi khi tải danh sách đơn hàng:', error)
-    toastService.apiError(error, 'Không thể tải danh sách đơn hàng')
+    notificationService.apiError(error, 'Không thể tải danh sách đơn hàng')
   } finally {
     loading.value = false
   }
@@ -741,10 +793,10 @@ const exportToExcel = () => {
     // Download file
     XLSX.writeFile(workbook, filename)
     
-    toastService.success('Thành công', `Đã export ${exportData.length} đơn hàng thành công!`, { duration: 3000 })
+    notificationService.success('Thành công', `Đã export ${exportData.length} đơn hàng thành công!`, { duration: 3000 })
   } catch (error) {
     logger.error('Lỗi khi export Excel:', error)
-    toastService.apiError(error, 'Không thể export dữ liệu')
+    notificationService.apiError(error, 'Không thể export dữ liệu')
   }
 }
 
@@ -792,7 +844,7 @@ const confirmStatusChange = (order, event) => {
     logger.log('✅ showStatusConfirm after setting:', showStatusConfirm.value)
   } catch (error) {
     logger.error('❌ Error in confirmStatusChange:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi thay đổi trạng thái')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi thay đổi trạng thái')
   }
 }
 
@@ -822,14 +874,14 @@ const handleStatusUpdate = async () => {
     // Refresh danh sách đơn hàng để đảm bảo dữ liệu đồng bộ với backend
     await fetchOrders()
     
-    toastService.success('Thành công', `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`, { duration: 3000 })
+    notificationService.success('Thành công', `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(previousStatus)}' sang '${getStatusLabel(newStatus.value)}' thành công!`, { duration: 3000 })
     
     showStatusConfirm.value = false
   } catch (error) {
     logger.error('❌ Lỗi khi cập nhật trạng thái:', error)
     logger.error('Error details:', error.response || error.message)
     
-    toastService.apiError(error, 'Không thể cập nhật trạng thái đơn hàng')
+    notificationService.apiError(error, 'Không thể cập nhật trạng thái đơn hàng')
     
     // Restore old status on error
     const orderIndex = orders.value.findIndex(o => o.id === orderId)
@@ -915,52 +967,66 @@ const viewOrderDetail = (order) => {
   router.push(`/admin/orders/${order.id}`)
 }
 
-const handleCancelOrder = async (order) => {
-  if (!confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${order.id}?`)) {
-    return
-  }
+const handleCancelOrder = (order) => {
+  orderToCancel.value = order
+  showCancelOrderConfirm.value = true
+}
+
+const handleCancelOrderConfirmed = async () => {
+  if (!orderToCancel.value) return
+  const order = orderToCancel.value
+  showCancelOrderConfirm.value = false
   
   try {
     await adminStore.updateOrderStatus(order.id, 'Cancelled')
-    toastService.success('Thành công','Đã hủy đơn hàng thành công!')
+    notificationService.success('Thành công','Đã hủy đơn hàng thành công!')
+    
+    // Log activity
+    try {
+      await logOrderCancel(order.id, order);
+    } catch (err) {
+      console.warn('Failed to log order cancel activity:', err);
+    }
+    
     await fetchOrders()
+    orderToCancel.value = null
   } catch (error) {
     logger.error('Lỗi khi hủy đơn hàng:', error)
-    toastService.apiError(error, 'Không thể hủy đơn hàng')
+    notificationService.apiError(error, 'Không thể hủy đơn hàng')
   }
 }
 
 const exportOrderToPDF = (order) => {
   if (!order) {
-    toastService.warning('Cảnh báo','Không có thông tin đơn hàng để export')
+    notificationService.warning('Cảnh báo','Không có thông tin đơn hàng để export')
     return
   }
   
   try {
     handlePrintInvoice(order)
-    toastService.success('Thành công','Đang mở cửa sổ in hóa đơn...')
+    notificationService.success('Thành công','Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
     logger.error('Error exporting to PDF:', error)
-    toastService.apiError(error, 'Không thể export PDF')
+    notificationService.apiError(error, 'Không thể export PDF')
   }
 }
 
 const exportToPDF = () => {
-  toastService.info('Thông tin','Tính năng export PDF đang được phát triển...')
+  notificationService.info('Thông tin','Tính năng export PDF đang được phát triển...')
 }
 
 const handlePrintInvoice = (order) => {
   if (!order) {
-    toastService.warning('Cảnh báo','Không có thông tin đơn hàng để in')
+    notificationService.warning('Cảnh báo','Không có thông tin đơn hàng để in')
     return
   }
   
   try {
     printInvoice(order)
-    toastService.success('Thành công','Đang mở cửa sổ in hóa đơn...')
+    notificationService.success('Thành công','Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
     logger.error('Error printing invoice:', error)
-    toastService.apiError(error, 'Không thể in hóa đơn')
+    notificationService.apiError(error, 'Không thể in hóa đơn')
   }
 }
 

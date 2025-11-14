@@ -6,13 +6,18 @@
       @click="handleClose"
     >
       <div
+        ref="modalRef"
         class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
         @click.stop
+        role="dialog"
+        :aria-modal="true"
+        :aria-labelledby="modalTitleId"
       >
         <div
           class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10"
         >
           <h2
+            :id="modalTitleId"
             class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
           >
             <i class="material-icons text-purple-600 dark:text-purple-400">{{
@@ -480,8 +485,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onUnmounted, nextTick } from "vue";
 import { generateSlug as generateSlugUtil } from "@/utils/slugGenerator";
+import { useFocusManagement } from "@/composables/useFocusManagement";
 import UploadGallery from "./UploadGallery.vue";
 
 const props = defineProps({
@@ -558,6 +564,33 @@ const emit = defineEmits([
   "images-change", // ✅ thêm dòng này
   "image-remove", // ✅ thêm dòng này
 ]);
+
+// Focus management
+const modalRef = ref(null);
+const { setupModalFocus, cleanupModalFocus, saveActiveElement } = useFocusManagement();
+const modalTitleId = computed(() => `product-modal-title-${Math.random().toString(36).substr(2, 9)}`);
+
+// Setup focus when modal opens
+watch(() => props.visible, (isOpen) => {
+  if (isOpen) {
+    saveActiveElement();
+    nextTick(() => {
+      if (modalRef.value) {
+        setupModalFocus(modalRef.value);
+      }
+    });
+  } else {
+    if (modalRef.value) {
+      cleanupModalFocus(modalRef.value);
+    }
+  }
+});
+
+onUnmounted(() => {
+  if (modalRef.value) {
+    cleanupModalFocus(modalRef.value);
+  }
+});
 
 // Form data - sync với parent
 // Form data - sync với parent

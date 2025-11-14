@@ -345,7 +345,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from "vue";
 import { useAdminStore } from "@/stores/admin";
-import toastService from "@/utils/toastService";
+import notificationService from '@/utils/notificationService';
 import VariantModal from "@/assets/components/admin/VariantModal.vue";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 import { debounce } from "@/utils/debounce";
@@ -417,7 +417,7 @@ const loadVariants = async () => {
     totalPages.value = result.totalPages || 1;
   } catch (error) {
     logger.error("Error loading variants:", error);
-    toastService.apiError(error, "Không thể tải danh sách biến thể");
+    notificationService.apiError(error, "Không thể tải danh sách biến thể");
   } finally {
     loading.value = false;
   }
@@ -515,12 +515,12 @@ const deleteVariantConfirmed = async () => {
   deleting.value = true;
   try {
     await adminStore.deleteProductVariant(variantToDelete.value.id);
-    toastService.success('Thành công', `Đã xóa biến thể "${variantToDelete.value.sku}" thành công!`);
+    notificationService.success('Thành công', `Đã xóa biến thể "${variantToDelete.value.sku}" thành công!`);
     await loadVariants();
     await loadStats();
   } catch (error) {
     logger.error("Error deleting variant:", error);
-    toastService.apiError(error, "Không thể xóa biến thể");
+    notificationService.apiError(error, "Không thể xóa biến thể");
   } finally {
     deleting.value = false;
     showDeleteModal.value = false;

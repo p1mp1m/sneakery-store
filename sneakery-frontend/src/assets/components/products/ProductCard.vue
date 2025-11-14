@@ -30,7 +30,7 @@
         />
         
         <img 
-          :src="product.mainImageUrl || product.imageUrl || '/placeholder-image.png'" 
+          :src="optimizedImageUrl" 
           class="product-image" 
           :alt="product.name"
           loading="lazy"
@@ -117,10 +117,11 @@ import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useFlashSaleStore } from '@/stores/flashSale';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import logger from '@/utils/logger';
 import FlashSaleBadge from '@/assets/components/common/FlashSaleBadge.vue';
 import QuickViewModal from '@/assets/components/common/QuickViewModal.vue';
+import { getOptimizedImageUrl } from '@/utils/cloudinaryHelper';
 
 // Props
 const props = defineProps({
@@ -161,6 +162,24 @@ const isInWishlist = computed(() => {
 // Computed
 const productFlashSale = computed(() => {
   return flashSaleStore.getFlashSaleForProduct(props.product.id);
+});
+
+// Computed - Optimized image URL với Cloudinary
+const optimizedImageUrl = computed(() => {
+  // Ưu tiên mainImageUrl, sau đó imageUrl, cuối cùng placeholder
+  const imageUrl = props.product.mainImageUrl || props.product.imageUrl || '/placeholder-image.png';
+  
+  // Nếu là Cloudinary URL, optimize cho thumbnail size (400x400)
+  if (imageUrl && imageUrl.startsWith('http')) {
+    return getOptimizedImageUrl(imageUrl, {
+      width: 400,
+      height: 400,
+      quality: 'auto',
+      format: 'auto'
+    });
+  }
+  
+  return imageUrl;
 });
 
 // Helper function to get product price from variants or direct price
@@ -269,7 +288,7 @@ const handleToggleFavorite = async (event) => {
   event.stopPropagation();
   
   if (!authStore.isAuthenticated) {
-    toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào yêu thích');
+    notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào yêu thích');
     router.push({
       path: '/login',
       query: { redirect: router.currentRoute.value.fullPath }
@@ -285,10 +304,10 @@ const handleToggleFavorite = async (event) => {
     const result = await wishlistStore.toggleWishlist(props.product.id);
     
     if (result.action === 'added') {
-      toastService.success('Thành công', 'Đã thêm vào yêu thích');
+      notificationService.success('Thành công', 'Đã thêm vào yêu thích');
       logger.log('Product added to wishlist:', props.product.id);
     } else {
-      toastService.success('Thành công', 'Đã xóa khỏi yêu thích');
+      notificationService.success('Thành công', 'Đã xóa khỏi yêu thích');
       logger.log('Product removed from wishlist:', props.product.id);
     }
   } catch (error) {
@@ -296,13 +315,13 @@ const handleToggleFavorite = async (event) => {
     
     // Xử lý lỗi cụ thể
     if (error.response?.status === 401) {
-      toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào yêu thích');
+      notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào yêu thích');
       router.push({
         path: '/login',
         query: { redirect: router.currentRoute.value.fullPath }
       });
     } else {
-      toastService.error('Lỗi', error.response?.data?.message || 'Không thể cập nhật yêu thích');
+      notificationService.error('Lỗi', error.response?.data?.message || 'Không thể cập nhật yêu thích');
     }
   } finally {
     isTogglingFavorite.value = false;
@@ -330,7 +349,7 @@ const handleQuickAddToCart = async (event) => {
   
   // Kiểm tra sản phẩm có thể thêm vào giỏ hàng
   if (!canAddToCart.value) {
-    toastService.error('Lỗi', 'Sản phẩm này hiện không có sẵn');
+    notificationService.error('Lỗi', 'Sản phẩm này hiện không có sẵn');
     return;
   }
   
@@ -340,7 +359,7 @@ const handleQuickAddToCart = async (event) => {
       await router.push(`/home/products/${props.product.id}`);
     } catch (navError) {
       logger.error('Navigation error:', navError);
-      toastService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
+      notificationService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
     }
     return;
   }
@@ -350,7 +369,7 @@ const handleQuickAddToCart = async (event) => {
   if (props.product.variants && props.product.variants.length > 0) {
     variantId = firstAvailableVariant.value?.id;
     if (!variantId) {
-      toastService.error('Lỗi', 'Không tìm thấy biến thể sản phẩm');
+      notificationService.error('Lỗi', 'Không tìm thấy biến thể sản phẩm');
       return;
     }
   } else if (props.product.variantId) {
@@ -361,7 +380,7 @@ const handleQuickAddToCart = async (event) => {
       await router.push(`/home/products/${props.product.id}`);
     } catch (navError) {
       logger.error('Navigation error:', navError);
-      toastService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
+      notificationService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
     }
     return;
   }
@@ -373,22 +392,22 @@ const handleQuickAddToCart = async (event) => {
   try {
     // Sử dụng cart store để thêm vào giỏ hàng
     await cartStore.addItem(variantId, 1);
-    toastService.success('Thành công', 'Đã thêm sản phẩm vào giỏ hàng');
+    notificationService.success('Thành công', 'Đã thêm sản phẩm vào giỏ hàng');
     logger.log('Product quick added to cart:', variantId);
   } catch (error) {
     logger.error('Error quick adding to cart:', error);
     
     // Xử lý lỗi cụ thể
     if (error.response?.status === 401) {
-      toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
+      notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
       router.push({
         path: '/login',
         query: { redirect: router.currentRoute.value.fullPath }
       });
     } else if (error.response?.status === 400) {
-      toastService.error('Lỗi', error.response?.data?.message || 'Sản phẩm không có sẵn hoặc đã hết hàng');
+      notificationService.error('Lỗi', error.response?.data?.message || 'Sản phẩm không có sẵn hoặc đã hết hàng');
     } else {
-      toastService.error('Lỗi', error.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+      notificationService.error('Lỗi', error.response?.data?.message || 'Không thể thêm vào giỏ hàng');
     }
   } finally {
     isAddingToCart.value = false;

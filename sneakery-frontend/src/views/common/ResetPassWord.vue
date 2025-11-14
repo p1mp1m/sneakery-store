@@ -87,7 +87,7 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api'
 import logger from '@/utils/logger'
 
@@ -97,7 +97,7 @@ const token = route.query.token // ✅ Lấy token từ URL query (?token=xxx)
 
 // Nếu không có token, quay về forgot password
 if (!token) {
-  toastService.error('Lỗi','Liên kết không hợp lệ hoặc đã hết hạn.')
+  notificationService.error('Lỗi','Liên kết không hợp lệ hoặc đã hết hạn.')
   router.push('/forgot-password')
 }
 
@@ -149,11 +149,11 @@ const handleReset = async () => {
       token,
       newPassword: form.value.password,
     })
-    toastService.success('Thành công', 'Đặt lại mật khẩu thành công!')
+    notificationService.success('Thành công', 'Đặt lại mật khẩu thành công!')
     router.push('/login')
   } catch (err) {
     logger.error('Error resetting password:', err)
-    toastService.error('Lỗi',
+    notificationService.error('Lỗi',
       err.response?.data?.message ||
         'Liên kết đã hết hạn hoặc không hợp lệ'
     )

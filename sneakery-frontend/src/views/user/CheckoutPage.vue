@@ -785,7 +785,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
 import { useCouponStore } from '@/stores/coupon';
 import { storeToRefs } from 'pinia';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
 import axios from 'axios';
@@ -928,7 +928,7 @@ const fetchData = async () => {
       
       // Check if cart is empty
       if (!cart.value || !cart.value.items || cart.value.items.length === 0) {
-        toastService.warning('Cảnh báo','Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi checkout.');
+        notificationService.warning('Cảnh báo','Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi checkout.');
         router.push({ name: 'Cart' });
         return;
       }
@@ -939,7 +939,7 @@ const fetchData = async () => {
 
       // Check if cart is empty
       if (!cart.value || !cart.value.items || cart.value.items.length === 0) {
-        toastService.warning('Cảnh báo','Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi checkout.');
+        notificationService.warning('Cảnh báo','Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi checkout.');
         router.push({ name: 'Cart' });
         return;
       }
@@ -960,7 +960,7 @@ const fetchData = async () => {
     }
   } catch (error) {
     logger.error('Error fetching data:', error);
-    toastService.error('Lỗi',error.response?.data?.message || 'Không thể tải thông tin');
+    notificationService.error('Lỗi',error.response?.data?.message || 'Không thể tải thông tin');
     
     // Redirect to cart if error
     if (error.response?.status === 404 || error.response?.status === 400) {
@@ -990,7 +990,7 @@ const applyCoupon = async () => {
     // Calculate discount
     const discount = couponService.calculateDiscount(coupon, cart.value.subTotal);
     
-    toastService.success(
+    notificationService.success(
       'Thành công',
       `Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${couponService.formatCurrency(discount)}`
     );
@@ -999,7 +999,7 @@ const applyCoupon = async () => {
   } catch (error) {
     logger.error('Error applying coupon:', error);
     couponStore.setError(error.message || 'Không thể áp dụng mã giảm giá');
-    toastService.error('Lỗi', couponStore.couponError);
+    notificationService.error('Lỗi', couponStore.couponError);
     couponStore.clearCoupon();
   } finally {
     applyingCoupon.value = false;
@@ -1014,30 +1014,30 @@ const saveAddress = async () => {
     !newAddress.value.district ||
     !newAddress.value.city
   ) {
-    toastService.warning('Cảnh báo','Vui lòng điền đầy đủ các trường bắt buộc');
+    notificationService.warning('Cảnh báo','Vui lòng điền đầy đủ các trường bắt buộc');
     return;
   }
 
   // Validate phone number
   if (!validateVietnamesePhone(newAddress.value.phone)) {
-    toastService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
+    notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
     return;
   }
 
   // Validate address format
   if (!validateAddress(newAddress.value.line1)) {
-    toastService.error('Lỗi', 'Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)');
+    notificationService.error('Lỗi', 'Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)');
     return;
   }
 
   // Validate district and city
   if (!validateAddress(newAddress.value.district)) {
-    toastService.error('Lỗi', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
+    notificationService.error('Lỗi', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
     return;
   }
 
   if (!validateAddress(newAddress.value.city)) {
-    toastService.error('Lỗi', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
+    notificationService.error('Lỗi', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
     return;
   }
 
@@ -1058,10 +1058,10 @@ const saveAddress = async () => {
       city: '',
     };
 
-    toastService.success('Thành công','Đã thêm địa chỉ mới');
+    notificationService.success('Thành công','Đã thêm địa chỉ mới');
   } catch (error) {
     logger.error('Error saving address:', error);
-    toastService.error('Lỗi','Không thể thêm địa chỉ');
+    notificationService.error('Lỗi','Không thể thêm địa chỉ');
   }
 };
 
@@ -1076,7 +1076,7 @@ const handleCheckout = async () => {
       // Validate guest address form
       if (!newAddress.value.recipientName || !newAddress.value.phone || 
           !newAddress.value.line1 || !newAddress.value.district || !newAddress.value.city) {
-        toastService.warning('Cảnh báo','Vui lòng điền đầy đủ thông tin địa chỉ giao hàng');
+        notificationService.warning('Cảnh báo','Vui lòng điền đầy đủ thông tin địa chỉ giao hàng');
         currentStep.value = 1; // Go back to address step
         return;
       }
@@ -1101,7 +1101,7 @@ const handleCheckout = async () => {
         guestCheckoutData
       );
 
-      toastService.success('Thành công','Đặt hàng thành công!');
+      notificationService.success('Thành công','Đặt hàng thành công!');
 
       // Clear guest cart
       guestCartService.clearGuestCart();
@@ -1128,7 +1128,7 @@ const handleCheckout = async () => {
       };
 
       await userService.checkout(checkoutData);
-      toastService.success('Thành công','Đặt hàng thành công!');
+      notificationService.success('Thành công','Đặt hàng thành công!');
 
       // Clear user cart sau khi checkout thành công
       try {
@@ -1152,7 +1152,7 @@ const handleCheckout = async () => {
     }
   } catch (error) {
     logger.error('Error during checkout:', error);
-    toastService.error('Lỗi',error.message || error.response?.data?.message || 'Không thể đặt hàng');
+    notificationService.error('Lỗi',error.message || error.response?.data?.message || 'Không thể đặt hàng');
   } finally {
     processing.value = false;
   }
@@ -1186,7 +1186,7 @@ watch(() => cart.value?.subTotal, async (newSubtotal, oldSubtotal) => {
       // If validation fails, clear coupon
       logger.warn('Coupon validation failed after subtotal change:', error);
       couponStore.clearCoupon();
-      toastService.warning('Cảnh báo', 'Mã giảm giá không còn hợp lệ với giá trị đơn hàng mới');
+      notificationService.warning('Cảnh báo', 'Mã giảm giá không còn hợp lệ với giá trị đơn hàng mới');
     }
   }
 }, { immediate: false });

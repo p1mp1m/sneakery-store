@@ -86,6 +86,7 @@ public class AdminProductService {
     private final ShoeSoleRepository shoeSoleRepository;
     private final com.sneakery.store.util.ProductValidationUtil productValidationUtil;
     private final ProductImageRepository productImageRepository;
+    private final ActivityLogService activityLogService;
 
 
 
@@ -197,7 +198,15 @@ public class AdminProductService {
         // 8️⃣ Lưu sản phẩm (cascade variants)
         Product savedProduct = productRepository.save(product);
 
-        // 9️⃣ Trả về DTO chi tiết
+        // 9️⃣ Log activity (audit trail)
+        try {
+            AdminProductDetailDto savedDto = convertToAdminDetailDto(savedProduct);
+            activityLogService.logCreate("Product", savedProduct.getId(), savedDto);
+        } catch (Exception e) {
+            log.warn("Failed to log product creation: {}", e.getMessage());
+        }
+
+        // 🔟 Trả về DTO chi tiết
         return convertToAdminDetailDto(savedProduct);
     }
 
@@ -295,6 +304,16 @@ public class AdminProductService {
 
         // 8️⃣ Lưu lại
         Product updatedProduct = productRepository.save(product);
+        
+        // 9️⃣ Log activity (audit trail)
+        try {
+            AdminProductDetailDto oldDto = convertToAdminDetailDto(product);
+            AdminProductDetailDto newDto = convertToAdminDetailDto(updatedProduct);
+            activityLogService.logUpdate("Product", productId, oldDto, newDto);
+        } catch (Exception e) {
+            log.warn("Failed to log product update: {}", e.getMessage());
+        }
+        
         return convertToAdminDetailDto(updatedProduct);
     }
 
@@ -453,6 +472,14 @@ private AdminProductListDto convertToListDto(Product product) {
         Product product = productRepository.findByIdWithDetails(productId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
         
+        // Save product data for audit log before deletion
+        AdminProductDetailDto deletedProductDto = null;
+        try {
+            deletedProductDto = convertToAdminDetailDto(product);
+        } catch (Exception e) {
+            log.warn("Failed to convert product to DTO for audit log: {}", e.getMessage());
+        }
+        
         log.info("Bắt đầu xóa product ID: {} và tất cả dữ liệu liên quan", productId);
         
         // 1. Lấy danh sách variant IDs của product
@@ -543,7 +570,17 @@ private AdminProductListDto convertToListDto(Product product) {
         
         // 12. Xóa Product (hard delete)
         productRepository.delete(product);
-        log.info("Đã xóa product ID: {} thành công", productId);
+        
+        // 13. Log activity (audit trail)
+        try {
+            if (deletedProductDto != null) {
+                activityLogService.logDelete("Product", productId, deletedProductDto);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to log product deletion: {}", e.getMessage());
+        }
+        
+        log.info("✅ Đã xóa thành công product ID: {}", productId);
     }
 
 

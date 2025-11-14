@@ -285,7 +285,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
 import { useCouponStore } from '@/stores/coupon';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import logger from '@/utils/logger';
 import couponService from '@/services/couponService';
@@ -356,7 +356,7 @@ const fetchCart = async () => {
     await cartStore.fetchCart();
   } catch (error) {
     logger.error('Error fetching cart:', error);
-    toastService.error('Lỗi', error.message || 'Không thể tải giỏ hàng');
+    notificationService.error('Lỗi', error.message || 'Không thể tải giỏ hàng');
   }
 };
 
@@ -365,10 +365,10 @@ const updateQuantity = async (item, newQuantity) => {
 
   try {
     await cartStore.updateQuantity(item.variantId, newQuantity);
-    toastService.success('Thành công', 'Đã cập nhật số lượng');
+    notificationService.success('Thành công', 'Đã cập nhật số lượng');
   } catch (error) {
     logger.error('Error updating quantity:', error);
-    toastService.error('Lỗi', error.message || 'Không thể cập nhật số lượng');
+    notificationService.error('Lỗi', error.message || 'Không thể cập nhật số lượng');
   }
 };
 
@@ -385,11 +385,11 @@ const removeItem = async (item) => {
     );
 
     await cartStore.removeItem(item.variantId);
-    toastService.success('Thành công', 'Đã xóa sản phẩm khỏi giỏ hàng');
+    notificationService.success('Thành công', 'Đã xóa sản phẩm khỏi giỏ hàng');
   } catch (error) {
     if (error !== 'cancel') {
       logger.error('Error removing item:', error);
-      toastService.error('Lỗi', error.message || 'Không thể xóa sản phẩm');
+      notificationService.error('Lỗi', error.message || 'Không thể xóa sản phẩm');
     }
   }
 };
@@ -413,7 +413,7 @@ const applyCoupon = async () => {
     // Calculate discount
     const discount = couponService.calculateDiscount(coupon, cart.value.subTotal);
     
-    toastService.success(
+    notificationService.success(
       'Thành công',
       `Đã áp dụng mã giảm giá "${coupon.code}" - Giảm ${couponService.formatCurrency(discount)}`
     );
@@ -430,7 +430,7 @@ const applyCoupon = async () => {
 
 const removeCoupon = () => {
   couponStore.clearCoupon();
-  toastService.info('Thông tin','Đã xóa mã giảm giá');
+  notificationService.info('Thông tin','Đã xóa mã giảm giá');
 };
 
 const proceedToCheckout = async () => {
@@ -438,7 +438,7 @@ const proceedToCheckout = async () => {
     await router.push('/checkout');
   } catch (error) {
     logger.error('Navigation error to checkout:', error);
-    toastService.error('Lỗi', 'Không thể mở trang thanh toán. Vui lòng thử lại sau.');
+    notificationService.error('Lỗi', 'Không thể mở trang thanh toán. Vui lòng thử lại sau.');
   }
 };
 
@@ -457,7 +457,7 @@ watch(() => cart.value?.subTotal, async (newSubtotal) => {
       // If validation fails, clear coupon
       logger.warn('Coupon validation failed after subtotal change:', error);
       couponStore.clearCoupon();
-      toastService.warning('Cảnh báo', 'Mã giảm giá không còn hợp lệ với giá trị đơn hàng mới');
+      notificationService.warning('Cảnh báo', 'Mã giảm giá không còn hợp lệ với giá trị đơn hàng mới');
     }
   }
 });

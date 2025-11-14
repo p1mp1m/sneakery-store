@@ -281,6 +281,9 @@
                 <span class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ formatPrice(selectedOrder.totalAmount || selectedOrder.total || 0) }}</span>
               </div>
             </div>
+            <div v-else class="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700/50">
+              <p class="text-sm text-gray-500 dark:text-gray-400 text-center">Chưa có thông tin thanh toán</p>
+            </div>
           </div>
         </div>
 
@@ -301,7 +304,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, onActivated } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import userService from '@/services/userService';
 import logger from '@/utils/logger';
@@ -341,54 +344,78 @@ const fetchOrders = async (silent = false) => {
     if (!silent) loading.value = true;
     const data = await userService.getMyOrders();
     
+    // Đảm bảo data là array, nếu không thì dùng array rỗng
+    const ordersData = Array.isArray(data) ? data : [];
+    
     // Normalize status từ backend format sang frontend format
-    orders.value = data.map(order => ({
+    orders.value = ordersData.map(order => ({
       ...order,
       status: normalizeStatusForDisplay(order.status)
     }));
     
-    // Update selectedOrder nếu đang mở chi tiết
-    if (showDetail.value && selectedOrder.value) {
-      const updatedOrder = orders.value.find(o => o.id === selectedOrder.value.id);
-      if (updatedOrder) {
-        selectedOrder.value = {
-          ...updatedOrder,
-          status: normalizeStatusForDisplay(updatedOrder.status)
-        };
-      }
-    }
+    // KHÔNG update selectedOrder khi đang mở modal để tránh mất payment và các chi tiết
+    // selectedOrder chỉ được update khi user click "Xem chi tiết" (viewOrderDetail)
+    // Nếu cần refresh selectedOrder, phải gọi lại viewOrderDetail với orderId
   } catch (error) {
     logger.error('Error fetching orders:', error);
+    // Đảm bảo orders.value luôn là array, không bị undefined
+    if (!Array.isArray(orders.value)) {
+      orders.value = [];
+    }
     if (!silent) {
-      toastService.error('Lỗi', error.message || 'Không thể tải danh sách đơn hàng');
+      notificationService.error('Lỗi', error.message || 'Không thể tải danh sách đơn hàng');
     }
   } finally {
     if (!silent) loading.value = false;
   }
 };
 
-const viewOrderDetail = async (orderId) => {
+const viewOrderDetail = async (orderId, silent = false) => {
   try {
     const data = await userService.getMyOrderById(orderId);
+    
+    // Kiểm tra data hợp lệ
+    if (!data) {
+      throw new Error('Không tìm thấy dữ liệu đơn hàng');
+    }
+    
     // Normalize status khi fetch chi tiết
     selectedOrder.value = {
       ...data,
-      status: normalizeStatusForDisplay(data.status),
+      status: normalizeStatusForDisplay(data.status || 'pending'),
       // Normalize status histories nếu có
-      statusHistories: data.statusHistories?.map(history => ({
+      statusHistories: (Array.isArray(data.statusHistories) ? data.statusHistories : []).map(history => ({
         ...history,
-        status: normalizeStatusForDisplay(history.status)
-      })) || []
+        status: normalizeStatusForDisplay(history.status || 'pending')
+      })),
+      // Đảm bảo orderDetails là array
+      orderDetails: Array.isArray(data.orderDetails) ? data.orderDetails : [],
+      // Payment: ưu tiên data từ API, nếu không có thì giữ nguyên payment cũ (nếu đang silent refresh)
+      payment: data.payment !== undefined ? data.payment : (silent ? selectedOrder.value?.payment : null)
     };
-    showDetail.value = true;
+    
+    // Chỉ mở modal nếu không phải silent refresh
+    if (!silent) {
+      showDetail.value = true;
+    }
   } catch (error) {
     logger.error('Error fetching order detail:', error);
-    toastService.error('Lỗi',error.message || 'Không thể tải chi tiết đơn hàng');
+    
+    // Chỉ hiển thị toast và đóng modal nếu không phải silent refresh
+    if (!silent) {
+      notificationService.error('Lỗi', error.message || 'Không thể tải chi tiết đơn hàng');
+      showDetail.value = false;
+      selectedOrder.value = null;
+    } else {
+      // Silent error - chỉ log, không làm gì cả để giữ nguyên state hiện tại
+      logger.warn('Silent refresh order detail failed, keeping current state:', error);
+    }
   }
 };
 
 // Handle window focus - refresh khi focus lại window
 const handleFocus = () => {
+  // Chỉ refresh orders list, không làm ảnh hưởng đến selectedOrder đang mở
   fetchOrders(true); // Silent refresh
 };
 
@@ -430,7 +457,7 @@ const cancelOrder = async (orderId) => {
     // Gọi API hủy đơn hàng
     await userService.cancelOrder(orderId);
     
-    toastService.success('Thành công', 'Đã hủy đơn hàng thành công');
+    notificationService.success('Thành công', 'Đã hủy đơn hàng thành công');
     
     // Refresh danh sách đơn hàng
     await fetchOrders();
@@ -444,7 +471,7 @@ const cancelOrder = async (orderId) => {
     if (error !== 'cancel') {
       logger.error('Error canceling order:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Không thể hủy đơn hàng';
-      toastService.error('Lỗi', errorMessage);
+      notificationService.error('Lỗi', errorMessage);
     }
   }
 };
@@ -452,10 +479,10 @@ const cancelOrder = async (orderId) => {
 const reorder = async (orderId) => {
   try {
     // TODO: Implement reorder functionality
-    toastService.info('Thông tin','Tính năng đang được phát triển');
+    notificationService.info('Thông tin','Tính năng đang được phát triển');
   } catch (error) {
     logger.error('Error reordering:', error);
-    toastService.error('Lỗi','Không thể đặt lại đơn hàng');
+    notificationService.error('Lỗi','Không thể đặt lại đơn hàng');
   }
 };
 
@@ -569,8 +596,15 @@ onActivated(() => {
 // Handle visibility change - pause/resume polling
 const handleVisibilityChange = () => {
   if (document.visibilityState === 'visible') {
+    // Chỉ refresh orders list, không làm ảnh hưởng đến selectedOrder đang mở
     fetchOrders(true); // Silent refresh khi quay lại
     startPolling(); // Resume polling
+    
+    // Nếu đang mở modal chi tiết, refresh lại chi tiết để cập nhật status mới nhất
+    if (showDetail.value && selectedOrder.value?.id) {
+      // Refresh chi tiết đơn hàng trong background (silent mode)
+      viewOrderDetail(selectedOrder.value.id, true);
+    }
   } else {
     stopPolling(); // Pause polling khi tab không visible
   }

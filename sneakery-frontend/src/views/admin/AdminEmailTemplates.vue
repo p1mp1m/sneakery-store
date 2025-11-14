@@ -663,7 +663,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import AdminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import logger from '@/utils/logger'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
@@ -858,7 +858,7 @@ const fetchTemplates = async () => {
     const result = await adminStore.fetchEmailTemplates(currentPage.value, pageSize.value, {})
     templates.value = result.content || []
   } catch (error) {
-    toastService.apiError(error, 'Không thể tải danh sách templates')
+    notificationService.apiError(error, 'Không thể tải danh sách templates')
   } finally {
     loading.value = false
   }
@@ -930,7 +930,7 @@ const duplicateTemplate = async (template) => {
     }
     
     templates.value.unshift(newTemplate)
-    toastService.success('Thành công','Đã sao chép template thành công')
+    notificationService.success('Thành công','Đã sao chép template thành công')
   } catch {
     // User cancelled
   }
@@ -949,7 +949,7 @@ const deleteTemplate = async (template) => {
     )
     
     templates.value = templates.value.filter(t => t.id !== template.id)
-    toastService.success('Thành công','Đã xóa template thành công')
+    notificationService.success('Thành công','Đã xóa template thành công')
   } catch {
     // User cancelled
   }
@@ -986,17 +986,17 @@ const insertVariable = (variable) => {
 
 const saveTemplate = async () => {
   if (!templateForm.value.name.trim()) {
-    toastService.error('Lỗi','Vui lòng nhập tên template')
+    notificationService.error('Lỗi','Vui lòng nhập tên template')
     return
   }
   
   if (!templateForm.value.subject.trim()) {
-    toastService.error('Lỗi','Vui lòng nhập chủ đề email')
+    notificationService.error('Lỗi','Vui lòng nhập chủ đề email')
     return
   }
   
   if (!templateForm.value.body.trim()) {
-    toastService.error('Lỗi','Vui lòng nhập nội dung email')
+    notificationService.error('Lỗi','Vui lòng nhập nội dung email')
     return
   }
 
@@ -1010,7 +1010,7 @@ const saveTemplate = async () => {
           updatedAt: new Date().toISOString()
         }
       }
-      toastService.success('Thành công','Đã cập nhật template thành công')
+      notificationService.success('Thành công','Đã cập nhật template thành công')
     } else {
       // Create new template
       const newTemplate = {
@@ -1022,12 +1022,12 @@ const saveTemplate = async () => {
         updatedAt: new Date().toISOString()
       }
       templates.value.unshift(newTemplate)
-      toastService.success('Thành công','Đã tạo template thành công')
+      notificationService.success('Thành công','Đã tạo template thành công')
     }
     
     closeEditorModal()
   } catch (error) {
-    toastService.apiError(error, 'Có lỗi xảy ra khi lưu template')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi lưu template')
   }
 }
 
@@ -1035,7 +1035,7 @@ const exportTemplates = (format) => {
   try {
     const dataToExport = filteredTemplates.value || []
     if (dataToExport.length === 0) {
-      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
+      notificationService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -1054,14 +1054,14 @@ const exportTemplates = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'email-templates.csv')
-      toastService.success('Thành công','Xuất CSV thành công!')
+      notificationService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('email-templates', exportData)
-      toastService.success('Thành công','Xuất JSON thành công!')
+      notificationService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     logger.error('Export error:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 

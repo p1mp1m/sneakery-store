@@ -77,7 +77,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import axios from 'axios';
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api';
 
@@ -126,10 +126,10 @@ const handleForgotPassword = async () => {
       buildApiUrl(API_ENDPOINTS.AUTH.FORGOT_PASSWORD),
       { email: forgotForm.value.email }
     );
-    toastService.success('Thành công', data?.message || 'Liên kết đặt lại đã được gửi!');
+    notificationService.success('Thành công', data?.message || 'Liên kết đặt lại đã được gửi!');
   } catch (error) {
     serverError.value = error.response?.data?.message || 'Không thể gửi email, thử lại.';
-    toastService.error('Lỗi', serverError.value);
+    notificationService.error('Lỗi', serverError.value);
   } finally {
     loading.value = false;
   }

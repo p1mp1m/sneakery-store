@@ -236,6 +236,10 @@
     <div class="flex-1 transition-all duration-300" :class="{ 'ml-0 md:ml-20': sidebarCollapsed, 'ml-0 md:ml-[280px]': !sidebarCollapsed }">
       <!-- Page Content -->
       <main class="p-3 sm:p-4 lg:p-6 min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
+        <!-- Breadcrumbs -->
+        <div class="mb-4">
+          <AdminBreadcrumbs />
+        </div>
         <router-view />
       </main>
     </div>
@@ -247,8 +251,8 @@
       @click="toggleSidebar"
     ></div>
 
-    <!-- Toast Container -->
-    <ToastContainer />
+    <!-- Shortcuts Help Modal -->
+    <ShortcutsHelp v-model:show="showShortcutsHelp" />
   </div>
 </template>
 
@@ -258,8 +262,10 @@ import { useRoute, useRouter } from "vue-router";
 import { useAdminStore } from "@/stores/admin";
 import { useAuthStore } from "@/stores/auth";
 import { useTheme } from "@/composables/useTheme";
-import ToastContainer from "@/components/ToastContainer.vue";
-import toastService from "@/utils/toastService";
+import { useKeyboardShortcuts, adminShortcuts } from "@/composables/useKeyboardShortcuts";
+import ShortcutsHelp from "@/components/admin/ShortcutsHelp.vue";
+import AdminBreadcrumbs from "@/components/admin/AdminBreadcrumbs.vue";
+import notificationService from "@/utils/notificationService";
 
 const route = useRoute();
 const router = useRouter();
@@ -276,6 +282,7 @@ const openMenus = ref([]); // Danh sách các menu đang mở
 const hoveredMenuId = ref(null); // Menu đang được chọn khi collapsed
 const popoverRef = ref(null); // Ref cho popover container
 const showProfileMenu = ref(false);
+const showShortcutsHelp = ref(false);
 const currentTime = ref('');
 const currentDate = ref('');
 
@@ -347,7 +354,7 @@ const handleChangePassword = () => {
 
 const handleLogout = () => {
   showProfileMenu.value = false;
-  toastService.success('Đang đăng xuất...', '');
+  notificationService.success('Đang đăng xuất...', '');
   setTimeout(() => {
     authStore.logout();
     adminStore.reset();
@@ -580,6 +587,34 @@ watch(
     }
   }
 );
+
+// Keyboard shortcuts
+const { registerShortcut } = useKeyboardShortcuts({
+  'shift+?': () => {
+    showShortcutsHelp.value = true;
+  },
+  'ctrl+n': (e) => {
+    // Context-aware: navigate to create page based on current route
+    const currentPath = route.path;
+    if (currentPath.includes('/products')) {
+      router.push('/admin/products?action=create');
+    } else if (currentPath.includes('/orders')) {
+      // No create for orders
+    } else if (currentPath.includes('/users')) {
+      // Trigger create user modal if exists
+      const createButton = document.querySelector('[data-action="create-user"]');
+      if (createButton) createButton.click();
+    }
+  },
+  'ctrl+s': (e) => {
+    // Find and click save button in forms
+    const saveButton = document.querySelector('form button[type="submit"]:not([disabled])');
+    if (saveButton) {
+      e.preventDefault();
+      saveButton.click();
+    }
+  }
+});
 
 // Lifecycle
 onMounted(() => {

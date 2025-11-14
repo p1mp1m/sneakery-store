@@ -692,7 +692,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
 import { useTheme } from '@/composables/useTheme';
 import { storeToRefs } from 'pinia';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
@@ -753,13 +753,13 @@ const updateProfile = async () => {
     
     // Validate required fields
     if (!profile.fullName || !profile.fullName.trim()) {
-      toastService.error('Lỗi', 'Họ và tên không được để trống');
+      notificationService.error('Lỗi', 'Họ và tên không được để trống');
       return;
     }
 
     // Validate phone number if provided
     if (profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)) {
-      toastService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
+      notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
       return;
     }
 
@@ -778,12 +778,12 @@ const updateProfile = async () => {
       localStorage.setItem('user', JSON.stringify(mergedUser));
     }
 
-    toastService.success('Thành công', 'Cập nhật thông tin thành công');
+    notificationService.success('Thành công', 'Cập nhật thông tin thành công');
     logger.log('Profile updated successfully');
   } catch (error) {
     logger.error('Error updating profile:', error);
     const errorMessage = error.response?.data?.message || error.message || 'Không thể cập nhật thông tin';
-    toastService.error('Lỗi', errorMessage);
+    notificationService.error('Lỗi', errorMessage);
   } finally {
     updating.value = false;
   }
@@ -791,14 +791,14 @@ const updateProfile = async () => {
 
 const changePassword = async () => {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    toastService.error('Lỗi','Mật khẩu xác nhận không khớp');
+    notificationService.error('Lỗi','Mật khẩu xác nhận không khớp');
     return;
   }
 
   // Validate password strength
   const strength = validatePasswordStrength(passwordForm.newPassword);
   if (!strength.valid) {
-    toastService.error('Lỗi', strength.errors[0] || 'Mật khẩu không hợp lệ');
+    notificationService.error('Lỗi', strength.errors[0] || 'Mật khẩu không hợp lệ');
     return;
   }
 
@@ -811,7 +811,7 @@ const changePassword = async () => {
       newPassword: passwordForm.newPassword,
     });
 
-    toastService.success('Thành công', 'Đổi mật khẩu thành công');
+    notificationService.success('Thành công', 'Đổi mật khẩu thành công');
     logger.log('Password changed successfully');
         
     // Reset form
@@ -821,7 +821,7 @@ const changePassword = async () => {
   } catch (error) {
     logger.error('Error changing password:', error);
     const errorMessage = error.response?.data?.message || error.message || 'Không thể đổi mật khẩu';
-    toastService.error('Lỗi', errorMessage);
+    notificationService.error('Lỗi', errorMessage);
   } finally {
     changingPassword.value = false;
   }
@@ -833,7 +833,7 @@ const loadAddresses = async () => {
     addresses.value = await userService.getMyAddresses();
   } catch (error) {
     logger.error('Error loading addresses:', error);
-    toastService.error('Lỗi',error.message || 'Không thể tải danh sách địa chỉ');
+    notificationService.error('Lỗi',error.message || 'Không thể tải danh sách địa chỉ');
   } finally {
     loadingAddresses.value = false;
   }
@@ -852,30 +852,30 @@ const editAddress = (addr) => {
 
 const saveAddress = async () => {
   if (!addressForm.recipientName || !addressForm.phone || !addressForm.line1 || !addressForm.city) {
-    toastService.warning('Cảnh báo','Vui lòng điền đầy đủ thông tin bắt buộc');
+    notificationService.warning('Cảnh báo','Vui lòng điền đầy đủ thông tin bắt buộc');
     return;
   }
 
   // Validate phone number
   if (!validateVietnamesePhone(addressForm.phone)) {
-    toastService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
+    notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
     return;
   }
 
   // Validate address format
   if (!validateAddress(addressForm.line1)) {
-    toastService.error('Lỗi', 'Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)');
+    notificationService.error('Lỗi', 'Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)');
     return;
   }
 
   // Validate district and city
   if (!validateLocation(addressForm.district)) {
-    toastService.error('Lỗi', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
+    notificationService.error('Lỗi', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
     return;
   }
 
   if (!validateLocation(addressForm.city)) {
-    toastService.error('Lỗi', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
+    notificationService.error('Lỗi', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
     return;
   }
 
@@ -887,18 +887,18 @@ const saveAddress = async () => {
       if (index !== -1) {
         addresses.value[index] = updatedAddress;
       }
-      toastService.success('Thành công','Cập nhật địa chỉ thành công');
+      notificationService.success('Thành công','Cập nhật địa chỉ thành công');
     } else {
       // Create new address
       const newAddress = await userService.createAddress(addressForm);
       addresses.value.push(newAddress);
-      toastService.success('Thành công','Thêm địa chỉ thành công');
+      notificationService.success('Thành công','Thêm địa chỉ thành công');
     }
 
     closeAddressForm();
   } catch (error) {
     logger.error('Error saving address:', error);
-    toastService.error('Lỗi',error.message || 'Không thể lưu địa chỉ');
+    notificationService.error('Lỗi',error.message || 'Không thể lưu địa chỉ');
   }
 };
 
@@ -916,11 +916,11 @@ const deleteAddress = async (id) => {
     
     await userService.deleteAddress(id);
     addresses.value = addresses.value.filter(a => a.id !== id);
-    toastService.success('Thành công','Đã xóa địa chỉ');
+    notificationService.success('Thành công','Đã xóa địa chỉ');
   } catch (error) {
     if (error !== 'cancel') {
       logger.error('Error deleting address:', error);
-      toastService.error('Lỗi','Không thể xóa địa chỉ');
+      notificationService.error('Lỗi','Không thể xóa địa chỉ');
     }
   }
 };
@@ -972,7 +972,7 @@ const handleThemeChange = (newTheme) => {
 
 const saveThemeSettings = () => {
   // Theme is already saved when changed via handleThemeChange
-  toastService.success('Thành công','Đã lưu cài đặt giao diện thành công!');
+  notificationService.success('Thành công','Đã lưu cài đặt giao diện thành công!');
 };
 
 onMounted(() => {

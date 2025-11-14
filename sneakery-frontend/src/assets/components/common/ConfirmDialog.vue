@@ -1,6 +1,6 @@
 <template>
-  <div v-if="modelValue" class="modal-overlay" @click="handleCancel">
-    <div class="confirm-dialog" :class="`confirm-dialog-${type}`" @click.stop>
+  <div v-if="modelValue" class="modal-overlay" @click="handleCancel" @keydown.esc="handleCancel">
+    <div ref="dialogRef" class="confirm-dialog" :class="`confirm-dialog-${type}`" @click.stop role="dialog" :aria-modal="true" :aria-labelledby="titleId">
       <!-- Icon -->
       <div class="dialog-icon" :class="`icon-${type}`">
         <i class="material-icons">{{ iconName }}</i>
@@ -8,7 +8,7 @@
 
       <!-- Content -->
       <div class="dialog-content">
-        <h3 class="dialog-title">{{ title }}</h3>
+        <h3 :id="titleId" class="dialog-title">{{ title }}</h3>
         <p class="dialog-message">{{ message }}</p>
         <p v-if="description" class="dialog-description">{{ description }}</p>
       </div>
@@ -37,7 +37,8 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { useFocusManagement } from "@/composables/useFocusManagement";
 
 const props = defineProps({
   modelValue: {
@@ -77,6 +78,33 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue", "confirm", "cancel"]);
+
+// Focus management
+const dialogRef = ref(null);
+const { setupModalFocus, cleanupModalFocus, saveActiveElement } = useFocusManagement();
+const titleId = computed(() => `confirm-dialog-title-${Math.random().toString(36).substr(2, 9)}`);
+
+// Setup focus when modal opens
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) {
+    saveActiveElement();
+    nextTick(() => {
+      if (dialogRef.value) {
+        setupModalFocus(dialogRef.value);
+      }
+    });
+  } else {
+    if (dialogRef.value) {
+      cleanupModalFocus(dialogRef.value);
+    }
+  }
+});
+
+onUnmounted(() => {
+  if (dialogRef.value) {
+    cleanupModalFocus(dialogRef.value);
+  }
+});
 
 const iconName = computed(() => {
   const icons = {

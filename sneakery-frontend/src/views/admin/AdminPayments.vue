@@ -391,7 +391,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import logger from '@/utils/logger'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
@@ -492,13 +492,13 @@ const fetchPayments = async () => {
     payments.value = result.content || []
     
     if (payments.value.length === 0) {
-      toastService.info('Thông tin','Chưa có giao dịch thanh toán nào')
+      notificationService.info('Thông tin','Chưa có giao dịch thanh toán nào')
     } else {
       logger.log('✅ Payments loaded from API:', payments.value.length, 'payments')
     }
   } catch (error) {
     logger.error('Error loading payments:', error)
-    toastService.apiError(error, 'Không thể tải danh sách giao dịch')
+    notificationService.apiError(error, 'Không thể tải danh sách giao dịch')
     payments.value = []
   } finally {
     loading.value = false
@@ -507,7 +507,7 @@ const fetchPayments = async () => {
 
 const refreshPayments = () => {
   fetchPayments()
-  toastService.success('Thành công','Đã làm mới danh sách giao dịch')
+  notificationService.success('Thành công','Đã làm mới danh sách giao dịch')
 }
 
 const clearSearch = () => {
@@ -551,7 +551,7 @@ const retryPayment = async (payment) => {
     
     // Simulate retry
     payment.status = 'pending'
-    toastService.success('Thành công','Đã gửi yêu cầu thử lại giao dịch')
+    notificationService.success('Thành công','Đã gửi yêu cầu thử lại giao dịch')
   } catch {
     // User cancelled
   }
@@ -572,7 +572,7 @@ const refundPayment = async (payment) => {
     // Simulate refund
     payment.status = 'refunded'
     payment.refundedAt = new Date().toISOString()
-    toastService.success('Thành công','Đã hoàn tiền thành công')
+    notificationService.success('Thành công','Đã hoàn tiền thành công')
   } catch {
     // User cancelled
   }
@@ -593,14 +593,14 @@ const exportPayments = (format) => {
 
     if (format === 'csv') {
       downloadCsv('payments', exportData)
-      toastService.success('Thành công','Xuất CSV thành công!')
+      notificationService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('payments', exportData)
-      toastService.success('Thành công','Xuất JSON thành công!')
+      notificationService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     logger.error('Export error:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 

@@ -6,7 +6,16 @@
       :class="['lazy-image-placeholder', placeholderClass]"
       :style="placeholderStyle"
     >
-      <div class="flex items-center justify-center w-full h-full">
+      <!-- Blur placeholder image (nếu là Cloudinary) -->
+      <img
+        v-if="isCloudinaryUrl(src)"
+        :src="placeholderSrc"
+        :alt="alt"
+        class="w-full h-full object-cover blur-sm opacity-50"
+        aria-hidden="true"
+      />
+      <!-- Loading spinner -->
+      <div class="absolute inset-0 flex items-center justify-center">
         <div class="animate-spin rounded-full border-2 border-gray-300 border-t-purple-600" :style="spinnerStyle"></div>
       </div>
     </div>
@@ -40,6 +49,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { getOptimizedImageUrl, getPlaceholderUrl, formatImageUrl, isCloudinaryUrl } from '@/utils/cloudinaryHelper'
 
 const props = defineProps({
   src: {
@@ -53,6 +63,29 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: '/placeholder-image.png'
+  },
+  // Cloudinary optimization options
+  width: {
+    type: Number,
+    default: null
+  },
+  height: {
+    type: Number,
+    default: null
+  },
+  quality: {
+    type: String,
+    default: 'auto'
+  },
+  format: {
+    type: String,
+    default: 'auto'
+  },
+  // Size presets
+  size: {
+    type: String,
+    default: null, // 'thumbnail', 'medium', 'large'
+    validator: (value) => !value || ['thumbnail', 'medium', 'large'].includes(value)
   },
   // Styling props
   containerClass: {
@@ -117,10 +150,48 @@ const isInView = ref(false)
 const observer = ref(null)
 
 const imageSrc = computed(() => {
-  if (props.immediate || isInView.value) {
-    return props.src || props.placeholder
+  if (!props.src) return props.placeholder
+  
+  // Format URL với fallback
+  const formattedUrl = formatImageUrl(props.src, props.placeholder)
+  
+  // Nếu chưa trong view, return placeholder
+  if (!props.immediate && !isInView.value) {
+    return props.placeholder
   }
-  return props.placeholder
+  
+  // Nếu là Cloudinary URL, optimize nó
+  if (isCloudinaryUrl(formattedUrl)) {
+    // Sử dụng size preset nếu có
+    if (props.size === 'thumbnail') {
+      return getOptimizedImageUrl(formattedUrl, { width: 300, height: 300, quality: props.quality, format: props.format })
+    } else if (props.size === 'medium') {
+      return getOptimizedImageUrl(formattedUrl, { width: 800, height: 800, quality: props.quality, format: props.format })
+    } else if (props.size === 'large') {
+      return getOptimizedImageUrl(formattedUrl, { width: 1200, height: 1200, quality: props.quality, format: props.format })
+    } else if (props.width || props.height) {
+      // Custom width/height
+      return getOptimizedImageUrl(formattedUrl, {
+        width: props.width,
+        height: props.height,
+        quality: props.quality,
+        format: props.format
+      })
+    }
+    // Default: optimize với auto quality và format
+    return getOptimizedImageUrl(formattedUrl, { quality: props.quality, format: props.format })
+  }
+  
+  // Không phải Cloudinary URL, return as-is
+  return formattedUrl
+})
+
+const placeholderSrc = computed(() => {
+  if (!props.src || !isCloudinaryUrl(props.src)) {
+    return props.placeholder
+  }
+  // Tạo blur placeholder cho Cloudinary images
+  return getPlaceholderUrl(props.src)
 })
 
 const spinnerStyle = computed(() => ({

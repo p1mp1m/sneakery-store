@@ -376,7 +376,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
 import logger from '@/utils/logger'
@@ -512,7 +512,7 @@ const fetchPoints = async () => {
     logger.log('📊 Points sample:', points.value.slice(0, 3))
   } catch (error) {
     logger.error('❌ Error fetching loyalty:', error)
-    toastService.apiError(error, 'Không thể tải danh sách điểm thưởng')
+    notificationService.apiError(error, 'Không thể tải danh sách điểm thưởng')
   } finally {
     loading.value = false
   }
@@ -544,12 +544,12 @@ const closeSettingsModal = () => {
 }
 
 const saveSettings = () => {
-  toastService.success('Thành công','Đã lưu cài đặt thành công')
+  notificationService.success('Thành công','Đã lưu cài đặt thành công')
   closeSettingsModal()
 }
 
 const viewPointDetail = (point) => {
-  toastService.info('Thông tin',`Xem chi tiết giao dịch #${point.id}`)
+  notificationService.info('Thông tin',`Xem chi tiết giao dịch #${point.id}`)
 }
 
 const extendExpiry = async (point) => {
@@ -569,7 +569,7 @@ const extendExpiry = async (point) => {
     newExpiry.setFullYear(newExpiry.getFullYear() + 1)
     point.expiresAt = newExpiry.toISOString()
     
-    toastService.success('Thành công','Đã gia hạn điểm thành công')
+    notificationService.success('Thành công','Đã gia hạn điểm thành công')
   } catch {
     // User cancelled
   }
@@ -579,7 +579,7 @@ const exportLoyalty = (format) => {
   try {
     const dataToExport = filteredPoints.value || []
     if (dataToExport.length === 0) {
-      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
+      notificationService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -598,14 +598,14 @@ const exportLoyalty = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'loyalty-points.csv')
-      toastService.success('Thành công','Xuất CSV thành công!')
+      notificationService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('loyalty-points', exportData)
-      toastService.success('Thành công','Xuất JSON thành công!')
+      notificationService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     logger.error('Export error:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 

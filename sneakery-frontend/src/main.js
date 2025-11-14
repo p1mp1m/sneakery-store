@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia' // 👈 1. Import Pinia
 import axios from 'axios'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import logger from '@/utils/logger'
 
 // Import Tailwind CSS FIRST - before other styles
@@ -9,9 +9,13 @@ import './assets/styles/tailwind.css'
 
 import App from './App.vue'
 import router from './routers/index.js'
+import vPermission from './directives/v-permission.js'
 
 const app = createApp(App)
 const pinia = createPinia() // 👈 2. Tạo một instance của Pinia
+
+// Register global directive
+app.directive('permission', vPermission)
 
 // ============================================
 // 🔐 AXIOS INTERCEPTOR - TỰ ĐỘNG GỬI JWT TOKEN
@@ -61,7 +65,7 @@ axios.interceptors.response.use(
     // Xử lý lỗi network
     if (!error.response) {
       logger.error('❌ Network Error:', error.message);
-      toastService.error('Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
+      notificationService.error('Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
     }
     
     return Promise.reject(error);
@@ -79,12 +83,10 @@ const themeStore = useThemeStore()
 themeStore.initTheme()
 
 // ═══════════════════════════════════════════════════════════════════════
-// 🧪 EXPOSE TOAST SERVICE FOR TESTING (Development only)
+// 🧪 EXPOSE NOTIFICATION SERVICE FOR TESTING (Development only)
 // ═══════════════════════════════════════════════════════════════════════
 if (import.meta.env.DEV) {
-  window.toastService = toastService
-  console.log('🧪 Toast Service exposed to window.toastService for testing')
-  console.log('💡 Try: toastService.success("Test", "Hello World!")')
+  window.notificationService = notificationService
 }
 
 app.mount('#app')

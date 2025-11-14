@@ -201,13 +201,12 @@
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                    <img 
-                      v-if="product.image" 
-                      :src="product.image" 
-                      :alt="product.name" 
-                      class="w-full h-full object-cover"
+                    <OptimizedImage
+                      v-if="product.image"
+                      :src="product.image"
+                      :alt="product.name"
+                      :image-class="'w-full h-full object-cover'"
                       loading="lazy"
-                      decoding="async"
                     />
                     <i v-else class="material-icons text-gray-400 dark:text-gray-500">image</i>
                   </div>
@@ -452,12 +451,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
 import logger from '@/utils/logger'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import { formatPrice, formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
+import OptimizedImage from '@/components/common/OptimizedImage.vue'
 
 // Stores
 const adminStore = useAdminStore()
@@ -602,7 +602,7 @@ const fetchProducts = async () => {
       logger.error('Error response status:', error.response.status)
       logger.error('Error response data:', error.response.data)
     }
-    toastService.apiError(error, 'Không thể tải danh sách tồn kho')
+    notificationService.apiError(error, 'Không thể tải danh sách tồn kho')
     products.value = []
   } finally {
     loading.value = false
@@ -676,12 +676,12 @@ const calculateNewStock = () => {
 
 const confirmAdjustment = async () => {
   if (!adjustmentQuantity.value || adjustmentQuantity.value <= 0) {
-    toastService.error('Lỗi','Vui lòng nhập số lượng hợp lệ')
+    notificationService.error('Lỗi','Vui lòng nhập số lượng hợp lệ')
     return
   }
 
   if (!adjustmentReason.value.trim()) {
-    toastService.error('Lỗi','Vui lòng nhập lý do điều chỉnh')
+    notificationService.error('Lỗi','Vui lòng nhập lý do điều chỉnh')
     return
   }
 
@@ -700,7 +700,7 @@ const confirmAdjustment = async () => {
     selectedProduct.value.stockQuantity = calculateNewStock()
     selectedProduct.value.updatedAt = new Date().toISOString()
     
-    toastService.success('Thành công','Đã điều chỉnh tồn kho thành công')
+    notificationService.success('Thành công','Đã điều chỉnh tồn kho thành công')
     closeAdjustmentModal()
   } catch {
     // User cancelled
@@ -723,7 +723,7 @@ const restockProduct = async (product) => {
     product.stockQuantity += 10
     product.updatedAt = new Date().toISOString()
     
-    toastService.success('Thành công','Đã nhập hàng thành công')
+    notificationService.success('Thành công','Đã nhập hàng thành công')
   } catch {
     // User cancelled
   }
@@ -756,7 +756,7 @@ const exportInventory = (format) => {
   try {
     const dataToExport = filteredProducts.value || []
     if (dataToExport.length === 0) {
-      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
+      notificationService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -777,14 +777,14 @@ const exportInventory = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'inventory.csv')
-      toastService.success('Thành công','Xuất CSV thành công!')
+      notificationService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('inventory', exportData)
-      toastService.success('Thành công','Xuất JSON thành công!')
+      notificationService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     logger.error('Export error:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 

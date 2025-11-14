@@ -428,7 +428,7 @@ import {
   onErrorCaptured,
 } from "vue";
 import { useAdminStore } from "@/stores/admin";
-import toastService from "@/utils/toastService";
+import notificationService from '@/utils/notificationService';
 import UploadGallery from "@/assets/components/admin/UploadGallery.vue";
 import {
   generateSku,
@@ -735,7 +735,7 @@ const handleSizePopupClose = () => {
 
 const confirmSizes = () => {
   if (selectedSizes.value.length === 0) {
-    toastService.warning('Cảnh báo', "Vui lòng chọn ít nhất một kích thước");
+    notificationService.warning('Cảnh báo', "Vui lòng chọn ít nhất một kích thước");
     sizeError.value = "Vui lòng chọn ít nhất một kích thước";
     errors.size = "Vui lòng chọn ít nhất một kích thước";
     return;
@@ -763,7 +763,7 @@ const hasErrors = computed(() => {
 // const handleImageUploaded = (imageData) => {
 //   if (imageData && imageData.imageUrl) {
 //     formData.imageUrl = imageData.imageUrl;
-//     toastService.success('Thành công',{
+//     notificationService.success('Thành công',{
 //       message: "Đã cập nhật đường dẫn ảnh cho biến thể",
 //       duration: 3000,
 //     });
@@ -785,7 +785,7 @@ const loadProducts = async () => {
     products.value = result.content || [];
   } catch (error) {
     console.error("Error loading products:", error);
-    toastService.error('Lỗi', "Không thể tải danh sách sản phẩm", { duration: 3000 });
+    notificationService.error('Lỗi', "Không thể tải danh sách sản phẩm", { duration: 3000 });
   }
 };
 
@@ -882,7 +882,7 @@ watch(
         resetKey.value++;
       } catch (err) {
         console.error("Không tải được ảnh từ DB:", err);
-        toastService.error('Lỗi',"Không thể tải thư viện ảnh của sản phẩm");
+        notificationService.error('Lỗi',"Không thể tải thư viện ảnh của sản phẩm");
       }
     }
   }
@@ -920,7 +920,7 @@ const handleSubmit = async () => {
 
     // ==== Validate ảnh ====
     if (selectedImages.value.length > 10) {
-      toastService.warning('Cảnh báo', "Tối đa 10 ảnh");
+      notificationService.warning('Cảnh báo', "Tối đa 10 ảnh");
       return;
     }
 
@@ -1010,7 +1010,7 @@ const handleSubmit = async () => {
     if (isEdit.value) {
       const variantId = props.variant?.id;
       if (!variantId) {
-        toastService.error('Lỗi',"Không xác định được ID biến thể cần cập nhật");
+        notificationService.error('Lỗi',"Không xác định được ID biến thể cần cập nhật");
         return;
       }
 
@@ -1029,7 +1029,7 @@ const handleSubmit = async () => {
 
       await adminStore.updateProductVariant(variantId, payload);
 
-      toastService.success('Thành công', "Đã cập nhật biến thể thành công", { duration: 2500 });
+      notificationService.success('Thành công', "Đã cập nhật biến thể thành công", { duration: 2500 });
 
       resetForm();
       emit("success");
@@ -1059,13 +1059,13 @@ const handleSubmit = async () => {
 
     await adminStore.createMultipleProductVariants(variantList);
 
-    toastService.success('Thành công', `Đã tạo ${variantList.length} biến thể mới`, { duration: 3000 });
+    notificationService.success('Thành công', `Đã tạo ${variantList.length} biến thể mới`, { duration: 3000 });
     resetForm();
     emit("success");
     emit("close");
   } catch (error) {
     console.error("Error saving variants:", error);
-    toastService.error('Lỗi',"Không thể lưu biến thể");
+    notificationService.error('Lỗi',"Không thể lưu biến thể");
   } finally {
     isSubmitting.value = false;
   }
@@ -1083,7 +1083,7 @@ const loadProductImagesFromDB = async (productId) => {
     }));
   } catch (err) {
     console.error("Không tải được thư viện ảnh:", err);
-    toastService.error('Lỗi',"Không thể tải thư viện ảnh của sản phẩm");
+    notificationService.error('Lỗi',"Không thể tải thư viện ảnh của sản phẩm");
     return [];
   }
 };

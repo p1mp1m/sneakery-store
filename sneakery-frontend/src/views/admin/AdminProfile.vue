@@ -126,7 +126,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import axios from 'axios'
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api'
 import logger from '@/utils/logger'
@@ -195,7 +195,7 @@ const updateProfile = async () => {
 
     // Validate phone number if provided
     if (profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)) {
-      toastService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)')
+      notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)')
       updating.value = false
       return
     }
@@ -220,14 +220,14 @@ const updateProfile = async () => {
       localStorage.setItem('user', JSON.stringify(authStore.currentUser))
     }
 
-    toastService.success('Thành công','Cập nhật thông tin thành công')
+    notificationService.success('Thành công','Cập nhật thông tin thành công')
     
     // Cập nhật original profile
     originalProfile.fullName = profile.fullName
     originalProfile.phoneNumber = profile.phoneNumber
   } catch (error) {
     logger.error('Error updating profile:', error)
-    toastService.apiError(error, 'Không thể cập nhật thông tin')
+    notificationService.apiError(error, 'Không thể cập nhật thông tin')
   } finally {
     updating.value = false
   }

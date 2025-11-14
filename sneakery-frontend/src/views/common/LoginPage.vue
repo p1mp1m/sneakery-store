@@ -153,7 +153,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import GoogleButton from '@/assets/components/common/GoogleButton.vue';
 
 const router = useRouter();
@@ -216,15 +216,15 @@ const handleLogin = async () => {
     const user = authStore.currentUser;
     
     if (user.role === 'ADMIN' || user.role === 'MODERATOR') {
-      toastService.success('Thành công', `Chào mừng Admin ${user.fullName}!`);
+      notificationService.success('Thành công', `Chào mừng Admin ${user.fullName}!`);
       router.push('/admin/dashboard');
     } else {
-      toastService.success('Thành công', `Chào mừng ${user.fullName}!`);
+      notificationService.success('Thành công', `Chào mừng ${user.fullName}!`);
       router.push('/user/dashboard');
     }
   } catch (error) {
     serverError.value = error.response?.data?.message || 'Email hoặc mật khẩu không chính xác.';
-    toastService.error('Lỗi', serverError.value);
+    notificationService.error('Lỗi', serverError.value);
   } finally {
     loading.value = false;
   }
@@ -235,6 +235,6 @@ const handleForgotPassword = () => {
 };
 
 const handleGoogleLogin = () => {
-  toastService.info('Thông tin','Tính năng đăng nhập Google sẽ được cập nhật sớm!');
+  notificationService.info('Thông tin','Tính năng đăng nhập Google sẽ được cập nhật sớm!');
 };
 </script>

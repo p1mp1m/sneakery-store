@@ -214,7 +214,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useAuthStore } from '@/stores/auth';
@@ -238,7 +238,7 @@ onMounted(async () => {
   try {
     await wishlistStore.fetchWishlist();
   } catch (error) {
-    toastService.error('Lỗi','Không thể tải danh sách yêu thích');
+    notificationService.error('Lỗi','Không thể tải danh sách yêu thích');
   }
 });
 
@@ -267,17 +267,17 @@ const removeFromWishlist = async (item) => {
     );
     
     await wishlistStore.removeFromWishlist(item.productId);
-    toastService.success('Thành công',`Đã xóa "${item.productName}" khỏi danh sách yêu thích`);
+    notificationService.success('Thành công',`Đã xóa "${item.productName}" khỏi danh sách yêu thích`);
   } catch (error) {
     if (error !== 'cancel') {
-      toastService.error('Lỗi','Không thể xóa sản phẩm');
+      notificationService.error('Lỗi','Không thể xóa sản phẩm');
     }
   }
 };
 
 const addToCart = (item) => {
   if (!item.isActive) {
-    toastService.warning('Cảnh báo','Sản phẩm này đã ngừng bán');
+    notificationService.warning('Cảnh báo','Sản phẩm này đã ngừng bán');
     return;
   }
   
@@ -289,12 +289,12 @@ const addAllToCart = () => {
   const activeItems = wishlistItems.value.filter(item => item.isActive);
   
   if (activeItems.length === 0) {
-    toastService.warning('Cảnh báo','Không có sản phẩm nào khả dụng trong danh sách yêu thích');
+    notificationService.warning('Cảnh báo','Không có sản phẩm nào khả dụng trong danh sách yêu thích');
     return;
   }
   
   // Navigate về trang sản phẩm để thêm từng cái
-  toastService.info('Thông tin','Vui lòng chọn size cho từng sản phẩm');
+  notificationService.info('Thông tin','Vui lòng chọn size cho từng sản phẩm');
 };
 
 const clearWishlist = async () => {
@@ -310,10 +310,10 @@ const clearWishlist = async () => {
     );
     
     await wishlistStore.clearWishlist();
-    toastService.success('Thành công','Đã xóa tất cả sản phẩm khỏi danh sách yêu thích');
+    notificationService.success('Thành công','Đã xóa tất cả sản phẩm khỏi danh sách yêu thích');
   } catch (error) {
     if (error !== 'cancel') {
-      toastService.error('Lỗi','Không thể xóa wishlist');
+      notificationService.error('Lỗi','Không thể xóa wishlist');
     }
   }
 };
@@ -328,16 +328,16 @@ const shareWishlist = () => {
     shareLink.value = `${window.location.origin}/wishlist/shared/${userId}`;
     showShareModal.value = true;
   } else {
-    toastService.error('Lỗi','Vui lòng đăng nhập để chia sẻ wishlist');
+    notificationService.error('Lỗi','Vui lòng đăng nhập để chia sẻ wishlist');
   }
 };
 
 const copyLink = async () => {
   try {
     await navigator.clipboard.writeText(shareLink.value);
-    toastService.success('Thành công','Đã copy link vào clipboard');
+    notificationService.success('Thành công','Đã copy link vào clipboard');
   } catch (error) {
-    toastService.error('Lỗi','Không thể copy link');
+    notificationService.error('Lỗi','Không thể copy link');
   }
 };
 

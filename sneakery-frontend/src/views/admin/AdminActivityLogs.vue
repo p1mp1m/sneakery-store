@@ -434,7 +434,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
 import logger from '@/utils/logger'
@@ -577,7 +577,7 @@ const fetchLogs = async () => {
     logger.log('📊 Logs sample:', logs.value.slice(0, 3))
   } catch (error) {
     logger.error('❌ Error fetching logs:', error)
-    toastService.apiError(error, 'Không thể tải nhật ký hoạt động')
+    notificationService.apiError(error, 'Không thể tải nhật ký hoạt động')
   } finally {
     loading.value = false
   }
@@ -631,7 +631,7 @@ const clearOldLogs = async () => {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     logs.value = logs.value.filter(log => new Date(log.createdAt) > thirtyDaysAgo)
     
-    toastService.success('Thành công','Đã dọn dẹp nhật ký cũ thành công')
+    notificationService.success('Thành công','Đã dọn dẹp nhật ký cũ thành công')
   } catch {
     // User cancelled
   }
@@ -641,7 +641,7 @@ const exportLogs = (format) => {
   try {
     const dataToExport = filteredLogs.value || []
     if (dataToExport.length === 0) {
-      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
+      notificationService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -663,14 +663,14 @@ const exportLogs = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'activity-logs.csv')
-      toastService.success('Thành công','Xuất CSV thành công!')
+      notificationService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('activity-logs', exportData)
-      toastService.success('Thành công','Xuất JSON thành công!')
+      notificationService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
     logger.error('Export error:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
   }
 }
 

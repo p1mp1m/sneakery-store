@@ -249,7 +249,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminService from '@/services/adminService'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import { printInvoice } from '@/utils/pdfGenerator'
 import logger from '@/utils/logger'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
@@ -278,7 +278,7 @@ const fetchOrderDetail = async () => {
   } catch (err) {
     logger.error('Error fetching order detail:', err)
     error.value = err.message || 'Không thể tải chi tiết đơn hàng. Vui lòng thử lại.'
-    toastService.apiError(err, 'Không thể tải chi tiết đơn hàng')
+    notificationService.apiError(err, 'Không thể tải chi tiết đơn hàng')
   } finally {
     loading.value = false
   }
@@ -390,31 +390,31 @@ const getColorHex = (colorName) => {
 
 const handlePrintInvoice = (order) => {
   if (!order) {
-    toastService.warning('Cảnh báo', 'Không có thông tin đơn hàng để in')
+    notificationService.warning('Cảnh báo', 'Không có thông tin đơn hàng để in')
     return
   }
   
   try {
     printInvoice(order)
-    toastService.success('Thành công', 'Đang mở cửa sổ in hóa đơn...')
+    notificationService.success('Thành công', 'Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
     logger.error('Error printing invoice:', error)
-    toastService.apiError(error, 'Không thể in hóa đơn')
+    notificationService.apiError(error, 'Không thể in hóa đơn')
   }
 }
 
 const exportOrderToPDF = (order) => {
   if (!order) {
-    toastService.warning('Cảnh báo', 'Không có thông tin đơn hàng để export')
+    notificationService.warning('Cảnh báo', 'Không có thông tin đơn hàng để export')
     return
   }
   
   try {
     handlePrintInvoice(order)
-    toastService.success('Thành công', 'Đang mở cửa sổ in hóa đơn...')
+    notificationService.success('Thành công', 'Đang mở cửa sổ in hóa đơn...')
   } catch (error) {
     logger.error('Error exporting to PDF:', error)
-    toastService.apiError(error, 'Không thể export PDF')
+    notificationService.apiError(error, 'Không thể export PDF')
   }
 }
 

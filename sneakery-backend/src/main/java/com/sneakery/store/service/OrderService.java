@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +66,7 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final AddressRepository addressRepository;
     private final ProductVariantRepository variantRepository;
+    private final ProductImageRepository productImageRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final PaymentGatewayService paymentGatewayService;
@@ -722,13 +724,24 @@ public class OrderService {
         // Chuyển OrderDetail -> CartItemDto (dùng tạm DTO này)
         List<CartItemDto> detailDtos = order.getOrderDetails().stream().map(detail -> {
             ProductVariant v = detail.getVariant();
+            
+            // Lấy imageUrl từ variant, nếu null hoặc rỗng thì lấy ảnh primary từ Product_Images
+            String imageUrl = v.getImageUrl();
+            if ((imageUrl == null || imageUrl.isBlank()) && v.getProduct() != null) {
+                Long productId = v.getProduct().getId();
+                Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+                if (coverImage.isPresent()) {
+                    imageUrl = coverImage.get().getImageUrl();
+                }
+            }
+            
             return CartItemDto.builder()
                     .variantId(v.getId())
                     .productName(v.getProduct().getName())
                     .brandName(v.getProduct().getBrand().getName())
                     .size(v.getSize())
                     .color(v.getColor())
-                    .imageUrl(v.getImageUrl())
+                    .imageUrl(imageUrl)
                     .quantity(detail.getQuantity())
                     .unitPrice(detail.getUnitPrice())
                     .totalPrice(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))

@@ -36,7 +36,12 @@
         @dragover.prevent
         @drop="drop(idx)"
       >
-        <img :src="getImageUrl(img.previewUrl)" alt="preview" class="w-full h-full object-cover" />
+        <OptimizedImage
+          :src="getImageUrl(img.previewUrl)"
+          alt="preview"
+          :image-class="'w-full h-full object-cover'"
+          loading="lazy"
+        />
         <div class="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
@@ -110,9 +115,10 @@
 
 <script setup>
 import { ref, watch, onUnmounted } from "vue";
-// import toastService from "@/utils/toastService";
-import toastService from "@/utils/toastService";
+// import notificationService from '@/utils/notificationService';
+import notificationService from '@/utils/notificationService';
 import { buildApiUrl } from "@/config/api";
+import OptimizedImage from '@/components/common/OptimizedImage.vue';
 
 /**
  * Component này chỉ hiển thị và quản lý preview ảnh.
@@ -160,9 +166,9 @@ const switchMode = (newMode) => {
   mode.value = newMode;
   imageUrlInput.value = "";
   if (newMode === "url") {
-    toastService.info('Thông tin',"Bạn đang ở chế độ nhập URL ảnh 🌐");
+    notificationService.info('Thông tin',"Bạn đang ở chế độ nhập URL ảnh 🌐");
   } else {
-    toastService.info('Thông tin',"Bạn đang ở chế độ nhập Local 📁");
+    notificationService.info('Thông tin',"Bạn đang ở chế độ nhập Local 📁");
   }
 };
 
@@ -184,7 +190,7 @@ const handleFileSelect = (e) => {
   const files = e.target.files;
   if (!files || files.length === 0) return;
   if (images.value.length + files.length > props.maxImages)
-    return toastService.warning('Cảnh báo', `Chỉ được chọn tối đa ${props.maxImages} ảnh`);
+    return notificationService.warning('Cảnh báo', `Chỉ được chọn tối đa ${props.maxImages} ảnh`);
   for (const file of files) {
     const previewUrl = URL.createObjectURL(file);
     images.value.push({ file, previewUrl, isPrimary: false, type: "local" });
@@ -197,7 +203,7 @@ const handleFileSelect = (e) => {
 const handleUrlAdd = () => {
   const url = imageUrlInput.value.trim();
   if (!url)
-    return toastService.warning('Cảnh báo', "Vui lòng nhập URL ảnh");
+    return notificationService.warning('Cảnh báo', "Vui lòng nhập URL ảnh");
   const isLikelyImageUrl =
     /^https?:\/\/.+/i.test(url) &&
     // chấp nhận có hoặc không đuôi, nhưng nếu có đuôi thì phải hợp lệ
@@ -205,10 +211,10 @@ const handleUrlAdd = () => {
       /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(url));
 
   if (!isLikelyImageUrl) {
-    return toastService.error('Lỗi', "URL không hợp lệ hoặc không phải ảnh");
+    return notificationService.error('Lỗi', "URL không hợp lệ hoặc không phải ảnh");
   }
   if (images.value.length >= props.maxImages)
-    return toastService.warning('Cảnh báo', `Chỉ được chọn tối đa ${props.maxImages} ảnh`);
+    return notificationService.warning('Cảnh báo', `Chỉ được chọn tối đa ${props.maxImages} ảnh`);
 
   images.value.push({
     file: null,

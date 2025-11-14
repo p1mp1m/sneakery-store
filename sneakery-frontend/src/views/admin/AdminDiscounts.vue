@@ -445,7 +445,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import adminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import logger from '@/utils/logger'
@@ -522,7 +522,7 @@ const fetchCoupons = async () => {
     updateStats()
   } catch (error) {
     logger.error('Lỗi tải coupons:', error)
-    toastService.apiError(error, 'Không thể tải danh sách mã giảm giá')
+    notificationService.apiError(error, 'Không thể tải danh sách mã giảm giá')
     
     // Set empty array để tránh undefined errors
     coupons.value = []
@@ -598,17 +598,17 @@ const saveCoupon = async () => {
     
     if (editingCoupon.value) {
       await adminStore.updateCoupon(editingCoupon.value.id, couponData)
-      toastService.success('Thành công',`Đã cập nhật mã giảm giá "${couponData.code}" thành công!`)
+      notificationService.success('Thành công',`Đã cập nhật mã giảm giá "${couponData.code}" thành công!`)
     } else {
       await adminStore.createCoupon(couponData)
-      toastService.success('Thành công',`Đã tạo mã giảm giá "${couponData.code}" thành công!`)
+      notificationService.success('Thành công',`Đã tạo mã giảm giá "${couponData.code}" thành công!`)
     }
     
     closeDialog()
     fetchCoupons()
   } catch (error) {
     logger.error('Lỗi lưu coupon:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi lưu mã giảm giá')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi lưu mã giảm giá')
   } finally {
     saving.value = false
   }
@@ -618,10 +618,10 @@ const toggleCouponStatus = async (coupon) => {
   try {
     await adminStore.toggleCouponStatus(coupon.id)
     coupon.isActive = !coupon.isActive
-    toastService.success('Thành công',`Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá "${coupon.code}" thành công!`)
+    notificationService.success('Thành công',`Đã ${coupon.isActive ? 'kích hoạt' : 'vô hiệu hóa'} mã giảm giá "${coupon.code}" thành công!`)
   } catch (error) {
     logger.error('Lỗi toggle status:', error)
-    toastService.apiError(error, 'Không thể thay đổi trạng thái')
+    notificationService.apiError(error, 'Không thể thay đổi trạng thái')
   }
 }
 
@@ -630,21 +630,21 @@ const deleteCoupon = async (coupon) => {
   
   try {
     await adminStore.deleteCoupon(coupon.id)
-    toastService.success('Thành công',`Đã xóa mã giảm giá "${coupon.code}" thành công!`)
+    notificationService.success('Thành công',`Đã xóa mã giảm giá "${coupon.code}" thành công!`)
     fetchCoupons()
   } catch (error) {
     logger.error('Lỗi xóa coupon:', error)
-    toastService.apiError(error, 'Không thể xóa mã giảm giá')
+    notificationService.apiError(error, 'Không thể xóa mã giảm giá')
   }
 }
 
 const copyCouponCode = async (code) => {
   try {
     await navigator.clipboard.writeText(code)
-    toastService.success('Thành công', `Đã sao chép mã: ${code}`, { duration: 2000 })
+    notificationService.success('Thành công', `Đã sao chép mã: ${code}`, { duration: 2000 })
   } catch (error) {
     logger.error('Lỗi copy:', error)
-    toastService.apiError(error, 'Không thể sao chép mã')
+    notificationService.apiError(error, 'Không thể sao chép mã')
   }
 }
 
@@ -718,10 +718,10 @@ const handleExport = (format) => {
   
   if (format === 'csv') {
     downloadCsv(data, `discounts_${Date.now()}.csv`)
-    toastService.success('Thành công','Đã xuất file CSV thành công!')
+    notificationService.success('Thành công','Đã xuất file CSV thành công!')
   } else if (format === 'json') {
     downloadJson(data, `discounts_${Date.now()}.json`)
-    toastService.success('Thành công','Đã xuất file JSON thành công!')
+    notificationService.success('Thành công','Đã xuất file JSON thành công!')
   }
 }
 

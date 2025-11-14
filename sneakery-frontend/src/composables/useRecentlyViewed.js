@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
 import logger from '@/utils/logger';
+import { getOptimizedImageUrl } from '@/utils/cloudinaryHelper';
 
 const STORAGE_KEY = 'sneakery_recently_viewed';
 const MAX_ITEMS = 10;
@@ -36,26 +37,33 @@ const getProductPrice = (product) => {
   return 0;
 };
 
-// Helper function to get product image URL
+// Helper function to get product image URL (ưu tiên mainImageUrl)
 const getProductImageUrl = (product) => {
-  // Try variant image first
-  if (product.variants && product.variants.length > 0 && product.variants[0].imageUrl) {
-    return product.variants[0].imageUrl;
+  // Ưu tiên mainImageUrl (đã được sync từ ProductImage primary)
+  if (product.mainImageUrl) {
+    return product.mainImageUrl;
   }
   
-  // Try product images array
+  // Fallback: Try product images array (primary image)
   if (product.images && product.images.length > 0) {
-    const firstImage = product.images[0];
-    // Handle both object format {url: ...} and string format
-    return typeof firstImage === 'string' ? firstImage : (firstImage.url || firstImage.imageUrl);
+    const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+    if (primaryImage) {
+      // Handle both object format {url: ...} and string format
+      return typeof primaryImage === 'string' ? primaryImage : (primaryImage.url || primaryImage.imageUrl);
+    }
   }
   
-  // Try product imageUrl
+  // Fallback: Try product imageUrl
   if (product.imageUrl) {
     return product.imageUrl;
   }
   
-  // Try product mainImage
+  // Fallback: Try variant image
+  if (product.variants && product.variants.length > 0 && product.variants[0].imageUrl) {
+    return product.variants[0].imageUrl;
+  }
+  
+  // Fallback: Try product mainImage
   if (product.mainImage) {
     return product.mainImage;
   }
@@ -97,7 +105,17 @@ export function useRecentlyViewed() {
 
     // Calculate price and imageUrl
     const price = product.price !== undefined ? product.price : getProductPrice(product);
-    const imageUrl = product.imageUrl || getProductImageUrl(product);
+    let imageUrl = product.mainImageUrl || product.imageUrl || getProductImageUrl(product);
+    
+    // Optimize image URL với Cloudinary (thumbnail size cho recently viewed)
+    if (imageUrl && imageUrl.startsWith('http')) {
+      imageUrl = getOptimizedImageUrl(imageUrl, {
+        width: 200,
+        height: 200,
+        quality: 'auto',
+        format: 'auto'
+      });
+    }
 
     // Loại bỏ sản phẩm trùng (nếu đã tồn tại)
     const filtered = recentlyViewed.value.filter(p => p.id !== product.id);

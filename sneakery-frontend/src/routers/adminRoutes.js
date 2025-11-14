@@ -1,36 +1,39 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-// Admin Layout
+// Admin Layout - Preload immediately as it's always needed
 const AdminLayout = () => import('@/assets/layouts/AdminLayout.vue')
 
-// Admin Pages
+// Critical routes - Preload on admin panel access
 const AdminDashboard = () => import('@/views/admin/AdminDashboard.vue')
-const AdminSales = () => import('@/views/admin/AdminSales.vue')
-const AdminProducts = () => import('@/views/admin/AdminProducts.vue')
-const AdminProductVariants = () => import('@/views/admin/AdminProductVariants.vue')
 const AdminOrders = () => import('@/views/admin/AdminOrders.vue')
-const AdminOrderDetail = () => import('@/views/admin/AdminOrderDetail.vue')
-const AdminUsers = () => import('@/views/admin/AdminUsers.vue')
-const AdminBrands = () => import('@/views/admin/AdminBrands.vue')
-const AdminCategories = () => import('@/views/admin/AdminCategories.vue')
-const AdminMaterials = () => import('@/views/admin/AdminMaterials.vue')
-const AdminShoeSoles = () => import('@/views/admin/AdminShoeSoles.vue')
-const AdminDiscounts = () => import('@/views/admin/AdminDiscounts.vue')
-const AdminReturns = () => import('@/views/admin/AdminReturns.vue')
-const AdminWarranty = () => import('@/views/admin/AdminWarranty.vue')
-const AdminAnalytics = () => import('@/views/admin/AdminAnalytics.vue')
-const AdminNotifications = () => import('@/views/admin/AdminNotifications.vue')
-const AdminSettings = () => import('@/views/admin/AdminSettings.vue')
-const AdminReviews = () => import('@/views/admin/AdminReviews.vue')
-const AdminFlashSales = () => import('@/views/admin/AdminFlashSales.vue')
-const AdminActivityLogs = () => import('@/views/admin/AdminActivityLogs.vue')
-const AdminInventory = () => import('@/views/admin/AdminInventory.vue')
-const AdminLoyalty = () => import('@/views/admin/AdminLoyalty.vue')
-const AdminPayments = () => import('@/views/admin/AdminPayments.vue')
-const AdminEmailTemplates = () => import('@/views/admin/AdminEmailTemplates.vue')
-const AdminProfile = () => import('@/views/admin/AdminProfile.vue')
-const AdminChangePassword = () => import('@/views/admin/AdminChangePassword.vue')
+const AdminProducts = () => import('@/views/admin/AdminProducts.vue')
+
+// Important routes - Lazy load with webpackChunkName for better code splitting
+const AdminSales = () => import(/* webpackChunkName: "admin-sales" */ '@/views/admin/AdminSales.vue')
+const AdminProductVariants = () => import(/* webpackChunkName: "admin-variants" */ '@/views/admin/AdminProductVariants.vue')
+const AdminOrderDetail = () => import(/* webpackChunkName: "admin-order-detail" */ '@/views/admin/AdminOrderDetail.vue')
+const AdminUsers = () => import(/* webpackChunkName: "admin-users" */ '@/views/admin/AdminUsers.vue')
+// Secondary routes - Grouped by functionality for better code splitting
+const AdminBrands = () => import(/* webpackChunkName: "admin-catalog" */ '@/views/admin/AdminBrands.vue')
+const AdminCategories = () => import(/* webpackChunkName: "admin-catalog" */ '@/views/admin/AdminCategories.vue')
+const AdminMaterials = () => import(/* webpackChunkName: "admin-catalog" */ '@/views/admin/AdminMaterials.vue')
+const AdminShoeSoles = () => import(/* webpackChunkName: "admin-catalog" */ '@/views/admin/AdminShoeSoles.vue')
+const AdminDiscounts = () => import(/* webpackChunkName: "admin-promotions" */ '@/views/admin/AdminDiscounts.vue')
+const AdminFlashSales = () => import(/* webpackChunkName: "admin-promotions" */ '@/views/admin/AdminFlashSales.vue')
+const AdminReturns = () => import(/* webpackChunkName: "admin-operations" */ '@/views/admin/AdminReturns.vue')
+const AdminWarranty = () => import(/* webpackChunkName: "admin-operations" */ '@/views/admin/AdminWarranty.vue')
+const AdminAnalytics = () => import(/* webpackChunkName: "admin-analytics" */ '@/views/admin/AdminAnalytics.vue')
+const AdminNotifications = () => import(/* webpackChunkName: "admin-communications" */ '@/views/admin/AdminNotifications.vue')
+const AdminEmailTemplates = () => import(/* webpackChunkName: "admin-communications" */ '@/views/admin/AdminEmailTemplates.vue')
+const AdminSettings = () => import(/* webpackChunkName: "admin-settings" */ '@/views/admin/AdminSettings.vue')
+const AdminReviews = () => import(/* webpackChunkName: "admin-reviews" */ '@/views/admin/AdminReviews.vue')
+const AdminActivityLogs = () => import(/* webpackChunkName: "admin-logs" */ '@/views/admin/AdminActivityLogs.vue')
+const AdminInventory = () => import(/* webpackChunkName: "admin-inventory" */ '@/views/admin/AdminInventory.vue')
+const AdminLoyalty = () => import(/* webpackChunkName: "admin-loyalty" */ '@/views/admin/AdminLoyalty.vue')
+const AdminPayments = () => import(/* webpackChunkName: "admin-payments" */ '@/views/admin/AdminPayments.vue')
+const AdminProfile = () => import(/* webpackChunkName: "admin-profile" */ '@/views/admin/AdminProfile.vue')
+const AdminChangePassword = () => import(/* webpackChunkName: "admin-profile" */ '@/views/admin/AdminChangePassword.vue')
 
 const adminRoutes = [
   {

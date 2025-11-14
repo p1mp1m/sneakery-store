@@ -362,7 +362,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import logger from '@/utils/logger'
 import { formatDate } from '@/utils/formatters'
@@ -443,7 +443,7 @@ const fetchBrands = async () => {
     brands.value = result.content || result || [];
   } catch (error) {
     logger.error("Error fetching brands:", error);
-    toastService.apiError(error, "Lỗi khi tải danh sách thương hiệu")
+    notificationService.apiError(error, "Lỗi khi tải danh sách thương hiệu")
   } finally {
     loading.value = false;
   }
@@ -505,10 +505,10 @@ const saveBrand = async () => {
     await fetchBrands();
     closeModal();
     // alert(`${isEditMode.value ? "Cập nhật" : "Thêm"} thương hiệu thành công!`);
-    toastService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} thương hiệu thành công!`, { duration: 3000 });
+    notificationService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} thương hiệu thành công!`, { duration: 3000 });
   } catch (error) {
     logger.error("Error saving brand:", error);
-    toastService.apiError(error, "Lỗi khi lưu thương hiệu")
+    notificationService.apiError(error, "Lỗi khi lưu thương hiệu")
   } finally {
     saving.value = false;
   }
@@ -527,10 +527,10 @@ const deleteBrand = async () => {
     showDeleteModal.value = false;
     brandToDelete.value = null;
     // alert("Xóa thương hiệu thành công!");
-    toastService.success('Thành công', "Xóa thương hiệu thành công!", { duration: 3000 });
+    notificationService.success('Thành công', "Xóa thương hiệu thành công!", { duration: 3000 });
   } catch (error) {
     logger.error("Error deleting brand:", error);
-    toastService.apiError(error, "Lỗi khi xóa thương hiệu")
+    notificationService.apiError(error, "Lỗi khi xóa thương hiệu")
   } finally {
     deleting.value = false;
   }

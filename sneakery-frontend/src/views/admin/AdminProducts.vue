@@ -25,24 +25,33 @@
         </div>
         <div class="flex items-center gap-2">
           <button
+            v-permission="PERMISSIONS_EXPOSED.PRODUCT_IMPORT"
             @click="openImportModal"
             class="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+            aria-label="Import sản phẩm từ file Excel"
+            title="Import sản phẩm từ file Excel"
           >
-            <i class="material-icons text-base">file_upload</i>
+            <i class="material-icons text-base" aria-hidden="true">file_upload</i>
             Import Excel
           </button>
           <button
+            v-permission="PERMISSIONS_EXPOSED.PRODUCT_EXPORT"
             @click="exportToExcel"
             class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+            aria-label="Xuất danh sách sản phẩm ra file Excel"
+            title="Xuất danh sách sản phẩm ra file Excel"
           >
-            <i class="material-icons text-base">download</i>
+            <i class="material-icons text-base" aria-hidden="true">download</i>
             Export Excel
           </button>
           <button
+            v-permission="PERMISSIONS_EXPOSED.PRODUCT_CREATE"
             @click="openCreateModal"
             class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+            aria-label="Thêm sản phẩm mới"
+            title="Thêm sản phẩm mới"
           >
-            <i class="material-icons text-base">add</i>
+            <i class="material-icons text-base" aria-hidden="true">add</i>
             Thêm sản phẩm
           </button>
         </div>
@@ -140,7 +149,7 @@
          LOADING & EMPTY STATES
          ================================================================= -->
     <!-- Loading State -->
-    <div v-if="loading" class="space-y-4" role="status" aria-live="polite">
+    <div v-if="loading" class="space-y-4" role="status" aria-live="polite" aria-label="Đang tải danh sách sản phẩm">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <LoadingSkeleton
           v-for="n in 8"
@@ -201,24 +210,39 @@
         </div>
         <div class="flex items-center gap-2">
           <button
-            @click="openBulkUpdateModal"
-            class="flex items-center gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"
+            @click="bulkExport"
+            class="flex items-center gap-2 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500"
+            :aria-label="`Xuất ${selectedProducts.length} sản phẩm đã chọn ra file Excel`"
+            title="Xuất các sản phẩm đã chọn"
           >
-            <i class="material-icons text-base">edit</i>
+            <i class="material-icons text-base" aria-hidden="true">download</i>
+            Xuất Excel
+          </button>
+          <button
+            @click="openBulkUpdateModal"
+            class="flex items-center gap-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :aria-label="`Cập nhật hàng loạt ${selectedProducts.length} sản phẩm đã chọn`"
+            title="Cập nhật hàng loạt"
+          >
+            <i class="material-icons text-base" aria-hidden="true">edit</i>
             Cập nhật hàng loạt
           </button>
           <button
             @click="bulkDelete"
-            class="flex items-center gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium"
+            class="flex items-center gap-2 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500"
+            :aria-label="`Xóa ${selectedProducts.length} sản phẩm đã chọn`"
+            title="Xóa các sản phẩm đã chọn"
           >
-            <i class="material-icons text-base">delete</i>
+            <i class="material-icons text-base" aria-hidden="true">delete</i>
             Xóa {{ selectedProducts.length }} sản phẩm
           </button>
           <button
             @click="clearSelection"
-            class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+            class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-500"
+            aria-label="Bỏ chọn tất cả sản phẩm"
+            title="Bỏ chọn"
           >
-            <i class="material-icons text-base">clear</i>
+            <i class="material-icons text-base" aria-hidden="true">clear</i>
             Bỏ chọn
           </button>
         </div>
@@ -227,79 +251,122 @@
       <!-- Products Table -->
       <div
         class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+        role="region"
+        aria-label="Bảng danh sách sản phẩm"
       >
         <div class="overflow-x-auto">
-          <table class="w-full">
-          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10">
+          <table class="w-full" role="table" aria-label="Danh sách sản phẩm">
+          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600" role="rowgroup">
+            <tr role="row">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10" scope="col">
                 <input
                   type="checkbox"
                   :checked="isAllSelected"
                   @change="toggleSelectAll"
                   class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  :aria-label="isAllSelected ? 'Bỏ chọn tất cả sản phẩm' : 'Chọn tất cả sản phẩm'"
+                  :aria-checked="isAllSelected"
+                  role="checkbox"
                 />
               </th>
               <!-- 🆕 Mã sản phẩm -->
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('code')">
-                <div class="flex items-center gap-1">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                <button
+                  @click="sortColumn('code')"
+                  class="flex items-center gap-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  aria-label="Sắp xếp theo mã sản phẩm"
+                  :aria-sort="sortBy === 'code' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                >
                   <span>Mã SP</span>
-                  <i class="material-icons text-sm">{{ getSortIcon("code") }}</i>
-                </div>
+                  <i class="material-icons text-sm" aria-hidden="true">{{ getSortIcon("code") }}</i>
+                </button>
               </th>
 
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('name')">
-                <div class="flex items-center gap-1">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                <button
+                  @click="sortColumn('name')"
+                  class="flex items-center gap-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  aria-label="Sắp xếp theo tên sản phẩm"
+                  :aria-sort="sortBy === 'name' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                >
                   <span>Tên sản phẩm</span>
-                  <i class="material-icons text-sm">{{ getSortIcon("name") }}</i>
-                </div>
+                  <i class="material-icons text-sm" aria-hidden="true">{{ getSortIcon("name") }}</i>
+                </button>
               </th>
 
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('brandName')">
-                <div class="flex items-center gap-1">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                <button
+                  @click="sortColumn('brandName')"
+                  class="flex items-center gap-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  aria-label="Sắp xếp theo thương hiệu"
+                  :aria-sort="sortBy === 'brandName' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                >
                   <span>Brands</span>
-                  <i class="material-icons text-sm">{{ getSortIcon("brandName") }}</i>
-                </div>
+                  <i class="material-icons text-sm" aria-hidden="true">{{ getSortIcon("brandName") }}</i>
+                </button>
               </th>
 
               <!-- 🆕 Danh mục -->
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('categoryNames')">
-                <div class="flex items-center gap-1">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                <button
+                  @click="sortColumn('categoryNames')"
+                  class="flex items-center gap-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  aria-label="Sắp xếp theo danh mục"
+                  :aria-sort="sortBy === 'categoryNames' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                >
                   <span>Danh mục</span>
-                  <i class="material-icons text-sm">{{ getSortIcon("categoryNames") }}</i>
-                </div>
+                  <i class="material-icons text-sm" aria-hidden="true">{{ getSortIcon("categoryNames") }}</i>
+                </button>
               </th>
 
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('variantCount')">
-                <div class="flex items-center gap-1">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                <button
+                  @click="sortColumn('variantCount')"
+                  class="flex items-center gap-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  aria-label="Sắp xếp theo số lượng biến thể"
+                  :aria-sort="sortBy === 'variantCount' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                >
                   <span>Số SPCT</span>
-                  <i class="material-icons text-sm">{{ getSortIcon("variantCount") }}</i>
-                </div>
+                  <i class="material-icons text-sm" aria-hidden="true">{{ getSortIcon("variantCount") }}</i>
+                </button>
               </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('stockQuantity')">
-                <div class="flex items-center gap-1">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                <button
+                  @click="sortColumn('stockQuantity')"
+                  class="flex items-center gap-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  aria-label="Sắp xếp theo tồn kho"
+                  :aria-sort="sortBy === 'stockQuantity' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                >
                   <span>Kho</span>
-                  <i class="material-icons text-sm">{{ getSortIcon("stockQuantity") }}</i>
-                </div>
+                  <i class="material-icons text-sm" aria-hidden="true">{{ getSortIcon("stockQuantity") }}</i>
+                </button>
               </th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/50" @click="sortColumn('isActive')">
-                <div class="flex items-center gap-1">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">
+                <button
+                  @click="sortColumn('isActive')"
+                  class="flex items-center gap-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700/50 px-2 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  aria-label="Sắp xếp theo trạng thái"
+                  :aria-sort="sortBy === 'isActive' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'"
+                >
                   <span>Trạng thái</span>
-                  <i class="material-icons text-sm">{{ getSortIcon("isActive") }}</i>
-                </div>
+                  <i class="material-icons text-sm" aria-hidden="true">{{ getSortIcon("isActive") }}</i>
+                </button>
               </th>
-              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider" scope="col">Thao tác</th>
             </tr>
           </thead>
 
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
-              <td class="px-4 py-4">
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700" role="rowgroup">
+            <tr v-for="product in products" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors" role="row">
+              <td class="px-4 py-4" role="cell">
                 <input
                   type="checkbox"
                   :checked="selectedProducts.includes(product.id)"
                   @change="toggleSelect(product.id)"
                   class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  :aria-label="`Chọn sản phẩm ${product.name}`"
+                  :aria-checked="selectedProducts.includes(product.id)"
+                  role="checkbox"
                 />
               </td>
 
@@ -360,28 +427,33 @@
                 </span>
               </td>
 
-              <td class="px-4 py-4 text-center">
-                <div class="flex items-center justify-center gap-2">
+              <td class="px-4 py-4 text-center" role="cell">
+                <div class="flex items-center justify-center gap-2" role="group" aria-label="Thao tác với sản phẩm">
                   <button
                     @click="duplicateProduct(product.id)"
-                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    :aria-label="`Nhân bản sản phẩm ${product.name}`"
                     title="Nhân bản"
                   >
-                    <i class="material-icons text-base">content_copy</i>
+                    <i class="material-icons text-base" aria-hidden="true">content_copy</i>
                   </button>
                   <button
+                    v-permission="PERMISSIONS_EXPOSED.PRODUCT_UPDATE"
                     @click="openEditModal(product)"
-                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    :aria-label="`Chỉnh sửa sản phẩm ${product.name}`"
                     title="Chỉnh sửa"
                   >
-                    <i class="material-icons text-base">edit</i>
+                    <i class="material-icons text-base" aria-hidden="true">edit</i>
                   </button>
                   <button
+                    v-permission="PERMISSIONS_EXPOSED.PRODUCT_DELETE"
                     @click="confirmDelete(product)"
-                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                    :aria-label="`Xóa sản phẩm ${product.name}`"
                     title="Xóa"
                   >
-                    <i class="material-icons text-base">delete</i>
+                    <i class="material-icons text-base" aria-hidden="true">delete</i>
                   </button>
                 </div>
               </td>
@@ -402,23 +474,27 @@
         </div>
         <div class="flex items-center gap-2">
           <button
-            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500"
             :disabled="currentPage === 0"
             @click="changePage(currentPage - 1)"
+            aria-label="Trang trước"
+            :aria-disabled="currentPage === 0"
           >
-            <i class="material-icons text-base">chevron_left</i>
+            <i class="material-icons text-base" aria-hidden="true">chevron_left</i>
             Trước
           </button>
-          <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">
+          <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300" aria-live="polite" aria-atomic="true">
             Trang {{ currentPage + 1 }} / {{ totalPages }}
           </span>
           <button
-            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500"
             :disabled="currentPage >= totalPages - 1"
             @click="changePage(currentPage + 1)"
+            aria-label="Trang sau"
+            :aria-disabled="currentPage >= totalPages - 1"
           >
             Sau
-            <i class="material-icons text-base">chevron_right</i>
+            <i class="material-icons text-base" aria-hidden="true">chevron_right</i>
           </button>
         </div>
       </div>
@@ -879,10 +955,41 @@
               <div class="relative">
                 <input
                   type="file"
-                  accept=".xlsx,.xls"
+                  accept=".xlsx,.xls,.csv"
                   @change="handleFileUpload"
                   class="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 dark:file:bg-purple-900/30 file:text-purple-700 dark:file:text-purple-300 hover:file:bg-purple-100 dark:hover:file:bg-purple-900/50 file:cursor-pointer border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Hỗ trợ định dạng: Excel (.xlsx, .xls) và CSV (.csv)
+                </p>
+              </div>
+            </div>
+
+            <!-- Validation Summary -->
+            <div v-if="importValidation && importValidation.summary" class="space-y-2">
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-4">
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ importValidation.summary.total }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Tổng số</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ importValidation.summary.valid }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Hợp lệ</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600 dark:text-red-400">{{ importValidation.summary.invalid }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Lỗi</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ importValidation.summary.validPercentage }}%</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Tỷ lệ</div>
+                  </div>
+                </div>
+                <div v-if="importValidation.summary.invalid > 0" class="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                  <i class="material-icons text-base">warning</i>
+                  <span>Có {{ importValidation.summary.invalid }} dòng bị lỗi</span>
+                </div>
               </div>
             </div>
 
@@ -906,6 +1013,11 @@
                   >
                     <thead class="bg-gray-50 dark:bg-gray-900 sticky top-0">
                       <tr>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          Dòng
+                        </th>
                         <th
                           class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
                         >
@@ -941,6 +1053,11 @@
                         >
                           Tồn kho
                         </th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                        >
+                          Lỗi
+                        </th>
                       </tr>
                     </thead>
                     <tbody
@@ -949,8 +1066,16 @@
                       <tr
                         v-for="(item, index) in importPreview"
                         :key="index"
-                        class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                        :class="[
+                          'hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors',
+                          item.errors && item.errors.length > 0 ? 'bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500' : ''
+                        ]"
                       >
+                        <td
+                          class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-700 dark:text-gray-300"
+                        >
+                          {{ item.rowNumber || index + 2 }}
+                        </td>
                         <td
                           class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
                         >
@@ -986,6 +1111,24 @@
                         >
                           {{ item.stockQuantity }}
                         </td>
+                        <td
+                          class="px-4 py-3 text-sm"
+                        >
+                          <div v-if="item.errors && item.errors.length > 0" class="space-y-1">
+                            <div
+                              v-for="(error, errorIndex) in item.errors"
+                              :key="errorIndex"
+                              class="text-xs text-red-600 dark:text-red-400 flex items-start gap-1"
+                            >
+                              <i class="material-icons text-xs mt-0.5">error</i>
+                              <span>{{ error }}</span>
+                            </div>
+                          </div>
+                          <span v-else class="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                            <i class="material-icons text-xs">check_circle</i>
+                            Hợp lệ
+                          </span>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -1006,7 +1149,7 @@
             <button
               @click="handleImport"
               class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="importing || importPreview.length === 0"
+              :disabled="importing || importPreview.length === 0 || (importValidation && importValidation.summary.valid === 0)"
             >
               {{
                 importing
@@ -1138,6 +1281,19 @@
       @confirm="handleDelete"
     />
 
+    <!-- Bulk Delete Confirmation Dialog -->
+    <ConfirmDialog
+      v-model="showBulkDeleteConfirm"
+      type="danger"
+      title="Xác nhận xóa hàng loạt"
+      :message="`Bạn có chắc chắn muốn xóa ${selectedProducts.length} sản phẩm đã chọn?`"
+      description="Hành động này không thể hoàn tác! Tất cả sản phẩm đã chọn sẽ bị xóa vĩnh viễn."
+      confirm-text="Xóa tất cả"
+      cancel-text="Hủy"
+      :loading="false"
+      @confirm="bulkDeleteConfirmed"
+    />
+
     <!-- 🆕 Action Loading Overlay - Không block toàn bộ UI -->
     <Teleport to="body">
       <div 
@@ -1158,7 +1314,7 @@ import { ref, computed, onMounted } from "vue";
 import { nextTick } from "vue";
 import axios from "axios";
 import { useAdminStore } from "@/stores/admin";
-import toastService from "@/utils/toastService";
+import notificationService from '@/utils/notificationService';
 import logger from "@/utils/logger";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 // import UploadGallery from "@/assets/components/admin/UploadGallery.vue";
@@ -1168,9 +1324,29 @@ import * as XLSX from "xlsx";
 import { MAX_IMAGES_PER_PRODUCT } from "@/utils/productConstants";
 import { generateSlug as generateSlugUtil } from "@/utils/slugGenerator";
 import LoadingSkeleton from "@/components/common/LoadingSkeleton.vue";
+import EmptyState from "@/components/admin/EmptyState.vue";
+import { useErrorHandler } from "@/composables/useErrorHandler";
+import { useActivityLogger } from "@/composables/useActivityLogger";
+import { usePermissions, PERMISSIONS } from "@/composables/usePermissions";
 import { formatPrice, formatCurrency } from "@/utils/formatters";
 
 const adminStore = useAdminStore();
+
+// Error handling
+const { handleError, clearError } = useErrorHandler();
+
+// Activity logging
+const {
+  logProductCreate,
+  logProductUpdate,
+  logProductDelete,
+  logBulkProductOperation,
+  logExport,
+  logImport
+} = useActivityLogger();
+
+// Permissions - expose PERMISSIONS for template
+const PERMISSIONS_EXPOSED = PERMISSIONS;
 
 // State
 const products = ref([]);
@@ -1285,7 +1461,7 @@ const handleCreateCategory = async () => {
     submittingCategory.value = true;
     await adminStore.createCategory(newCategory.value);
 
-    toastService.success('Thành công', `Đã thêm danh mục "${newCategory.value.name}" thành công!`);
+    notificationService.success('Thành công', `Đã thêm danh mục "${newCategory.value.name}" thành công!`);
 
     await fetchCategories();
     // Gán tự động danh mục vừa thêm
@@ -1299,7 +1475,7 @@ const handleCreateCategory = async () => {
     closeCategoryModal();
   } catch (error) {
     logger.error("Lỗi khi thêm danh mục:", error);
-    toastService.apiError(error, 'Không thể thêm danh mục');
+    notificationService.apiError(error, 'Không thể thêm danh mục');
   } finally {
     submittingCategory.value = false;
   }
@@ -1365,6 +1541,7 @@ const filters = ref({
 
 // Import state
 const importPreview = ref([]);
+const importValidation = ref(null);
 
 // Bulk update state
 const bulkUpdateAction = ref("");
@@ -1497,8 +1674,7 @@ const fetchProducts = async () => {
     products.value = result.content || [];
     totalItems.value = result.totalElements || 0;
   } catch (error) {
-    logger.error("Lỗi khi tải danh sách sản phẩm:", error);
-    toastService.apiError(error, 'Không thể tải danh sách sản phẩm');
+    handleError(error, { showToast: true, log: true, customMessage: 'Không thể tải danh sách sản phẩm' });
   } finally {
     loading.value = false;
   }
@@ -1620,21 +1796,24 @@ const clearSelection = () => {
   selectedProducts.value = [];
 };
 
+const showBulkDeleteConfirm = ref(false);
+
 const bulkDelete = async () => {
-  if (
-    !confirm(
-      `Bạn có chắc chắn muốn xóa ${selectedProducts.value.length} sản phẩm đã chọn?`
-    )
-  ) {
+  if (selectedProducts.value.length === 0) {
+    notificationService.warning('Cảnh báo', 'Vui lòng chọn ít nhất một sản phẩm để xóa');
     return;
   }
+  showBulkDeleteConfirm.value = true;
+};
+
+const bulkDeleteConfirmed = async () => {
 
   let loadingToastId = null;
   try {
     const totalCount = selectedProducts.value.length;
     
     // Hiển thị toast "Đang xử lý..."
-    loadingToastId = toastService.info('Đang xử lý...', `Đang xóa ${totalCount} sản phẩm...`, { duration: 0 });
+    loadingToastId = notificationService.info('Đang xử lý...', `Đang xóa ${totalCount} sản phẩm...`, { duration: 0 });
 
     for (const productId of selectedProducts.value) {
       await adminStore.deleteProduct(productId);
@@ -1642,9 +1821,16 @@ const bulkDelete = async () => {
 
     // Đóng toast loading và hiển thị toast success
     if (loadingToastId) {
-      toastService.removeToast(loadingToastId);
+      notificationService.removeNotification(loadingToastId);
     }
-    toastService.success('Thành công', `Đã xóa ${totalCount} sản phẩm thành công!`);
+    notificationService.success('Thành công', `Đã xóa ${totalCount} sản phẩm thành công!`);
+    
+    // Log activity
+    try {
+      await logBulkProductOperation('DELETE', totalCount, selectedProducts.value);
+    } catch (err) {
+      logger.warn('Failed to log bulk delete activity:', err);
+    }
     
     selectedProducts.value = [];
     await fetchProducts();
@@ -1652,10 +1838,9 @@ const bulkDelete = async () => {
   } catch (error) {
     // Đóng toast loading nếu có lỗi
     if (loadingToastId) {
-      toastService.removeToast(loadingToastId);
+      notificationService.removeNotification(loadingToastId);
     }
-    logger.error("Lỗi khi xóa hàng loạt:", error);
-    toastService.apiError(error, 'Có lỗi xảy ra khi xóa sản phẩm');
+    handleError(error, { showToast: true, log: true });
   }
 };
 
@@ -1758,7 +1943,8 @@ const openEditModal = async (product) => {
     // 🟢 Chỉ mở modal sau khi gán xong object mới
     showModal.value = true;
   } catch (error) {
-    logger.error("❌ Lỗi khi tải chi tiết sản phẩm:", error);
+    handleError(error, { showToast: true, log: true, customMessage: 'Không thể tải chi tiết sản phẩm' });
+    // Fallback: sử dụng dữ liệu cơ bản từ product
     editingProduct.value = {
       id: product.id,
       name: product.name || "",
@@ -1793,7 +1979,7 @@ const fetchProductImages = async (productId) => {
     productImages.value = [...initialProductImages.value];
     formData.value.images = [...initialProductImages.value];
   } catch (error) {
-    logger.error("Lỗi tải ảnh sản phẩm:", error);
+    handleError(error, { showToast: false, log: true }); // Silent error for images
   }
 };
 
@@ -1887,17 +2073,17 @@ const handleSubmit = async (submittedData = null) => {
 
     // ==================== [1] VALIDATE CƠ BẢN ====================
     if (!formData.value.name?.trim()) {
-      toastService.warning('Cảnh báo', 'Vui lòng nhập tên sản phẩm');
+      notificationService.warning('Cảnh báo', 'Vui lòng nhập tên sản phẩm');
       return;
     }
 
     if (!formData.value.slug?.trim()) {
-      toastService.warning('Cảnh báo', 'Slug không được để trống (hãy nhập tên để tự sinh slug)');
+      notificationService.warning('Cảnh báo', 'Slug không được để trống (hãy nhập tên để tự sinh slug)');
       return;
     }
 
     if (!formData.value.brandId) {
-      toastService.warning('Cảnh báo', 'Vui lòng chọn thương hiệu');
+      notificationService.warning('Cảnh báo', 'Vui lòng chọn thương hiệu');
       return;
     }
 
@@ -1905,17 +2091,17 @@ const handleSubmit = async (submittedData = null) => {
       !formData.value.categoryIds ||
       formData.value.categoryIds.length === 0
     ) {
-      toastService.warning('Cảnh báo', 'Vui lòng chọn ít nhất 1 danh mục');
+      notificationService.warning('Cảnh báo', 'Vui lòng chọn ít nhất 1 danh mục');
       return;
     }
 
     if (!formData.value.variants || formData.value.variants.length === 0) {
-      toastService.warning('Cảnh báo', 'Vui lòng thêm ít nhất 1 biến thể sản phẩm');
+      notificationService.warning('Cảnh báo', 'Vui lòng thêm ít nhất 1 biến thể sản phẩm');
       return;
     }
 
     if (productImages.value.length > MAX_IMAGES_PER_PRODUCT) {
-      toastService.warning('Cảnh báo', `Tối đa ${MAX_IMAGES_PER_PRODUCT} ảnh cho mỗi sản phẩm`);
+      notificationService.warning('Cảnh báo', `Tối đa ${MAX_IMAGES_PER_PRODUCT} ảnh cho mỗi sản phẩm`);
       return;
     }
 
@@ -2020,6 +2206,8 @@ const handleSubmit = async (submittedData = null) => {
 
     // ==================== [5] UPLOAD ẢNH MỚI ====================
     const uploadedUrls = [];
+    const uploadedImagesMap = new Map(); // Map để lưu mapping giữa image object và URL đã upload
+    
     // 🆕 Tính thứ tự cao nhất trong DB 1 lần duy nhất trước vòng for
     const maxDisplayOrder = Math.max(
       0,
@@ -2053,14 +2241,17 @@ const handleSubmit = async (submittedData = null) => {
             formUpload,
             { headers: { "Content-Type": "multipart/form-data" } }
           );
-          uploadedUrls.push(res.data?.imageUrl);
+          const uploadedUrl = res.data?.imageUrl;
+          uploadedUrls.push(uploadedUrl);
+          // Lưu mapping để dùng sau
+          uploadedImagesMap.set(img, uploadedUrl);
         } catch (err) {
           logger.error("❌ Upload ảnh local lỗi:", err);
-          toastService.apiError(err, 'Upload ảnh local thất bại');
+          notificationService.apiError(err, 'Upload ảnh local thất bại');
         }
       } else if (img.type === "url" && img.previewUrl) {
         try {
-          await axios.post(
+          const res = await axios.post(
             `/api/admin/products/${productId}/images`,
             {
               imageUrl: img.previewUrl,
@@ -2069,10 +2260,13 @@ const handleSubmit = async (submittedData = null) => {
             },
             { headers: { "Content-Type": "application/json" } }
           );
-          uploadedUrls.push(img.previewUrl);
+          const uploadedUrl = res.data?.imageUrl || img.previewUrl;
+          uploadedUrls.push(uploadedUrl);
+          // Lưu mapping để dùng sau
+          uploadedImagesMap.set(img, uploadedUrl);
         } catch (err) {
           logger.error("❌ Upload ảnh URL lỗi:", err);
-          toastService.apiError(err, 'Upload ảnh URL thất bại');
+          notificationService.apiError(err, 'Upload ảnh URL thất bại');
         }
       }
     }
@@ -2145,7 +2339,7 @@ const handleSubmit = async (submittedData = null) => {
         );
         updatedIds.add(currentPrimary.id);
 
-        toastService.success('Thành công', 'Đã cập nhật ảnh bìa thành công!');
+        notificationService.success('Thành công', 'Đã cập nhật ảnh bìa thành công!');
       }
 
       // 🔹 [6.3] Cập nhật displayOrder & isPrimary nếu thay đổi
@@ -2177,39 +2371,82 @@ const handleSubmit = async (submittedData = null) => {
       // 🔹 [6.4] Cập nhật mainImageUrl cho sản phẩm
       const finalPrimary = productImages.value.find((i) => i.isPrimary);
       if (finalPrimary) {
-        await axios.put(
-          `/api/admin/products/${productId}`,
-          {
-            name: formData.value.name,
-            slug: formData.value.slug,
-            description: formData.value.description,
-            brandId: formData.value.brandId,
-            categoryIds: formData.value.categoryIds,
-            materialId: formData.value.materialId,
-            shoeSoleId: formData.value.shoeSoleId,
-            isActive: formData.value.isActive,
-            mainImageUrl: finalPrimary.previewUrl, // 🧩 thêm trường mới
-            variants: formData.value.variants.map((v) => ({
-              sku: v.sku,
-              color: v.color,
-              size: v.size,
-              priceBase: v.priceBase,
-              priceSale: v.priceSale,
-              stockQuantity: v.stockQuantity,
-            })),
-          },
-          { headers: { "Content-Type": "application/json" } }
-        );
+        // Chỉ dùng URL hợp lệ (không phải blob URL từ file local chưa upload)
+        let mainImageUrl = null;
+        
+        if (finalPrimary.type === "db" && finalPrimary.previewUrl) {
+          // Ảnh từ DB - dùng previewUrl (đã là Cloudinary URL)
+          mainImageUrl = finalPrimary.previewUrl;
+        } else if (finalPrimary.type === "local" || finalPrimary.type === "url") {
+          // Ảnh mới upload - lấy URL từ map hoặc uploadedUrls
+          if (uploadedImagesMap.has(finalPrimary)) {
+            // URL từ response của upload API
+            mainImageUrl = uploadedImagesMap.get(finalPrimary);
+          } else if (finalPrimary.previewUrl && !finalPrimary.previewUrl.startsWith("blob:")) {
+            // Nếu previewUrl không phải blob URL (ví dụ: URL từ input)
+            mainImageUrl = finalPrimary.previewUrl;
+          } else if (uploadedUrls.length > 0) {
+            // Fallback: dùng URL đầu tiên từ uploadedUrls
+            mainImageUrl = uploadedUrls[0];
+          }
+        }
+        
+        // Chỉ cập nhật nếu có URL hợp lệ
+        if (mainImageUrl && mainImageUrl.startsWith("http")) {
+          try {
+            await axios.put(
+              `/api/admin/products/${productId}`,
+              {
+                name: formData.value.name,
+                slug: formData.value.slug,
+                description: formData.value.description,
+                brandId: formData.value.brandId,
+                categoryIds: formData.value.categoryIds,
+                materialId: formData.value.materialId,
+                shoeSoleId: formData.value.shoeSoleId,
+                isActive: formData.value.isActive,
+                mainImageUrl: mainImageUrl, // 🧩 chỉ gửi URL hợp lệ
+                variants: formData.value.variants.map((v) => ({
+                  id: v.id || null, // 🟢 GIỮ ID khi update
+                  sku: v.sku,
+                  color: v.color,
+                  size: v.size,
+                  priceBase: v.priceBase,
+                  priceSale: v.priceSale,
+                  stockQuantity: v.stockQuantity,
+                })),
+              },
+              { headers: { "Content-Type": "application/json" } }
+            );
 
-        formData.value.mainImageUrl = finalPrimary.previewUrl;
+            formData.value.mainImageUrl = mainImageUrl;
+            logger.log(`✅ Đã cập nhật mainImageUrl: ${mainImageUrl}`);
+          } catch (err) {
+            logger.error("❌ Lỗi khi cập nhật mainImageUrl:", err);
+            // Không throw error để không block việc lưu sản phẩm
+          }
+        } else {
+          logger.warn("⚠️ Không có URL hợp lệ để cập nhật mainImageUrl");
+        }
       }
     } catch (err) {
       logger.error("❌ Lỗi khi xử lý ảnh bìa / thứ tự hiển thị:", err);
-      toastService.apiError(err, 'Cập nhật ảnh bìa hoặc thứ tự hiển thị thất bại');
+      notificationService.apiError(err, 'Cập nhật ảnh bìa hoặc thứ tự hiển thị thất bại');
     }
 
-    // ==================== [7] THÔNG BÁO & RESET FORM ====================
-    toastService.success('Thành công', isEditMode.value
+    // ==================== [7] LOG ACTIVITY ====================
+    try {
+      if (isEditMode.value) {
+        await logProductUpdate(savedProduct.id, editingProduct.value, savedProduct);
+      } else {
+        await logProductCreate(savedProduct.id, savedProduct);
+      }
+    } catch (err) {
+      logger.warn('Failed to log activity:', err);
+    }
+
+    // ==================== [8] THÔNG BÁO & RESET FORM ====================
+    notificationService.success('Thành công', isEditMode.value
       ? "Cập nhật sản phẩm thành công!"
       : "Tạo sản phẩm mới thành công!");
 
@@ -2243,8 +2480,7 @@ const handleSubmit = async (submittedData = null) => {
 
     closeModal();
   } catch (error) {
-    logger.error("❌ Lỗi khi lưu sản phẩm:", error);
-    toastService.apiError(error, 'Đã xảy ra lỗi khi lưu sản phẩm');
+    handleError(error, { showToast: true, log: true, customMessage: 'Không thể lưu sản phẩm' });
   } finally {
     isSubmitting.value = false;
   }
@@ -2294,15 +2530,22 @@ const handleDelete = async () => {
     const productName = productToDelete.value.name;
     
     // Hiển thị toast "Đang xử lý..."
-    loadingToastId = toastService.info('Đang xử lý...', `Đang xóa sản phẩm "${productName}"`, { duration: 0 });
+    loadingToastId = notificationService.info('Đang xử lý...', `Đang xóa sản phẩm "${productName}"`, { duration: 0 });
     
     await adminStore.deleteProduct(productToDelete.value.id);
     
     // Đóng toast loading và hiển thị toast success
     if (loadingToastId) {
-      toastService.removeToast(loadingToastId);
+      notificationService.removeNotification(loadingToastId);
     }
-    toastService.success('Thành công', `Đã xóa sản phẩm "${productName}" thành công!`);
+    notificationService.success('Thành công', `Đã xóa sản phẩm "${productName}" thành công!`);
+    
+    // Log activity
+    try {
+      await logProductDelete(productToDelete.value.id, productToDelete.value);
+    } catch (err) {
+      logger.warn('Failed to log delete activity:', err);
+    }
     
     await fetchProducts();
     await fetchStatistics();
@@ -2311,10 +2554,9 @@ const handleDelete = async () => {
   } catch (error) {
     // Đóng toast loading nếu có lỗi
     if (loadingToastId) {
-      toastService.removeToast(loadingToastId);
+      notificationService.removeNotification(loadingToastId);
     }
-    logger.error("Lỗi khi xóa sản phẩm:", error);
-    toastService.apiError(error, 'Không thể xóa sản phẩm này');
+    handleError(error, { showToast: true, log: true, customMessage: 'Không thể xóa sản phẩm này' });
   } finally {
     deleting.value = false;
   }
@@ -2359,7 +2601,7 @@ const generateBrandSlug = () => {
 // Lưu thương hiệu nhanh
 const saveQuickBrand = async () => {
   if (!quickBrandData.value.name.trim()) {
-    toastService.warning('Cảnh báo', 'Vui lòng nhập tên thương hiệu!');
+    notificationService.warning('Cảnh báo', 'Vui lòng nhập tên thương hiệu!');
     return;
   }
 
@@ -2369,7 +2611,7 @@ const saveQuickBrand = async () => {
     // 🟢 Gọi API tạo thương hiệu (qua adminStore)
     const res = await adminStore.createBrand(quickBrandData.value);
 
-    toastService.success('Thành công', 'Đã thêm thương hiệu mới thành công!');
+    notificationService.success('Thành công', 'Đã thêm thương hiệu mới thành công!');
     showQuickAddBrand.value = false;
 
     // 🔄 Reload danh sách brands
@@ -2394,7 +2636,7 @@ const saveQuickBrand = async () => {
     };
   } catch (error) {
     logger.error("Lỗi khi thêm thương hiệu nhanh:", error);
-    toastService.apiError(error, 'Không thể thêm thương hiệu');
+    notificationService.apiError(error, 'Không thể thêm thương hiệu');
   } finally {
     savingQuickBrand.value = false;
   }
@@ -2427,13 +2669,13 @@ const generateMaterialSlug = () => {
 
 const saveQuickMaterial = async () => {
   if (!quickMaterialData.value.name.trim()) {
-    toastService.warning('Cảnh báo', 'Vui lòng nhập tên chất liệu!');
+    notificationService.warning('Cảnh báo', 'Vui lòng nhập tên chất liệu!');
     return;
   }
   try {
     savingQuickMaterial.value = true;
     await adminStore.createMaterial(quickMaterialData.value);
-    toastService.success('Thành công', 'Thêm chất liệu mới thành công!');
+    notificationService.success('Thành công', 'Thêm chất liệu mới thành công!');
 
     // 🔄 Reload lại danh sách nếu có hàm fetch
     await fetchMaterials?.();
@@ -2451,7 +2693,7 @@ const saveQuickMaterial = async () => {
     closeQuickAddMaterial();
   } catch (err) {
     logger.error('Lỗi khi thêm chất liệu:', err);
-    toastService.apiError(err, 'Không thể thêm chất liệu');
+    notificationService.apiError(err, 'Không thể thêm chất liệu');
   } finally {
     savingQuickMaterial.value = false;
   }
@@ -2479,13 +2721,13 @@ const generateSoleSlug = () => {
 
 const saveQuickSole = async () => {
   if (!quickSoleData.value.name.trim()) {
-    toastService.warning('Cảnh báo', 'Vui lòng nhập tên loại đế giày!');
+    notificationService.warning('Cảnh báo', 'Vui lòng nhập tên loại đế giày!');
     return;
   }
   try {
     savingQuickSole.value = true;
     await adminStore.createSole(quickSoleData.value);
-    toastService.success('Thành công', 'Thêm loại đế giày mới thành công!');
+    notificationService.success('Thành công', 'Thêm loại đế giày mới thành công!');
 
     // 🔄 Reload lại danh sách nếu có hàm fetch
     await fetchSoles?.();
@@ -2503,7 +2745,7 @@ const saveQuickSole = async () => {
     closeQuickAddSole();
   } catch (err) {
     logger.error('Lỗi khi thêm loại đế giày:', err);
-    toastService.apiError(err, 'Không thể thêm loại đế giày');
+    notificationService.apiError(err, 'Không thể thêm loại đế giày');
   } finally {
     savingQuickSole.value = false;
   }
@@ -2518,6 +2760,7 @@ const openImportModal = () => {
 const closeImportModal = () => {
   showImportModal.value = false;
   importPreview.value = [];
+  importValidation.value = null;
 };
 
 const downloadTemplate = () => {
@@ -2545,55 +2788,113 @@ const downloadTemplate = () => {
   XLSX.writeFile(workbook, "template-import-products.xlsx");
 };
 
-const handleFileUpload = (event) => {
+const handleFileUpload = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+  try {
+    let jsonData = [];
 
-      importPreview.value = jsonData.map((row, index) => ({
-        rowNumber: index + 2,
-        productName: row["Tên sản phẩm"] || "",
-        productSlug: row["Slug"] || "",
-        brandName: row["Thương hiệu"] || "",
-        description: row["Mô tả"] || "",
-        categories: row["Danh mục"] || "",
-        isActive: row["Trạng thái"] === "TRUE",
-        sku: row["SKU"] || "",
-        size: row["Size"] || "",
-        color: row["Màu sắc"] || "",
-        priceBase: Number(row["Giá gốc"]) || 0,
-        priceSale: Number(row["Giá sale"]) || null,
-        stockQuantity: Number(row["Tồn kho"]) || 0,
-        imageUrl: row["URL ảnh"] || "",
-      }));
-
-      toastService.success('Thành công', `Đã đọc ${importPreview.value.length} sản phẩm từ file Excel!`);
-    } catch (error) {
-      logger.error("Lỗi khi đọc file Excel:", error);
-      toastService.apiError(error, 'Không thể đọc file Excel');
+    // Check file type
+    const isCSV = file.name.toLowerCase().endsWith('.csv');
+    
+    if (isCSV) {
+      // Parse CSV
+      jsonData = await parseCSV(file);
+    } else {
+      // Parse Excel
+      const reader = new FileReader();
+      await new Promise((resolve, reject) => {
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsArrayBuffer(file);
+      });
     }
-  };
-  reader.readAsArrayBuffer(file);
+
+    // Map data to internal format
+    importPreview.value = jsonData.map((row, index) => {
+      const mapped = mapImportRow(row);
+      mapped.rowNumber = index + 2; // +2 because Excel rows start at 1 and header is row 1
+      return mapped;
+    });
+
+    // Validate data
+    importValidation.value = validateImportData(importPreview.value, {
+      brands: brands.value,
+      categories: categories.value
+    });
+
+    // Add errors to preview items
+    importValidation.value.invalidRows.forEach(invalidRow => {
+      const previewItem = importPreview.value.find(item => item.rowNumber === invalidRow.rowNumber);
+      if (previewItem) {
+        previewItem.errors = invalidRow.errors;
+      }
+    });
+
+    // Mark valid rows
+    importValidation.value.validRows.forEach(validRow => {
+      const previewItem = importPreview.value.find(item => 
+        item.rowNumber === validRow.rowNumber || 
+        (item.productName === validRow.productName && item.sku === validRow.sku)
+      );
+      if (previewItem && !previewItem.errors) {
+        previewItem.errors = [];
+      }
+    });
+
+    if (importValidation.value.summary.invalid > 0) {
+      notificationService.warning('Cảnh báo', `Đã đọc ${importPreview.value.length} sản phẩm, nhưng có ${importValidation.value.summary.invalid} dòng bị lỗi. Vui lòng kiểm tra và sửa lỗi trước khi import.`);
+    } else {
+      notificationService.success('Thành công', `Đã đọc ${importPreview.value.length} sản phẩm từ file ${isCSV ? 'CSV' : 'Excel'}! Tất cả dữ liệu đều hợp lệ.`);
+    }
+  } catch (error) {
+    logger.error("Lỗi khi đọc file:", error);
+    notificationService.apiError(error, `Không thể đọc file ${file.name.endsWith('.csv') ? 'CSV' : 'Excel'}`);
+    importPreview.value = [];
+    importValidation.value = null;
+  }
+  
+  // Reset file input
+  event.target.value = '';
 };
 
 const handleImport = async () => {
+  // Only import valid rows
+  const validRows = importValidation.value ? importValidation.value.validRows : importPreview.value;
+  
+  if (validRows.length === 0) {
+    notificationService.warning('Cảnh báo', 'Không có dữ liệu hợp lệ để import. Vui lòng sửa các lỗi trước.');
+    return;
+  }
+
   try {
     importing.value = true;
-    const result = await adminStore.importProducts(importPreview.value);
+    
+    // Log import activity
+    try {
+      await logImport('Product', validRows.length, 0, importValidation.value ? importValidation.value.summary.invalid : 0);
+    } catch (err) {
+      logger.warn('Failed to log import activity:', err);
+    }
+    
+    const result = await adminStore.importProducts(validRows);
 
-    toastService.success('Thành công', `Import thành công ${result.successCount}/${result.totalRows} sản phẩm!`);
+    notificationService.success('Thành công', `Import thành công ${result.successCount}/${result.totalRows} sản phẩm!`);
 
     if (result.errorCount > 0) {
       logger.error("Import errors:", result.errorItems);
-      logger.warn('Cảnh báo', `Có ${result.errorCount} sản phẩm bị lỗi. Xem console để biết chi tiết.`);
-      toastService.warning('Cảnh báo', `Có ${result.errorCount} sản phẩm bị lỗi. Xem console để biết chi tiết.`);
+      notificationService.warning('Cảnh báo', `Có ${result.errorCount} sản phẩm bị lỗi khi import. Xem console để biết chi tiết.`);
     }
 
     await fetchProducts();
@@ -2601,7 +2902,7 @@ const handleImport = async () => {
     closeImportModal();
   } catch (error) {
     logger.error("Lỗi khi import:", error);
-    toastService.apiError(error, 'Không thể import sản phẩm');
+    handleError(error, { showToast: true, log: true, customMessage: 'Không thể import sản phẩm' });
   } finally {
     importing.value = false;
   }
@@ -2633,7 +2934,7 @@ const handleBulkUpdate = async () => {
     };
 
     const result = await adminStore.bulkUpdateProducts(payload);
-    toastService.success('Thành công', `Cập nhật thành công ${result.successCount}/${result.totalRequested} sản phẩm!`);
+    notificationService.success('Thành công', `Cập nhật thành công ${result.successCount}/${result.totalRequested} sản phẩm!`);
 
     await fetchProducts();
     await fetchStatistics();
@@ -2641,7 +2942,7 @@ const handleBulkUpdate = async () => {
     clearSelection();
   } catch (error) {
     logger.error("Lỗi khi bulk update:", error);
-    toastService.apiError(error, 'Không thể cập nhật hàng loạt');
+    notificationService.apiError(error, 'Không thể cập nhật hàng loạt');
   } finally {
     bulkUpdating.value = false;
   }
@@ -2652,25 +2953,25 @@ const duplicateProduct = async (productId) => {
   let loadingToastId = null;
   try {
     // Hiển thị toast "Đang xử lý..." thay vì overlay
-    loadingToastId = toastService.info('Đang xử lý...', 'Đang nhân bản sản phẩm', { duration: 0 }); // duration: 0 = không tự đóng
+    loadingToastId = notificationService.info('Đang xử lý...', 'Đang nhân bản sản phẩm', { duration: 0 }); // duration: 0 = không tự đóng
     
     const duplicated = await adminStore.duplicateProduct(productId);
     
     // Đóng toast loading và hiển thị toast success
     if (loadingToastId) {
-      toastService.removeToast(loadingToastId);
+      notificationService.removeNotification(loadingToastId);
     }
-    toastService.success('Thành công', `Đã nhân bản sản phẩm "${duplicated.name}" thành công!`);
+    notificationService.success('Thành công', `Đã nhân bản sản phẩm "${duplicated.name}" thành công!`);
     
     await fetchProducts();
     await fetchStatistics();
   } catch (error) {
     // Đóng toast loading nếu có lỗi
     if (loadingToastId) {
-      toastService.removeToast(loadingToastId);
+      notificationService.removeNotification(loadingToastId);
     }
     logger.error("Lỗi khi nhân bản sản phẩm:", error);
-    toastService.apiError(error, 'Không thể nhân bản sản phẩm');
+    notificationService.apiError(error, 'Không thể nhân bản sản phẩm');
   }
 };
 
@@ -2713,7 +3014,7 @@ const resetFilters = () => {
 };
 
 // ===== EXPORT EXCEL =====
-const exportToExcel = () => {
+const exportToExcel = async () => {
   try {
     const exportData = products.value.map((product, index) => ({
       STT: index + 1,
@@ -2732,10 +3033,56 @@ const exportToExcel = () => {
     const filename = `san-pham_${timestamp}.xlsx`;
 
     XLSX.writeFile(workbook, filename);
-    toastService.success('Thành công', `Đã export ${exportData.length} sản phẩm thành công!`);
+    notificationService.success('Thành công', `Đã export ${exportData.length} sản phẩm thành công!`);
+    
+    // Log activity (fire and forget)
+    logExport('Product', 'xlsx', { count: exportData.length }).catch(err => {
+      logger.warn('Failed to log export activity:', err);
+    });
   } catch (error) {
     logger.error("Lỗi khi export Excel:", error);
-    toastService.apiError(error, 'Không thể export dữ liệu');
+    notificationService.apiError(error, 'Không thể export dữ liệu');
+  }
+};
+
+// ===== BULK EXPORT =====
+const bulkExport = () => {
+  if (selectedProducts.value.length === 0) {
+    notificationService.warning('Cảnh báo', 'Vui lòng chọn ít nhất một sản phẩm để xuất');
+    return;
+  }
+
+  try {
+    // Get selected products data
+    const selectedProductsData = products.value.filter(p => 
+      selectedProducts.value.includes(p.id)
+    );
+
+    const exportData = selectedProductsData.map((product, index) => ({
+      STT: index + 1,
+      "Mã SP": product.code || product.id,
+      "Tên sản phẩm": product.name,
+      Slug: product.slug,
+      "Thương hiệu": product.brandName || "N/A",
+      "Danh mục": product.categoryNames?.join(', ') || "N/A",
+      "Số lượng biến thể": product.variantCount || 0,
+      "Tổng tồn kho": product.stockQuantity || 0,
+      "Trạng thái": product.isActive ? "Đang bán" : "Ngừng bán",
+      "Ngày tạo": product.createdAt ? new Date(product.createdAt).toLocaleDateString('vi-VN') : "N/A",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sản phẩm đã chọn");
+
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `san-pham-da-chon_${timestamp}.xlsx`;
+
+    XLSX.writeFile(workbook, filename);
+    notificationService.success('Thành công', `Đã export ${exportData.length} sản phẩm đã chọn thành công!`);
+  } catch (error) {
+    logger.error("Lỗi khi bulk export Excel:", error);
+    notificationService.apiError(error, 'Không thể export dữ liệu');
   }
 };
 

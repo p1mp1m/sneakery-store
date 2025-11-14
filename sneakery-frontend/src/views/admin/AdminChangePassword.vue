@@ -196,7 +196,7 @@
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import axios from 'axios'
 import { API_ENDPOINTS, buildApiUrl } from '@/config/api'
 import logger from '@/utils/logger'
@@ -225,14 +225,14 @@ const passwordStrength = computed(() => {
 const changePassword = async () => {
   // Validation
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    toastService.error('Lỗi','Mật khẩu xác nhận không khớp')
+    notificationService.error('Lỗi','Mật khẩu xác nhận không khớp')
     return
   }
 
   // Validate password strength
   const strength = validatePasswordStrength(passwordForm.newPassword)
   if (!strength.valid) {
-    toastService.error('Lỗi', strength.errors[0] || 'Mật khẩu không hợp lệ')
+    notificationService.error('Lỗi', strength.errors[0] || 'Mật khẩu không hợp lệ')
     return
   }
 
@@ -252,11 +252,11 @@ const changePassword = async () => {
       }
     )
 
-    toastService.success('Thành công','Đổi mật khẩu thành công!')
+    notificationService.success('Thành công','Đổi mật khẩu thành công!')
     resetForm()
   } catch (error) {
     logger.error('Error changing password:', error)
-    toastService.apiError(error, 'Không thể đổi mật khẩu')
+    notificationService.apiError(error, 'Không thể đổi mật khẩu')
   } finally {
     changingPassword.value = false
   }

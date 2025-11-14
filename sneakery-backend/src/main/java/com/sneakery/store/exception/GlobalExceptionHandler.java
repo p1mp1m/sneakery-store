@@ -72,6 +72,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
                 .message("Email hoặc mật khẩu không đúng")
+                .errorCode("BAD_CREDENTIALS")
                 .path(request.getRequestURI())
                 .build();
 
@@ -103,6 +104,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message("Dữ liệu đầu vào không hợp lệ")
+                .errorCode("VALIDATION_ERROR")
                 .path(((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getRequestURI())
                 .validationErrors(errors) // Thêm chi tiết lỗi
                 .build();
@@ -124,20 +126,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         // Kiểm tra xem có phải foreign key constraint không
         String message = ex.getMessage();
         String userMessage = "Không thể thực hiện thao tác này vì dữ liệu đang được sử dụng ở nơi khác.";
+        String errorCode = "DATA_INTEGRITY_VIOLATION";
         
         if (message != null) {
-            if (message.contains("foreign key") || message.contains("FK_") || message.contains("REFERENCES")) {
+            String lowerMessage = message.toLowerCase();
+            if (lowerMessage.contains("foreign key") || lowerMessage.contains("fk_") || lowerMessage.contains("references")) {
                 userMessage = "Không thể xóa vì dữ liệu đang được sử dụng. Vui lòng xóa hoặc cập nhật các dữ liệu liên quan trước.";
-            } else if (message.contains("unique constraint") || message.contains("UNIQUE") || message.contains("duplicate")) {
+                errorCode = "FOREIGN_KEY_CONSTRAINT";
+            } else if (lowerMessage.contains("unique constraint") || lowerMessage.contains("unique") || lowerMessage.contains("duplicate")) {
                 userMessage = "Dữ liệu đã tồn tại. Vui lòng kiểm tra lại.";
+                errorCode = "UNIQUE_CONSTRAINT_VIOLATION";
+            } else if (lowerMessage.contains("check constraint") || lowerMessage.contains("ck_")) {
+                userMessage = "Dữ liệu không đáp ứng yêu cầu. Vui lòng kiểm tra lại các giá trị nhập vào.";
+                errorCode = "CHECK_CONSTRAINT_VIOLATION";
             }
         }
+        
+        log.warn("Data integrity violation at {}: {} - Error code: {}", request.getRequestURI(), message, errorCode);
         
         ErrorResponseDto errorDto = ErrorResponseDto.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.CONFLICT.value())
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
                 .message(userMessage)
+                .errorCode(errorCode)
                 .path(request.getRequestURI())
                 .build();
 
@@ -145,7 +157,110 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * 5. Bắt tất cả các lỗi 500 (lỗi server) khác
+     * 5. Bắt lỗi 'IllegalArgumentException' (lỗi tham số không hợp lệ)
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponseDto> handleIllegalArgumentException(
+            IllegalArgumentException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Illegal argument at {}: {}", request.getRequestURI(), ex.getMessage());
+        
+        ErrorResponseDto errorDto = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(ex.getMessage() != null ? ex.getMessage() : "Tham số không hợp lệ")
+                .errorCode("ILLEGAL_ARGUMENT")
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * 6. Bắt lỗi 'AccessDeniedException' (lỗi không có quyền truy cập)
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDto> handleAccessDeniedException(
+            org.springframework.security.access.AccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Access denied at {}: {}", request.getRequestURI(), ex.getMessage());
+        
+        ErrorResponseDto errorDto = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .message("Bạn không có quyền truy cập tài nguyên này")
+                .errorCode("ACCESS_DENIED")
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * 7. Bắt lỗi 'MethodArgumentTypeMismatchException' (lỗi type mismatch)
+     */
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponseDto> handleMethodArgumentTypeMismatchException(
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request
+    ) {
+        log.warn("Method argument type mismatch at {}: {}", request.getRequestURI(), ex.getMessage());
+        
+        String message = String.format("Tham số '%s' không đúng định dạng. Giá trị '%s' không hợp lệ.", 
+                ex.getName(), ex.getValue());
+        
+        ErrorResponseDto errorDto = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(message)
+                .errorCode("TYPE_MISMATCH")
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * 8. Bắt lỗi 'HttpRequestMethodNotSupportedException' (lỗi HTTP method không được hỗ trợ)
+     * Override method từ parent class để tránh xung đột
+     */
+    @Override
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
+            @NonNull org.springframework.web.HttpRequestMethodNotSupportedException ex,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
+            @NonNull WebRequest request
+    ) {
+        log.warn("HTTP method not supported at {}: {}", 
+                ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getRequestURI(), 
+                ex.getMessage());
+        
+        String supportedMethods = ex.getSupportedMethods() != null 
+                ? String.join(", ", ex.getSupportedMethods())
+                : "N/A";
+        
+        String message = String.format("Phương thức HTTP '%s' không được hỗ trợ. Các phương thức được hỗ trợ: %s", 
+                ex.getMethod(), supportedMethods);
+        
+        ErrorResponseDto errorDto = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.METHOD_NOT_ALLOWED.value())
+                .error(HttpStatus.METHOD_NOT_ALLOWED.getReasonPhrase())
+                .message(message)
+                .errorCode("METHOD_NOT_ALLOWED")
+                .path(((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    /**
+     * 9. Bắt tất cả các lỗi 500 (lỗi server) khác
      * (Ví dụ: NullPointerException, lỗi CSDL...)
      * 
      * Security: Không expose internal error details ra ngoài.
@@ -168,6 +283,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message("Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau hoặc liên hệ quản trị viên.")
+                .errorCode("INTERNAL_SERVER_ERROR")
                 .path(request.getRequestURI())
                 .build();
 

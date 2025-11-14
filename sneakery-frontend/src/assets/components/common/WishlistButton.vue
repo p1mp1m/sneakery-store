@@ -23,7 +23,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -54,7 +54,7 @@ const isInWishlist = computed(() => {
 const handleToggle = async () => {
   // Kiểm tra đã đăng nhập chưa
   if (!authStore.isAuthenticated) {
-    toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để sử dụng tính năng này')
+    notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để sử dụng tính năng này')
     router.push('/login')
     return
   }
@@ -65,15 +65,15 @@ const handleToggle = async () => {
     const result = await wishlistStore.toggleWishlist(props.productId)
     
     if (result.action === 'added') {
-      toastService.success('Thành công', 'Đã thêm vào danh sách yêu thích')
+      notificationService.success('Thành công', 'Đã thêm vào danh sách yêu thích')
     } else {
-      toastService.success('Thành công', 'Đã xóa khỏi danh sách yêu thích')
+      notificationService.success('Thành công', 'Đã xóa khỏi danh sách yêu thích')
     }
   } catch (error) {
     console.error('Error toggling wishlist:', error)
     
     const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra'
-    toastService.error('Lỗi', errorMessage)
+    notificationService.error('Lỗi', errorMessage)
   } finally {
     loading.value = false
   }

@@ -347,7 +347,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useRecentlyViewed } from '@/composables/useRecentlyViewed';
 import userService from '@/services/userService';
 import ProductService from '@/services/productService';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import logger from '@/utils/logger';
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue';
@@ -487,7 +487,7 @@ const clearRecentlyViewed = async () => {
     );
     clearAll();
     recentlyViewedProducts.value = [];
-    toastService.success('Thành công', 'Đã xóa tất cả sản phẩm đã xem');
+    notificationService.success('Thành công', 'Đã xóa tất cả sản phẩm đã xem');
   } catch (error) {
     if (error !== 'cancel') {
       logger.error('Error clearing recently viewed:', error);
@@ -499,7 +499,7 @@ const removeFromRecentlyViewed = async (productId) => {
   try {
     removeProduct(productId);
     recentlyViewedProducts.value = recentlyViewedProducts.value.filter(p => p.id !== productId);
-    toastService.success('Thành công', 'Đã xóa sản phẩm khỏi danh sách');
+    notificationService.success('Thành công', 'Đã xóa sản phẩm khỏi danh sách');
   } catch (error) {
     logger.error('Error removing product from recently viewed:', error);
   }
@@ -550,7 +550,7 @@ const loadDashboardData = async () => {
       orderStats.value = { totalOrders: 0, pendingOrders: 0, completedOrders: 0, totalSpent: 0 };
       recentOrders.value = [];
       if (error.response?.status !== 401) {
-        toastService.warning('Cảnh báo','Không thể tải thông tin đơn hàng');
+        notificationService.warning('Cảnh báo','Không thể tải thông tin đơn hàng');
       }
     }
     
@@ -569,18 +569,18 @@ const loadDashboardData = async () => {
       }));
       
       if (recommendedProducts.value.length === 0) {
-        toastService.info('Thông tin','Chưa có sản phẩm đề xuất');
+        notificationService.info('Thông tin','Chưa có sản phẩm đề xuất');
       } else {
         logger.log('✅ Recommended products loaded from API:', recommendedProducts.value.length, 'products');
       }
     } catch (error) {
       logger.error('Error loading recommended products:', error);
       recommendedProducts.value = [];
-      toastService.warning('Cảnh báo','Không thể tải sản phẩm đề xuất');
+      notificationService.warning('Cảnh báo','Không thể tải sản phẩm đề xuất');
     }
   } catch (error) {
     logger.error('Error loading dashboard data:', error);
-    toastService.error('Lỗi','Không thể tải dữ liệu dashboard');
+    notificationService.error('Lỗi','Không thể tải dữ liệu dashboard');
   } finally {
     loading.value = false;
   }

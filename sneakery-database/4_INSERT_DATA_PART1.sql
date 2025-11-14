@@ -106,13 +106,10 @@ INSERT INTO Materials (name, slug, description, is_active, created_at) VALUES
 (N'Da tổng hợp', 'da-tong-hop', N'Chất liệu da nhân tạo', 1, GETDATE()),
 (N'Vải Canvas', 'vai-canvas', N'Chất liệu vải canvas bền chắc', 1, GETDATE()),
 (N'Mesh', 'mesh', N'Chất liệu lưới thoáng khí', 1, GETDATE()),
-(N'Knit', 'knit', N'Chất liệu dệt kim', 1, GETDATE()),
-(N'Synthetic Leather', 'synthetic-leather', N'Da nhân tạo cao cấp', 1, GETDATE()),
-(N'Suede', 'suede', N'Da lộn mềm mại', 1, GETDATE()),
-(N'Nylon', 'nylon', N'Chất liệu nylon nhẹ', 1, GETDATE());
+(N'Knit', 'knit', N'Chất liệu dệt kim', 1, GETDATE());
 GO
 
-PRINT '  - Inserted 8 materials';
+PRINT '  - Inserted 5 materials';
 GO
 
 -- =====================================================
@@ -123,16 +120,14 @@ PRINT 'Inserting Shoe_Soles...';
 INSERT INTO Shoe_Soles (name, slug, description, is_active, created_at) VALUES
 (N'Cao su', 'cao-su', N'Đế cao su chống trượt', 1, GETDATE()),
 (N'EVA', 'eva', N'Đế EVA nhẹ và đàn hồi', 1, GETDATE()),
-(N'TPU', 'tpu', N'Đế TPU bền chắc', 1, GETDATE()),
-(N'Phylon', 'phylon', N'Đế Phylon nhẹ', 1, GETDATE()),
-(N'PU', 'pu', N'Đế PU bền', 1, GETDATE());
+(N'TPU', 'tpu', N'Đế TPU bền chắc', 1, GETDATE());
 GO
 
-PRINT '  - Inserted 5 shoe soles';
+PRINT '  - Inserted 3 shoe soles';
 GO
 
 -- =====================================================
--- 5. PRODUCTS (50 products)
+-- 5. PRODUCTS (25 products)
 -- =====================================================
 PRINT 'Inserting Products...';
 
@@ -156,88 +151,65 @@ DECLARE @RubberId INT = (SELECT id FROM Shoe_Soles WHERE slug = 'cao-su');
 DECLARE @EVAId INT = (SELECT id FROM Shoe_Soles WHERE slug = 'eva');
 DECLARE @TPUId INT = (SELECT id FROM Shoe_Soles WHERE slug = 'tpu');
 
--- Nike products (10)
+-- Nike products (5)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('NIKE-001', @NikeId, @KnitId, @EVAId, N'Nike Air Force 1', 'nike-air-force-1', N'Giày sneaker cổ điển với thiết kế đơn giản và thoải mái', N'Giày sneaker cổ điển', 1, 1, 0, 1250, 45, 4.5, 12, GETDATE()),
 ('NIKE-002', @NikeId, @MeshId, @EVAId, N'Nike Air Max 90', 'nike-air-max-90', N'Giày chạy bộ với công nghệ Air Max', N'Giày chạy bộ công nghệ Air', 1, 1, 1, 980, 32, 4.3, 8, GETDATE()),
-('NIKE-003', @NikeId, @LeatherId, @RubberId, N'Nike Dunk Low', 'nike-dunk-low', N'Giày skateboard cổ điển', N'Giày skateboard', 1, 0, 0, 750, 28, 4.2, 6, GETDATE()),
-('NIKE-004', @NikeId, @KnitId, @EVAId, N'Nike React Element 55', 'nike-react-element-55', N'Giày chạy bộ với đế React', N'Giày chạy bộ React', 1, 0, 1, 650, 22, 4.4, 5, GETDATE()),
 ('NIKE-005', @NikeId, @LeatherId, @RubberId, N'Nike Blazer Mid', 'nike-blazer-mid', N'Giày cổ điển thiết kế retro', N'Giày retro', 1, 1, 0, 890, 35, 4.1, 9, GETDATE()),
-('NIKE-006', @NikeId, @MeshId, @EVAId, N'Nike Pegasus 38', 'nike-pegasus-38', N'Giày chạy bộ đa năng', N'Giày chạy bộ', 1, 0, 0, 720, 25, 4.3, 7, GETDATE()),
-('NIKE-007', @NikeId, @KnitId, @EVAId, N'Nike Air Zoom', 'nike-air-zoom', N'Giày chạy bộ với Zoom Air', N'Giày chạy bộ Zoom', 1, 0, 1, 580, 18, 4.2, 4, GETDATE()),
 ('NIKE-008', @NikeId, @LeatherId, @RubberId, N'Nike Cortez', 'nike-cortez', N'Giày cổ điển năm 1972', N'Giày cổ điển', 1, 1, 0, 1100, 42, 4.6, 11, GETDATE()),
-('NIKE-009', @NikeId, @MeshId, @EVAId, N'Nike Free RN', 'nike-free-rn', N'Giày chạy bộ tự nhiên', N'Giày chạy bộ', 1, 0, 0, 520, 15, 4.0, 3, GETDATE()),
 ('NIKE-010', @NikeId, @KnitId, @EVAId, N'Nike VaporMax', 'nike-vapormax', N'Giày với đế Air VaporMax', N'Giày công nghệ Air', 1, 1, 1, 1350, 50, 4.7, 15, GETDATE());
 
--- Adidas products (8)
+-- Adidas products (4)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('ADIDAS-001', @AdidasId, @KnitId, @EVAId, N'Adidas Ultraboost 22', 'adidas-ultraboost-22', N'Giày chạy bộ với Boost technology', N'Giày chạy bộ Boost', 1, 1, 1, 1200, 48, 4.6, 13, GETDATE()),
 ('ADIDAS-002', @AdidasId, @CanvasId, @RubberId, N'Adidas Superstar', 'adidas-superstar', N'Giày cổ điển với vỏ sò', N'Giày cổ điển', 1, 1, 0, 1050, 40, 4.5, 10, GETDATE()),
-('ADIDAS-003', @AdidasId, @LeatherId, @RubberId, N'Adidas Stan Smith', 'adidas-stan-smith', N'Giày tennis cổ điển', N'Giày tennis', 1, 0, 0, 950, 35, 4.4, 9, GETDATE()),
 ('ADIDAS-004', @AdidasId, @KnitId, @EVAId, N'Adidas NMD R1', 'adidas-nmd-r1', N'Giày lifestyle với Boost', N'Giày lifestyle', 1, 1, 0, 880, 30, 4.3, 7, GETDATE()),
-('ADIDAS-005', @AdidasId, @MeshId, @EVAId, N'Adidas Solarboost', 'adidas-solarboost', N'Giày chạy bộ Solarboost', N'Giày chạy bộ', 1, 0, 1, 720, 24, 4.2, 6, GETDATE()),
-('ADIDAS-006', @AdidasId, @CanvasId, @RubberId, N'Adidas Gazelle', 'adidas-gazelle', N'Giày retro năm 1968', N'Giày retro', 1, 0, 0, 680, 20, 4.1, 5, GETDATE()),
-('ADIDAS-007', @AdidasId, @KnitId, @EVAId, N'Adidas Yeezy 350', 'adidas-yeezy-350', N'Giày collaboration với Kanye West', N'Giày Yeezy', 1, 1, 1, 1500, 55, 4.8, 18, GETDATE()),
-('ADIDAS-008', @AdidasId, @LeatherId, @RubberId, N'Adidas Samba', 'adidas-samba', N'Giày bóng đá cổ điển', N'Giày bóng đá', 1, 0, 0, 600, 18, 4.0, 4, GETDATE());
+('ADIDAS-007', @AdidasId, @KnitId, @EVAId, N'Adidas Yeezy 350', 'adidas-yeezy-350', N'Giày collaboration với Kanye West', N'Giày Yeezy', 1, 1, 1, 1500, 55, 4.8, 18, GETDATE());
 
--- Puma products (5)
+-- Puma products (3)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('PUMA-001', @PumaId, @LeatherId, @RubberId, N'Puma Suede Classic', 'puma-suede-classic', N'Giày cổ điển với da lộn', N'Giày cổ điển', 1, 1, 0, 850, 32, 4.4, 8, GETDATE()),
 ('PUMA-002', @PumaId, @MeshId, @EVAId, N'Puma RS-X', 'puma-rs-x', N'Giày retro futuristic', N'Giày retro', 1, 0, 1, 750, 26, 4.3, 6, GETDATE()),
-('PUMA-003', @PumaId, @KnitId, @EVAId, N'Puma Speedcat', 'puma-speedcat', N'Giày đua xe', N'Giày đua xe', 1, 0, 0, 650, 20, 4.2, 5, GETDATE()),
-('PUMA-004', @PumaId, @CanvasId, @RubberId, N'Puma Basket', 'puma-basket', N'Giày bóng rổ cổ điển', N'Giày bóng rổ', 1, 1, 0, 780, 28, 4.3, 7, GETDATE()),
-('PUMA-005', @PumaId, @MeshId, @EVAId, N'Puma Future', 'puma-future', N'Giày bóng đá hiện đại', N'Giày bóng đá', 1, 0, 0, 580, 16, 4.1, 4, GETDATE());
+('PUMA-004', @PumaId, @CanvasId, @RubberId, N'Puma Basket', 'puma-basket', N'Giày bóng rổ cổ điển', N'Giày bóng rổ', 1, 1, 0, 780, 28, 4.3, 7, GETDATE());
 
--- Converse products (5)
+-- Converse products (3)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('CONV-001', @ConverseId, @CanvasId, @RubberId, N'Converse Chuck Taylor All Star', 'converse-chuck-taylor-all-star', N'Giày cổ điển nhất mọi thời đại', N'Giày cổ điển', 1, 1, 0, 1300, 52, 4.7, 14, GETDATE()),
 ('CONV-002', @ConverseId, @CanvasId, @RubberId, N'Converse One Star', 'converse-one-star', N'Giày với ngôi sao', N'Giày One Star', 1, 0, 0, 950, 38, 4.5, 9, GETDATE()),
-('CONV-003', @ConverseId, @LeatherId, @RubberId, N'Converse Jack Purcell', 'converse-jack-purcell', N'Giày tennis cổ điển', N'Giày tennis', 1, 0, 1, 820, 30, 4.4, 7, GETDATE()),
-('CONV-004', @ConverseId, @CanvasId, @RubberId, N'Converse Run Star Hike', 'converse-run-star-hike', N'Giày platform cao', N'Giày platform', 1, 1, 0, 1100, 42, 4.6, 11, GETDATE()),
-('CONV-005', @ConverseId, @CanvasId, @RubberId, N'Converse 70s', 'converse-70s', N'Giày phiên bản 1970s', N'Giày 70s', 1, 0, 0, 880, 33, 4.5, 8, GETDATE());
+('CONV-004', @ConverseId, @CanvasId, @RubberId, N'Converse Run Star Hike', 'converse-run-star-hike', N'Giày platform cao', N'Giày platform', 1, 1, 0, 1100, 42, 4.6, 11, GETDATE());
 
--- Vans products (5)
+-- Vans products (3)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('VANS-001', @VansId, @CanvasId, @RubberId, N'Vans Old Skool', 'vans-old-skool', N'Giày skateboard cổ điển', N'Giày skateboard', 1, 1, 0, 1150, 45, 4.6, 12, GETDATE()),
 ('VANS-002', @VansId, @CanvasId, @RubberId, N'Vans Authentic', 'vans-authentic', N'Giày skateboard đơn giản', N'Giày skateboard', 1, 0, 0, 980, 36, 4.4, 9, GETDATE()),
-('VANS-003', @VansId, @CanvasId, @RubberId, N'Vans Sk8-Hi', 'vans-sk8-hi', N'Giày cổ cao', N'Giày cổ cao', 1, 1, 1, 1050, 40, 4.5, 10, GETDATE()),
-('VANS-004', @VansId, @LeatherId, @RubberId, N'Vans Era', 'vans-era', N'Giày skateboard cổ điển', N'Giày skateboard', 1, 0, 0, 850, 28, 4.3, 7, GETDATE()),
-('VANS-005', @VansId, @CanvasId, @RubberId, N'Vans Slip-On', 'vans-slip-on', N'Giày không dây', N'Giày không dây', 1, 0, 0, 920, 34, 4.4, 8, GETDATE());
+('VANS-003', @VansId, @CanvasId, @RubberId, N'Vans Sk8-Hi', 'vans-sk8-hi', N'Giày cổ cao', N'Giày cổ cao', 1, 1, 1, 1050, 40, 4.5, 10, GETDATE());
 
--- New Balance products (4)
+-- New Balance products (2)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('NB-001', @NewBalanceId, @MeshId, @EVAId, N'New Balance 550', 'new-balance-550', N'Giày retro basketball', N'Giày bóng rổ', 1, 1, 1, 1100, 42, 4.6, 11, GETDATE()),
-('NB-002', @NewBalanceId, @MeshId, @EVAId, N'New Balance 574', 'new-balance-574', N'Giày chạy bộ cổ điển', N'Giày chạy bộ', 1, 0, 0, 950, 35, 4.4, 9, GETDATE()),
-('NB-003', @NewBalanceId, @KnitId, @EVAId, N'New Balance 990', 'new-balance-990', N'Giày chạy bộ cao cấp', N'Giày chạy bộ', 1, 1, 0, 1200, 46, 4.7, 13, GETDATE()),
-('NB-004', @NewBalanceId, @MeshId, @EVAId, N'New Balance 327', 'new-balance-327', N'Giày retro lifestyle', N'Giày lifestyle', 1, 0, 1, 880, 32, 4.5, 8, GETDATE());
+('NB-003', @NewBalanceId, @KnitId, @EVAId, N'New Balance 990', 'new-balance-990', N'Giày chạy bộ cao cấp', N'Giày chạy bộ', 1, 1, 0, 1200, 46, 4.7, 13, GETDATE());
 
--- Reebok products (3)
+-- Reebok products (2)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('REEBOK-001', @ReebokId, @LeatherId, @RubberId, N'Reebok Classic', 'reebok-classic', N'Giày cổ điển', N'Giày cổ điển', 1, 1, 0, 850, 30, 4.4, 8, GETDATE()),
-('REEBOK-002', @ReebokId, @MeshId, @EVAId, N'Reebok Club C', 'reebok-club-c', N'Giày tennis cổ điển', N'Giày tennis', 1, 0, 0, 750, 26, 4.3, 6, GETDATE()),
-('REEBOK-003', @ReebokId, @KnitId, @EVAId, N'Reebok Pump', 'reebok-pump', N'Giày với công nghệ Pump', N'Giày Pump', 1, 0, 1, 680, 22, 4.2, 5, GETDATE());
+('REEBOK-002', @ReebokId, @MeshId, @EVAId, N'Reebok Club C', 'reebok-club-c', N'Giày tennis cổ điển', N'Giày tennis', 1, 0, 0, 750, 26, 4.3, 6, GETDATE());
 
--- Asics products (3)
+-- Asics products (2)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('ASICS-001', @AsicsId, @MeshId, @EVAId, N'Asics Gel-Kayano 28', 'asics-gel-kayano-28', N'Giày chạy bộ với Gel', N'Giày chạy bộ', 1, 1, 1, 1000, 38, 4.5, 10, GETDATE()),
-('ASICS-002', @AsicsId, @MeshId, @EVAId, N'Asics Gel-Nimbus 24', 'asics-gel-nimbus-24', N'Giày chạy bộ đệm cao', N'Giày chạy bộ', 1, 0, 0, 880, 32, 4.4, 8, GETDATE()),
-('ASICS-003', @AsicsId, @KnitId, @EVAId, N'Asics GT-2000', 'asics-gt-2000', N'Giày chạy bộ ổn định', N'Giày chạy bộ', 1, 0, 0, 720, 24, 4.3, 6, GETDATE());
+('ASICS-002', @AsicsId, @MeshId, @EVAId, N'Asics Gel-Nimbus 24', 'asics-gel-nimbus-24', N'Giày chạy bộ đệm cao', N'Giày chạy bộ', 1, 0, 0, 880, 32, 4.4, 8, GETDATE());
 
--- Fila products (3)
+-- Fila products (1)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
-('FILA-001', @FilaId, @LeatherId, @RubberId, N'Fila Disruptor', 'fila-disruptor', N'Giày platform retro', N'Giày platform', 1, 1, 0, 950, 36, 4.5, 9, GETDATE()),
-('FILA-002', @FilaId, @CanvasId, @RubberId, N'Fila Ray', 'fila-ray', N'Giày retro', N'Giày retro', 1, 0, 1, 820, 28, 4.4, 7, GETDATE()),
-('FILA-003', @FilaId, @MeshId, @EVAId, N'Fila Grant Hill', 'fila-grant-hill', N'Giày bóng rổ', N'Giày bóng rổ', 1, 0, 0, 680, 20, 4.2, 5, GETDATE());
+('FILA-001', @FilaId, @LeatherId, @RubberId, N'Fila Disruptor', 'fila-disruptor', N'Giày platform retro', N'Giày platform', 1, 1, 0, 950, 36, 4.5, 9, GETDATE());
 
--- Jordan products (4)
+-- Jordan products (2)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('JORDAN-001', @JordanId, @LeatherId, @RubberId, N'Air Jordan 1', 'air-jordan-1', N'Giày bóng rổ huyền thoại', N'Giày bóng rổ', 1, 1, 0, 1400, 58, 4.8, 16, GETDATE()),
-('JORDAN-002', @JordanId, @LeatherId, @RubberId, N'Air Jordan 4', 'air-jordan-4', N'Giày bóng rổ cổ điển', N'Giày bóng rổ', 1, 1, 1, 1300, 52, 4.7, 14, GETDATE()),
-('JORDAN-003', @JordanId, @KnitId, @EVAId, N'Air Jordan 11', 'air-jordan-11', N'Giày bóng rổ với patent leather', N'Giày bóng rổ', 1, 1, 0, 1350, 55, 4.8, 15, GETDATE()),
-('JORDAN-004', @JordanId, @LeatherId, @RubberId, N'Air Jordan 13', 'air-jordan-13', N'Giày bóng rổ retro', N'Giày bóng rổ', 1, 0, 0, 1200, 46, 4.6, 12, GETDATE());
+('JORDAN-002', @JordanId, @LeatherId, @RubberId, N'Air Jordan 4', 'air-jordan-4', N'Giày bóng rổ cổ điển', N'Giày bóng rổ', 1, 1, 1, 1300, 52, 4.7, 14, GETDATE());
 GO
 
-PRINT '  - Inserted 50 products';
+PRINT '  - Inserted 25 products';
 GO
 
 -- =====================================================
@@ -354,53 +326,23 @@ CLOSE product_cursor;
 DEALLOCATE product_cursor;
 GO
 
-PRINT '  - Inserted ~200 product variants';
+PRINT '  - Inserted ~100 product variants';
 GO
 
 -- =====================================================
--- 8. PRODUCT_IMAGES (150 images - 3 images per product)
+-- 8. PRODUCT_IMAGES - SKIPPED (Admin sẽ upload ảnh qua Cloudinary)
 -- =====================================================
-PRINT 'Inserting Product_Images...';
-
-DECLARE @ProductId BIGINT;
-DECLARE product_img_cursor CURSOR FOR
-SELECT id FROM Products ORDER BY id;
-
-OPEN product_img_cursor;
-FETCH NEXT FROM product_img_cursor INTO @ProductId;
-
-WHILE @@FETCH_STATUS = 0
-BEGIN
-    -- Image 1 (primary)
-    INSERT INTO Product_Images (product_id, image_url, alt_text, is_primary, display_order, created_at)
-    VALUES (@ProductId, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800', 'Product image 1', 1, 1, GETDATE());
-    
-    -- Image 2
-    INSERT INTO Product_Images (product_id, image_url, alt_text, is_primary, display_order, created_at)
-    VALUES (@ProductId, 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800', 'Product image 2', 0, 2, GETDATE());
-    
-    -- Image 3
-    INSERT INTO Product_Images (product_id, image_url, alt_text, is_primary, display_order, created_at)
-    VALUES (@ProductId, 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=800', 'Product image 3', 0, 3, GETDATE());
-    
-    FETCH NEXT FROM product_img_cursor INTO @ProductId;
-END;
-
-CLOSE product_img_cursor;
-DEALLOCATE product_img_cursor;
-GO
-
-PRINT '  - Inserted ~150 product images';
+PRINT 'Skipping Product_Images (will be uploaded via admin panel)...';
 GO
 
 -- =====================================================
--- 9. VARIANT_IMAGES (100 images - 2 images per variant for some variants)
+-- 9. VARIANT_IMAGES (50 images - 2 images per variant for some variants)
 -- =====================================================
 PRINT 'Inserting Variant_Images...';
 
 DECLARE @VariantId BIGINT;
 DECLARE variant_img_cursor CURSOR FOR
-SELECT TOP 50 id FROM Product_Variants ORDER BY id;
+SELECT TOP 25 id FROM Product_Variants ORDER BY id;
 
 OPEN variant_img_cursor;
 FETCH NEXT FROM variant_img_cursor INTO @VariantId;
@@ -422,7 +364,7 @@ CLOSE variant_img_cursor;
 DEALLOCATE variant_img_cursor;
 GO
 
-PRINT '  - Inserted ~100 variant images';
+PRINT '  - Inserted ~50 variant images';
 GO
 
 -- =====================================================
@@ -470,11 +412,11 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 100 users (1 admin, 2 moderators, 97 customers)';
+PRINT '  - Inserted 30 users (1 admin, 2 moderators, 27 customers)';
 GO
 
 -- =====================================================
--- 11. ADDRESSES (150 addresses - 1-2 addresses per user)
+-- 11. ADDRESSES (50 addresses - 1-2 addresses per user)
 -- =====================================================
 PRINT 'Inserting Addresses...';
 
@@ -505,16 +447,16 @@ CLOSE address_cursor;
 DEALLOCATE address_cursor;
 GO
 
-PRINT '  - Inserted ~150 addresses';
+PRINT '  - Inserted ~50 addresses';
 GO
 
 -- =====================================================
--- 12. NEWSLETTER_SUBSCRIPTIONS (30 subscriptions)
+-- 12. NEWSLETTER_SUBSCRIPTIONS (10 subscriptions)
 -- =====================================================
 PRINT 'Inserting Newsletter_Subscriptions...';
 
 DECLARE @SubCounter INT = 1;
-WHILE @SubCounter <= 30
+WHILE @SubCounter <= 10
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Newsletter_Subscriptions WHERE email = 'subscriber' + CAST(@SubCounter AS NVARCHAR(3)) + '@example.com')
     BEGIN
@@ -525,7 +467,7 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 30 newsletter subscriptions';
+PRINT '  - Inserted 10 newsletter subscriptions';
 GO
 
 -- =====================================================
@@ -564,16 +506,16 @@ PRINT '  - Inserted 5 coupons';
 GO
 
 -- =====================================================
--- 14. FLASH_SALES (5 flash sales)
+-- 14. FLASH_SALES (3 flash sales)
 -- =====================================================
 PRINT 'Inserting Flash_Sales...';
 
 DECLARE @FlashProductId BIGINT;
-SELECT TOP 5 @FlashProductId = id FROM Products WHERE is_featured = 1 ORDER BY NEWID();
+SELECT TOP 3 @FlashProductId = id FROM Products WHERE is_featured = 1 ORDER BY NEWID();
 
--- Create 5 flash sales
+-- Create 3 flash sales
 DECLARE @FlashCounter INT = 1;
-WHILE @FlashCounter <= 5
+WHILE @FlashCounter <= 3
 BEGIN
     SELECT TOP 1 @FlashProductId = id FROM Products WHERE is_featured = 1 ORDER BY NEWID();
     
@@ -584,7 +526,7 @@ BEGIN
 END;
 GO
 
-PRINT '  - Inserted 5 flash sales';
+PRINT '  - Inserted 3 flash sales';
 GO
 
 PRINT '';
@@ -595,17 +537,17 @@ PRINT '';
 PRINT N'Da insert thanh cong:';
 PRINT '  - 10 brands';
 PRINT '  - 15 categories';
-PRINT '  - 8 materials';
-PRINT '  - 5 shoe soles';
-PRINT '  - 50 products';
-PRINT '  - ~200 product variants';
-PRINT '  - ~150 product images';
-PRINT '  - ~100 variant images';
-PRINT '  - 100 users';
-PRINT '  - ~150 addresses';
-PRINT '  - 30 newsletter subscriptions';
+PRINT '  - 5 materials';
+PRINT '  - 3 shoe soles';
+PRINT '  - 25 products';
+PRINT '  - ~100 product variants';
+PRINT '  - Product images (skipped - will be uploaded via admin panel)';
+PRINT '  - ~50 variant images';
+PRINT '  - 30 users';
+PRINT '  - ~50 addresses';
+PRINT '  - 10 newsletter subscriptions';
 PRINT '  - 5 coupons';
-PRINT '  - 5 flash sales';
+PRINT '  - 3 flash sales';
 PRINT '';
 PRINT N'Bước tiếp theo: Chạy file 3_INSERT_DATA_PART2.sql để thêm dữ liệu giao dịch.';
 PRINT '';

@@ -96,7 +96,7 @@ import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useCartStore } from '@/stores/cart';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
 import axios from 'axios';
@@ -171,7 +171,7 @@ const fetchProduct = async () => {
     }
   } catch (error) {
     logger.error('Error fetching product:', error);
-    toastService.error('Lỗi','Không thể tải thông tin sản phẩm');
+    notificationService.error('Lỗi','Không thể tải thông tin sản phẩm');
   } finally {
     loading.value = false;
   }
@@ -179,21 +179,21 @@ const fetchProduct = async () => {
 
 const handleAddToCart = async () => {
   if (!authStore.isAuthenticated) {
-    toastService.warning('Cảnh báo','Vui lòng đăng nhập để thêm vào giỏ hàng');
+    notificationService.warning('Cảnh báo','Vui lòng đăng nhập để thêm vào giỏ hàng');
     close();
     router.push('/login');
     return;
   }
 
   if (!currentVariant.value) {
-    toastService.warning('Cảnh báo','Vui lòng chọn màu sắc và kích cỡ');
+    notificationService.warning('Cảnh báo','Vui lòng chọn màu sắc và kích cỡ');
     return;
   }
 
   try {
     // Sử dụng cart store để thêm vào giỏ hàng
     await cartStore.addItem(currentVariant.value.id, 1);
-    toastService.success('Thành công', 'Đã thêm vào giỏ hàng');
+    notificationService.success('Thành công', 'Đã thêm vào giỏ hàng');
     emit('added-to-cart');
     logger.log('Product added to cart from quick view:', currentVariant.value.id);
     // Đóng modal sau khi thêm thành công
@@ -203,11 +203,11 @@ const handleAddToCart = async () => {
     
     // Nếu lỗi 401, yêu cầu đăng nhập
     if (error.response?.status === 401) {
-      toastService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
+      notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
       close();
       router.push('/login');
     } else {
-      toastService.error('Lỗi', error.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+      notificationService.error('Lỗi', error.response?.data?.message || 'Không thể thêm vào giỏ hàng');
     }
   }
 };

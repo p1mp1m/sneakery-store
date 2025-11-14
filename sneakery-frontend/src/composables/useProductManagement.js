@@ -6,7 +6,7 @@
  */
 
 import { ref, computed } from 'vue'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import productAdminService from '@/services/productAdminService'
 import { LOW_STOCK_THRESHOLD } from '@/utils/productConstants'
 
@@ -44,7 +44,7 @@ export function useProductManagement() {
       pageSize.value = response.size || 10
     } catch (error) {
       console.error('Error fetching products:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi tải danh sách sản phẩm')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi tải danh sách sản phẩm')
       products.value = []
       totalItems.value = 0
     } finally {
@@ -61,7 +61,7 @@ export function useProductManagement() {
       statistics.value = await productAdminService.getProductStatistics()
     } catch (error) {
       console.error('Error fetching statistics:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi tải thống kê')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi tải thống kê')
     } finally {
       statisticsLoading.value = false
     }
@@ -78,7 +78,7 @@ export function useProductManagement() {
       return await productAdminService.getProductById(id)
     } catch (error) {
       console.error('Error fetching product:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi tải chi tiết sản phẩm')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi tải chi tiết sản phẩm')
       throw error
     }
   }
@@ -92,11 +92,11 @@ export function useProductManagement() {
   const createProduct = async (productData) => {
     try {
       const product = await productAdminService.createProduct(productData)
-      toastService.success('Thành công', 'Tạo sản phẩm mới thành công!')
+      notificationService.success('Thành công', 'Tạo sản phẩm mới thành công!')
       return product
     } catch (error) {
       console.error('Error creating product:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi tạo sản phẩm')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi tạo sản phẩm')
       throw error
     }
   }
@@ -111,11 +111,11 @@ export function useProductManagement() {
   const updateProduct = async (id, productData) => {
     try {
       const product = await productAdminService.updateProduct(id, productData)
-      toastService.success('Thành công', 'Cập nhật sản phẩm thành công!')
+      notificationService.success('Thành công', 'Cập nhật sản phẩm thành công!')
       return product
     } catch (error) {
       console.error('Error updating product:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi cập nhật sản phẩm')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi cập nhật sản phẩm')
       throw error
     }
   }
@@ -129,11 +129,11 @@ export function useProductManagement() {
   const deleteProduct = async (id) => {
     try {
       await productAdminService.deleteProduct(id)
-      toastService.success('Thành công', 'Xóa sản phẩm thành công!')
+      notificationService.success('Thành công', 'Xóa sản phẩm thành công!')
       return true
     } catch (error) {
       console.error('Error deleting product:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi xóa sản phẩm')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi xóa sản phẩm')
       throw error
     }
   }
@@ -147,11 +147,11 @@ export function useProductManagement() {
   const duplicateProduct = async (productId) => {
     try {
       const product = await productAdminService.duplicateProduct(productId)
-      toastService.success('Thành công', 'Nhân bản sản phẩm thành công!')
+      notificationService.success('Thành công', 'Nhân bản sản phẩm thành công!')
       return product
     } catch (error) {
       console.error('Error duplicating product:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi nhân bản sản phẩm')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi nhân bản sản phẩm')
       throw error
     }
   }
@@ -165,11 +165,11 @@ export function useProductManagement() {
   const bulkUpdateProducts = async (bulkData) => {
     try {
       const result = await productAdminService.bulkUpdateProducts(bulkData)
-      toastService.success('Thành công', `Cập nhật hàng loạt thành công! (${result.successCount || 0} sản phẩm)`)
+      notificationService.success('Thành công', `Cập nhật hàng loạt thành công! (${result.successCount || 0} sản phẩm)`)
       return result
     } catch (error) {
       console.error('Error bulk updating products:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi cập nhật hàng loạt')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi cập nhật hàng loạt')
       throw error
     }
   }
@@ -183,11 +183,11 @@ export function useProductManagement() {
   const importProducts = async (productList) => {
     try {
       const result = await productAdminService.importProducts(productList)
-      toastService.success('Thành công', `Import thành công! (${result.successCount || 0}/${result.totalCount || 0})`)
+      notificationService.success('Thành công', `Import thành công! (${result.successCount || 0}/${result.totalCount || 0})`)
       return result
     } catch (error) {
       console.error('Error importing products:', error)
-      toastService.error('Lỗi', error.message || 'Lỗi khi import sản phẩm')
+      notificationService.error('Lỗi', error.message || 'Lỗi khi import sản phẩm')
       throw error
     }
   }

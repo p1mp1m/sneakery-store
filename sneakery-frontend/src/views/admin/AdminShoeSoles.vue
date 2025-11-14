@@ -300,7 +300,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import toastService from "@/utils/toastService";
+import notificationService from '@/utils/notificationService';
 import { useAdminStore } from "@/stores/admin";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 import logger from "@/utils/logger";
@@ -383,7 +383,7 @@ const fetchSoles = async () => {
     shoeSoles.value = result.content || result || [];
   } catch (error) {
     logger.error("Error fetching shoe soles:", error);
-    toastService.apiError(error, "Lỗi khi tải danh sách loại đế")
+    notificationService.apiError(error, "Lỗi khi tải danh sách loại đế")
   } finally {
     loading.value = false;
   }
@@ -443,14 +443,14 @@ const saveShoeSole = async () => {
     }
     await fetchSoles();
     closeModal();
-    toastService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} loại đế thành công!`, { duration: 3000 });
+    notificationService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} loại đế thành công!`, { duration: 3000 });
   } catch (error) {
     logger.error("Error saving shoe sole:", error);
 
     // Nếu BE trả về lỗi validate, bạn có thể map vào formErrors
     // ví dụ: if (error.response?.data?.validationErrors) { ... }
 
-    toastService.apiError(error, "Lỗi khi lưu loại đế")
+    notificationService.apiError(error, "Lỗi khi lưu loại đế")
   } finally {
     saving.value = false;
   }
@@ -468,10 +468,10 @@ const deleteShoeSole = async () => {
     await fetchSoles();
     showDeleteModal.value = false;
     shoeSoleToDelete.value = null;
-    toastService.success('Thành công', "Xóa loại đế thành công!", { duration: 3000 });
+    notificationService.success('Thành công', "Xóa loại đế thành công!", { duration: 3000 });
   } catch (error) {
     logger.error("Error deleting shoe sole:", error);
-    toastService.apiError(error, "Lỗi khi xóa loại đế")
+    notificationService.apiError(error, "Lỗi khi xóa loại đế")
   } finally {
     deleting.value = false;
   }

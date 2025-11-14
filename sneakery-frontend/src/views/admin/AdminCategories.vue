@@ -340,7 +340,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import toastService from '@/utils/toastService'
+import notificationService from '@/utils/notificationService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { highlightSearchSafely } from '@/utils/sanitize'
@@ -469,7 +469,7 @@ const fetchCategories = async () => {
     categories.value = result.content || result || []
   } catch (error) {
     logger.error('Lỗi khi tải danh sách danh mục:', error)
-    toastService.apiError(error, 'Không thể tải danh sách danh mục')
+    notificationService.apiError(error, 'Không thể tải danh sách danh mục')
   } finally {
     loading.value = false
   }
@@ -551,7 +551,7 @@ const validateForm = () => {
 
 const handleSubmit = async () => {
   if (!validateForm()) {
-    toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin form!', { duration: 3000 })
+    notificationService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin form!', { duration: 3000 })
     return
   }
 
@@ -560,10 +560,10 @@ const handleSubmit = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateCategory(formData.value.id, formData.value)
-      toastService.success('Thành công', `Đã cập nhật danh mục "${formData.value.name}" thành công!`, { duration: 3000 })
+      notificationService.success('Thành công', `Đã cập nhật danh mục "${formData.value.name}" thành công!`, { duration: 3000 })
     } else {
       await adminStore.createCategory(formData.value)
-      toastService.success('Thành công', `Đã thêm danh mục "${formData.value.name}" thành công!`, { duration: 3000 })
+      notificationService.success('Thành công', `Đã thêm danh mục "${formData.value.name}" thành công!`, { duration: 3000 })
     }
     
     await fetchCategories()
@@ -596,7 +596,7 @@ const handleSubmit = async () => {
       errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
     }
     
-    toastService.apiError(error, errorMessage || 'Không thể lưu danh mục')
+    notificationService.apiError(error, errorMessage || 'Không thể lưu danh mục')
   } finally {
     submitting.value = false
   }
@@ -611,13 +611,13 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteCategory(categoryToDelete.value.id)
-    toastService.success('Thành công',`Đã xóa danh mục "${categoryToDelete.value.name}" thành công!`)
+    notificationService.success('Thành công',`Đã xóa danh mục "${categoryToDelete.value.name}" thành công!`)
     await fetchCategories()
     showDeleteModal.value = false
     categoryToDelete.value = null
   } catch (error) {
     logger.error('Lỗi khi xóa danh mục:', error)
-    toastService.apiError(error, 'Không thể xóa danh mục này')
+    notificationService.apiError(error, 'Không thể xóa danh mục này')
   } finally {
     deleting.value = false
   }
@@ -635,10 +635,10 @@ const handleExport = (format) => {
   
   if (format === 'csv') {
     downloadCsv(data, `categories_${Date.now()}.csv`)
-    toastService.success('Thành công','Đã xuất file CSV thành công!')
+    notificationService.success('Thành công','Đã xuất file CSV thành công!')
   } else if (format === 'json') {
     downloadJson(data, `categories_${Date.now()}.json`)
-    toastService.success('Thành công','Đã xuất file JSON thành công!')
+    notificationService.success('Thành công','Đã xuất file JSON thành công!')
   }
 }
 
@@ -677,12 +677,12 @@ const handleBulkDelete = async () => {
       await adminStore.deleteCategory(categoryId)
     }
     
-    toastService.success('Thành công',`Đã xóa ${selectedCategories.value.length} danh mục thành công!`)
+    notificationService.success('Thành công',`Đã xóa ${selectedCategories.value.length} danh mục thành công!`)
     selectedCategories.value = []
     await fetchCategories()
   } catch (error) {
     logger.error('Lỗi khi xóa danh mục:', error)
-    toastService.apiError(error, 'Có lỗi xảy ra khi xóa danh mục')
+    notificationService.apiError(error, 'Có lỗi xảy ra khi xóa danh mục')
   } finally {
     deleting.value = false
   }

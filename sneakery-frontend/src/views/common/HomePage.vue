@@ -442,7 +442,7 @@ import { useFlashSaleStore } from '@/stores/flashSale';
 import ProductCard from '@/assets/components/products/ProductCard.vue';
 import TestimonialsSection from '@/assets/components/common/TestimonialsSection.vue';
 import logger from '@/utils/logger';
-import toastService from '@/utils/toastService';
+import notificationService from '@/utils/notificationService';
 import { API_ENDPOINTS } from '@/config/api';
 import axios from 'axios';
 
@@ -889,21 +889,21 @@ const handleNewsletterSubscribe = async () => {
   
   // Validate email
   if (!email) {
-    toastService.warning('Vui lòng nhập email', 'Email không được để trống');
+    notificationService.warning('Vui lòng nhập email', 'Email không được để trống');
     return;
   }
   
   // Basic email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    toastService.warning('Email không hợp lệ', 'Vui lòng nhập địa chỉ email hợp lệ');
+    notificationService.warning('Email không hợp lệ', 'Vui lòng nhập địa chỉ email hợp lệ');
     return;
   }
   
   subscribing.value = true;
   try {
     await newsletterService.subscribe(email);
-    toastService.success('Đăng ký thành công!', 'Cảm ơn bạn đã đăng ký nhận tin. Chúng tôi sẽ gửi thông báo về sản phẩm mới và ưu đãi đặc biệt đến email của bạn.');
+    notificationService.success('Đăng ký thành công!', 'Cảm ơn bạn đã đăng ký nhận tin. Chúng tôi sẽ gửi thông báo về sản phẩm mới và ưu đãi đặc biệt đến email của bạn.');
     newsletterEmail.value = ''; // Clear input after success
   } catch (error) {
     logger.error('Error subscribing to newsletter:', error);
@@ -915,16 +915,16 @@ const handleNewsletterSubscribe = async () => {
       
       if (status === 409) {
         // Email already subscribed
-        toastService.info('Email đã đăng ký', 'Email này đã được đăng ký nhận tin rồi. Cảm ơn bạn!');
+        notificationService.info('Email đã đăng ký', 'Email này đã được đăng ký nhận tin rồi. Cảm ơn bạn!');
         newsletterEmail.value = ''; // Clear input
       } else if (status === 400) {
         // Bad request (invalid email)
-        toastService.warning('Email không hợp lệ', message);
+        notificationService.warning('Email không hợp lệ', message);
       } else {
-        toastService.error('Đăng ký thất bại', message);
+        notificationService.error('Đăng ký thất bại', message);
       }
     } else {
-      toastService.error('Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng thử lại sau.');
+      notificationService.error('Lỗi kết nối', 'Không thể kết nối đến server. Vui lòng thử lại sau.');
     }
   } finally {
     subscribing.value = false;
