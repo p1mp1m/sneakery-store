@@ -102,7 +102,7 @@ public class OrderController {
      *                   - couponCode: Mã coupon (tùy chọn)
      *                   - note: Ghi chú đơn hàng (tùy chọn)
      * @return ResponseEntity chứa OrderDto của đơn hàng vừa tạo (HTTP 200 OK)
-     * @throws ApiException nếu giỏ hàng trống, địa chỉ không tồn tại, hoặc validation thất bại
+     * @throws --ApiException nếu giỏ hàng trống, địa chỉ không tồn tại, hoặc validation thất bại
      * 
      * @example
      * <pre>
@@ -195,7 +195,7 @@ public class OrderController {
      * @param userPrincipal User hiện tại (tự động lấy từ JWT token)
      * @param orderId ID của đơn hàng cần lấy
      * @return ResponseEntity chứa OrderDto với thông tin chi tiết đơn hàng (HTTP 200 OK)
-     * @throws ApiException nếu không tìm thấy đơn hàng hoặc đơn hàng không thuộc về user hiện tại
+     * @throws --ApiException nếu không tìm thấy đơn hàng hoặc đơn hàng không thuộc về user hiện tại
      * 
      * @example
      * <pre>
@@ -229,7 +229,7 @@ public class OrderController {
      * 
      * @param code Mã coupon cần validate
      * @return ResponseEntity chứa CouponDto nếu hợp lệ (HTTP 200 OK)
-     * @throws ApiException nếu coupon không tồn tại, đã hết hạn, hoặc không hợp lệ
+     * @throws --ApiException nếu coupon không tồn tại, đã hết hạn, hoặc không hợp lệ
      */
     @Operation(summary = "Validate coupon code", description = "Validate mã giảm giá. Endpoint công khai cho user đã đăng nhập.")
     @ApiResponses(value = {
@@ -266,7 +266,7 @@ public class OrderController {
      * @param userPrincipal User hiện tại (tự động lấy từ JWT token)
      * @param orderId ID của đơn hàng cần hủy
      * @return ResponseEntity chứa OrderDto của đơn hàng sau khi hủy (HTTP 200 OK)
-     * @throws ApiException nếu không tìm thấy đơn hàng, đơn hàng không thuộc về user, hoặc đơn hàng không thể hủy
+     * @throws --ApiException nếu không tìm thấy đơn hàng, đơn hàng không thuộc về user, hoặc đơn hàng không thể hủy
      */
     @Operation(summary = "Hủy đơn hàng", description = "Hủy đơn hàng. Chỉ cho phép khi đơn hàng đang ở trạng thái 'Chờ xác nhận'.")
     @ApiResponses(value = {

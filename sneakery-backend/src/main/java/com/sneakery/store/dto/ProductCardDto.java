@@ -21,7 +21,7 @@ public class ProductCardDto {
     private String name;
     private String slug;
     private String brandName;
-    private String imageUrl; // Ảnh đại diện của sản phẩm
+//    private String imageUrl; // Ảnh đại diện của sản phẩm
     
     // Pricing
     private BigDecimal priceBase;    // Giá gốc

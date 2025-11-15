@@ -2,10 +2,14 @@
   <ErrorBoundary>
     <router-view />
   </ErrorBoundary>
+  <Teleport to="body">
+    <ToastContainer />
+  </Teleport>
 </template>
 
 <script setup>
-import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
+import ErrorBoundary from "@/components/common/ErrorBoundary.vue";
+import ToastContainer from "@/components/ToastContainer.vue";
 // App.vue render router-view với ErrorBoundary để catch errors
 // Routing sẽ tự động chọn layout (AdminLayout hoặc DefaultLayout) dựa trên route
 </script>

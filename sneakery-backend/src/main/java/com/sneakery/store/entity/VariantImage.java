@@ -48,10 +48,10 @@ public class VariantImage {
     private String altText;
 
     /** Cờ đánh dấu ảnh đại diện (primary) của variant */
-    @Builder.Default
-    @Column(name = "is_primary", nullable = false)
-    @Schema(description = "Đánh dấu ảnh chính của variant")
-    private Boolean isPrimary = false;
+//    @Builder.Default
+//    @Column(name = "is_primary", nullable = false)
+//    @Schema(description = "Đánh dấu ảnh chính của variant")
+//    private Boolean isPrimary = false;
 
     /** Thứ tự hiển thị trong gallery (1 = đầu tiên) */
     @Builder.Default
@@ -73,7 +73,7 @@ public class VariantImage {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        if (isPrimary == null) isPrimary = false;
+//        if (isPrimary == null) isPrimary = false;
         if (displayOrder == null) displayOrder = 0;
     }
 }

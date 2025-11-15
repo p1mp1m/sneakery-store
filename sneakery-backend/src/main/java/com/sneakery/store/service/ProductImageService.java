@@ -1,6 +1,7 @@
 package com.sneakery.store.service;
 
 import com.sneakery.store.dto.ProductImageDto;
+import com.sneakery.store.dto.ProductImagePublicDto;
 import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.ProductImage;
 import com.sneakery.store.exception.ApiException;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -51,9 +53,9 @@ public class ProductImageService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
 
         // Nếu set primary => clear ảnh primary cũ
-        if (Boolean.TRUE.equals(dto.getIsPrimary())) {
-            productImageRepository.clearPrimaryForProduct(productId);
-        }
+//        if (Boolean.TRUE.equals(dto.getIsPrimary())) {
+//            productImageRepository.clearPrimaryForProduct(productId);
+//        }
 
         // Tính display_order (bắt đầu từ 1)
         Integer displayOrder = dto.getDisplayOrder();
@@ -66,7 +68,7 @@ public class ProductImageService {
                 .product(product)
                 .imageUrl(dto.getImageUrl())
                 .altText(dto.getAltText())
-                .isPrimary(dto.getIsPrimary() != null ? dto.getIsPrimary() : false)
+//                .isPrimary(dto.getIsPrimary() != null ? dto.getIsPrimary() : false)
                 .displayOrder(displayOrder)
                 .build();
 
@@ -227,9 +229,30 @@ public class ProductImageService {
                 .imageUrl(image.getImageUrl())
                 .cloudinaryPublicId(image.getCloudinaryPublicId()) // <<=== thêm
                 .altText(image.getAltText())
-                .isPrimary(image.getIsPrimary())
+//                .isPrimary(image.getIsPrimary())
                 .displayOrder(image.getDisplayOrder())
                 .build();
+    }
+
+    public List<ProductImagePublicDto> getAllImagesPublic() {
+        Map<Long, List<String>> grouped = productImageRepository.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        img -> img.getProduct().getId(),
+                        Collectors.mapping(
+                                ProductImage::getImageUrl,
+                                Collectors.toList()
+                        )
+                ));
+
+        return grouped.entrySet().stream()
+                .map(e -> {
+                    ProductImagePublicDto dto = new ProductImagePublicDto();
+                    dto.setProductId(e.getKey());
+                    dto.setImages(e.getValue());
+                    return dto;
+                })
+                .toList();
     }
 
 }

@@ -139,7 +139,7 @@ public class ProductService {
                             .name(product != null && product.getName() != null ? product.getName() : "Unknown Product")
                             .slug(product != null && product.getSlug() != null ? product.getSlug() : "")
                             .brandName("Unknown")
-                            .imageUrl("https://placehold.co/400")
+//                            .imageUrl("https://placehold.co/400")
                             .priceBase(BigDecimal.ZERO)
                             .price(BigDecimal.ZERO)
                             .totalStock(0)
@@ -201,7 +201,7 @@ public class ProductService {
                 .name(product.getName())
                 .slug(product.getSlug())
                 .brandName(product.getBrand() != null ? product.getBrand().getName() : "Unknown")
-                .imageUrl(imageUrl)
+//                .imageUrl(imageUrl)
                 
                 // Pricing
                 .priceBase(priceBase)

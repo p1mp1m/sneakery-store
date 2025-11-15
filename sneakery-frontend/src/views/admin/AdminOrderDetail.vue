@@ -1,8 +1,12 @@
 <template>
   <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div
+      class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      >
         <div class="flex items-center gap-4">
           <button
             @click="$router.push('/admin/orders')"
@@ -12,11 +16,17 @@
             <i class="material-icons">arrow_back</i>
           </button>
           <div>
-            <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <i class="material-icons text-purple-600 dark:text-purple-400">receipt_long</i>
+            <h1
+              class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+            >
+              <i class="material-icons text-purple-600 dark:text-purple-400"
+                >receipt_long</i
+              >
               Chi tiết đơn hàng #{{ orderId }}
             </h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Thông tin chi tiết đơn hàng</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Thông tin chi tiết đơn hàng
+            </p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -51,23 +61,23 @@
     <div v-if="loading" class="flex items-center justify-center py-20">
       <div class="text-center">
         <div class="space-y-4" role="status" aria-live="polite">
-          <LoadingSkeleton
-            v-for="n in 6"
-            :key="n"
-            type="custom"
-            :lines="3"
-          />
+          <LoadingSkeleton v-for="n in 6" :key="n" type="custom" :lines="3" />
           <span class="sr-only">Đang tải chi tiết đơn hàng</span>
         </div>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+    <div
+      v-else-if="error"
+      class="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
+    >
       <div class="flex items-center gap-3">
         <i class="material-icons text-red-600 dark:text-red-400">error</i>
         <div>
-          <h3 class="font-semibold text-red-900 dark:text-red-100">Lỗi khi tải đơn hàng</h3>
+          <h3 class="font-semibold text-red-900 dark:text-red-100">
+            Lỗi khi tải đơn hàng
+          </h3>
           <p class="text-sm text-red-700 dark:text-red-300 mt-1">{{ error }}</p>
         </div>
         <button
@@ -82,67 +92,153 @@
     <!-- Order Detail Content -->
     <div v-else-if="order" class="space-y-4">
       <!-- Customer Info -->
-      <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="material-icons text-purple-600 dark:text-purple-400">person</i>
+      <div
+        class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <h3
+          class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400"
+            >person</i
+          >
           Thông tin khách hàng
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Tên khách hàng:</span>
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">{{ order.customerName || 'N/A' }}</p>
+            <span class="text-sm text-gray-600 dark:text-gray-400"
+              >Tên khách hàng:</span
+            >
+            <p
+              class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+            >
+              {{ order.customerName || "N/A" }}
+            </p>
           </div>
           <div>
             <span class="text-sm text-gray-600 dark:text-gray-400">Email:</span>
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">{{ order.customerEmail || 'N/A' }}</p>
+            <p
+              class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+            >
+              {{ order.customerEmail || "N/A" }}
+            </p>
           </div>
           <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Ngày đặt:</span>
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">{{ formatDateTime(order.createdAt) }}</p>
+            <span class="text-sm text-gray-600 dark:text-gray-400"
+              >Ngày đặt:</span
+            >
+            <p
+              class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+            >
+              {{ formatDateTime(order.createdAt) }}
+            </p>
           </div>
           <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Tổng tiền:</span>
-            <p class="text-xl font-bold text-purple-600 dark:text-purple-400 mt-1">{{ formatCurrency(order.totalAmount) }}</p>
+            <span class="text-sm text-gray-600 dark:text-gray-400"
+              >Tổng tiền:</span
+            >
+            <p
+              class="text-xl font-bold text-purple-600 dark:text-purple-400 mt-1"
+            >
+              {{ formatCurrency(order.totalAmount) }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- Shipping Address -->
-      <div v-if="order.addressShipping" class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="material-icons text-purple-600 dark:text-purple-400">local_shipping</i>
+      <div
+        v-if="order.addressShipping"
+        class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <h3
+          class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400"
+            >local_shipping</i
+          >
           Địa chỉ giao hàng
         </h3>
         <div class="space-y-1 text-gray-700 dark:text-gray-300">
           <p class="font-medium">{{ order.addressShipping.recipientName }}</p>
           <p>{{ order.addressShipping.phone }}</p>
           <p>{{ order.addressShipping.line1 }}</p>
-          <p v-if="order.addressShipping.line2">{{ order.addressShipping.line2 }}</p>
-          <p>{{ order.addressShipping.ward }}, {{ order.addressShipping.district }}, {{ order.addressShipping.city }}</p>
-          <p v-if="order.addressShipping.postalCode">Mã bưu điện: {{ order.addressShipping.postalCode }}</p>
+          <p v-if="order.addressShipping.line2">
+            {{ order.addressShipping.line2 }}
+          </p>
+          <p>
+            {{ order.addressShipping.ward }},
+            {{ order.addressShipping.district }},
+            {{ order.addressShipping.city }}
+          </p>
+          <p v-if="order.addressShipping.postalCode">
+            Mã bưu điện: {{ order.addressShipping.postalCode }}
+          </p>
         </div>
       </div>
 
       <!-- Order Items -->
-      <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="material-icons text-purple-600 dark:text-purple-400">shopping_cart</i>
+      <div
+        class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <h3
+          class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400"
+            >shopping_cart</i
+          >
           Sản phẩm đã đặt
         </h3>
         <div class="overflow-x-auto">
           <table class="w-full">
-            <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+            <thead
+              class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600"
+            >
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Sản phẩm</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Size</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Màu</th>
-                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Số lượng</th>
-                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Đơn giá</th>
-                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Thành tiền</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Sản phẩm
+                </th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  SKU
+                </th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Size
+                </th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Màu
+                </th>
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Số lượng
+                </th>
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Đơn giá
+                </th>
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  Thành tiền
+                </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-for="(item, index) in (order.orderDetails || [])" :key="index" class="hover:bg-gray-50 dark:hover:bg-gray-900/50">
+            <tbody
+              class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+            >
+              <tr
+                v-for="(item, index) in order.orderDetails || []"
+                :key="index"
+                class="hover:bg-gray-50 dark:hover:bg-gray-900/50"
+              >
                 <td class="px-4 py-4">
                   <div class="flex items-center gap-3">
                     <img
@@ -152,30 +248,64 @@
                       class="w-16 h-16 object-cover rounded-lg"
                     />
                     <div>
-                      <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.productName }}</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">{{ item.brandName || 'N/A' }}</div>
+                      <div
+                        class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                      >
+                        {{ item.productName }}
+                      </div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ item.brandName || "N/A" }}
+                      </div>
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">{{ item.size }}</td>
+                <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  {{ item.variantSku }}
+                </td>
+                <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  {{ item.size }}
+                </td>
                 <td class="px-4 py-4">
                   <div class="flex items-center gap-2">
                     <span
                       class="w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
                       :style="{ backgroundColor: getColorHex(item.color) }"
                     ></span>
-                    <span class="text-sm text-gray-900 dark:text-gray-100">{{ item.color }}</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100">{{
+                      item.color
+                    }}</span>
                   </div>
                 </td>
-                <td class="px-4 py-4 text-right text-sm text-gray-900 dark:text-gray-100">{{ item.quantity }}</td>
-                <td class="px-4 py-4 text-right text-sm text-gray-900 dark:text-gray-100">{{ formatCurrency(item.unitPrice) }}</td>
-                <td class="px-4 py-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(item.totalPrice) }}</td>
+                <td
+                  class="px-4 py-4 text-right text-sm text-gray-900 dark:text-gray-100"
+                >
+                  {{ item.quantity }}
+                </td>
+                <td
+                  class="px-4 py-4 text-right text-sm text-gray-900 dark:text-gray-100"
+                >
+                  {{ formatCurrency(item.unitPrice) }}
+                </td>
+                <td
+                  class="px-4 py-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-100"
+                >
+                  {{ formatCurrency(item.totalPrice) }}
+                </td>
               </tr>
             </tbody>
             <tfoot class="bg-gray-50 dark:bg-gray-700/50">
               <tr>
-                <td colspan="5" class="px-4 py-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Tổng cộng:</td>
-                <td class="px-4 py-4 text-right text-lg font-bold text-purple-600 dark:text-purple-400">{{ formatCurrency(order.totalAmount) }}</td>
+                <td
+                  colspan="5"
+                  class="px-4 py-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-100"
+                >
+                  Tổng cộng:
+                </td>
+                <td
+                  class="px-4 py-4 text-right text-lg font-bold text-purple-600 dark:text-purple-400"
+                >
+                  {{ formatCurrency(order.totalAmount) }}
+                </td>
               </tr>
             </tfoot>
           </table>
@@ -183,18 +313,33 @@
       </div>
 
       <!-- Payment Info -->
-      <div v-if="order.payment" class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="material-icons text-purple-600 dark:text-purple-400">payment</i>
+      <div
+        v-if="order.payment"
+        class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <h3
+          class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400"
+            >payment</i
+          >
           Thông tin thanh toán
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Phương thức:</span>
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">{{ getPaymentMethodLabel(order.payment.paymentMethod) }}</p>
+            <span class="text-sm text-gray-600 dark:text-gray-400"
+              >Phương thức:</span
+            >
+            <p
+              class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+            >
+              {{ getPaymentMethodLabel(order.payment.paymentMethod) }}
+            </p>
           </div>
           <div>
-            <span class="text-sm text-gray-600 dark:text-gray-400">Trạng thái:</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400"
+              >Trạng thái:</span
+            >
             <p
               class="text-base font-medium mt-1 inline-flex items-center px-2 py-1 rounded-full text-xs"
               :class="getPaymentStatusClass(order.payment.status)"
@@ -203,16 +348,29 @@
             </p>
           </div>
           <div v-if="order.payment.paidAt">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Ngày thanh toán:</span>
-            <p class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1">{{ formatDateTime(order.payment.paidAt) }}</p>
+            <span class="text-sm text-gray-600 dark:text-gray-400"
+              >Ngày thanh toán:</span
+            >
+            <p
+              class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+            >
+              {{ formatDateTime(order.payment.paidAt) }}
+            </p>
           </div>
         </div>
       </div>
 
       <!-- Status History -->
-      <div v-if="order.statusHistories && order.statusHistories.length > 0" class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-          <i class="material-icons text-purple-600 dark:text-purple-400">history</i>
+      <div
+        v-if="order.statusHistories && order.statusHistories.length > 0"
+        class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <h3
+          class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400"
+            >history</i
+          >
           Lịch sử thay đổi trạng thái
         </h3>
         <div class="space-y-4">
@@ -224,19 +382,36 @@
           >
             <div
               class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-              :class="index === 0 ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-gray-100 dark:bg-gray-700'"
+              :class="
+                index === 0
+                  ? 'bg-purple-100 dark:bg-purple-900/30'
+                  : 'bg-gray-100 dark:bg-gray-700'
+              "
             >
               <i
                 class="material-icons text-sm"
-                :class="index === 0 ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-gray-500'"
+                :class="
+                  index === 0
+                    ? 'text-purple-600 dark:text-purple-400'
+                    : 'text-gray-400 dark:text-gray-500'
+                "
               >
-                {{ index === 0 ? 'check_circle' : 'radio_button_unchecked' }}
+                {{ index === 0 ? "check_circle" : "radio_button_unchecked" }}
               </i>
             </div>
             <div class="flex-1">
-              <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ getStatusLabel(history.status) }}</div>
-              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ formatDateTime(history.changedAt || history.createdAt) }}</div>
-              <div v-if="history.note" class="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">{{ history.note }}</div>
+              <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {{ getStatusLabel(history.status) }}
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {{ formatDateTime(history.changedAt || history.createdAt) }}
+              </div>
+              <div
+                v-if="history.note"
+                class="text-xs text-gray-500 dark:text-gray-400 mt-1 italic"
+              >
+                {{ history.note }}
+              </div>
             </div>
           </div>
         </div>
@@ -246,185 +421,206 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import AdminService from '@/services/adminService'
-import toastService from '@/utils/toastService'
-import { printInvoice } from '@/utils/pdfGenerator'
-import logger from '@/utils/logger'
-import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
-import { formatPrice, formatCurrency, formatDateTime } from '@/utils/formatters'
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import AdminService from "@/services/adminService";
+import toastService from "@/utils/toastService";
+import { printInvoice } from "@/utils/pdfGenerator";
+import logger from "@/utils/logger";
+import LoadingSkeleton from "@/components/common/LoadingSkeleton.vue";
+import {
+  formatPrice,
+  formatCurrency,
+  formatDateTime,
+} from "@/utils/formatters";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const orderId = ref(route.params.id)
-const order = ref(null)
-const loading = ref(false)
-const error = ref(null)
+const orderId = ref(route.params.id);
+const order = ref(null);
+const loading = ref(false);
+const error = ref(null);
 
 // Fetch order detail
 const fetchOrderDetail = async () => {
   if (!orderId.value) {
-    error.value = 'Không tìm thấy ID đơn hàng'
-    return
+    error.value = "Không tìm thấy ID đơn hàng";
+    return;
   }
 
   try {
-    loading.value = true
-    error.value = null
-    const orderDetail = await AdminService.getOrderById(orderId.value)
-    order.value = orderDetail
+    loading.value = true;
+    error.value = null;
+    const orderDetail = await AdminService.getOrderById(orderId.value);
+    order.value = orderDetail;
   } catch (err) {
-    logger.error('Error fetching order detail:', err)
-    error.value = err.message || 'Không thể tải chi tiết đơn hàng. Vui lòng thử lại.'
-    toastService.apiError(err, 'Không thể tải chi tiết đơn hàng')
+    logger.error("Error fetching order detail:", err);
+    error.value =
+      err.message || "Không thể tải chi tiết đơn hàng. Vui lòng thử lại.";
+    toastService.apiError(err, "Không thể tải chi tiết đơn hàng");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // Format functions
 // formatCurrency và formatDateTime đã được import từ @/utils/formatters
 
 const getStatusLabel = (status) => {
-  if (!status) return 'N/A'
-  const normalized = normalizeStatusForDisplay(status)
+  if (!status) return "N/A";
+  const normalized = normalizeStatusForDisplay(status);
   const labels = {
-    'Pending': 'Chờ xử lý',
-    'Processing': 'Đang xử lý',
-    'Shipped': 'Đã gửi hàng',
-    'Completed': 'Hoàn thành',
-    'Cancelled': 'Đã hủy',
-    'Confirmed': 'Đã xác nhận',
-    'Packed': 'Đã đóng gói',
-    'Refunded': 'Đã hoàn tiền'
-  }
-  return labels[normalized] || normalized || status
-}
+    Pending: "Chờ xử lý",
+    Processing: "Đang xử lý",
+    Shipped: "Đã gửi hàng",
+    Completed: "Hoàn thành",
+    Cancelled: "Đã hủy",
+    Confirmed: "Đã xác nhận",
+    Packed: "Đã đóng gói",
+    Refunded: "Đã hoàn tiền",
+  };
+  return labels[normalized] || normalized || status;
+};
 
 const normalizeStatusForDisplay = (status) => {
-  if (!status) return status
+  if (!status) return status;
   const statusMap = {
-    'pending': 'Pending',
-    'processing': 'Processing',
-    'shipped': 'Shipped',
-    'delivered': 'Completed',
-    'cancelled': 'Cancelled',
-    'confirmed': 'Confirmed',
-    'packed': 'Packed',
-    'refunded': 'Refunded'
-  }
-  return statusMap[status.toLowerCase()] || status
-}
+    pending: "Pending",
+    processing: "Processing",
+    shipped: "Shipped",
+    delivered: "Completed",
+    cancelled: "Cancelled",
+    confirmed: "Confirmed",
+    packed: "Packed",
+    refunded: "Refunded",
+  };
+  return statusMap[status.toLowerCase()] || status;
+};
 
 const getStatusBadgeClass = (status) => {
-  const normalized = normalizeStatusForDisplay(status)
+  const normalized = normalizeStatusForDisplay(status);
   const classMap = {
-    'Pending': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-    'Processing': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    'Confirmed': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
-    'Packed': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-    'Shipped': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400',
-    'Completed': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
-    'Cancelled': 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400',
-    'Refunded': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
-  }
-  return classMap[normalized] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-}
+    Pending:
+      "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+    Processing:
+      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+    Confirmed:
+      "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
+    Packed:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+    Shipped: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-400",
+    Completed:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+    Cancelled:
+      "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400",
+    Refunded:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  };
+  return (
+    classMap[normalized] ||
+    "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+  );
+};
 
 const getPaymentMethodLabel = (method) => {
-  if (!method) return 'N/A'
+  if (!method) return "N/A";
   const labels = {
-    'cod': 'Thanh toán khi nhận hàng (COD)',
-    'vnpay': 'VNPay',
-    'momo': 'MoMo',
-    'zalopay': 'ZaloPay',
-    'bank_transfer': 'Chuyển khoản ngân hàng',
-    'credit_card': 'Thẻ tín dụng',
-    'cash': 'Tiền mặt',
-    'card': 'Thẻ'
-  }
-  return labels[method.toLowerCase()] || method
-}
+    cod: "Thanh toán khi nhận hàng (COD)",
+    vnpay: "VNPay",
+    momo: "MoMo",
+    zalopay: "ZaloPay",
+    bank_transfer: "Chuyển khoản ngân hàng",
+    credit_card: "Thẻ tín dụng",
+    cash: "Tiền mặt",
+    card: "Thẻ",
+  };
+  return labels[method.toLowerCase()] || method;
+};
 
 const getPaymentStatusLabel = (status) => {
-  if (!status) return 'N/A'
+  if (!status) return "N/A";
   const labels = {
-    'pending': 'Chờ thanh toán',
-    'processing': 'Đang xử lý',
-    'completed': 'Đã thanh toán',
-    'failed': 'Thanh toán thất bại',
-    'refunded': 'Đã hoàn tiền'
-  }
-  return labels[status.toLowerCase()] || status
-}
+    pending: "Chờ thanh toán",
+    processing: "Đang xử lý",
+    completed: "Đã thanh toán",
+    failed: "Thanh toán thất bại",
+    refunded: "Đã hoàn tiền",
+  };
+  return labels[status.toLowerCase()] || status;
+};
 
 const getPaymentStatusClass = (status) => {
-  if (!status) return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+  if (!status)
+    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
   const classMap = {
-    'pending': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-    'processing': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    'completed': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
-    'failed': 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400',
-    'refunded': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
-  }
-  return classMap[status.toLowerCase()] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-}
+    pending:
+      "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+    processing:
+      "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+    completed:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+    failed: "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400",
+    refunded:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  };
+  return (
+    classMap[status.toLowerCase()] ||
+    "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+  );
+};
 
 const getColorHex = (colorName) => {
   // Map một số màu phổ biến
   const colorMap = {
-    'Đen': '#000000',
-    'Trắng': '#FFFFFF',
-    'Xám': '#808080',
-    'Xanh dương': '#0000FF',
-    'Xanh lá': '#00FF00',
-    'Đỏ': '#FF0000',
-    'Vàng': '#FFFF00',
-    'Hồng': '#FFC0CB',
-    'Nâu': '#A52A2A'
-  }
-  return colorMap[colorName] || '#CCCCCC'
-}
+    Đen: "#000000",
+    Trắng: "#FFFFFF",
+    Xám: "#808080",
+    "Xanh dương": "#0000FF",
+    "Xanh lá": "#00FF00",
+    Đỏ: "#FF0000",
+    Vàng: "#FFFF00",
+    Hồng: "#FFC0CB",
+    Nâu: "#A52A2A",
+  };
+  return colorMap[colorName] || "#CCCCCC";
+};
 
 const handlePrintInvoice = (order) => {
   if (!order) {
-    toastService.warning('Cảnh báo', 'Không có thông tin đơn hàng để in')
-    return
+    toastService.warning("Cảnh báo", "Không có thông tin đơn hàng để in");
+    return;
   }
-  
+
   try {
-    printInvoice(order)
-    toastService.success('Thành công', 'Đang mở cửa sổ in hóa đơn...')
+    printInvoice(order);
+    toastService.success("Thành công", "Đang mở cửa sổ in hóa đơn...");
   } catch (error) {
-    logger.error('Error printing invoice:', error)
-    toastService.apiError(error, 'Không thể in hóa đơn')
+    logger.error("Error printing invoice:", error);
+    toastService.apiError(error, "Không thể in hóa đơn");
   }
-}
+};
 
 const exportOrderToPDF = (order) => {
   if (!order) {
-    toastService.warning('Cảnh báo', 'Không có thông tin đơn hàng để export')
-    return
+    toastService.warning("Cảnh báo", "Không có thông tin đơn hàng để export");
+    return;
   }
-  
+
   try {
-    handlePrintInvoice(order)
-    toastService.success('Thành công', 'Đang mở cửa sổ in hóa đơn...')
+    handlePrintInvoice(order);
+    toastService.success("Thành công", "Đang mở cửa sổ in hóa đơn...");
   } catch (error) {
-    logger.error('Error exporting to PDF:', error)
-    toastService.apiError(error, 'Không thể export PDF')
+    logger.error("Error exporting to PDF:", error);
+    toastService.apiError(error, "Không thể export PDF");
   }
-}
+};
 
 onMounted(() => {
-  fetchOrderDetail()
-})
+  fetchOrderDetail();
+});
 </script>
 
 <style scoped>
 /* Additional styles if needed */
 </style>
-
-

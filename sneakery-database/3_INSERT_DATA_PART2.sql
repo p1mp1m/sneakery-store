@@ -844,6 +844,47 @@ BEGIN
 END;
 GO
 
+-- 1. Tính lại subtotal từ OrderDetails và cập nhật nếu sai
+UPDATE o
+SET 
+    o.subtotal = x.correct_subtotal
+FROM Orders o
+JOIN (
+    SELECT 
+        order_id,
+        SUM(total_price) AS correct_subtotal
+    FROM Order_Details
+    GROUP BY order_id
+) x ON o.id = x.order_id
+WHERE o.subtotal <> x.correct_subtotal;
+
+
+-- 2. Tính lại taxAmount = (subtotal - discountAmount) * 10%
+UPDATE Orders
+SET tax_amount = 
+    ROUND( (subtotal - ISNULL(discount_amount, 0)) * 0.10 , 2)
+WHERE 1 = 1;
+
+
+-- 3. Tính lại totalAmount = subtotal – discount + shippingFee + tax
+UPDATE Orders
+SET total_amount = 
+      subtotal
+    - ISNULL(discount_amount, 0)
+    + ISNULL(shipping_fee, 0)
+    + ISNULL(tax_amount, 0);
+GO
+
+UPDATE product_variants
+SET color = 'Black'
+WHERE color LIKE '%en%';
+GO
+
+UPDATE product_variants
+SET color = 'White'
+WHERE color LIKE '%tr%';
+GO
+
 PRINT '  - Inserted size charts';
 GO
 
