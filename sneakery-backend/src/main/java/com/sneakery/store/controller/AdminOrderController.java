@@ -158,7 +158,7 @@ public class AdminOrderController {
      * 
      * @param id ID của đơn hàng cần lấy
      * @return ResponseEntity chứa AdminOrderDetailDto với thông tin chi tiết đơn hàng (HTTP 200 OK)
-     * @throws ApiException nếu không tìm thấy đơn hàng với ID này
+     * @throws --ApiException nếu không tìm thấy đơn hàng với ID này
      * 
      * @example
      * <pre>
@@ -207,7 +207,7 @@ public class AdminOrderController {
      * @param requestDto DTO chứa trạng thái mới:
      *                   - status: Trạng thái mới (bắt buộc, phải hợp lệ)
      * @return ResponseEntity chứa AdminOrderDetailDto của đơn hàng sau khi cập nhật (HTTP 200 OK)
-     * @throws ApiException nếu không tìm thấy đơn hàng hoặc trạng thái không hợp lệ
+     * @throws --ApiException nếu không tìm thấy đơn hàng hoặc trạng thái không hợp lệ
      * 
      * @example
      * <pre>

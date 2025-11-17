@@ -268,5 +268,18 @@ public class CouponService {
         coupon.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
         return coupon;
     }
+
+//    @Transactional(readOnly = true)
+//    public List<CouponDto> getActiveCoupons() {
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        List<Coupon> list = couponRepository
+//                .findByIsActiveTrueAndStartAtBeforeAndEndAtAfter(now, now);
+//
+//        return list.stream()
+//                .map(this::convertToDto)
+//                .toList();
+//    }
+
 }
 

@@ -83,9 +83,10 @@ public class BrandService {
     @CacheEvict(value = "brands", allEntries = true)
     public BrandDto createBrand(BrandDto brandDto) {
         Brand brand = convertToEntity(brandDto);
-        Brand savedBrand = brandRepository.save(Objects.requireNonNull(brand));
+        Brand savedBrand = brandRepository.save(brand);
         return convertToDto(savedBrand);
     }
+
 
     /**
      * Lấy thông tin thương hiệu theo ID
@@ -144,6 +145,7 @@ public class BrandService {
                 .collect(Collectors.toList());
     }
 
+
     /**
      * Cập nhật thông tin thương hiệu
      * 
@@ -174,16 +176,20 @@ public class BrandService {
      */
     @CacheEvict(value = "brands", allEntries = true)
     public BrandDto updateBrand(Integer id, BrandDto brandDto) {
-        Brand brand = brandRepository.findById(Objects.requireNonNull(id))
+        Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy thương hiệu"));
-        
+
         brand.setName(brandDto.getName());
         brand.setSlug(brandDto.getSlug());
-        brand.setLogoUrl(brandDto.getLogoUrl()); // Giả sử BrandDto có logoUrl
-        
+        brand.setLogoUrl(brandDto.getLogoUrl());
+        brand.setDescription(brandDto.getDescription());
+        brand.setWebsiteUrl(brandDto.getWebsiteUrl());
+        brand.setIsActive(brandDto.getIsActive());
+
         Brand updatedBrand = brandRepository.save(brand);
         return convertToDto(updatedBrand);
     }
+
 
     /**
      * Xóa thương hiệu theo ID
@@ -244,20 +250,29 @@ public class BrandService {
         }
     }
 
-    // --- Mapper ---
+    // --- Mapper (ĐÃ SỬA HOÀN CHỈNH) ---
     private BrandDto convertToDto(Brand brand) {
         return BrandDto.builder()
                 .id(brand.getId())
                 .name(brand.getName())
                 .slug(brand.getSlug())
+                .logoUrl(brand.getLogoUrl())
+                .description(brand.getDescription())
+                .websiteUrl(brand.getWebsiteUrl())
+                .isActive(brand.getIsActive())
+                .createdAt(brand.getCreatedAt())
                 .build();
     }
-    
+
+    // Convert DTO -> Entity (bao gồm mọi trường)
     private Brand convertToEntity(BrandDto dto) {
-        Brand brand = new Brand();
-        brand.setName(dto.getName());
-        brand.setSlug(dto.getSlug());
-        // brand.setLogoUrl(dto.getLogoUrl());
-        return brand;
+        return Brand.builder()
+                .name(dto.getName())
+                .slug(dto.getSlug())
+                .logoUrl(dto.getLogoUrl())
+                .description(dto.getDescription())
+                .websiteUrl(dto.getWebsiteUrl())
+                .isActive(dto.getIsActive())
+                .build();
     }
 }

@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,6 +16,12 @@ public interface CouponRepository extends JpaRepository<Coupon, Integer>, JpaSpe
      * Tìm coupon theo code
      */
     Optional<Coupon> findByCode(String code);
+
+    List<Coupon> findByIsActiveTrueAndStartAtBeforeAndEndAtAfter(
+            LocalDateTime startAt,
+            LocalDateTime endAt
+    );
+
 
     /**
      * Kiểm tra code đã tồn tại chưa

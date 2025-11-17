@@ -706,18 +706,18 @@ const deleteSole = async (id) => {
   }
 
   // ✅ ====== TẠO NHIỀU BIẾN THỂ CÙNG LÚC ======
-const createMultipleProductVariants = async (variantList) => {
-  try {
-    loading.value = true
-    const result = await AdminService.createMultipleProductVariants(variantList)
-    return result
-  } catch (error) {
-    console.error('Error creating multiple product variants:', error)
-    throw error
-  } finally {
-    loading.value = false
+  const createMultipleProductVariants = async (variantList) => {
+    try {
+      loading.value = true
+      const result = await AdminService.createMultipleProductVariants(variantList)
+      return result
+    } catch (error) {
+      console.error('Error creating multiple product variants:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
   }
-}
 
 
   const updateProductVariant = async (id, variantData) => {
@@ -758,6 +758,21 @@ const createMultipleProductVariants = async (variantList) => {
       loading.value = false
     }
   }
+
+  // ===== VARIANT IMAGES =====
+  const fetchVariantImages = async (variantId) => {
+    try {
+      loading.value = true;
+      const result = await AdminService.getVariantImages(variantId);
+      return result || [];
+    } catch (error) {
+      console.error("Error fetching variant images:", error);
+      return [];
+    } finally {
+      loading.value = false;
+    }
+  };
+
 
   // ===== ACTIVITY LOGS =====
   const fetchActivityLogs = async (page = 0, size = 10, filters = {}) => {
@@ -1486,6 +1501,7 @@ const createMultipleProductVariants = async (variantList) => {
     updateProductVariant,
     deleteProductVariant,
     updateVariantStock,
+    fetchVariantImages,
     fetchActivityLogs,
     exportActivityLogs,
     fetchEmailTemplates,

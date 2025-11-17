@@ -1,22 +1,40 @@
 package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.ActivityLogDto;
+import com.sneakery.store.dto.ActivityLogCreateRequest;
 import com.sneakery.store.entity.ActivityLog;
+import com.sneakery.store.entity.User;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.ActivityLogRepository;
+import com.sneakery.store.repository.UserRepository;
+import com.sneakery.store.security.UserPrincipal;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.transaction.annotation.Transactional;
+
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Objects;
+import java.util.Optional;
+
 
 /**
  * Admin Activity Log Controller
@@ -164,5 +182,37 @@ public class AdminActivityLogController {
         activityLogRepository.deleteById(nonNullId);
         return ResponseEntity.ok("Đã xóa nhật ký hoạt động thành công");
     }
+
+    private final UserRepository userRepository;
+
+    @PostMapping
+    @Transactional
+    public ResponseEntity<ActivityLogDto> createLog(@RequestBody ActivityLogCreateRequest req) {
+
+        ActivityLog log = new ActivityLog();
+        log.setAction(req.getAction());
+        log.setEntityType(req.getEntityType());
+        log.setEntityId(req.getEntityId());
+        log.setOldValue(req.getOldValue());
+        log.setNewValue(req.getNewValue());
+
+        // Lấy user + IP + user-agent
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UserPrincipal principal) {
+            Optional<User> user = userRepository.findById(principal.getId());
+            user.ifPresent(log::setUser);
+        }
+
+        HttpServletRequest http =
+                ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+
+        log.setIpAddress(http.getRemoteAddr());
+        log.setUserAgent(http.getHeader("User-Agent"));
+
+        ActivityLog saved = activityLogRepository.save(log);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDto(saved));
+    }
+
 }
 

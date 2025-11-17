@@ -194,6 +194,7 @@ public class AdminOrderService {
                 // Fallback nếu variant null (không nên xảy ra nhưng phòng tránh)
                 return CartItemDto.builder()
                         .variantId(null)
+                        .variantSku(detail.getVariantSku())
                         .productName(detail.getProductName() != null ? detail.getProductName() : "N/A")
                         .brandName("N/A")
                         .size(detail.getSize() != null ? detail.getSize() : "")
@@ -226,6 +227,12 @@ public class AdminOrderService {
             
             return CartItemDto.builder()
                     .variantId(v.getId())
+                    // ⭐ FIX SKU TRẢ VỀ BỊ NULL
+                    .variantSku(
+                            (detail.getVariantSku() != null && !detail.getVariantSku().isEmpty())
+                                    ? detail.getVariantSku()
+                                    : v.getSku()
+                    )
                     .productName(productName)
                     .brandName(brandName)
                     .size(v.getSize() != null ? v.getSize() : detail.getSize() != null ? detail.getSize() : "")

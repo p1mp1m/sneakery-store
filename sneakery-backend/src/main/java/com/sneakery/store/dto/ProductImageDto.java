@@ -1,5 +1,6 @@
 package com.sneakery.store.dto;
 
+import com.sneakery.store.entity.ProductImage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -34,8 +35,8 @@ public class ProductImageDto {
     private String altText;
 
     /** Ảnh chính (true = ảnh đại diện của sản phẩm) */
-    @Schema(description = "Cờ đánh dấu ảnh chính của sản phẩm")
-    private Boolean isPrimary;
+//    @Schema(description = "Cờ đánh dấu ảnh chính của sản phẩm")
+//    private Boolean isPrimary;
 
     /** Thứ tự hiển thị trong gallery (1 = đầu tiên) */
     @Builder.Default
