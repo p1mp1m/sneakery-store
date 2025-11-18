@@ -47,7 +47,8 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
            "AND (:search IS NULL OR :search = '' OR " +
            "CAST(rr.id AS string) LIKE %:search% OR " +
            "CAST(o.id AS string) LIKE %:search% OR " +
-           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))",
+           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))" +
+           "AND (:reason IS NULL OR :reason = '' OR rr.reason = :reason)",
            countQuery = "SELECT count(DISTINCT rr) FROM ReturnRequest rr " +
            "JOIN rr.order o " +
            "JOIN rr.user u " +
@@ -55,10 +56,12 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
            "AND (:search IS NULL OR :search = '' OR " +
            "CAST(rr.id AS string) LIKE %:search% OR " +
            "CAST(o.id AS string) LIKE %:search% OR " +
-           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))"+
+           "AND (:reason IS NULL OR :reason = '' OR rr.reason = :reason)")
     Page<ReturnRequest> findAllWithFilters(
             @Param("status") String status,
             @Param("search") String search,
+            @Param("reason") String reason,
             Pageable pageable
     );
 

@@ -350,7 +350,7 @@ const returnToUpdate = ref(null)
 const oldReturnStatus = ref('')
 const newReturnStatus = ref('')
 const updating = ref(false)
-
+const rejectReason = ref('')
 const filters = reactive({
   search: '',
   status: '',
@@ -466,6 +466,11 @@ const getReturnPreviousStep = (currentStatus) => {
 // Kiểm tra xem có thể chuyển đến status mới không
 const canChangeReturnToStatus = (currentStatus, targetStatus) => {
   const step = RETURN_STATUS_STEPS[currentStatus]
+
+  if (targetStatus === 'rejected') {
+    return true
+  }
+
   if (!step || step.isFinal) {
     return false // Không thể chuyển từ bước cuối
   }
@@ -527,17 +532,21 @@ const handleReturnStatusUpdate = async () => {
   try {
     updating.value = true
     
-    // Gọi API để cập nhật
-    await adminStore.updateReturnStatus(returnId, newReturnStatus.value, '')
-    
-    logger.log('✅ Cập nhật thành công')
-    
-    // Refresh danh sách
+    await adminStore.updateReturnStatus(
+      returnId,
+      newReturnStatus.value,
+      newReturnStatus.value === 'rejected' ? rejectReason.value : ''
+    )
+
     await fetchReturns()
     
-    notificationService.success('Thành công', `Đã cập nhật trạng thái yêu cầu trả hàng #${returnId} từ '${getReturnStatusText(previousStatus)}' sang '${getReturnStatusText(newReturnStatus.value)}' thành công!`)
+    notificationService.success(
+      'Thành công',
+      `Đã cập nhật trạng thái yêu cầu trả hàng #${returnId} từ '${getReturnStatusText(previousStatus)}' sang '${getReturnStatusText(newReturnStatus.value)}' thành công!`
+    )
     
     showStatusConfirm.value = false
+    rejectReason.value = '' // reset
   } catch (error) {
     logger.error('❌ Lỗi khi cập nhật trạng thái:', error)
     notificationService.apiError(error, 'Không thể cập nhật trạng thái yêu cầu trả hàng')
@@ -554,18 +563,13 @@ const handleCancelReturnStatusChange = () => {
   showStatusConfirm.value = false
 }
 
-const rejectReturn = async (item) => {
+const rejectReturn = (item) => {
   const reason = prompt('Lý do từ chối:')
   if (!reason) return
   
-  try {
-    await adminStore.rejectReturn(item.id, reason)
-    notificationService.success('Thành công','Đã từ chối yêu cầu trả hàng!')
-    fetchReturns()
-  } catch (error) {
-    logger.error('Lỗi khi từ chối yêu cầu:', error)
-    notificationService.apiError(error, 'Lỗi khi từ chối yêu cầu trả hàng')
-  }
+  rejectReason.value = reason.trim()
+
+  confirmStatusChange(item, 'rejected')
 }
 
 const getReasonText = (reason, includeNote = true) => {

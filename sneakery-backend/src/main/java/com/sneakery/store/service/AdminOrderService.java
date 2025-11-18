@@ -49,18 +49,19 @@ public class AdminOrderService {
         return orderPage.map(this::convertToOrderListDto);
     }
 
-    // ... (Giữ nguyên các hàm còn lại: getOrderById, updateOrderStatus, và các hàm helper)
-    
+    // ... (Giữ nguyên các hàm còn lại: getOrderById, updateOrderStatus, và các hàm
+    // helper)
+
     @Transactional(readOnly = true)
     public AdminOrderDetailDto getOrderById(Long orderId) {
         Order order = orderRepository.findByIdWithDetails(orderId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng"));
-        
+
         // Load payments và statusHistories riêng để tránh MultipleBagFetchException
         // Trigger lazy loading trong cùng transaction
         order.getPayments().size(); // Trigger lazy load
         order.getStatusHistories().size(); // Trigger lazy load
-        
+
         return convertToOrderDetailDto(order);
     }
 
@@ -77,67 +78,70 @@ public class AdminOrderService {
         // Map status từ frontend format sang backend format
         String normalizedStatus = normalizeOrderStatus(newStatus);
         log.info("🔄 Updating order #{} status: {} -> {}", orderId, order.getStatus(), normalizedStatus);
-        
+
         String oldStatus = order.getStatus();
         order.setStatus(normalizedStatus);
-        
+
         // Kiểm tra xem có phải POS order không (orderNumber bắt đầu bằng "POS-")
         boolean isPOSOrder = order.getOrderNumber() != null && order.getOrderNumber().startsWith("POS-");
-        
+
         // Đối với online/offline orders: trừ kho khi status = "completed" (delivered)
         // POS orders đã được trừ kho khi tạo, không cần trừ lại
         if (!isPOSOrder && "delivered".equalsIgnoreCase(normalizedStatus) && !"delivered".equalsIgnoreCase(oldStatus)) {
             log.info("📦 Deducting stock for online/offline order #{} (status changed to Completed)", orderId);
-            
+
             // Load orderDetails để trừ kho
             for (OrderDetail detail : order.getOrderDetails()) {
                 ProductVariant variant = detail.getVariant();
                 // Nếu variant null (lazy loading chưa trigger), cần load lại
-                // Nhưng thường thì orderDetails đã được load với variant rồi từ findByIdWithDetails
+                // Nhưng thường thì orderDetails đã được load với variant rồi từ
+                // findByIdWithDetails
                 if (variant == null) {
-                    log.warn("⚠️ Variant is null for order detail ID: {}. Order details may not be loaded properly.", detail.getId());
+                    log.warn("⚠️ Variant is null for order detail ID: {}. Order details may not be loaded properly.",
+                            detail.getId());
                     continue;
                 }
-                
+
                 // Kiểm tra tồn kho trước khi trừ
                 int currentStock = variant.getStockQuantity();
                 int quantityToDeduct = detail.getQuantity();
-                
+
                 if (currentStock < quantityToDeduct) {
-                    log.error("❌ Insufficient stock for variant {}: Current={}, Required={}", 
+                    log.error("❌ Insufficient stock for variant {}: Current={}, Required={}",
                             variant.getId(), currentStock, quantityToDeduct);
-                    throw new ApiException(HttpStatus.BAD_REQUEST, 
+                    throw new ApiException(HttpStatus.BAD_REQUEST,
                             String.format("Sản phẩm %s không đủ hàng để hoàn thành đơn hàng. Tồn kho: %d, Yêu cầu: %d",
                                     detail.getProductName(), currentStock, quantityToDeduct));
                 }
-                
+
                 // Trừ kho
                 variant.setStockQuantity(currentStock - quantityToDeduct);
                 variantRepository.save(variant);
-                log.info("✅ Deducted {} units from variant {} (new stock: {})", 
+                log.info("✅ Deducted {} units from variant {} (new stock: {})",
                         quantityToDeduct, variant.getId(), variant.getStockQuantity());
             }
         }
-        
+
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(order);
         history.setStatus(normalizedStatus);
         history.setChangedAt(LocalDateTime.now());
-        
+
         // Save history và thêm vào list của order để đảm bảo nó có trong DTO
         statusHistoryRepository.save(history);
         order.getStatusHistories().add(history);
-        
-        Order savedOrder = orderRepository.save(order); 
+
+        Order savedOrder = orderRepository.save(order);
         log.info("✅ Order #{} status updated successfully to: {}", orderId, normalizedStatus);
-        
+
         // Convert trực tiếp order đã save thay vì query lại
         // Đảm bảo relationships vẫn được giữ trong cùng transaction
         return convertToOrderDetailDto(savedOrder);
     }
-    
+
     /**
-     * Map order status từ frontend format (PascalCase) sang backend format (lowercase)
+     * Map order status từ frontend format (PascalCase) sang backend format
+     * (lowercase)
      * Frontend: Pending, Processing, Shipped, Completed, Cancelled
      * Backend: pending, processing, shipped, delivered, cancelled
      */
@@ -145,9 +149,9 @@ public class AdminOrderService {
         if (status == null || status.trim().isEmpty()) {
             return status;
         }
-        
+
         String normalized = status.trim();
-        
+
         // Map từ PascalCase sang lowercase với các mapping đặc biệt
         switch (normalized) {
             case "Pending":
@@ -186,15 +190,27 @@ public class AdminOrderService {
                 .createdAt(order.getCreatedAt())
                 .build();
     }
-    
+
     private AdminOrderDetailDto convertToOrderDetailDto(Order order) {
         List<CartItemDto> detailDtos = order.getOrderDetails().stream().map(detail -> {
             var v = detail.getVariant();
+
+            String sku = "";
+            // Ưu tiên SKU tại thời điểm đặt hàng (denormalized)
+            if (detail.getVariantSku() != null && !detail.getVariantSku().isEmpty()) {
+                sku = detail.getVariantSku();
+            }
+            // Nếu không có trong detail → fallback SKU của variant hiện tại
+            else if (detail.getVariant() != null && detail.getVariant().getSku() != null) {
+                sku = detail.getVariant().getSku();
+            }
+
             if (v == null) {
                 // Fallback nếu variant null (không nên xảy ra nhưng phòng tránh)
                 return CartItemDto.builder()
                         .variantId(null)
                         .productName(detail.getProductName() != null ? detail.getProductName() : "N/A")
+                        .sku(sku) 
                         .brandName("N/A")
                         .size(detail.getSize() != null ? detail.getSize() : "")
                         .color(detail.getColor() != null ? detail.getColor() : "")
@@ -204,28 +220,30 @@ public class AdminOrderService {
                         .totalPrice(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
                         .build();
             }
-            
+
             // Lấy product và brand với null safety
             String productName = "N/A";
             String brandName = "N/A";
             String imageUrl = "";
-            
+
             if (v.getProduct() != null) {
                 productName = v.getProduct().getName() != null ? v.getProduct().getName() : "N/A";
                 if (v.getProduct().getBrand() != null) {
-                    brandName = v.getProduct().getBrand().getName() != null ? v.getProduct().getBrand().getName() : "N/A";
+                    brandName = v.getProduct().getBrand().getName() != null ? v.getProduct().getBrand().getName()
+                            : "N/A";
                 }
             } else {
                 // Fallback: dùng denormalized data từ OrderDetail
                 productName = detail.getProductName() != null ? detail.getProductName() : "N/A";
             }
-            
+
             if (v.getImageUrl() != null) {
                 imageUrl = v.getImageUrl();
             }
-            
+
             return CartItemDto.builder()
                     .variantId(v.getId())
+                    .sku(sku) 
                     .productName(productName)
                     .brandName(brandName)
                     .size(v.getSize() != null ? v.getSize() : detail.getSize() != null ? detail.getSize() : "")
@@ -238,14 +256,15 @@ public class AdminOrderService {
         }).collect(Collectors.toList());
 
         Payment p = order.getPayments().stream().findFirst().orElse(null);
-        PaymentDto paymentDto = (p == null) ? null : PaymentDto.builder()
-                .id(p.getId())
-                .paymentMethod(p.getPaymentMethod())
-                .status(p.getStatus())
-                .amount(p.getAmount())
-                .paidAt(p.getPaidAt())
-                .build();
-                
+        PaymentDto paymentDto = (p == null) ? null
+                : PaymentDto.builder()
+                        .id(p.getId())
+                        .paymentMethod(p.getPaymentMethod())
+                        .status(p.getStatus())
+                        .amount(p.getAmount())
+                        .paidAt(p.getPaidAt())
+                        .build();
+
         List<OrderStatusHistoryDto> historyDtos = order.getStatusHistories().stream()
                 .map(h -> OrderStatusHistoryDto.builder()
                         .id(h.getId())
@@ -269,9 +288,10 @@ public class AdminOrderService {
                 .statusHistories(historyDtos)
                 .build();
     }
-    
+
     private AddressDto convertToAddressDto(Address address) {
-        if (address == null) return null;
+        if (address == null)
+            return null;
         return AddressDto.builder()
                 .id(address.getId())
                 .recipientName(address.getRecipientName())
@@ -292,20 +312,20 @@ public class AdminOrderService {
     @Transactional
     public OrderDto createPOSOrder(POSOrderRequestDto requestDto) {
         log.info("📦 Creating POS order with {} items", requestDto.getItems().size());
-        
+
         // 1. Generate order number: POS-YYYYMMDD-XXXX
         String orderNumber = generatePOSOrderNumber();
-        
+
         // 2. Lấy User nếu có customerId
         User user = null;
         if (requestDto.getCustomerId() != null) {
             user = userRepository.findById(Objects.requireNonNull(requestDto.getCustomerId()))
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
         }
-        
+
         // 3. Tạo địa chỉ mặc định cho POS (hoặc null nếu không cần)
         Address posAddress = createPOSDefaultAddress(user);
-        
+
         // 4. Tạo Order
         Order order = new Order();
         order.setUser(user);
@@ -316,30 +336,29 @@ public class AdminOrderService {
         order.setStatus("delivered"); // POS orders bán tại quầy, trạng thái delivered ngay
         order.setShippingFee(BigDecimal.ZERO); // POS không có phí ship
         order.setSubtotal(BigDecimal.ZERO); // Sẽ tính sau
-        
+
         // 5. Xử lý items và tính subtotal
         BigDecimal subtotal = BigDecimal.ZERO;
         for (POSOrderItemDto itemDto : requestDto.getItems()) {
             ProductVariant variant;
-            
+
             // Lấy variant
             if (itemDto.getVariantId() != null) {
                 variant = variantRepository.findByIdWithDetails(itemDto.getVariantId())
-                        .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, 
+                        .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,
                                 "Không tìm thấy variant với ID: " + itemDto.getVariantId()));
             } else {
                 // Nếu không có variantId, lấy variant đầu tiên của product
                 variant = variantRepository.findWithFilters(
-                        null, null, null, itemDto.getProductId(), null, 
-                        org.springframework.data.domain.PageRequest.of(0, 1)
-                ).getContent().stream().findFirst()
-                        .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, 
+                        null, null, null, itemDto.getProductId(), null,
+                        org.springframework.data.domain.PageRequest.of(0, 1)).getContent().stream().findFirst()
+                        .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,
                                 "Không tìm thấy variant cho product ID: " + itemDto.getProductId()));
             }
-            
+
             // Kiểm tra tồn kho
             if (variant.getStockQuantity() == null || variant.getStockQuantity() < itemDto.getQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, 
+                throw new ApiException(HttpStatus.BAD_REQUEST,
                         String.format("Sản phẩm %s (Size: %s, Color: %s) không đủ hàng. Tồn kho: %d, Yêu cầu: %d",
                                 variant.getProduct().getName(),
                                 variant.getSize(),
@@ -347,44 +366,46 @@ public class AdminOrderService {
                                 variant.getStockQuantity() != null ? variant.getStockQuantity() : 0,
                                 itemDto.getQuantity()));
             }
-            
+
             // Giảm tồn kho
             int newStock = variant.getStockQuantity() - itemDto.getQuantity();
             variant.setStockQuantity(newStock);
             variantRepository.save(variant);
-            
-            // Lấy giá từ database (effective price: priceSale nếu có, nếu không thì priceBase)
+
+            // Lấy giá từ database (effective price: priceSale nếu có, nếu không thì
+            // priceBase)
             BigDecimal effectivePrice = getEffectivePrice(variant);
-            
-            // Validate giá: Nếu giá từ frontend khác với giá database, log warning và dùng giá từ database
+
+            // Validate giá: Nếu giá từ frontend khác với giá database, log warning và dùng
+            // giá từ database
             if (itemDto.getUnitPrice().compareTo(effectivePrice) != 0) {
                 log.warn("⚠️ Price mismatch for variant {}: Frontend sent {}, Database has {}. Using database price.",
                         variant.getId(), itemDto.getUnitPrice(), effectivePrice);
             }
-            
+
             // Tạo OrderDetail - LUÔN dùng giá từ database để đảm bảo tính nhất quán
             OrderDetail detail = new OrderDetail();
             detail.setOrder(order);
             detail.setVariant(variant);
             detail.setQuantity(itemDto.getQuantity());
             detail.setUnitPrice(effectivePrice); // Dùng giá từ database, không tin tưởng frontend
-            
+
             // Set các trường denormalized (lưu lại thông tin tại thời điểm mua hàng)
             detail.setProductName(variant.getProduct().getName());
             detail.setVariantSku(variant.getSku() != null ? variant.getSku() : "");
             detail.setSize(variant.getSize() != null ? variant.getSize() : "");
             detail.setColor(variant.getColor() != null ? variant.getColor() : "");
-            
+
             // Tính total_price
             BigDecimal totalPrice = effectivePrice.multiply(BigDecimal.valueOf(itemDto.getQuantity()));
             detail.setTotalPrice(totalPrice);
-            
+
             order.getOrderDetails().add(detail);
             subtotal = subtotal.add(totalPrice);
         }
-        
+
         order.setSubtotal(subtotal);
-        
+
         // 6. Xử lý coupon nếu có
         BigDecimal discountAmount = BigDecimal.ZERO;
         Coupon coupon = null;
@@ -392,33 +413,34 @@ public class AdminOrderService {
             try {
                 CouponDto couponDto = couponService.validateCouponCode(requestDto.getDiscountCode());
                 coupon = couponRepository.findById(Objects.requireNonNull(couponDto.getId())).orElse(null);
-                
+
                 if (coupon != null) {
                     // Tính discount amount
                     if ("percent".equalsIgnoreCase(coupon.getDiscountType())) {
                         BigDecimal discount = subtotal.multiply(coupon.getValue()).divide(BigDecimal.valueOf(100));
-                        if (coupon.getMaxDiscountAmount() != null && discount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
+                        if (coupon.getMaxDiscountAmount() != null
+                                && discount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
                             discount = coupon.getMaxDiscountAmount();
                         }
                         discountAmount = discount;
                     } else if ("fixed".equalsIgnoreCase(coupon.getDiscountType())) {
                         discountAmount = coupon.getValue();
                     }
-                    
+
                     // Kiểm tra minOrderAmount
                     if (coupon.getMinOrderAmount() != null && subtotal.compareTo(coupon.getMinOrderAmount()) < 0) {
-                        throw new ApiException(HttpStatus.BAD_REQUEST, 
-                                String.format("Đơn hàng tối thiểu %s để áp dụng mã giảm giá", 
+                        throw new ApiException(HttpStatus.BAD_REQUEST,
+                                String.format("Đơn hàng tối thiểu %s để áp dụng mã giảm giá",
                                         formatCurrency(coupon.getMinOrderAmount())));
                     }
-                    
+
                     // Cập nhật usesCount
                     if (coupon.getUsesCount() == null) {
                         coupon.setUsesCount(0);
                     }
                     coupon.setUsesCount(coupon.getUsesCount() + 1);
                     couponRepository.save(coupon);
-                    
+
                     order.setCoupon(coupon);
                 }
             } catch (ApiException e) {
@@ -429,25 +451,25 @@ public class AdminOrderService {
                 log.warn("Error applying coupon: {}", e.getMessage());
             }
         }
-        
+
         // Nếu có discountAmount từ request, dùng nó (đã validate ở frontend)
         if (requestDto.getDiscountAmount() != null && requestDto.getDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
             discountAmount = requestDto.getDiscountAmount();
         }
-        
+
         order.setDiscountAmount(discountAmount);
-        
+
         // 7. Tính totalAmount
         BigDecimal totalAmount = subtotal.subtract(discountAmount);
         if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
             totalAmount = BigDecimal.ZERO;
         }
         order.setTotalAmount(totalAmount);
-        
+
         // 8. Tạo Payment với status "completed" (đã thanh toán tại quầy)
         // Map payment method từ frontend sang giá trị hợp lệ trong database
         String paymentMethod = mapPaymentMethod(requestDto.getPaymentMethod());
-        
+
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(totalAmount);
@@ -455,18 +477,18 @@ public class AdminOrderService {
         payment.setStatus("completed");
         payment.setPaidAt(LocalDateTime.now());
         order.getPayments().add(payment);
-        
+
         // 9. Tạo OrderStatusHistory
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(order);
         history.setStatus("delivered"); // POS orders bán tại quầy, trạng thái delivered ngay
         history.setChangedAt(LocalDateTime.now());
         order.getStatusHistories().add(history);
-        
+
         // 10. Lưu order
         Order savedOrder = orderRepository.save(order);
         log.info("✅ POS order created: {} - Total: {}", orderNumber, totalAmount);
-        
+
         // 11. Tích điểm loyalty nếu có customerId
         if (user != null) {
             try {
@@ -478,11 +500,11 @@ public class AdminOrderService {
                 // Không throw exception để không làm fail order creation
             }
         }
-        
+
         // 12. Convert to DTO
         return convertToOrderDto(savedOrder);
     }
-    
+
     /**
      * Generate POS order number: POS-YYYYMMDD-XXXX
      * Tối ưu: Sử dụng native query để tìm max sequence thay vì load tất cả orders
@@ -490,22 +512,23 @@ public class AdminOrderService {
     private String generatePOSOrderNumber() {
         String datePrefix = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String prefix = "POS-" + datePrefix + "-%";
-        
+
         // Tối ưu: Query trực tiếp max sequence từ database
         Integer nextSequence = orderRepository.getNextOrderSequence(prefix);
         if (nextSequence == null) {
             nextSequence = 1;
         }
-        
+
         return "POS-" + datePrefix + "-" + String.format("%04d", nextSequence);
     }
-    
+
     /**
      * Tạo địa chỉ mặc định cho POS (địa chỉ cửa hàng)
      * Vì POS order là bán tại cửa hàng, không cần địa chỉ giao hàng thực sự
      * Nhưng database yêu cầu address_shipping_id không được NULL
      * Tối ưu: Tái sử dụng địa chỉ POS chung thay vì tạo mới mỗi lần
-     * Lưu ý: address_type chỉ cho phép 'home', 'office', 'other' - dùng 'other' cho POS
+     * Lưu ý: address_type chỉ cho phép 'home', 'office', 'other' - dùng 'other' cho
+     * POS
      */
     private Address createPOSDefaultAddress(User user) {
         // Tìm địa chỉ POS đã tồn tại (dùng chung cho tất cả POS orders)
@@ -513,15 +536,17 @@ public class AdminOrderService {
         String posLine1 = "Cửa hàng Sneakery";
         String posAddressType = "other";
         Optional<Address> existingPosAddress = addressRepository.findByLine1AndAddressType(posLine1, posAddressType);
-        
+
         if (existingPosAddress.isPresent()) {
             // Tái sử dụng địa chỉ POS đã có
             return existingPosAddress.get();
         }
-        
+
         // Tạo địa chỉ POS mới nếu chưa có
-        // Lưu ý: Address vẫn cần user_id (không thể NULL), nhưng Order có thể NULL user_id
-        // Với POS address, ta cần gán cho một user (có thể dùng user đầu tiên hoặc user đặc biệt)
+        // Lưu ý: Address vẫn cần user_id (không thể NULL), nhưng Order có thể NULL
+        // user_id
+        // Với POS address, ta cần gán cho một user (có thể dùng user đầu tiên hoặc user
+        // đặc biệt)
         Address posAddress = new Address();
         // Nếu user null (khách vãng lai), tìm user đầu tiên để gán cho POS address
         // Vì Address table vẫn yêu cầu user_id NOT NULL
@@ -529,11 +554,11 @@ public class AdminOrderService {
             // Tìm user đầu tiên để gán cho POS address
             // Hoặc có thể tạo một user đặc biệt cho POS trong tương lai
             user = userRepository.findAll().stream().findFirst()
-                    .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                    .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR,
                             "Không tìm thấy user nào trong hệ thống"));
         }
         posAddress.setUser(user);
-        
+
         posAddress.setRecipientName(user.getFullName() != null ? user.getFullName() : "Khách hàng");
         posAddress.setPhone(user.getPhoneNumber() != null ? user.getPhoneNumber() : "0900000000");
         posAddress.setLine1(posLine1);
@@ -546,23 +571,24 @@ public class AdminOrderService {
         posAddress.setIsDefault(false);
         posAddress.setCreatedAt(LocalDateTime.now());
         posAddress.setUpdatedAt(LocalDateTime.now());
-        
+
         // Lưu địa chỉ vào database
         return addressRepository.save(posAddress);
     }
-    
+
     /**
      * Map payment method từ frontend sang giá trị hợp lệ trong database
-     * Database cho phép: 'cod', 'vnpay', 'momo', 'zalopay', 'bank_transfer', 'credit_card'
+     * Database cho phép: 'cod', 'vnpay', 'momo', 'zalopay', 'bank_transfer',
+     * 'credit_card'
      * Frontend có thể gửi: 'cash', 'card', 'bank', 'online'
      */
     private String mapPaymentMethod(String paymentMethod) {
         if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
             return "cod"; // Mặc định là COD (Cash on Delivery)
         }
-        
+
         String method = paymentMethod.toLowerCase().trim();
-        
+
         // Map các giá trị từ frontend sang database
         switch (method) {
             case "cash":
@@ -586,7 +612,7 @@ public class AdminOrderService {
                 return "cod"; // Mặc định là COD nếu không nhận diện được
         }
     }
-    
+
     /**
      * Convert Order to OrderDto (cho POS)
      */
@@ -607,15 +633,16 @@ public class AdminOrderService {
         }).collect(Collectors.toList());
 
         Payment p = order.getPayments().stream().findFirst().orElse(null);
-        PaymentDto paymentDto = (p == null) ? null : PaymentDto.builder()
-                .id(p.getId())
-                .paymentMethod(p.getPaymentMethod())
-                .status(p.getStatus())
-                .amount(p.getAmount())
-                .paidAt(p.getPaidAt())
-                .orderId(order.getId())
-                .orderNumber(order.getOrderNumber())
-                .build();
+        PaymentDto paymentDto = (p == null) ? null
+                : PaymentDto.builder()
+                        .id(p.getId())
+                        .paymentMethod(p.getPaymentMethod())
+                        .status(p.getStatus())
+                        .amount(p.getAmount())
+                        .paidAt(p.getPaidAt())
+                        .orderId(order.getId())
+                        .orderNumber(order.getOrderNumber())
+                        .build();
 
         // Lấy coupon code nếu có
         String couponCode = null;
@@ -637,22 +664,23 @@ public class AdminOrderService {
                 .orderDetails(detailDtos)
                 .build();
     }
-    
+
     /**
      * Lấy danh sách POS orders với pagination
      */
     @Transactional(readOnly = true)
     public Page<OrderDto> getPOSOrders(Pageable pageable) {
         log.info("📋 Fetching POS orders - page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
-        
+
         // Lấy POS orders (orderNumber bắt đầu bằng "POS-")
         Page<Order> orderPage = orderRepository.findPOSOrders(null, null, pageable);
-        
+
         return orderPage.map(this::convertToOrderDto);
     }
 
     /**
-     * Helper: Lấy giá hiệu quả từ variant (priceSale nếu có, nếu không thì priceBase)
+     * Helper: Lấy giá hiệu quả từ variant (priceSale nếu có, nếu không thì
+     * priceBase)
      */
     private BigDecimal getEffectivePrice(ProductVariant variant) {
         if (variant.getPriceSale() != null && variant.getPriceSale().compareTo(BigDecimal.ZERO) > 0) {
@@ -660,7 +688,7 @@ public class AdminOrderService {
         }
         return variant.getPriceBase();
     }
-    
+
     /**
      * Helper: Format currency
      */

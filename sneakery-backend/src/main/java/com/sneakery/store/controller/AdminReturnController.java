@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/admin/returns")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
+@CrossOrigin(origins = { "http://localhost:5173", "http://127.0.0.1:5173" })
 public class AdminReturnController {
 
     private final AdminReturnService adminReturnService;
@@ -38,14 +38,13 @@ public class AdminReturnController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String status
-    ) {
+            @RequestParam(required = false) String reason,
+            @RequestParam(required = false) String status) {
         log.info("📍 GET /api/admin/returns - page: {}, size: {}", page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<AdminReturnListDto> returns = adminReturnService.getAllReturns(search, status, pageable);
-
-        return ResponseEntity.ok(returns);
+        Page<AdminReturnListDto> result = adminReturnService.getAllReturns(search, status, reason, pageable);
+        return ResponseEntity.ok(result);
     }
 
     /**
@@ -68,15 +67,14 @@ public class AdminReturnController {
     public ResponseEntity<AdminReturnDto> updateReturnStatus(
             @PathVariable Long id,
             @RequestBody UpdateReturnStatusRequest request,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         log.info("📍 PUT /api/admin/returns/{}/status - status: {}", id, request.getStatus());
 
         // Get admin ID from authentication principal (User entity)
-        Long adminId = getAdminIdFromAuthentication(authentication);
+        User admin = (User) authentication.getPrincipal();
+        Long adminId = admin.getId();
         AdminReturnDto updated = adminReturnService.updateReturnStatus(
-                id, request.getStatus(), adminId, request.getAdminNote()
-        );
+                id, request.getStatus(), adminId, request.getAdminNote());
 
         return ResponseEntity.ok(updated);
     }
@@ -88,12 +86,12 @@ public class AdminReturnController {
     @PostMapping("/{id}/refund")
     public ResponseEntity<AdminReturnDto> processRefund(
             @PathVariable Long id,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         log.info("📍 POST /api/admin/returns/{}/refund", id);
 
         // Get admin ID from authentication principal (User entity)
-        Long adminId = getAdminIdFromAuthentication(authentication);
+        User admin = (User) authentication.getPrincipal();
+        Long adminId = admin.getId();
         AdminReturnDto updated = adminReturnService.processRefund(id, adminId);
 
         return ResponseEntity.ok(updated);
@@ -117,4 +115,3 @@ public class AdminReturnController {
         private String adminNote;
     }
 }
-
