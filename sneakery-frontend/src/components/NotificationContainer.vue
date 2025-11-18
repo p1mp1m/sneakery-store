@@ -177,7 +177,8 @@ export default {
    ============================================ */
 .notification-container {
   position: fixed !important;
-  bottom: var(--spacing-xl, 2rem) !important;
+  top: var(--spacing-xl, 2rem) !important;
+  bottom: unset !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   z-index: var(--z-toast, 9999) !important;
@@ -219,19 +220,26 @@ export default {
   display: flex !important;
   align-items: flex-start !important;
   gap: var(--spacing-md, 1rem) !important;
+  min-height: 64px !important;
+  height: auto !important;
+  min-width: 360px !important; 
+  max-width: min(90vw, 420px) !important; 
+  width: 100% !important;
+
   padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem) !important;
-  min-height: 56px !important;
-  min-width: 344px !important;
-  max-width: min(92vw, 900px) !important;
-  width: max-content !important;
   border-radius: var(--radius-xl, 1rem) !important;
   box-shadow: var(--shadow-xl) !important;
+  
   backdrop-filter: blur(12px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
   border: var(--border-width-thin, 1px) solid var(--border-color-light, rgba(226, 232, 240, 1)) !important;
+  box-shadow: none !important;
   background: var(--bg-glass, rgba(255, 255, 255, 0.95)) !important;
+
   transition: all var(--transition-base, 0.2s ease) !important;
   cursor: default !important;
+
+  /* 👉 giữ nguyên các reset */
   position: static !important;
   overflow: visible !important;
   visibility: visible !important;
