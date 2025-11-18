@@ -131,7 +131,7 @@
           <div class="space-y-3 mb-4 md:mb-6">
             <div class="relative group">
               <div
-                class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur-xl"
+                class="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur-xl pointer-events-none"
               ></div>
               <i
                 class="material-icons absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 group-focus-within:text-purple-500 transition-colors"
