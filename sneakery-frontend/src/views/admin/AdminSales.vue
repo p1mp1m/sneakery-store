@@ -319,26 +319,44 @@
             </div>
 
             <!-- Load More Button -->
-            <div v-if="hasMoreProducts" class="flex justify-center pt-2">
+            <!-- Nút XEM THÊM -->
+            <div
+              v-if="!noMoreProducts && !loading"
+              class="flex justify-center pt-2"
+            >
               <button
-                @click="showAllProducts"
+                @click="loadMoreProducts"
                 class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl hover:scale-105"
               >
                 <i class="material-icons text-lg">expand_more</i>
-                Xem thêm sản phẩm ({{ products.length - displayLimit }})
+                Xem thêm sản phẩm
               </button>
+            </div>
+
+            <!-- Thông báo đã tải hết -->
+            <div
+              v-else-if="noMoreProducts && displayedProducts.length > 0"
+              class="text-center pt-2 text-xs text-gray-500 dark:text-gray-400"
+            >
+              Đã hiển thị toàn bộ {{ displayedProducts.length }} sản phẩm
             </div>
 
             <!-- Info khi đã hiển thị tất cả -->
             <div
-              v-if="!hasMoreProducts && displayedProducts.length > 0"
+              v-if="
+                !hasMoreProducts &&
+                !noMoreProducts &&
+                displayedProducts.length > 0
+              "
               class="text-center pt-2"
             >
               <p class="text-xs text-gray-500 dark:text-gray-400">
                 Đang hiển thị {{ displayedProducts.length }} sản phẩm
-                <span v-if="searchQuery.trim() || filterBrand || filterCategory"
-                  >(kết quả tìm kiếm/lọc)</span
+                <span
+                  v-if="searchQuery.trim() || filterBrand || filterCategory"
                 >
+                  (kết quả tìm kiếm/lọc)
+                </span>
               </p>
             </div>
           </div>
@@ -1672,8 +1690,8 @@ const salesHistory = ref([]);
 const loadingHistory = ref(false);
 const barcodeInput = ref(null);
 const searchTimeout = ref(null);
-const displayLimit = ref(12); // Số lượng sản phẩm hiển thị ban đầu
-const showingAll = ref(false); // Trạng thái có đang hiển thị tất cả không
+// const displayLimit = ref(12); // Số lượng sản phẩm hiển thị ban đầu
+// const showingAll = ref(false); // Trạng thái có đang hiển thị tất cả không
 const showVariantModal = ref(false);
 const selectedProduct = ref(null);
 const selectedVariant = ref(null);
@@ -1689,6 +1707,17 @@ const badgeAnimationKey = ref(0); // Key để trigger animation khi badge thay 
 // ⭐ Hover ảnh khi di chuột
 const hoverProduct = ref(null);
 const hoverImage = (product) => hoverProduct.value === product.id;
+
+// Pagination state
+// ⭐ Phân trang POS
+const pageIndex = ref(0);
+const pageSize = 20;
+const totalPages = ref(1);
+
+// Có còn trang để load không?
+const noMoreProducts = ref(false);
+
+const loadingMore = ref(false);
 
 // Create customer modal state
 const showCreateCustomerModal = ref(false);
@@ -1732,45 +1761,87 @@ const totalCartQuantity = computed(() => {
 });
 
 // Computed để lấy sản phẩm hiển thị (giới hạn số lượng)
-const displayedProducts = computed(() => {
-  if (
-    showingAll.value ||
-    searchQuery.value.trim() ||
-    filterBrand.value ||
-    filterCategory.value
-  ) {
-    // Khi search/filter hoặc đã click "Xem thêm", hiển thị tất cả
-    return products.value;
-  }
-  // Chỉ hiển thị một số sản phẩm gợi ý
-  return products.value.slice(0, displayLimit.value);
-});
+// const displayedProducts = computed(() => {
+//   if (
+//     showingAll.value ||
+//     searchQuery.value.trim() ||
+//     filterBrand.value ||
+//     filterCategory.value
+//   ) {
+//     // Khi search/filter hoặc đã click "Xem thêm", hiển thị tất cả
+//     return products.value;
+//   }
+//   // Chỉ hiển thị một số sản phẩm gợi ý
+//   return products.value.slice(0, displayLimit.value);
+// });
+const displayedProducts = computed(() => products.value);
 
-const hasMoreProducts = computed(() => {
-  return (
-    !showingAll.value &&
-    !searchQuery.value.trim() &&
-    !filterBrand.value &&
-    !filterCategory.value &&
-    products.value.length > displayLimit.value
-  );
-});
+const loadPage = async (pageIndex = 0, filters = {}) => {
+  try {
+    loading.value = true;
+
+    const result = await adminStore.fetchProducts(pageIndex, pageSize, {
+      isActive: true,
+      ...filters,
+    });
+
+    let items = result.content || [];
+
+    // Nếu là trang đầu → reset
+    if (pageIndex === 0) {
+      products.value = items;
+    } else {
+      products.value = [...products.value, ...items];
+    }
+
+    // Kiểm tra đã hết trang hay chưa
+    noMoreProducts.value = result.last === true || items.length < pageSize;
+  } catch (error) {
+    notificationService.apiError(error, "Không thể tải danh sách sản phẩm");
+  } finally {
+    loading.value = false;
+  }
+};
+
+// const hasMoreProducts = computed(() => {
+//   return (
+//     !showingAll.value &&
+//     !searchQuery.value.trim() &&
+//     !filterBrand.value &&
+//     !filterCategory.value &&
+//     products.value.length > displayLimit.value
+//   );
+// });
 
 // Methods
 const loadData = async () => {
   try {
     loading.value = true;
 
-    // Load products, brands, and categories in parallel - chỉ load 20 sản phẩm đầu tiên
+    // ⭐ Đảm bảo pageIndex tồn tại (tránh ReferenceError)
+    if (typeof pageIndex === "undefined") {
+      console.error("❌ pageIndex chưa được khai báo!");
+    }
+
+    pageIndex.value = 0; // reset về trang đầu
+    noMoreProducts.value = false;
+    totalPages.value = 1;
+
+    // Load products, brands, categories song song — GIỮ NGUYÊN
     const [productsResult, brandsResult, categoriesResult] = await Promise.all([
-      adminStore.fetchProducts(0, 20, { isActive: true }), // Giảm từ 100 xuống 20
+      adminStore.fetchProducts(pageIndex.value, pageSize, { isActive: true }),
       adminStore.fetchBrands(),
       adminStore.fetchCategories(),
     ]);
 
-    let productsList = productsResult.content || productsResult || [];
+    console.log("🔥 FETCH PRODUCTS RESULT:", productsResult);
 
-    // Enrich products với variants nếu cần (fetch detail cho những product không có price)
+    // ⭐ Lưu lại total pages (thêm biến nếu chưa có)
+    totalPages.value = productsResult.totalPages ?? 1;
+
+    let productsList = productsResult.content || [];
+
+    // ⭐ GIỮ NGUYÊN LOGIC enrich
     const productsNeedingDetails = productsList.filter(
       (p) =>
         !p.price &&
@@ -1783,14 +1854,13 @@ const loadData = async () => {
       productsNeedingDetails.length > 0 &&
       productsNeedingDetails.length <= 20
     ) {
-      // Chỉ fetch detail nếu số lượng không quá nhiều (tránh quá tải)
       try {
         const detailPromises = productsNeedingDetails.map((p) =>
           adminStore.getProductById(p.id).catch(() => null)
         );
+
         const details = await Promise.all(detailPromises);
 
-        // Merge details vào products
         productsList = productsList.map((product) => {
           const detail = details.find((d) => d && d.id === product.id);
           if (detail) {
@@ -1812,17 +1882,49 @@ const loadData = async () => {
       }
     }
 
+    // ⭐ Cập nhật products
     products.value = productsList;
+
+    // ⭐ Giữ nguyên logic set brands/cats
     brands.value = brandsResult.content || brandsResult || [];
     categories.value = categoriesResult.content || categoriesResult || [];
 
-    // Reset showingAll khi load lại data
-    showingAll.value = false;
+    // ⭐ GIỮ NGUYÊN — nhưng showingAll phải tồn tại trước
+    if (typeof showingAll !== "undefined") {
+      showingAll.value = false;
+    }
+
+    // ⭐ Tự động đánh dấu đã hết trang nếu < pageSize
+    if (productsList.length < pageSize) {
+      noMoreProducts.value = true;
+    }
   } catch (error) {
     logger.error("Error loading data:", error);
     notificationService.apiError(error, "Không thể tải dữ liệu");
   } finally {
     loading.value = false;
+  }
+};
+
+const loadMore = async () => {
+  if (noMoreProducts.value) return;
+
+  try {
+    loadingMore.value = true;
+    pageIndex.value++;
+
+    const result = await adminStore.fetchProducts(pageIndex.value, pageSize, {
+      isActive: true,
+    });
+
+    const newProducts = result.content || [];
+
+    // Merge thêm sản phẩm
+    products.value = [...products.value, ...newProducts];
+  } catch (error) {
+    logger.error("Error loading more products:", error);
+  } finally {
+    loadingMore.value = false;
   }
 };
 
@@ -2381,27 +2483,41 @@ watch(showCustomerModal, async (newVal) => {
   }
 });
 
-const showAllProducts = () => {
-  showingAll.value = true;
-  // Load thêm sản phẩm nếu cần
-  if (products.value.length <= displayLimit.value) {
-    loadMoreProducts();
-  }
-};
+// const showAllProducts = () => {
+//   showingAll.value = true;
+//   // Load thêm sản phẩm nếu cần
+//   if (products.value.length <= displayLimit.value) {
+//     loadMoreProducts();
+//   }
+// };
 
 const loadMoreProducts = async () => {
+  if (noMoreProducts.value || loading.value) return;
+
+  pageIndex.value++;
+
   try {
-    loading.value = true;
-    const result = await adminStore.fetchProducts(0, 50, { isActive: true });
-    const newProducts = result.content || result || [];
-    // Merge với products hiện tại, loại bỏ duplicate
-    const existingIds = new Set(products.value.map((p) => p.id));
-    const uniqueNewProducts = newProducts.filter((p) => !existingIds.has(p.id));
-    products.value = [...products.value, ...uniqueNewProducts];
+    loadingMore.value = true;
+
+    const result = await adminStore.fetchProducts(pageIndex.value, pageSize, {
+      isActive: true,
+      search: searchQuery.value || null,
+      brandId: filterBrand.value || null,
+      categoryId: filterCategory.value || null,
+    });
+
+    const items = result.content || [];
+
+    products.value = [...products.value, ...items];
+
+    // Kiểm tra hết trang
+    if (items.length < pageSize || pageIndex.value >= result.totalPages - 1) {
+      noMoreProducts.value = true;
+    }
   } catch (error) {
     logger.error("Error loading more products:", error);
   } finally {
-    loading.value = false;
+    loadingMore.value = false;
   }
 };
 
