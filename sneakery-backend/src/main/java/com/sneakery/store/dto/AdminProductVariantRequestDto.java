@@ -43,6 +43,6 @@ public class AdminProductVariantRequestDto {
     @PositiveOrZero(message = "Trọng lượng phải lớn hơn hoặc bằng 0")
     private Integer weightGrams;
     
-    private String imageUrl;
+//    private String imageUrl;
     private Boolean isActive;
 }

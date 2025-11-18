@@ -32,5 +32,5 @@ public class AdminVariantRequestDto {
     @PositiveOrZero(message = "Số lượng phải lớn hơn hoặc bằng 0")
     private Integer stockQuantity;
 
-    private String imageUrl;
+//    private String imageUrl;
 }

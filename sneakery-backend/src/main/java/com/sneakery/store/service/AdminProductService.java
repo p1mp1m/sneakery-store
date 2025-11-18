@@ -297,7 +297,7 @@ public class AdminProductService {
         product.setCategories(categories);
         product.setMaterial(material);
         product.setShoeSole(shoeSole);
-        product.setMainImageUrl(requestDto.getMainImageUrl());
+//        product.setMainImageUrl(requestDto.getMainImageUrl());
 
         // 7️⃣ Cập nhật variants
         updateProductVariants(product, requestDto.getVariants());
@@ -468,7 +468,7 @@ private AdminProductListDto convertToListDto(Product product) {
             .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
             .priceFrom(priceFrom)
             .priceTo(priceTo)
-            .mainImageUrl(product.getMainImageUrl())
+//            .mainImageUrl(product.getMainImageUrl())
             .build();
 }
 
@@ -651,7 +651,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 existing.setPriceBase(dto.getPriceBase());
                 existing.setPriceSale(dto.getPriceSale());
                 existing.setStockQuantity(dto.getStockQuantity());
-                existing.setImageUrl(dto.getImageUrl());
+//                existing.setImageUrl(dto.getImageUrl());
             } else {
                 // 🆕 Thêm mới (chỉ tạo nếu SKU chưa tồn tại)
                 if (variantRepository.existsBySku(dto.getSku())) {
@@ -666,7 +666,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 newVariant.setPriceBase(dto.getPriceBase());
                 newVariant.setPriceSale(dto.getPriceSale());
                 newVariant.setStockQuantity(dto.getStockQuantity());
-                newVariant.setImageUrl(dto.getImageUrl());
+//                newVariant.setImageUrl(dto.getImageUrl());
                 product.getVariants().add(newVariant);
             }
         }
@@ -700,7 +700,7 @@ private AdminProductListDto convertToListDto(Product product) {
         variant.setPriceBase(dto.getPriceBase());
         variant.setPriceSale(dto.getPriceSale());
         variant.setStockQuantity(dto.getStockQuantity());
-        variant.setImageUrl(dto.getImageUrl());
+//        variant.setImageUrl(dto.getImageUrl());
 
         // 🟢 Giữ trạng thái isActive nếu có
         if (variant.getIsActive() == null) {
@@ -735,7 +735,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 dto.setPriceBase(v.getPriceBase());
                 dto.setPriceSale(v.getPriceSale());
                 dto.setStockQuantity(v.getStockQuantity());
-                dto.setImageUrl(v.getImageUrl());
+//                dto.setImageUrl(v.getImageUrl());
                 return dto;
             }).collect(Collectors.toList());
 
@@ -772,7 +772,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 .priceTo(priceTo)
                 .categories(categoryDtos)
                 .variants(variantDtos)
-                .mainImageUrl(product.getMainImageUrl()) // ✅ Trả về ảnh bìa chính
+//                .mainImageUrl(product.getMainImageUrl()) // ✅ Trả về ảnh bìa chính
                 .build();
     }
 
@@ -835,7 +835,7 @@ private AdminProductListDto convertToListDto(Product product) {
                 variant.setPriceBase(dto.getPriceBase());
                 variant.setPriceSale(dto.getPriceSale());
                 variant.setStockQuantity(dto.getStockQuantity());
-                variant.setImageUrl(dto.getImageUrl());
+//                variant.setImageUrl(dto.getImageUrl());
 
                 product.getVariants().add(variant);
 
@@ -998,7 +998,7 @@ private AdminProductListDto convertToListDto(Product product) {
                     newVariant.setPriceBase(v.getPriceBase());
                     newVariant.setPriceSale(v.getPriceSale());
                     newVariant.setStockQuantity(0); // Đặt về 0 để admin cập nhật
-                    newVariant.setImageUrl(v.getImageUrl());
+//                    newVariant.setImageUrl(v.getImageUrl());
                     return newVariant;
                 })
                 .collect(Collectors.toList());

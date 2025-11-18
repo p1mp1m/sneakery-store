@@ -150,7 +150,7 @@ public class ProductController {
      * 
      * @param id ID của sản phẩm cần lấy
      * @return ResponseEntity chứa AdminProductDetailDto với thông tin chi tiết sản phẩm (HTTP 200 OK)
-     * @throws ApiException với status 404 nếu không tìm thấy sản phẩm hoặc sản phẩm không active
+     * @throws --ApiException với status 404 nếu không tìm thấy sản phẩm hoặc sản phẩm không active
      * 
      * @example
      * <pre>

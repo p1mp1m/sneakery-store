@@ -139,7 +139,7 @@ public class AdminProductVariantService {
             ? requestDto.getLowStockThreshold() 
             : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
         variant.setWeightGrams(requestDto.getWeightGrams());
-        variant.setImageUrl(requestDto.getImageUrl());
+//        variant.setImageUrl(requestDto.getImageUrl());
         variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
         variant.setCreatedAt(LocalDateTime.now());
         variant.setUpdatedAt(LocalDateTime.now());
@@ -204,7 +204,7 @@ public class AdminProductVariantService {
             ? requestDto.getLowStockThreshold() 
             : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
                 variant.setWeightGrams(requestDto.getWeightGrams());
-                variant.setImageUrl(requestDto.getImageUrl());
+//                variant.setImageUrl(requestDto.getImageUrl());
                 variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
                 variant.setCreatedAt(LocalDateTime.now());
                 variant.setUpdatedAt(LocalDateTime.now());
@@ -246,7 +246,7 @@ public class AdminProductVariantService {
         variant.setStockQuantity(requestDto.getStockQuantity());
         variant.setLowStockThreshold(requestDto.getLowStockThreshold());
         variant.setWeightGrams(requestDto.getWeightGrams());
-        variant.setImageUrl(requestDto.getImageUrl());
+//        variant.setImageUrl(requestDto.getImageUrl());
         variant.setIsActive(requestDto.getIsActive());
         variant.setUpdatedAt(LocalDateTime.now());
 
@@ -378,15 +378,15 @@ public class AdminProductVariantService {
         String brandName = (variant.getProduct() != null && variant.getProduct().getBrand() != null) 
                 ? variant.getProduct().getBrand().getName() : "Unknown Brand";
 
-        String imageUrl = variant.getImageUrl();
+//        String imageUrl = variant.getImageUrl();
 
         // ✅ Added: nếu imageUrl null → lấy ảnh bìa từ bảng Product_Images
-        if ((imageUrl == null || imageUrl.isBlank()) && productId != null) {
-            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
-            if (coverImage.isPresent()) {
-                imageUrl = coverImage.get().getImageUrl();
-            }
-        }
+//        if ((imageUrl == null || imageUrl.isBlank()) && productId != null) {
+//            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+//            if (coverImage.isPresent()) {
+//                imageUrl = coverImage.get().getImageUrl();
+//            }
+//        }
 
         return AdminProductVariantDto.builder()
                 .id(variant.getId())
@@ -399,7 +399,7 @@ public class AdminProductVariantService {
                 .stockQuantity(variant.getStockQuantity())
                 .lowStockThreshold(variant.getLowStockThreshold())
                 .weightGrams(variant.getWeightGrams())
-                .imageUrl(imageUrl)
+//                .imageUrl(imageUrl)
                 .isActive(variant.getIsActive())
                 .createdAt(variant.getCreatedAt())
                 .updatedAt(variant.getUpdatedAt())

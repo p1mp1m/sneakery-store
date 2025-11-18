@@ -8,21 +8,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * PublicProductImageController
- * ----------------------------
- * API PUBLIC trả về toàn bộ ảnh gallery theo product.
- * FE dùng để load tất cả ảnh và đổi ảnh khi hover.
- */
 @RestController
-@RequestMapping("/api/products/images")
+@RequestMapping("/api/admin/products/images")
 @RequiredArgsConstructor
-public class PublicProductImageController {
+public class AdminProductImageController {
 
     private final ProductImageService productImageService;
 
+    /**
+     * Admin: lấy toàn bộ ảnh gallery theo product (giống y API public)
+     */
     @GetMapping
-    public ResponseEntity<List<ProductImagePublicDto>> getAllImages() {
+    public ResponseEntity<List<ProductImagePublicDto>> getAllImagesAdmin() {
         return ResponseEntity.ok(productImageService.getAllImagesPublic());
     }
 }

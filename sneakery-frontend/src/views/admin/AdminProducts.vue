@@ -1588,7 +1588,8 @@ import { ref, computed, onMounted } from "vue";
 import { nextTick } from "vue";
 import axios from "axios";
 import { useAdminStore } from "@/stores/admin";
-import notificationService from "@/utils/notificationService";
+// import toastService from "@/utils/toastService";
+import toastService from "@/utils/toastService";
 import logger from "@/utils/logger";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 // import UploadGallery from "@/assets/components/admin/UploadGallery.vue";
@@ -1736,7 +1737,7 @@ const handleCreateCategory = async () => {
     submittingCategory.value = true;
     await adminStore.createCategory(newCategory.value);
 
-    notificationService.success(
+    toastService.success(
       "Thành công",
       `Đã thêm danh mục "${newCategory.value.name}" thành công!`
     );
@@ -1753,7 +1754,7 @@ const handleCreateCategory = async () => {
     closeCategoryModal();
   } catch (error) {
     logger.error("Lỗi khi thêm danh mục:", error);
-    notificationService.apiError(error, "Không thể thêm danh mục");
+    toastService.apiError(error, "Không thể thêm danh mục");
   } finally {
     submittingCategory.value = false;
   }
@@ -2082,7 +2083,7 @@ const showBulkDeleteConfirm = ref(false);
 
 const bulkDelete = async () => {
   if (selectedProducts.value.length === 0) {
-    notificationService.warning(
+    toastService.warning(
       "Cảnh báo",
       "Vui lòng chọn ít nhất một sản phẩm để xóa"
     );
@@ -2097,7 +2098,7 @@ const bulkDeleteConfirmed = async () => {
     const totalCount = selectedProducts.value.length;
 
     // Hiển thị toast "Đang xử lý..."
-    loadingToastId = notificationService.info(
+    loadingToastId = toastService.info(
       "Đang xử lý...",
       `Đang xóa ${totalCount} sản phẩm...`,
       { duration: 0 }
@@ -2109,9 +2110,9 @@ const bulkDeleteConfirmed = async () => {
 
     // Đóng toast loading và hiển thị toast success
     if (loadingToastId) {
-      notificationService.removeNotification(loadingToastId);
+      toastService.removeNotification(loadingToastId);
     }
-    notificationService.success(
+    toastService.success(
       "Thành công",
       `Đã xóa ${totalCount} sản phẩm thành công!`
     );
@@ -2133,7 +2134,7 @@ const bulkDeleteConfirmed = async () => {
   } catch (error) {
     // Đóng toast loading nếu có lỗi
     if (loadingToastId) {
-      notificationService.removeNotification(loadingToastId);
+      toastService.removeNotification(loadingToastId);
     }
     handleError(error, { showToast: true, log: true });
   }
@@ -2410,12 +2411,12 @@ const handleSubmit = async (submittedData = null) => {
 
     // ==================== [1] VALIDATE CƠ BẢN ====================
     if (!formData.value.name?.trim()) {
-      notificationService.warning("Cảnh báo", "Vui lòng nhập tên sản phẩm");
+      toastService.warning("Cảnh báo", "Vui lòng nhập tên sản phẩm");
       return;
     }
 
     if (!formData.value.slug?.trim()) {
-      notificationService.warning(
+      toastService.warning(
         "Cảnh báo",
         "Slug không được để trống (hãy nhập tên để tự sinh slug)"
       );
@@ -2423,7 +2424,7 @@ const handleSubmit = async (submittedData = null) => {
     }
 
     if (!formData.value.brandId) {
-      notificationService.warning("Cảnh báo", "Vui lòng chọn thương hiệu");
+      toastService.warning("Cảnh báo", "Vui lòng chọn thương hiệu");
       return;
     }
 
@@ -2431,15 +2432,12 @@ const handleSubmit = async (submittedData = null) => {
       !formData.value.categoryIds ||
       formData.value.categoryIds.length === 0
     ) {
-      notificationService.warning(
-        "Cảnh báo",
-        "Vui lòng chọn ít nhất 1 danh mục"
-      );
+      toastService.warning("Cảnh báo", "Vui lòng chọn ít nhất 1 danh mục");
       return;
     }
 
     if (!formData.value.variants || formData.value.variants.length === 0) {
-      notificationService.warning(
+      toastService.warning(
         "Cảnh báo",
         "Vui lòng thêm ít nhất 1 biến thể sản phẩm"
       );
@@ -2447,7 +2445,7 @@ const handleSubmit = async (submittedData = null) => {
     }
 
     if (productImages.value.length > MAX_IMAGES_PER_PRODUCT) {
-      notificationService.warning(
+      toastService.warning(
         "Cảnh báo",
         `Tối đa ${MAX_IMAGES_PER_PRODUCT} ảnh cho mỗi sản phẩm`
       );
@@ -2487,25 +2485,6 @@ const handleSubmit = async (submittedData = null) => {
     // Sau khi tính xong mới clear để vòng sau không bị lặp
     removedImageUrls.value = [];
 
-    // ==================== [4] TẠO / CẬP NHẬT SẢN PHẨM ====================
-    // const productPayload = {
-    //   name: dataToSubmit.name?.trim(),
-    //   slug: dataToSubmit.slug?.trim(),
-    //   description: dataToSubmit.description?.trim() || "",
-    //   brandId: dataToSubmit.brandId,
-    //   categoryIds: dataToSubmit.categoryIds,
-    //   materialId: dataToSubmit.materialId,
-    //   shoeSoleId: dataToSubmit.shoeSoleId,
-    //   isActive: dataToSubmit.isActive ?? true,
-    //   variants: dataToSubmit.variants.map((v) => ({
-    //     sku: v.sku,
-    //     color: v.color,
-    //     size: v.size,
-    //     priceBase: Number(v.priceBase) || 0,
-    //     priceSale: Number(v.priceSale) || 0,
-    //     stockQuantity: Number(v.stockQuantity) || 0,
-    //   })),
-    // };
     // ==================== [4] TẠO / CẬP NHẬT SẢN PHẨM ====================
     const productPayload = {
       id: dataToSubmit.id || null,
@@ -2596,7 +2575,7 @@ const handleSubmit = async (submittedData = null) => {
           uploadedImagesMap.set(img, uploadedUrl);
         } catch (err) {
           logger.error("❌ Upload ảnh local lỗi:", err);
-          notificationService.apiError(err, "Upload ảnh local thất bại");
+          toastService.apiError(err, "Upload ảnh local thất bại");
         }
       } else if (img.type === "url" && img.previewUrl) {
         try {
@@ -2615,7 +2594,7 @@ const handleSubmit = async (submittedData = null) => {
           uploadedImagesMap.set(img, uploadedUrl);
         } catch (err) {
           logger.error("❌ Upload ảnh URL lỗi:", err);
-          notificationService.apiError(err, "Upload ảnh URL thất bại");
+          toastService.apiError(err, "Upload ảnh URL thất bại");
         }
       }
     }
@@ -2684,10 +2663,7 @@ const handleSubmit = async (submittedData = null) => {
         );
         updatedIds.add(currentPrimary.id);
 
-        notificationService.success(
-          "Thành công",
-          "Đã cập nhật ảnh bìa thành công!"
-        );
+        toastService.success("Thành công", "Đã cập nhật ảnh bìa thành công!");
       }
 
       // 🔹 [6.3] Cập nhật displayOrder & isPrimary nếu thay đổi
@@ -2785,7 +2761,7 @@ const handleSubmit = async (submittedData = null) => {
       }
     } catch (err) {
       logger.error("❌ Lỗi khi xử lý ảnh bìa / thứ tự hiển thị:", err);
-      notificationService.apiError(
+      toastService.apiError(
         err,
         "Cập nhật ảnh bìa hoặc thứ tự hiển thị thất bại"
       );
@@ -2807,7 +2783,7 @@ const handleSubmit = async (submittedData = null) => {
     }
 
     // ==================== [8] THÔNG BÁO & RESET FORM ====================
-    notificationService.success(
+    toastService.success(
       "Thành công",
       isEditMode.value
         ? "Cập nhật sản phẩm thành công!"
@@ -2856,6 +2832,18 @@ const handleSubmit = async (submittedData = null) => {
 
     closeModal();
   } catch (error) {
+    const msg = error?.response?.data?.message || "";
+
+    // 🟣 Bắt lỗi SKU trùng
+    if (msg.includes("SKU") && msg.includes("bị trùng lặp")) {
+      toastService.error("Lỗi trùng SKU", msg);
+      formErrors.value.variants =
+        "SKU bị trùng, vui lòng kiểm tra lại biến thể!";
+      isSubmitting.value = false;
+      return;
+    }
+
+    // 🟠 Các lỗi khác
     handleError(error, {
       showToast: true,
       log: true,
@@ -2910,7 +2898,7 @@ const handleDelete = async () => {
     const productName = productToDelete.value.name;
 
     // Hiển thị toast "Đang xử lý..."
-    loadingToastId = notificationService.info(
+    loadingToastId = toastService.info(
       "Đang xử lý...",
       `Đang xóa sản phẩm "${productName}"`,
       { duration: 0 }
@@ -2920,9 +2908,9 @@ const handleDelete = async () => {
 
     // Đóng toast loading và hiển thị toast success
     if (loadingToastId) {
-      notificationService.removeNotification(loadingToastId);
+      toastService.removeNotification(loadingToastId);
     }
-    notificationService.success(
+    toastService.success(
       "Thành công",
       `Đã xóa sản phẩm "${productName}" thành công!`
     );
@@ -2941,7 +2929,7 @@ const handleDelete = async () => {
   } catch (error) {
     // Đóng toast loading nếu có lỗi
     if (loadingToastId) {
-      notificationService.removeNotification(loadingToastId);
+      toastService.removeNotification(loadingToastId);
     }
     handleError(error, {
       showToast: true,
@@ -2992,7 +2980,7 @@ const generateBrandSlug = () => {
 // Lưu thương hiệu nhanh
 const saveQuickBrand = async () => {
   if (!quickBrandData.value.name.trim()) {
-    notificationService.warning("Cảnh báo", "Vui lòng nhập tên thương hiệu!");
+    toastService.warning("Cảnh báo", "Vui lòng nhập tên thương hiệu!");
     return;
   }
 
@@ -3002,10 +2990,7 @@ const saveQuickBrand = async () => {
     // 🟢 Gọi API tạo thương hiệu (qua adminStore)
     const res = await adminStore.createBrand(quickBrandData.value);
 
-    notificationService.success(
-      "Thành công",
-      "Đã thêm thương hiệu mới thành công!"
-    );
+    toastService.success("Thành công", "Đã thêm thương hiệu mới thành công!");
     showQuickAddBrand.value = false;
 
     // 🔄 Reload danh sách brands
@@ -3030,7 +3015,7 @@ const saveQuickBrand = async () => {
     };
   } catch (error) {
     logger.error("Lỗi khi thêm thương hiệu nhanh:", error);
-    notificationService.apiError(error, "Không thể thêm thương hiệu");
+    toastService.apiError(error, "Không thể thêm thương hiệu");
   } finally {
     savingQuickBrand.value = false;
   }
@@ -3063,13 +3048,13 @@ const generateMaterialSlug = () => {
 
 const saveQuickMaterial = async () => {
   if (!quickMaterialData.value.name.trim()) {
-    notificationService.warning("Cảnh báo", "Vui lòng nhập tên chất liệu!");
+    toastService.warning("Cảnh báo", "Vui lòng nhập tên chất liệu!");
     return;
   }
   try {
     savingQuickMaterial.value = true;
     await adminStore.createMaterial(quickMaterialData.value);
-    notificationService.success("Thành công", "Thêm chất liệu mới thành công!");
+    toastService.success("Thành công", "Thêm chất liệu mới thành công!");
 
     // 🔄 Reload lại danh sách nếu có hàm fetch
     await fetchMaterials?.();
@@ -3087,7 +3072,7 @@ const saveQuickMaterial = async () => {
     closeQuickAddMaterial();
   } catch (err) {
     logger.error("Lỗi khi thêm chất liệu:", err);
-    notificationService.apiError(err, "Không thể thêm chất liệu");
+    toastService.apiError(err, "Không thể thêm chất liệu");
   } finally {
     savingQuickMaterial.value = false;
   }
@@ -3115,16 +3100,13 @@ const generateSoleSlug = () => {
 
 const saveQuickSole = async () => {
   if (!quickSoleData.value.name.trim()) {
-    notificationService.warning("Cảnh báo", "Vui lòng nhập tên loại đế giày!");
+    toastService.warning("Cảnh báo", "Vui lòng nhập tên loại đế giày!");
     return;
   }
   try {
     savingQuickSole.value = true;
     await adminStore.createSole(quickSoleData.value);
-    notificationService.success(
-      "Thành công",
-      "Thêm loại đế giày mới thành công!"
-    );
+    toastService.success("Thành công", "Thêm loại đế giày mới thành công!");
 
     // 🔄 Reload lại danh sách nếu có hàm fetch
     await fetchSoles?.();
@@ -3142,7 +3124,7 @@ const saveQuickSole = async () => {
     closeQuickAddSole();
   } catch (err) {
     logger.error("Lỗi khi thêm loại đế giày:", err);
-    notificationService.apiError(err, "Không thể thêm loại đế giày");
+    toastService.apiError(err, "Không thể thêm loại đế giày");
   } finally {
     savingQuickSole.value = false;
   }
@@ -3255,12 +3237,12 @@ const handleFileUpload = async (event) => {
     });
 
     if (importValidation.value.summary.invalid > 0) {
-      notificationService.warning(
+      toastService.warning(
         "Cảnh báo",
         `Đã đọc ${importPreview.value.length} sản phẩm, nhưng có ${importValidation.value.summary.invalid} dòng bị lỗi. Vui lòng kiểm tra và sửa lỗi trước khi import.`
       );
     } else {
-      notificationService.success(
+      toastService.success(
         "Thành công",
         `Đã đọc ${importPreview.value.length} sản phẩm từ file ${
           isCSV ? "CSV" : "Excel"
@@ -3269,7 +3251,7 @@ const handleFileUpload = async (event) => {
     }
   } catch (error) {
     logger.error("Lỗi khi đọc file:", error);
-    notificationService.apiError(
+    toastService.apiError(
       error,
       `Không thể đọc file ${file.name.endsWith(".csv") ? "CSV" : "Excel"}`
     );
@@ -3288,7 +3270,7 @@ const handleImport = async () => {
     : importPreview.value;
 
   if (validRows.length === 0) {
-    notificationService.warning(
+    toastService.warning(
       "Cảnh báo",
       "Không có dữ liệu hợp lệ để import. Vui lòng sửa các lỗi trước."
     );
@@ -3312,14 +3294,14 @@ const handleImport = async () => {
 
     const result = await adminStore.importProducts(validRows);
 
-    notificationService.success(
+    toastService.success(
       "Thành công",
       `Import thành công ${result.successCount}/${result.totalRows} sản phẩm!`
     );
 
     if (result.errorCount > 0) {
       logger.error("Import errors:", result.errorItems);
-      notificationService.warning(
+      toastService.warning(
         "Cảnh báo",
         `Có ${result.errorCount} sản phẩm bị lỗi khi import. Xem console để biết chi tiết.`
       );
@@ -3366,7 +3348,7 @@ const handleBulkUpdate = async () => {
     };
 
     const result = await adminStore.bulkUpdateProducts(payload);
-    notificationService.success(
+    toastService.success(
       "Thành công",
       `Cập nhật thành công ${result.successCount}/${result.totalRequested} sản phẩm!`
     );
@@ -3377,7 +3359,7 @@ const handleBulkUpdate = async () => {
     clearSelection();
   } catch (error) {
     logger.error("Lỗi khi bulk update:", error);
-    notificationService.apiError(error, "Không thể cập nhật hàng loạt");
+    toastService.apiError(error, "Không thể cập nhật hàng loạt");
   } finally {
     bulkUpdating.value = false;
   }
@@ -3388,7 +3370,7 @@ const duplicateProduct = async (productId) => {
   let loadingToastId = null;
   try {
     // Hiển thị toast "Đang xử lý..." thay vì overlay
-    loadingToastId = notificationService.info(
+    loadingToastId = toastService.info(
       "Đang xử lý...",
       "Đang nhân bản sản phẩm",
       { duration: 0 }
@@ -3398,9 +3380,9 @@ const duplicateProduct = async (productId) => {
 
     // Đóng toast loading và hiển thị toast success
     if (loadingToastId) {
-      notificationService.removeNotification(loadingToastId);
+      toastService.removeNotification(loadingToastId);
     }
-    notificationService.success(
+    toastService.success(
       "Thành công",
       `Đã nhân bản sản phẩm "${duplicated.name}" thành công!`
     );
@@ -3410,10 +3392,10 @@ const duplicateProduct = async (productId) => {
   } catch (error) {
     // Đóng toast loading nếu có lỗi
     if (loadingToastId) {
-      notificationService.removeNotification(loadingToastId);
+      toastService.removeNotification(loadingToastId);
     }
     logger.error("Lỗi khi nhân bản sản phẩm:", error);
-    notificationService.apiError(error, "Không thể nhân bản sản phẩm");
+    toastService.apiError(error, "Không thể nhân bản sản phẩm");
   }
 };
 
@@ -3475,7 +3457,7 @@ const exportToExcel = async () => {
     const filename = `san-pham_${timestamp}.xlsx`;
 
     XLSX.writeFile(workbook, filename);
-    notificationService.success(
+    toastService.success(
       "Thành công",
       `Đã export ${exportData.length} sản phẩm thành công!`
     );
@@ -3486,14 +3468,14 @@ const exportToExcel = async () => {
     });
   } catch (error) {
     logger.error("Lỗi khi export Excel:", error);
-    notificationService.apiError(error, "Không thể export dữ liệu");
+    toastService.apiError(error, "Không thể export dữ liệu");
   }
 };
 
 // ===== BULK EXPORT =====
 const bulkExport = () => {
   if (selectedProducts.value.length === 0) {
-    notificationService.warning(
+    toastService.warning(
       "Cảnh báo",
       "Vui lòng chọn ít nhất một sản phẩm để xuất"
     );
@@ -3529,13 +3511,13 @@ const bulkExport = () => {
     const filename = `san-pham-da-chon_${timestamp}.xlsx`;
 
     XLSX.writeFile(workbook, filename);
-    notificationService.success(
+    toastService.success(
       "Thành công",
       `Đã export ${exportData.length} sản phẩm đã chọn thành công!`
     );
   } catch (error) {
     logger.error("Lỗi khi bulk export Excel:", error);
-    notificationService.apiError(error, "Không thể export dữ liệu");
+    toastService.apiError(error, "Không thể export dữ liệu");
   }
 };
 

@@ -170,19 +170,19 @@ public class ProductService {
                         })));
 
         // Lấy ảnh đại diện (ưu tiên mainImageUrl, sau đó ProductImage primary, cuối cùng variant image)
-        String imageUrl = Optional.ofNullable(product.getMainImageUrl())
-                .filter(url -> !url.isEmpty())
-                .or(() -> Optional.ofNullable(product.getImages())
-                        .filter(images -> !images.isEmpty())
-                        .flatMap(images -> images.stream()
-                                .filter(img -> img != null && img.getIsPrimary() != null && img.getIsPrimary())
-                                .findFirst()
-                                .map(img -> img.getImageUrl() != null ? img.getImageUrl() : ""))
-                        .filter(url -> !url.isEmpty()))
-                .or(() -> representativeVariant
-                        .map(ProductVariant::getImageUrl)
-                        .filter(url -> url != null && !url.isEmpty()))
-                .orElse("https://placehold.co/400");
+//        String imageUrl = Optional.ofNullable(product.getMainImageUrl())
+//                .filter(url -> !url.isEmpty())
+//                .or(() -> Optional.ofNullable(product.getImages())
+//                        .filter(images -> !images.isEmpty())
+//                        .flatMap(images -> images.stream()
+//                                .filter(img -> img != null && img.getIsPrimary() != null && img.getIsPrimary())
+//                                .findFirst()
+//                                .map(img -> img.getImageUrl() != null ? img.getImageUrl() : ""))
+//                        .filter(url -> !url.isEmpty()))
+//                .or(() -> representativeVariant
+//                        .map(ProductVariant::getImageUrl)
+//                        .filter(url -> url != null && !url.isEmpty()))
+//                .orElse("https://placehold.co/400");
 
         // Tính giá (ưu tiên sale, fallback base)
         BigDecimal priceBase = representativeVariant.map(ProductVariant::getPriceBase).orElse(BigDecimal.ZERO);
@@ -297,7 +297,7 @@ public class ProductService {
                 dto.setPriceBase(v.getPriceBase());
                 dto.setPriceSale(v.getPriceSale());
                 dto.setStockQuantity(v.getStockQuantity());
-                dto.setImageUrl(v.getImageUrl());
+//                dto.setImageUrl(v.getImageUrl());
                 return dto;
             }).collect(Collectors.toList());
 
@@ -312,7 +312,7 @@ public class ProductService {
                 .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
                 .categories(categoryDtos)
                 .variants(variantDtos)
-                .mainImageUrl(product.getMainImageUrl())
+//                .mainImageUrl(product.getMainImageUrl())
                 .build();
     }
 
