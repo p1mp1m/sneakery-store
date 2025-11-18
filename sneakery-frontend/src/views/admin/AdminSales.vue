@@ -366,25 +366,7 @@
             </transition-group>
           </div>
 
-          <!-- Cart Summary with Premium Design -->
-          <div class="space-y-1.5 py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-gray-600 dark:text-gray-400 font-medium">Tạm tính:</span>
-              <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatCurrency(subtotal) }}</span>
-            </div>
-            <div v-if="discountAmount > 0" class="flex items-center justify-between text-xs">
-              <span class="text-gray-600 dark:text-gray-400 font-medium">Giảm giá:</span>
-              <span class="text-red-600 dark:text-red-400 font-semibold">-{{ formatCurrency(discountAmount) }}</span>
-            </div>
-            <div class="flex items-center justify-between pt-1.5 border-t border-gray-200 dark:border-gray-700">
-              <span class="text-sm font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
-              <span class="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                {{ formatCurrency(totalAmount) }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Discount Section with Premium Design -->
+         <!-- Discount Section with Premium Design -->
           <div class="py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
             <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Mã giảm giá</label>
             <div class="flex items-center gap-2">
@@ -404,6 +386,25 @@
               </button>
             </div>
           </div>
+          <!-- Cart Summary with Premium Design -->
+          <div class="space-y-1.5 py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Tạm tính:</span>
+              <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ formatCurrency(subtotal) }}</span>
+            </div>
+            <div v-if="discountAmount > 0" class="flex items-center justify-between text-xs">
+              <span class="text-gray-600 dark:text-gray-400 font-medium">Giảm giá:</span>
+              <span class="text-red-600 dark:text-red-400 font-semibold">-{{ formatCurrency(discountAmount) }}</span>
+            </div>
+            <div class="flex items-center justify-between pt-1.5 border-t border-gray-200 dark:border-gray-700">
+              <span class="text-sm font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
+              <span class="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                {{ formatCurrency(totalAmount) }}
+              </span>
+            </div>
+          </div>
+
+        
 
           <!-- Payment Section with Premium Design -->
           <div class="py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
