@@ -411,11 +411,6 @@ const removeItem = async (item) => {
   }
 };
 
-const removeCoupon = () => {
-  couponStore.clearCoupon();
-  selectedCouponCode.value = '';
-    notificationService.info('Thông tin','Đã xóa mã giảm giá');
-};
 
 const fetchActiveCoupons = async () => {
   try {
