@@ -247,10 +247,17 @@
                   class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden"
                 >
                   <img
-                    :src="brand.safeLogoUrl"
+                    v-if="brand.logoUrl"
+                    :src="brand.logoUrl"
                     :alt="brand.name"
+                    @error="onLogoError($event)"
                     class="w-full h-full object-contain"
                   />
+                  <i
+                    v-else
+                    class="material-icons text-gray-400 dark:text-gray-500"
+                    >local_offer</i
+                  >
                 </div>
               </td>
 
@@ -547,7 +554,6 @@ import notificationService from "@/utils/notificationService";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 import logger from "@/utils/logger";
 import { formatDate } from "@/utils/formatters";
-import axios from "axios";
 
 const adminStore = useAdminStore();
 
@@ -564,7 +570,6 @@ const isEditMode = ref(false);
 const brandToDelete = ref(null);
 const currentPage = ref(1);
 const itemsPerPage = 10;
-const fallbackLogo = "/brand-default.png";
 
 // Form data
 const formData = ref({
@@ -618,55 +623,12 @@ const inactiveBrandsCount = computed(() => {
   return brands.value.filter((b) => !b.isActive).length;
 });
 
-const testClearbit = async (domain) => {
-  const url = `https://logo.clearbit.com/${domain}`;
-  try {
-    await axios.head(url, { timeout: 1200 });
-    return url; // Clearbit OK
-  } catch {
-    return null; // Clearbit không hỗ trợ
-  }
-};
-
-const resolveLogo = async (brand) => {
-  // Ưu tiên logoUrl do admin nhập
-  if (brand.logoUrl) {
-    try {
-      await axios.head(brand.logoUrl, { timeout: 1200 });
-      return brand.logoUrl;
-    } catch {}
-  }
-
-  // Dùng domain từ websiteUrl để build clearbit URL
-  if (brand.websiteUrl) {
-    try {
-      const website = new URL(brand.websiteUrl);
-      const domain = website.hostname.replace(/^www\./, "");
-
-      // Kiểm tra xem Clearbit có hỗ trợ domain đó không
-      const clearbitUrl = await testClearbit(domain);
-      if (clearbitUrl) return clearbitUrl;
-    } catch {}
-  }
-
-  // fallback cuối
-  return fallbackLogo;
-};
-
 // Methods
 const fetchBrands = async () => {
   loading.value = true;
   try {
     const result = await adminStore.fetchBrands();
-    const data = result.content || result || [];
-
-    // Preload logo Clearbit
-    const promises = data.map(async (b) => ({
-      ...b,
-      safeLogoUrl: await resolveLogo(b.logoUrl),
-    }));
-
-    brands.value = await Promise.all(promises);
+    brands.value = result.content || result || [];
   } catch (error) {
     logger.error("Error fetching brands:", error);
     notificationService.apiError(error, "Lỗi khi tải danh sách thương hiệu");
@@ -766,6 +728,11 @@ const deleteBrand = async () => {
   } finally {
     deleting.value = false;
   }
+};
+
+const onLogoError = (e) => {
+  e.target.src = "/brand-default.png"; // ảnh local
+  e.target.onerror = null; // tránh lặp vô hạn
 };
 
 const resetFilters = () => {
