@@ -1,11 +1,19 @@
 <template>
   <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
     <!-- Page Header -->
-    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div
+      class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      >
         <div>
-          <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <i class="material-icons text-purple-600 dark:text-purple-400">style</i>
+          <h1
+            class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+          >
+            <i class="material-icons text-purple-600 dark:text-purple-400"
+              >style</i
+            >
             Quản Lý Biến Thể Sản Phẩm
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -13,7 +21,10 @@
           </p>
         </div>
         <div class="flex items-center gap-2">
-          <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm" @click="openAddVariantModal">
+          <button
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+            @click="openAddVariantModal"
+          >
             <i class="material-icons text-base">add</i>
             Thêm Biến Thể
           </button>
@@ -23,60 +34,88 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
         <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center"
+          >
             <i class="material-icons text-white text-lg">inventory_2</i>
           </div>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.totalVariants }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ stats.totalVariants }}
+          </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Tổng Biến Thể</p>
         </div>
       </div>
 
-      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
         <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center"
+          >
             <i class="material-icons text-white text-lg">check_circle</i>
           </div>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.inStock }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ stats.inStock }}
+          </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Còn Hàng</p>
         </div>
       </div>
 
-      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
         <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center"
+          >
             <i class="material-icons text-white text-lg">warning</i>
           </div>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.lowStock }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ stats.lowStock }}
+          </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Sắp Hết</p>
         </div>
       </div>
 
-      <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
         <div class="flex items-center justify-between mb-3">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center"
+          >
             <i class="material-icons text-white text-lg">remove_circle</i>
           </div>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">{{ stats.outOfStock }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ stats.outOfStock }}
+          </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Hết Hàng</p>
         </div>
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div
+      class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+          <label
+            class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1"
+          >
             <i class="material-icons text-sm">search</i>
             Tìm kiếm
           </label>
@@ -90,7 +129,9 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+          <label
+            class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1"
+          >
             <i class="material-icons text-sm">palette</i>
             Màu sắc
           </label>
@@ -109,7 +150,9 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+          <label
+            class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1"
+          >
             <i class="material-icons text-sm">straighten</i>
             Kích thước
           </label>
@@ -132,7 +175,9 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+          <label
+            class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1"
+          >
             <i class="material-icons text-sm">inventory</i>
             Trạng thái kho
           </label>
@@ -151,23 +196,45 @@
     </div>
 
     <!-- Variants Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+    >
       <!-- Loading State -->
-      <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+      <div
+        v-if="loading"
+        class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <div
+          class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"
+        ></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          Đang tải dữ liệu...
+        </p>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="variants.length === 0" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4">
-          <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl">inventory_2</i>
+      <div
+        v-else-if="variants.length === 0"
+        class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <div
+          class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4"
+        >
+          <i
+            class="material-icons text-purple-600 dark:text-purple-400 text-3xl"
+            >inventory_2</i
+          >
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Không tìm thấy biến thể nào</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          Không tìm thấy biến thể nào
+        </h3>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
           Bắt đầu thêm biến thể đầu tiên cho sản phẩm của bạn
         </p>
-        <button @click="openAddVariantModal" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm">
+        <button
+          @click="openAddVariantModal"
+          class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+        >
           <i class="material-icons text-base">add</i>
           Thêm Biến Thể
         </button>
@@ -176,26 +243,52 @@
       <!-- Table -->
       <div v-else class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+          <thead
+            class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600"
+          >
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Hình ảnh</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Sản phẩm</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">SKU</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Màu sắc</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Kích thước</th>
-              <th 
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+              >
+                Hình ảnh
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+              >
+                Sản phẩm
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+              >
+                SKU
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+              >
+                Màu sắc
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+              >
+                Kích thước
+              </th>
+              <th
                 class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
                 @click="handleSort('price')"
               >
                 <div class="flex items-center gap-1">
                   Giá
-                  <i 
+                  <i
                     v-if="sortBy === 'price'"
                     class="material-icons text-sm text-purple-600 dark:text-purple-400"
                   >
-                    {{ sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                    {{
+                      sortDirection === "asc"
+                        ? "arrow_upward"
+                        : "arrow_downward"
+                    }}
                   </i>
-                  <i 
+                  <i
                     v-else
                     class="material-icons text-sm text-gray-400 opacity-0 group-hover:opacity-50"
                   >
@@ -203,28 +296,61 @@
                   </i>
                 </div>
               </th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Tồn kho</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Trạng thái</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">Thao tác</th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+              >
+                Tồn kho
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+              >
+                Trạng thái
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+              >
+                Thao tác
+              </th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="variant in variants" :key="variant.id" class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+          <tbody
+            class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
+          >
+            <tr
+              v-for="variant in variants"
+              :key="variant.id"
+              :id="`variant-row-${variant.id}`"
+              class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
+            >
               <td class="px-4 py-4">
                 <img
-                  :src="variant.imageUrl || '/placeholder-image.png'"
+                  :src="
+                    variantImages[variant.id]?.[0]?.imageUrl ||
+                    variant.imageUrl ||
+                    '/placeholder-image.png'
+                  "
                   :alt="variant.productName"
                   class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
                 />
               </td>
               <td class="px-4 py-4">
                 <div class="flex flex-col">
-                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ variant.productName }}</span>
-                  <span v-if="variant.brandName" class="text-xs text-gray-500 dark:text-gray-400">{{ variant.brandName }}</span>
+                  <span
+                    class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                    >{{ variant.productName }}</span
+                  >
+                  <span
+                    v-if="variant.brandName"
+                    class="text-xs text-gray-500 dark:text-gray-400"
+                    >{{ variant.brandName }}</span
+                  >
                 </div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
-                <code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100">{{ variant.sku }}</code>
+                <code
+                  class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100"
+                  >{{ variant.sku }}</code
+                >
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
@@ -232,24 +358,33 @@
                     class="w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
                     :style="{ backgroundColor: getColorHex(variant.color) }"
                   ></span>
-                  <span class="text-sm text-gray-900 dark:text-gray-100">{{ getColorName(variant.color) }}</span>
+                  <span class="text-sm text-gray-900 dark:text-gray-100">{{
+                    getColorName(variant.color)
+                  }}</span>
                 </div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">{{ variant.size }}</span>
+                <span
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                  >{{ variant.size }}</span
+                >
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
-                <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{
-                  formatPrice(getCurrentPrice(variant))
-                }}</span>
+                <span
+                  class="text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  >{{ formatPrice(getCurrentPrice(variant)) }}</span
+                >
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <span
                   class="text-sm font-semibold"
                   :class="{
-                    'text-green-600 dark:text-green-400': variant.stockQuantity > 10,
-                    'text-yellow-600 dark:text-yellow-400': variant.stockQuantity > 0 && variant.stockQuantity <= 10,
-                    'text-red-600 dark:text-red-400': variant.stockQuantity === 0
+                    'text-green-600 dark:text-green-400':
+                      variant.stockQuantity > 10,
+                    'text-yellow-600 dark:text-yellow-400':
+                      variant.stockQuantity > 0 && variant.stockQuantity <= 10,
+                    'text-red-600 dark:text-red-400':
+                      variant.stockQuantity === 0,
                   }"
                 >
                   {{ variant.stockQuantity }}
@@ -259,9 +394,12 @@
                 <span
                   class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
                   :class="{
-                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': variant.stockQuantity > 10,
-                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': variant.stockQuantity > 0 && variant.stockQuantity <= 10,
-                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400': variant.stockQuantity === 0
+                    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400':
+                      variant.stockQuantity > 10,
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400':
+                      variant.stockQuantity > 0 && variant.stockQuantity <= 10,
+                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400':
+                      variant.stockQuantity === 0,
                   }"
                 >
                   {{ getStockStatusLabel(variant.stockQuantity) }}
@@ -291,9 +429,14 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1 && !loading" class="flex items-center justify-between gap-4 px-4 py-3 mt-4 border-t border-gray-200 dark:border-gray-700">
+      <div
+        v-if="totalPages > 1 && !loading"
+        class="flex items-center justify-between gap-4 px-4 py-3 mt-4 border-t border-gray-200 dark:border-gray-700"
+      >
         <div class="text-sm text-gray-600 dark:text-gray-400">
-          Hiển thị {{ currentPage * pageSize + 1 }} - {{ Math.min((currentPage + 1) * pageSize, totalElements) }} trong tổng số {{ totalElements }} biến thể
+          Hiển thị {{ currentPage * pageSize + 1 }} -
+          {{ Math.min((currentPage + 1) * pageSize, totalElements) }} trong tổng
+          số {{ totalElements }} biến thể
         </div>
         <div class="flex items-center gap-2">
           <button
@@ -305,7 +448,8 @@
             Trước
           </button>
           <span class="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">
-            Trang {{ paginationInfo.currentPage }} / {{ paginationInfo.totalPages }}
+            Trang {{ paginationInfo.currentPage }} /
+            {{ paginationInfo.totalPages }}
           </span>
           <button
             class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -343,9 +487,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, computed, nextTick } from "vue";
 import { useAdminStore } from "@/stores/admin";
-import notificationService from '@/utils/notificationService';
+import notificationService from "@/utils/notificationService";
+// import notificationService from "@/utils/notificationService";
 import VariantModal from "@/assets/components/admin/VariantModal.vue";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 import { debounce } from "@/utils/debounce";
@@ -362,6 +507,8 @@ const pageSize = ref(10);
 const totalElements = ref(0);
 const totalPages = ref(1);
 const loading = ref(false);
+const highlightVariantId = ref(null);
+const variantImages = ref({});
 
 const stats = reactive({
   totalVariants: 0,
@@ -415,11 +562,25 @@ const loadVariants = async () => {
     variants.value = result.content || [];
     totalElements.value = result.totalElements || 0;
     totalPages.value = result.totalPages || 1;
+    // Load ảnh cho từng variant
+    for (const v of variants.value) {
+      loadVariantImages(v.id);
+    }
   } catch (error) {
     logger.error("Error loading variants:", error);
     notificationService.apiError(error, "Không thể tải danh sách biến thể");
   } finally {
     loading.value = false;
+  }
+};
+
+const loadVariantImages = async (variantId) => {
+  try {
+    const res = await adminStore.fetchVariantImages(variantId);
+    variantImages.value[variantId] = res || [];
+  } catch (error) {
+    console.error("Error loading variant images:", error);
+    variantImages.value[variantId] = [];
   }
 };
 
@@ -494,9 +655,18 @@ const closeModal = () => {
   selectedVariant.value = null;
 };
 
-const handleModalSuccess = async () => {
+const handleModalSuccess = async (variantId) => {
+  // Lưu ID để (nếu cần) debug sau này
+  highlightVariantId.value = variantId || null;
+
+  // Sau khi tạo / update xong, nên load lại từ trang hiện tại
   await loadVariants();
   await loadStats();
+
+  // Nếu variant nằm trong trang hiện tại thì cuộn + highlight
+  if (variantId) {
+    scrollToVariantRow(variantId);
+  }
 };
 
 // ===== DELETE VARIANT (với ConfirmDialog) =====
@@ -515,7 +685,10 @@ const deleteVariantConfirmed = async () => {
   deleting.value = true;
   try {
     await adminStore.deleteProductVariant(variantToDelete.value.id);
-    notificationService.success('Thành công', `Đã xóa biến thể "${variantToDelete.value.sku}" thành công!`);
+    notificationService.success(
+      "Thành công",
+      `Đã xóa biến thể "${variantToDelete.value.sku}" thành công!`
+    );
     await loadVariants();
     await loadStats();
   } catch (error) {
@@ -589,7 +762,54 @@ const getStockStatusLabel = (quantity) => {
   if (quantity <= 10) return "Sắp hết";
   return "Còn hàng";
 };
+
+const scrollToVariantRow = async (variantId) => {
+  if (!variantId) return;
+
+  await nextTick(); // chờ DOM render xong
+
+  const rowEl = document.getElementById(`variant-row-${variantId}`);
+  if (!rowEl) return;
+
+  // Cuộn mượt đến giữa màn hình
+  rowEl.scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+  });
+
+  // Thêm class highlight trong 3 giây
+  rowEl.classList.add("row-highlight");
+  setTimeout(() => {
+    rowEl.classList.remove("row-highlight");
+  }, 3000);
+};
 </script>
+<style scoped>
+/* Hiệu ứng vàng neon nhấp nháy */
+.row-highlight {
+  animation: neonFlash 1.8s ease-out forwards;
+}
 
-
-
+@keyframes neonFlash {
+  0% {
+    background-color: rgba(255, 255, 0, 0.9); /* neon vàng đậm */
+    box-shadow: 0 0 12px rgba(255, 255, 0, 0.7);
+  }
+  25% {
+    background-color: rgba(255, 255, 0, 0.4);
+    box-shadow: 0 0 4px rgba(255, 255, 0, 0.3);
+  }
+  50% {
+    background-color: rgba(255, 255, 0, 1);
+    box-shadow: 0 0 16px rgba(255, 255, 0, 0.9);
+  }
+  75% {
+    background-color: rgba(255, 255, 0, 0.5);
+    box-shadow: 0 0 6px rgba(255, 255, 0, 0.4);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+</style>

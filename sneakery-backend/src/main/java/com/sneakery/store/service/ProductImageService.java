@@ -1,6 +1,7 @@
 package com.sneakery.store.service;
 
 import com.sneakery.store.dto.ProductImageDto;
+import com.sneakery.store.dto.ProductImagePublicDto;
 import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.ProductImage;
 import com.sneakery.store.exception.ApiException;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -54,9 +56,9 @@ public class ProductImageService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
 
         // Nếu set primary => clear ảnh primary cũ
-        if (Boolean.TRUE.equals(dto.getIsPrimary())) {
-            productImageRepository.clearPrimaryForProduct(productId);
-        }
+//        if (Boolean.TRUE.equals(dto.getIsPrimary())) {
+//            productImageRepository.clearPrimaryForProduct(productId);
+//        }
 
         // Tính display_order (bắt đầu từ 1)
         Integer displayOrder = dto.getDisplayOrder();
@@ -69,17 +71,17 @@ public class ProductImageService {
                 .product(product)
                 .imageUrl(dto.getImageUrl())
                 .altText(dto.getAltText())
-                .isPrimary(dto.getIsPrimary() != null ? dto.getIsPrimary() : false)
+//                .isPrimary(dto.getIsPrimary() != null ? dto.getIsPrimary() : false)
                 .displayOrder(displayOrder)
                 .build();
 
         ProductImage saved = productImageRepository.save(Objects.requireNonNull(image));
-        
+
         // 🔄 Tự động sync Product.mainImageUrl nếu là ảnh primary
-        if (Boolean.TRUE.equals(dto.getIsPrimary())) {
-            syncProductMainImageUrl(productId, dto.getImageUrl());
-        }
-        
+//        if (Boolean.TRUE.equals(dto.getIsPrimary())) {
+//            syncProductMainImageUrl(productId, dto.getImageUrl());
+//        }
+
         log.info("✅ Added image from URL for product {}: {}", productId, dto.getImageUrl());
         return convertToDto(saved);
     }
@@ -117,17 +119,17 @@ public class ProductImageService {
                 .imageUrl(imageUrl)
                 .cloudinaryPublicId(publicId)        // <<=== LƯU PUBLIC ID
                 .altText(product.getName())
-                .isPrimary(finalPrimary)
+//                .isPrimary(finalPrimary)
                 .displayOrder(finalOrder)
                 .build();
 
         ProductImage saved = productImageRepository.save(Objects.requireNonNull(image));
-        
+
         // 🔄 Tự động sync Product.mainImageUrl nếu là ảnh primary
         if (finalPrimary) {
             syncProductMainImageUrl(productId, imageUrl);
         }
-        
+
         log.info("✅ Uploaded image {} for product {}", imageUrl, productId);
         return convertToDto(saved);
     }
@@ -165,14 +167,14 @@ public class ProductImageService {
 
         // Xoá record DB + reorder
         Long pid = image.getProduct().getId();
-        boolean wasPrimary = Boolean.TRUE.equals(image.getIsPrimary());
+//        boolean wasPrimary = Boolean.TRUE.equals(image.getIsPrimary());
         productImageRepository.delete(image);
         reorderDisplayOrder(pid);
-        
-        // 🔄 Nếu xóa ảnh primary, tự động sync ảnh primary mới (nếu có)
-        if (wasPrimary) {
-            syncProductMainImageUrlFromPrimary(pid);
-        }
+
+//        // 🔄 Nếu xóa ảnh primary, tự động sync ảnh primary mới (nếu có)
+//        if (wasPrimary) {
+//            syncProductMainImageUrlFromPrimary(pid);
+//        }
 
         log.info("✅ Đã xoá ảnh [{}] của sản phẩm {}", imageUrl, productId);
     }
@@ -200,16 +202,16 @@ public class ProductImageService {
 
         // Xoá record trong DB
         Long productId = image.getProduct().getId();
-        boolean wasPrimary = Boolean.TRUE.equals(image.getIsPrimary());
+//        boolean wasPrimary = Boolean.TRUE.equals(image.getIsPrimary());
         productImageRepository.delete(image);
 
         // Reorder lại thứ tự hiển thị
         reorderDisplayOrder(productId);
-        
+
         // 🔄 Nếu xóa ảnh primary, tự động sync ảnh primary mới (nếu có)
-        if (wasPrimary) {
-            syncProductMainImageUrlFromPrimary(productId);
-        }
+//        if (wasPrimary) {
+//            syncProductMainImageUrlFromPrimary(productId);
+//        }
 
         log.info("✅ Đã xoá ảnh ID={} của sản phẩm {}", imageId, productId);
     }
@@ -223,12 +225,12 @@ public class ProductImageService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Hình ảnh không tồn tại"));
         Long productId = image.getProduct().getId();
         productImageRepository.clearPrimaryForProduct(productId);
-        image.setIsPrimary(true);
+//        image.setIsPrimary(true);
         ProductImage saved = productImageRepository.save(Objects.requireNonNull(image));
-        
+
         // 🔄 Tự động sync Product.mainImageUrl
         syncProductMainImageUrl(productId, saved.getImageUrl());
-        
+
         log.info("⭐ Set image {} as primary", imageId);
         return convertToDto(saved);
     }
@@ -254,7 +256,7 @@ public class ProductImageService {
     // ==========================================================
     /**
      * Đồng bộ Product.mainImageUrl từ ProductImage có isPrimary=true
-     * 
+     *
      * @param productId ID sản phẩm
      * @param imageUrl URL ảnh primary (nếu đã biết)
      */
@@ -303,7 +305,7 @@ public class ProductImageService {
      * Method này sẽ:
      * 1. Set isPrimary=true cho ảnh đầu tiên nếu sản phẩm chưa có ảnh primary
      * 2. Update Product.mainImageUrl từ ProductImage có isPrimary=true
-     * 
+     *
      * @return Số lượng sản phẩm đã được sync
      */
     @Transactional
@@ -311,31 +313,31 @@ public class ProductImageService {
         log.info("🔄 Bắt đầu sync mainImageUrl cho tất cả sản phẩm...");
         int syncedCount = 0;
         int setPrimaryCount = 0;
-        
+
         // Lấy tất cả sản phẩm (chưa bị xóa)
         List<Product> products = productRepository.findAll().stream()
                 .filter(p -> p.getDeletedAt() == null)
                 .collect(Collectors.toList());
-        
+
         log.info("📦 Tìm thấy {} sản phẩm cần sync", products.size());
-        
+
         for (Product product : products) {
             try {
                 Long productId = product.getId();
-                
+
                 // Kiểm tra xem có ảnh primary chưa
                 Optional<ProductImage> primaryImageOpt = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
-                
+
                 if (primaryImageOpt.isEmpty()) {
                     // Chưa có ảnh primary, set ảnh đầu tiên làm primary
                     List<ProductImage> images = productImageRepository.findByProductIdOrderByDisplayOrderAsc(productId);
                     if (!images.isEmpty()) {
                         ProductImage firstImage = images.get(0);
-                        firstImage.setIsPrimary(true);
+//                        firstImage.setIsPrimary(true);
                         productImageRepository.save(firstImage);
                         setPrimaryCount++;
                         log.debug("✅ Set primary cho ảnh đầu tiên của product {}", productId);
-                        
+
                         // Sync mainImageUrl
                         product.setMainImageUrl(firstImage.getImageUrl());
                         productRepository.save(product);
@@ -345,10 +347,10 @@ public class ProductImageService {
                     // Đã có ảnh primary, sync mainImageUrl
                     ProductImage primaryImage = primaryImageOpt.get();
                     String primaryUrl = primaryImage.getImageUrl();
-                    
+
                     // Chỉ update nếu khác nhau hoặc null
-                    if (product.getMainImageUrl() == null || 
-                        !product.getMainImageUrl().equals(primaryUrl)) {
+                    if (product.getMainImageUrl() == null ||
+                            !product.getMainImageUrl().equals(primaryUrl)) {
                         product.setMainImageUrl(primaryUrl);
                         productRepository.save(product);
                         syncedCount++;
@@ -358,8 +360,8 @@ public class ProductImageService {
                 log.warn("⚠️ Lỗi khi sync product {}: {}", product.getId(), e.getMessage());
             }
         }
-        
-        log.info("✅ Hoàn thành sync: {} sản phẩm đã được sync, {} ảnh được set primary", 
+
+        log.info("✅ Hoàn thành sync: {} sản phẩm đã được sync, {} ảnh được set primary",
                 syncedCount, setPrimaryCount);
         return syncedCount;
     }
@@ -369,30 +371,51 @@ public class ProductImageService {
     // ==========================================================
     private ProductImageDto convertToDto(ProductImage image) {
         String imageUrl = image.getImageUrl();
-        
+
         // Generate optimized URLs nếu là Cloudinary URL
         String thumbnailUrl = null;
         String mediumUrl = null;
         String largeUrl = null;
-        
+
         if (cloudinaryUtil != null && cloudinaryUtil.isCloudinaryUrl(imageUrl)) {
             thumbnailUrl = cloudinaryUtil.generateThumbnailUrl(imageUrl);
             mediumUrl = cloudinaryUtil.generateMediumUrl(imageUrl);
             largeUrl = cloudinaryUtil.generateLargeUrl(imageUrl);
         }
-        
+
         return ProductImageDto.builder()
                 .id(image.getId())
                 .productId(image.getProduct() != null ? image.getProduct().getId() : null)
                 .imageUrl(imageUrl)
                 .cloudinaryPublicId(image.getCloudinaryPublicId())
                 .altText(image.getAltText())
-                .isPrimary(image.getIsPrimary())
+//                .isPrimary(image.getIsPrimary())
                 .displayOrder(image.getDisplayOrder())
                 .thumbnailUrl(thumbnailUrl)
                 .mediumUrl(mediumUrl)
                 .largeUrl(largeUrl)
                 .build();
+    }
+
+    public List<ProductImagePublicDto> getAllImagesPublic() {
+        Map<Long, List<String>> grouped = productImageRepository.findAll()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        img -> img.getProduct().getId(),
+                        Collectors.mapping(
+                                ProductImage::getImageUrl,
+                                Collectors.toList()
+                        )
+                ));
+
+        return grouped.entrySet().stream()
+                .map(e -> {
+                    ProductImagePublicDto dto = new ProductImagePublicDto();
+                    dto.setProductId(e.getKey());
+                    dto.setImages(e.getValue());
+                    return dto;
+                })
+                .toList();
     }
 
 }

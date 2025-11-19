@@ -73,7 +73,7 @@ public class ProductImage {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        if (isPrimary == null) isPrimary = false;
+//        if (isPrimary == null) isPrimary = false;
         if (displayOrder == null) displayOrder = 0;
     }
 }

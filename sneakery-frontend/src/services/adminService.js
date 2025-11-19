@@ -1109,6 +1109,17 @@ class AdminService {
     }
   }
 
+    // ===== VARIANT IMAGES =====
+  async getVariantImages(variantId) {
+    try {
+      const response = await adminApi.get(`/variant-images/${variantId}`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+
   // ===== ACTIVITY LOGS =====
   async getActivityLogs(page = 0, size = 10, filters = {}) {
     try {

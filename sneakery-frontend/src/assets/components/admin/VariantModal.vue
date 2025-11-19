@@ -1,12 +1,29 @@
 <template>
-  <div v-show="isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click="handleOverlayClose">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700" @click.stop>
-      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <i class="material-icons text-purple-600 dark:text-purple-400">{{ isEdit ? "edit" : "add" }}</i>
+  <div
+    v-show="isOpen"
+    class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+    @click="handleOverlayClose"
+  >
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+      @click.stop
+    >
+      <div
+        class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10"
+      >
+        <h3
+          class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400">{{
+            isEdit ? "edit" : "add"
+          }}</i>
           {{ isEdit ? "Chỉnh sửa Biến Thể" : "Thêm Biến Thể Mới" }}
         </h3>
-        <button type="button" class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" @click="handleCancel">
+        <button
+          type="button"
+          class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          @click="handleCancel"
+        >
           <i class="material-icons text-base">close</i>
         </button>
       </div>
@@ -15,7 +32,9 @@
         <form @submit.prevent="handleSubmit" novalidate class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >
                 Sản phẩm <span class="text-red-500">*</span>
               </label>
               <template v-if="!isEdit">
@@ -23,7 +42,9 @@
                   v-model="formData.productId"
                   :class="[
                     'px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-                    errors.productId ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    errors.productId
+                      ? 'border-red-500 dark:border-red-500'
+                      : 'border-gray-300 dark:border-gray-600',
                   ]"
                   required
                   @change="validateProductId"
@@ -40,7 +61,9 @@
                 </select>
               </template>
               <template v-else>
-                <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-lg">
+                <div
+                  class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-lg"
+                >
                   <span class="text-sm text-gray-700 dark:text-gray-300">
                     {{ getProductName(formData.productId) }}
                   </span>
@@ -54,14 +77,19 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-1"
               >
-                <p v-if="errors.productId" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                <p
+                  v-if="errors.productId"
+                  class="text-xs text-red-500 dark:text-red-400 mt-1"
+                >
                   {{ errors.productId }}
                 </p>
               </transition>
             </div>
 
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >
                 SKU <span class="text-red-500">*</span>
               </label>
               <input
@@ -69,12 +97,17 @@
                 type="text"
                 :class="[
                   'px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-                  errors.sku ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  errors.sku
+                    ? 'border-red-500 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
                 ]"
-                placeholder="Ví dụ: SNK-SHO-AZ-BLK-42"
+                placeholder="Ví dụ: ADIDA-ULTRA22-WHI-42"
                 required
                 @focus="isSkuFocused = true"
-                @blur="isSkuFocused = false; validateSku()"
+                @blur="
+                  isSkuFocused = false;
+                  validateSku();
+                "
                 @input="validateSku"
               />
               <transition
@@ -85,7 +118,10 @@
                 leave-from-class="opacity-100"
                 leave-to-class="opacity-0"
               >
-                <small v-if="isSkuFocused && !errors.sku" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <small
+                  v-if="isSkuFocused && !errors.sku"
+                  class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                >
                   SKU được <strong>tạo tự động</strong> dựa trên thông tin sản
                   phẩm, màu và size — bạn có thể chỉnh
                   <strong>thủ công</strong> nếu muốn.
@@ -99,7 +135,10 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-1"
               >
-                <p v-if="errors.sku" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                <p
+                  v-if="errors.sku"
+                  class="text-xs text-red-500 dark:text-red-400 mt-1"
+                >
                   {{ errors.sku }}
                 </p>
               </transition>
@@ -108,7 +147,9 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >
                 Màu sắc <span class="text-red-500">*</span>
               </label>
               <div class="relative" @click="showColorPopup = true">
@@ -117,13 +158,18 @@
                   type="text"
                   :class="[
                     'px-3 py-2 pr-10 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent cursor-pointer',
-                    errors.color ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    errors.color
+                      ? 'border-red-500 dark:border-red-500'
+                      : 'border-gray-300 dark:border-gray-600',
                   ]"
                   readonly
                   placeholder="Chọn màu sắc"
                   @blur="validateColor"
                 />
-                <i class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">palette</i>
+                <i
+                  class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
+                  >palette</i
+                >
               </div>
               <transition
                 enter-active-class="transition-all duration-200 ease-out"
@@ -133,14 +179,19 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-1"
               >
-                <p v-if="errors.color" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                <p
+                  v-if="errors.color"
+                  class="text-xs text-red-500 dark:text-red-400 mt-1"
+                >
                   {{ errors.color }}
                 </p>
               </transition>
             </div>
 
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >
                 Kích thước <span class="text-red-500">*</span>
               </label>
               <div class="relative" @click="showSizePopup = true">
@@ -149,13 +200,18 @@
                   type="text"
                   :class="[
                     'px-3 py-2 pr-10 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent cursor-pointer',
-                    sizeError ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    sizeError
+                      ? 'border-red-500 dark:border-red-500'
+                      : 'border-gray-300 dark:border-gray-600',
                   ]"
                   readonly
                   placeholder="Chọn kích thước"
                   @blur="validateSize"
                 />
-                <i class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none">straighten</i>
+                <i
+                  class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none"
+                  >straighten</i
+                >
               </div>
               <transition
                 enter-active-class="transition-all duration-200 ease-out"
@@ -165,7 +221,10 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-1"
               >
-                <p v-if="sizeError" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                <p
+                  v-if="sizeError"
+                  class="text-xs text-red-500 dark:text-red-400 mt-1"
+                >
                   {{ sizeError }}
                 </p>
               </transition>
@@ -176,9 +235,15 @@
               class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
               @click.self="showColorPopup = false"
             >
-              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700">
+              <div
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700"
+              >
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">Chọn màu sắc</h4>
+                  <h4
+                    class="text-base font-semibold text-gray-900 dark:text-gray-100"
+                  >
+                    Chọn màu sắc
+                  </h4>
                 </div>
                 <div class="p-4 grid grid-cols-4 gap-3">
                   <div
@@ -187,7 +252,11 @@
                     class="w-12 h-12 rounded-full cursor-pointer border-2 transition-all"
                     :style="{ backgroundColor: c.hex }"
                     @click="selectColor(c)"
-                    :class="formData.color === c.name ? 'border-purple-500 ring-2 ring-purple-300 dark:ring-purple-700 scale-110' : 'border-gray-300 dark:border-gray-600 hover:scale-105'"
+                    :class="
+                      formData.color === c.name
+                        ? 'border-purple-500 ring-2 ring-purple-300 dark:ring-purple-700 scale-110'
+                        : 'border-gray-300 dark:border-gray-600 hover:scale-105'
+                    "
                   ></div>
                 </div>
               </div>
@@ -199,9 +268,17 @@
               class="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
               @click.self="handleSizePopupClose"
             >
-              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                  <h4 class="text-base font-semibold text-gray-900 dark:text-gray-100">Chọn kích thước</h4>
+              <div
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full border border-gray-200 dark:border-gray-700"
+              >
+                <div
+                  class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
+                >
+                  <h4
+                    class="text-base font-semibold text-gray-900 dark:text-gray-100"
+                  >
+                    Chọn kích thước
+                  </h4>
                   <button
                     type="button"
                     class="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -217,18 +294,24 @@
                     v-for="(s, idx) in availableSizes"
                     :key="idx"
                     class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-                    :class="selectedSizes.includes(s) 
-                      ? 'bg-purple-500 text-white ring-2 ring-purple-300 dark:ring-purple-700' 
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                    :class="
+                      selectedSizes.includes(s)
+                        ? 'bg-purple-500 text-white ring-2 ring-purple-300 dark:ring-purple-700'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    "
                     @click="toggleSize(s)"
                   >
                     {{ s }}
                   </button>
                 </div>
                 <div v-if="selectedSizes.length === 0" class="px-4 pb-2">
-                  <p class="text-xs text-red-500 dark:text-red-400">Vui lòng chọn ít nhất một kích thước</p>
+                  <p class="text-xs text-red-500 dark:text-red-400">
+                    Vui lòng chọn ít nhất một kích thước
+                  </p>
                 </div>
-                <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
+                <div
+                  class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2"
+                >
                   <button
                     type="button"
                     class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 text-sm font-medium"
@@ -251,7 +334,9 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >
                 Giá gốc (VNĐ) <span class="text-red-500">*</span>
               </label>
               <input
@@ -259,7 +344,9 @@
                 type="number"
                 :class="[
                   'px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-                  errors.priceBase ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  errors.priceBase
+                    ? 'border-red-500 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
                 ]"
                 placeholder="3500000"
                 min="0"
@@ -275,20 +362,28 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-1"
               >
-                <p v-if="errors.priceBase" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                <p
+                  v-if="errors.priceBase"
+                  class="text-xs text-red-500 dark:text-red-400 mt-1"
+                >
                   {{ errors.priceBase }}
                 </p>
               </transition>
             </div>
 
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Giá khuyến mãi (VNĐ)</label>
+              <label
+                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+                >Giá khuyến mãi (VNĐ)</label
+              >
               <input
                 v-model.number="formData.priceSale"
                 type="number"
                 :class="[
                   'px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-                  errors.priceSale ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  errors.priceSale
+                    ? 'border-red-500 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
                 ]"
                 placeholder="3000000"
                 min="0"
@@ -303,7 +398,10 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-1"
               >
-                <p v-if="errors.priceSale" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                <p
+                  v-if="errors.priceSale"
+                  class="text-xs text-red-500 dark:text-red-400 mt-1"
+                >
                   {{ errors.priceSale }}
                 </p>
               </transition>
@@ -312,7 +410,9 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label
+                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >
                 Số lượng tồn kho <span class="text-red-500">*</span>
               </label>
               <input
@@ -320,7 +420,9 @@
                 type="number"
                 :class="[
                   'px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-                  errors.stockQuantity ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  errors.stockQuantity
+                    ? 'border-red-500 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
                 ]"
                 placeholder="15"
                 min="0"
@@ -336,29 +438,31 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-1"
               >
-                <p v-if="errors.stockQuantity" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                <p
+                  v-if="errors.stockQuantity"
+                  class="text-xs text-red-500 dark:text-red-400 mt-1"
+                >
                   {{ errors.stockQuantity }}
                 </p>
               </transition>
             </div>
 
             <div class="flex flex-col gap-2">
-              <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                Ngưỡng cảnh báo
-                <span class="text-gray-500 dark:text-gray-400 text-xs font-normal ml-1">
-                  (≤ {{ formData.stockQuantity || 0 }})
-                </span>
-              </label>
+              <label
+                class="text-xs font-medium text-gray-700 dark:text-gray-300"
+                >Ngưỡng cảnh báo</label
+              >
               <input
                 v-model.number="formData.lowStockThreshold"
                 type="number"
                 :class="[
                   'px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-                  errors.lowStockThreshold ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  errors.lowStockThreshold
+                    ? 'border-red-500 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600',
                 ]"
                 placeholder="10"
-                :min="0"
-                :max="formData.stockQuantity || 999999"
+                min="0"
                 @blur="validateLowStockThreshold"
                 @input="validateLowStockThreshold"
               />
@@ -370,18 +474,20 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-1"
               >
-                <p v-if="errors.lowStockThreshold" class="text-xs text-red-500 dark:text-red-400 mt-1">
+                <p
+                  v-if="errors.lowStockThreshold"
+                  class="text-xs text-red-500 dark:text-red-400 mt-1"
+                >
                   {{ errors.lowStockThreshold }}
-                </p>
-                <p v-else class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Hệ thống sẽ cảnh báo khi số lượng tồn kho ≤ ngưỡng này
                 </p>
               </transition>
             </div>
           </div>
 
           <div class="flex flex-col gap-2">
-            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Ảnh biến thể</label>
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >Ảnh biến thể</label
+            >
             <UploadGallery
               :resetKey="resetKey"
               :initialImages="galleryInitial"
@@ -391,19 +497,24 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <input 
-              v-model="formData.isActive" 
-              type="checkbox" 
+            <input
+              v-model="formData.isActive"
+              type="checkbox"
               class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
             />
-            <label class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">Kích hoạt biến thể</label>
+            <label
+              class="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+              >Kích hoạt biến thể</label
+            >
           </div>
         </form>
       </div>
 
-      <div class="flex items-center justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
-        <button 
-          type="button" 
+      <div
+        class="flex items-center justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800"
+      >
+        <button
+          type="button"
           class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
           @click="handleCancel"
         >
@@ -414,10 +525,16 @@
           class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           @click="handleSubmit"
           :disabled="isSubmitting || hasErrors"
-          :title="hasErrors ? 'Vui lòng sửa các lỗi trong form trước khi submit' : ''"
+          :title="
+            hasErrors ? 'Vui lòng sửa các lỗi trong form trước khi submit' : ''
+          "
         >
-          <i class="material-icons text-base" v-if="isSubmitting">hourglass_empty</i>
-          <i class="material-icons text-base" v-else>{{ isEdit ? "save" : "add" }}</i>
+          <i class="material-icons text-base" v-if="isSubmitting"
+            >hourglass_empty</i
+          >
+          <i class="material-icons text-base" v-else>{{
+            isEdit ? "save" : "add"
+          }}</i>
           {{ isSubmitting ? "Đang xử lý..." : isEdit ? "Cập nhật" : "Tạo mới" }}
         </button>
       </div>
@@ -437,13 +554,13 @@ import {
   onErrorCaptured,
 } from "vue";
 import { useAdminStore } from "@/stores/admin";
-import notificationService from '@/utils/notificationService';
+// import notificationService from "@/utils/notificationService";
+import notificationService from "@/utils/notificationService";
 import UploadGallery from "@/assets/components/admin/UploadGallery.vue";
 import {
   generateSku,
   extractBrandCode,
   extractModelCode,
-  extractCategoryCode,
   shortenColor,
 } from "@/utils/skuGenerator";
 
@@ -535,7 +652,10 @@ watch(showSizePopup, (isOpen) => {
     previousSizeValue.value = formData.size || "";
     // Parse size hiện tại thành array nếu có
     if (formData.size) {
-      selectedSizes.value = formData.size.split(",").map(s => parseInt(s.trim())).filter(s => !isNaN(s));
+      selectedSizes.value = formData.size
+        .split(",")
+        .map((s) => parseInt(s.trim()))
+        .filter((s) => !isNaN(s));
     } else {
       selectedSizes.value = [];
     }
@@ -586,14 +706,27 @@ const selectColor = (color) => {
 
 // Multi-size logic (đã giải thích ở trên)
 
+// const toggleSize = (size) => {
+//   const i = selectedSizes.value.indexOf(size);
+//   if (i > -1) selectedSizes.value.splice(i, 1);
+//   else selectedSizes.value.push(size);
+//   // Clear error khi user chọn size
+//   if (selectedSizes.value.length > 0) {
+//     sizeError.value = "";
+//   }
+// };
 const toggleSize = (size) => {
-  const i = selectedSizes.value.indexOf(size);
-  if (i > -1) selectedSizes.value.splice(i, 1);
-  else selectedSizes.value.push(size);
-  // Clear error khi user chọn size
-  if (selectedSizes.value.length > 0) {
-    sizeError.value = "";
+  if (isEdit.value) {
+    // ❌ không cho chọn nhiều size khi đang EDIT
+    selectedSizes.value = [size];
+    formData.size = String(size);
+  } else {
+    // CREATE: cho chọn nhiều size để tạo nhiều biến thể
+    const idx = selectedSizes.value.indexOf(size);
+    if (idx === -1) selectedSizes.value.push(size);
+    else selectedSizes.value.splice(idx, 1);
   }
+  sizeError.value = "";
 };
 
 // ===== VALIDATION FUNCTIONS =====
@@ -629,7 +762,7 @@ const validateColor = () => {
 };
 
 const validateSize = () => {
-  if (!formData.size || formData.size.trim() === "") {
+  if (!formData.size || String(formData.size).trim() === "") {
     sizeError.value = "Vui lòng chọn kích thước";
     errors.size = "Vui lòng chọn kích thước";
     return false;
@@ -685,15 +818,14 @@ const validateStockQuantity = () => {
     return false;
   }
   errors.stockQuantity = "";
-  
-  // Khi stockQuantity thay đổi, validate lại lowStockThreshold
-  validateLowStockThreshold();
-  
   return true;
 };
 
 const validateLowStockThreshold = () => {
-  if (formData.lowStockThreshold !== null && formData.lowStockThreshold !== undefined) {
+  if (
+    formData.lowStockThreshold !== null &&
+    formData.lowStockThreshold !== undefined
+  ) {
     if (formData.lowStockThreshold < 0) {
       errors.lowStockThreshold = "Ngưỡng cảnh báo không được âm";
       return false;
@@ -702,17 +834,10 @@ const validateLowStockThreshold = () => {
       errors.lowStockThreshold = "Ngưỡng cảnh báo phải là số nguyên";
       return false;
     }
-    // Validate: Ngưỡng cảnh báo không được lớn hơn số lượng tồn kho
-    if (formData.stockQuantity !== null && formData.stockQuantity !== undefined) {
-      if (formData.lowStockThreshold > formData.stockQuantity) {
-        errors.lowStockThreshold = "Ngưỡng cảnh báo không được lớn hơn số lượng tồn kho";
-        return false;
-      }
-    }
   }
   errors.lowStockThreshold = "";
   return true;
-};  
+};
 
 // Validate tất cả fields
 const validateAll = () => {
@@ -756,28 +881,41 @@ const handleSizePopupClose = () => {
 
 const confirmSizes = () => {
   if (selectedSizes.value.length === 0) {
-    notificationService.warning('Cảnh báo', "Vui lòng chọn ít nhất một kích thước");
+    notificationService.warning(
+      "Cảnh báo",
+      "Vui lòng chọn ít nhất một kích thước"
+    );
     sizeError.value = "Vui lòng chọn ít nhất một kích thước";
     errors.size = "Vui lòng chọn ít nhất một kích thước";
     return;
   }
-  formData.size = selectedSizes.value.join(", ");
+  // formData.size = selectedSizes.value.join(", ");
+  if (isEdit.value) {
+    formData.size = selectedSizes.value[0];
+  } else {
+    formData.size = selectedSizes.value.map((s) => String(s)).join(", ");
+  }
+
   sizeError.value = ""; // Clear error khi confirm thành công
   errors.size = "";
   showSizePopup.value = false;
 };
 
-const handleImageRemoved = (url) => {
-  if (!removedImageUrls.value.includes(url)) {
-    removedImageUrls.value.push(url);
-  }
+// const handleImageRemoved = (url) => {
+//   if (!removedImageUrls.value.includes(url)) {
+//     removedImageUrls.value.push(url);
+//   }
+// };
+const handleImageRemoved = (image) => {
+  // image = { id, previewUrl, type }
+  removedImageUrls.value.push(image);
 };
 
 const isEdit = computed(() => !!props.variant);
 
 // Computed để kiểm tra xem form có lỗi không
 const hasErrors = computed(() => {
-  return Object.values(errors).some(error => error !== "");
+  return Object.values(errors).some((error) => error !== "");
 });
 
 // ===== IMAGE UPLOAD =====
@@ -806,7 +944,9 @@ const loadProducts = async () => {
     products.value = result.content || [];
   } catch (error) {
     console.error("Error loading products:", error);
-    notificationService.error('Lỗi', "Không thể tải danh sách sản phẩm", { duration: 3000 });
+    notificationService.error("Lỗi", "Không thể tải danh sách sản phẩm", {
+      duration: 3000,
+    });
   }
 };
 
@@ -873,13 +1013,13 @@ watch(
       populateForm(props.variant);
 
       // 2) Fetch ảnh sản phẩm từ DB
-      const initial = await loadProductImagesFromDB(props.variant.productId);
+      // const initial = await loadProductImagesFromDB(props.variant.productId);
 
       // 3) Gán cho UploadGallery
-      galleryInitial.value = initial;
+      // galleryInitial.value = initial;
 
       // 4) Ép UploadGallery nạp lại từ initialImages
-      resetKey.value++;
+      // resetKey.value++;
     }
 
     if (props.variant) {
@@ -889,28 +1029,32 @@ watch(
       try {
         // Lấy ảnh của product (không thay primary ở đây)
         const { data } = await axios.get(
-          `/api/admin/products/${props.variant.productId}/images`
+          `/api/admin/variant-images/${props.variant.id}`
         );
         // Map về dạng UploadGallery hiểu
         galleryInitial.value = (data || []).map((it) => ({
-          previewUrl: it.imageUrl, // bắt buộc
-          isPrimary: !!it.isPrimary, // để UploadGallery hiển thị sao
-          type: "db", // ✅ phân biệt ảnh đã có trong DB
-          id: it.id ?? null, // (tuỳ dùng)
+          previewUrl: it.imageUrl,
+          isPrimary: false, // Variant không có ảnh bìa
+          type: "db",
+          id: it.id,
+          displayOrder: it.displayOrder,
         }));
 
         // Ép UploadGallery nạp lại từ initialImages mới
         resetKey.value++;
       } catch (err) {
         console.error("Không tải được ảnh từ DB:", err);
-        notificationService.error('Lỗi',"Không thể tải thư viện ảnh của sản phẩm");
+        notificationService.error(
+          "Lỗi",
+          "Không thể tải thư viện ảnh của sản phẩm"
+        );
       }
     }
   }
 );
 
 // ====== AUTO GENERATE SKU ======
-// --- Watch sinh SKU với format mới: [Brand]-[Category]-[Model]-[Color]-[Size] ---
+// --- Watch sinh SKU ---
 watch(
   [() => formData.productId, () => formData.color, () => formData.size],
   ([pid, color, size]) => {
@@ -918,21 +1062,12 @@ watch(
     const product = products.value.find((p) => p.id === pid);
     if (!product?.name) return;
 
-    // Nếu size là chuỗi nhiều sizes (ví dụ: "38, 37"), chỉ lấy size đầu tiên để generate SKU
-    // SKU chỉ nên có 1 size, khi submit sẽ tạo nhiều variants riêng biệt
-    let singleSize = size;
-    if (typeof size === 'string' && size.includes(',')) {
-      // Lấy size đầu tiên từ chuỗi "38, 37" → "38"
-      singleSize = size.split(',')[0].trim();
-    }
-    
-    // Convert size sang số nếu có thể (loại bỏ ký tự không phải số)
-    singleSize = String(singleSize).replace(/[^0-9]/g, '');
-    if (!singleSize) return;
+    const brandPart = extractBrandCode(product.name); // ADIDA / NIKE / CONVE ...
+    const modelPart = extractModelCode(product.name); // ULTRA22 / REACT55 ...
+    const colorPart = shortenColor(color); // WHI / RED / BLK ...
+    const sizePart = String(size).trim(); // OK // 42
 
-    // Generate SKU với format mới: [Brand]-[Category]-[Model]-[Color]-[Size]
-    // Ví dụ: SNK-SHO-AZ-BLK-42
-    formData.sku = generateSku(product, color, singleSize);
+    formData.sku = `${brandPart}-${modelPart}-${colorPart}-${sizePart}`;
   }
 );
 
@@ -950,7 +1085,7 @@ const handleSubmit = async () => {
 
     // ==== Validate ảnh ====
     if (selectedImages.value.length > 10) {
-      notificationService.warning('Cảnh báo', "Tối đa 10 ảnh");
+      notificationService.warning("Cảnh báo", "Tối đa 10 ảnh");
       return;
     }
 
@@ -959,34 +1094,22 @@ const handleSubmit = async () => {
     // ==== xóa ảnh đã đánh dấu xóa (nếu có) ====
     if (removedImageUrls.value.length > 0) {
       for (const item of removedImageUrls.value) {
-        const url =
-          typeof item === "string"
-            ? item
-            : item?.url || item?.previewUrl || item?.imageUrl;
-
-        if (!url) continue;
-
+        if (!item?.id) continue;
         try {
-          await axios.delete(
-            `/api/admin/products/${formData.productId}/images`,
-            {
-              data: { imageUrl: url }, // ✅ giờ gửi string đúng format
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-          console.log("🗑️ Đã xóa ảnh:", url);
+          await axios.delete(`/api/admin/variant-images/${item.id}`);
+          console.log("🗑️ Đã xóa ảnh ID:", item.id);
         } catch (e) {
-          console.error("❌ Xóa ảnh lỗi:", url, e);
+          console.error("❌ Xóa ảnh lỗi:", item.id, e);
         }
       }
       removedImageUrls.value = [];
     }
 
     // ==== tính trạng thái primary hiện có ở DB (sau khi trừ ảnh đã xóa) ====
-    const dbImagesEffective = (galleryInitial.value || []).filter(
-      (it) => !removedImageUrls.value.includes(it.previewUrl)
-    );
-    const dbHasPrimary = dbImagesEffective.some((it) => it.isPrimary === true);
+    // const dbImagesEffective = (galleryInitial.value || []).filter(
+    //   (it) => !removedImageUrls.value.includes(it.previewUrl)
+    // );
+    // const dbHasPrimary = dbImagesEffective.some((it) => it.isPrimary === true);
 
     // ==== upload/lưu ảnh mới ====
     const uploadedUrls = [];
@@ -995,34 +1118,46 @@ const handleSubmit = async () => {
     //        Nếu user không chọn, BE vẫn auto primary khi existingCount == 0.
 
     for (const [idx, img] of selectedImages.value.entries()) {
-      if (img.type === "db") continue; // ✅ ảnh đã có DB: không gửi API lần nữa
-      const isPrimaryChosen = !!img.isPrimary; // chỉ tôn trọng nếu user chọn
-      const willSendPrimary = dbHasPrimary ? false : isPrimaryChosen; // nếu DB đã có primary thì ép false
+      // Skip ảnh đã có DB
+      if (img.type === "db") continue;
 
-      if ((img.type === "local" || img.file) && img.file) {
-        // ✅ resilient khi thiếu type
+      // 🛑 Nếu đang ở CREATE (props.variant == null) → không upload ảnh
+      if (!isEdit.value) {
+        console.warn("⏳ CREATE mode: skip upload ảnh vì chưa có variantId");
+        continue;
+      }
+
+      // 🟢 EDIT MODE ⇒ chỉ khi props.variant.id tồn tại
+      const variantId = props.variant?.id;
+      if (!variantId) {
+        console.error("❌ Không tìm thấy variantId ở EDIT MODE!");
+        continue;
+      }
+
+      // 🖼 Ảnh local
+      if (img.file) {
         const formUpload = new FormData();
         formUpload.append("file", img.file);
-        formUpload.append("isPrimary", String(willSendPrimary));
-        formUpload.append("displayOrder", String(idx)); // bạn muốn 0-based → giữ nguyên
+        formUpload.append("variantId", variantId);
+        formUpload.append("displayOrder", String(idx));
 
         const res = await axios.post(
-          `/api/admin/products/${formData.productId}/images/upload`,
+          `/api/admin/variant-images/upload`,
           formUpload,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+
         uploadedUrls.push(res.data?.imageUrl);
-      } else if (img.type === "url" && img.previewUrl) {
-        // ✅ THÊM API này để lưu record DB cho ảnh URL (trước đây bị thiếu nên "không gọi API")
-        await axios.post(
-          `/api/admin/products/${formData.productId}/images`,
-          {
-            imageUrl: img.previewUrl,
-            isPrimary: willSendPrimary, // tôn trọng quy tắc ở trên
-            displayOrder: idx, // 0-based, BE +1 nội bộ
-          },
-          { headers: { "Content-Type": "application/json" } }
-        );
+      }
+
+      // 🖼 Ảnh URL
+      else if (img.type === "url" && img.previewUrl) {
+        await axios.post(`/api/admin/variant-images`, {
+          variantId: variantId,
+          imageUrl: img.previewUrl,
+          displayOrder: idx,
+        });
+
         uploadedUrls.push(img.previewUrl);
       }
     }
@@ -1031,16 +1166,19 @@ const handleSubmit = async () => {
     const selectedPrimaryIndex = selectedImages.value.findIndex(
       (i) => i.isPrimary
     );
-    if (!dbHasPrimary && selectedPrimaryIndex >= 0) {
-      // chỉ khi DB không có primary & user có chọn primary mới
-      formData.imageUrl = uploadedUrls[selectedPrimaryIndex] || null;
-    } // else: giữ nguyên imageUrl hiện có (nếu đang Edit) hoặc để null (Create → BE không bắt buộc)
+    // if (!dbHasPrimary && selectedPrimaryIndex >= 0) {
+    //   // chỉ khi DB không có primary & user có chọn primary mới
+    //   formData.imageUrl = uploadedUrls[selectedPrimaryIndex] || null;
+    // } // else: giữ nguyên imageUrl hiện có (nếu đang Edit) hoặc để null (Create → BE không bắt buộc)
 
     // ===== Nhánh 1: EDIT =====
     if (isEdit.value) {
       const variantId = props.variant?.id;
       if (!variantId) {
-        notificationService.error('Lỗi',"Không xác định được ID biến thể cần cập nhật");
+        notificationService.error(
+          "Lỗi",
+          "Không xác định được ID biến thể cần cập nhật"
+        );
         return;
       }
 
@@ -1059,10 +1197,17 @@ const handleSubmit = async () => {
 
       await adminStore.updateProductVariant(variantId, payload);
 
-      notificationService.success('Thành công', "Đã cập nhật biến thể thành công", { duration: 2500 });
+      notificationService.success(
+        "Thành công",
+        "Đã cập nhật biến thể thành công",
+        {
+          duration: 2500,
+        }
+      );
 
       resetForm();
-      emit("success");
+      // emit("success");
+      emit("success", variantId);
       emit("close");
       return;
     }
@@ -1076,47 +1221,86 @@ const handleSubmit = async () => {
 
     const variantList = sizes.map((size) => ({
       productId: formData.productId,
-      sku: generateSku(product, formData.color, size), // Format mới: [Brand]-[Category]-[Model]-[Color]-[Size]
+      sku: generateSku(product?.name, formData.color, size),
       color: formData.color,
       size,
       priceBase: formData.priceBase,
       priceSale: formData.priceSale,
       stockQuantity: formData.stockQuantity,
       lowStockThreshold: formData.lowStockThreshold,
-      imageUrl: formData.imageUrl || null, // không ép, có thể null
+      imageUrl: null, // CREATE => để null, upload xong mới gán
       isActive: formData.isActive,
     }));
 
-    await adminStore.createMultipleProductVariants(variantList);
+    // CREATE variants -> lấy danh sách variantId
+    const createdVariants = await adminStore.createMultipleProductVariants(
+      variantList
+    );
+    // [{ id, size, ... }]
 
-    notificationService.success('Thành công', `Đã tạo ${variantList.length} biến thể mới`, { duration: 3000 });
+    // ==== UPLOAD ẢNH CHO CÁC VARIANT VỪA TẠO ====
+    if (selectedImages.value.length > 0) {
+      for (const v of createdVariants) {
+        for (const [idx, img] of selectedImages.value.entries()) {
+          // LOCAL FILE
+          if (img.file) {
+            const fd = new FormData();
+            fd.append("file", img.file);
+            fd.append("variantId", v.id);
+            fd.append("displayOrder", String(idx));
+
+            await axios.post("/api/admin/variant-images/upload", fd, {
+              headers: { "Content-Type": "multipart/form-data" },
+            });
+          }
+
+          // IMAGE URL
+          else if (img.type === "url" && img.previewUrl) {
+            await axios.post("/api/admin/variant-images", {
+              variantId: v.id,
+              imageUrl: img.previewUrl,
+              displayOrder: idx,
+            });
+          }
+        }
+      }
+    }
+
+    notificationService.success(
+      "Thành công",
+      `Đã tạo ${variantList.length} biến thể mới`,
+      { duration: 3000 }
+    );
+
+    const firstVariantId = createdVariants?.[0]?.id ?? null;
     resetForm();
-    emit("success");
+    // emit("success");
+    emit("success", firstVariantId);
     emit("close");
   } catch (error) {
     console.error("Error saving variants:", error);
-    notificationService.error('Lỗi',"Không thể lưu biến thể");
+    notificationService.error("Lỗi", "Không thể lưu biến thể");
   } finally {
     isSubmitting.value = false;
   }
 };
 
 // Trả về mảng [{ previewUrl, isPrimary, type: 'url' }]
-const loadProductImagesFromDB = async (productId) => {
-  try {
-    const { data } = await axios.get(`/api/admin/products/${productId}/images`);
-    // Kỳ vọng BE trả về: [{ id, imageUrl, isPrimary, displayOrder, ... }]
-    return (Array.isArray(data) ? data : []).map((it) => ({
-      previewUrl: it.imageUrl,
-      isPrimary: !!it.isPrimary,
-      type: "url",
-    }));
-  } catch (err) {
-    console.error("Không tải được thư viện ảnh:", err);
-    notificationService.error('Lỗi',"Không thể tải thư viện ảnh của sản phẩm");
-    return [];
-  }
-};
+// const loadProductImagesFromDB = async (productId) => {
+//   try {
+//     const { data } = await axios.get(`/api/admin/products/${productId}/images`);
+//     // Kỳ vọng BE trả về: [{ id, imageUrl, isPrimary, displayOrder, ... }]
+//     return (Array.isArray(data) ? data : []).map((it) => ({
+//       previewUrl: it.imageUrl,
+//       isPrimary: !!it.isPrimary,
+//       type: "url",
+//     }));
+//   } catch (err) {
+//     console.error("Không tải được thư viện ảnh:", err);
+//     notificationService.error("Lỗi", "Không thể tải thư viện ảnh của sản phẩm");
+//     return [];
+//   }
+// };
 
 // ===== CLOSE MODAL =====
 const closeModal = () => {
@@ -1129,6 +1313,3 @@ onErrorCaptured((err) => {
   return false;
 });
 </script>
-
-
-

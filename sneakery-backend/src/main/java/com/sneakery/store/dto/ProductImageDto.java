@@ -34,8 +34,8 @@ public class ProductImageDto {
     private String altText;
 
     /** Ảnh chính (true = ảnh đại diện của sản phẩm) */
-    @Schema(description = "Cờ đánh dấu ảnh chính của sản phẩm")
-    private Boolean isPrimary;
+//    @Schema(description = "Cờ đánh dấu ảnh chính của sản phẩm")
+//    private Boolean isPrimary;
 
     /** Thứ tự hiển thị trong gallery (1 = đầu tiên) */
     @Builder.Default

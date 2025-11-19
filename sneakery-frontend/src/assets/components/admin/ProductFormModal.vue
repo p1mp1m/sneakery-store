@@ -246,6 +246,7 @@
             </div>
 
             <!-- Danh mục -->
+            <!-- Danh mục -->
             <div class="space-y-2">
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -258,18 +259,31 @@
                 <label
                   v-for="category in childCategories"
                   :key="category.id"
-                  class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
+                  :class="[
+                    'flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer transition-all duration-200',
+                    localFormData.categoryIds.includes(category.id)
+                      ? 'bg-purple-100 border-purple-400 dark:bg-purple-900/40 dark:border-purple-600 shadow-sm'
+                      : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-500',
+                  ]"
                 >
                   <input
-                    type="checkbox"
+                    type="radio"
+                    name="singleCategory"
                     :value="category.id"
                     :checked="localFormData.categoryIds.includes(category.id)"
-                    @change="handleCategoryChange(category.id, $event)"
-                    class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                    @change="(e) => handleCategoryChange(category.id, e)"
+                    class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
                   />
-                  <span class="text-sm text-gray-700 dark:text-gray-300">{{
-                    category.name
-                  }}</span>
+                  <span
+                    :class="[
+                      'text-sm font-medium',
+                      localFormData.categoryIds.includes(category.id)
+                        ? 'text-purple-700 dark:text-purple-300'
+                        : 'text-gray-700 dark:text-gray-300',
+                    ]"
+                  >
+                    {{ category.name }}
+                  </span>
                 </label>
                 <button
                   type="button"
@@ -285,8 +299,9 @@
               <span
                 v-if="formErrors.categoryIds"
                 class="text-sm text-red-600 dark:text-red-400"
-                >{{ formErrors.categoryIds }}</span
               >
+                {{ formErrors.categoryIds }}
+              </span>
             </div>
 
             <!-- Thư viện hình ảnh -->
@@ -294,7 +309,7 @@
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Thư viện hình ảnh sản phẩm
+                Thư viện ảnh bìa sản phẩm
               </label>
               <UploadGallery
                 :initialImages="initialImages"
@@ -303,8 +318,7 @@
                 @remove="handleImageRemove"
               />
               <span class="text-xs text-gray-500 dark:text-gray-400">
-                Có thể tải ảnh từ máy hoặc nhập URL. Chọn ảnh "Primary" để hiển
-                thị chính.
+                Có thể tải ảnh từ máy hoặc nhập URL.
               </span>
             </div>
           </div>
@@ -390,6 +404,8 @@
                     <input
                       v-model="variant.size"
                       type="text"
+                      readonly
+                      @click="openSizePicker(index)"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       placeholder="VD: 42, 43, 44"
                     />
@@ -404,6 +420,8 @@
                     <input
                       v-model="variant.color"
                       type="text"
+                      readonly
+                      @click="openColorPicker(index)"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       placeholder="VD: Trắng, Đen"
                     />
@@ -481,6 +499,21 @@
         </div>
       </div>
     </div>
+    <!-- Popup chọn màu -->
+    <ColorPickerPopup
+      :visible="showColorPopup"
+      :initialSelected="formData.color"
+      @select="handleColorSelected"
+      @close="showColorPopup = false"
+    />
+
+    <!-- Popup chọn size -->
+    <SizePickerPopup
+      :visible="showSizePopup"
+      :initialSelected="selectedSizes"
+      @confirm="handleSizesConfirmed"
+      @close="showSizePopup = false"
+    />
   </Teleport>
 </template>
 
@@ -488,53 +521,28 @@
 import { ref, computed, watch, onUnmounted, nextTick } from "vue";
 import { generateSlug as generateSlugUtil } from "@/utils/slugGenerator";
 import { useFocusManagement } from "@/composables/useFocusManagement";
+import {
+  generateSku,
+  extractBrandCode,
+  extractModelCode,
+  shortenColor,
+} from "@/utils/skuGenerator"; // Giữ util của bạn
 import UploadGallery from "./UploadGallery.vue";
+import ColorPickerPopup from "@/assets/components/common/ColorPickerPopup.vue";
+import SizePickerPopup from "@/assets/components/common/SizePickerPopup.vue";
 
 const props = defineProps({
-  visible: {
-    type: Boolean,
-    default: false,
-  },
-  isEditMode: {
-    type: Boolean,
-    default: false,
-  },
-  initialProduct: {
-    type: Object,
-    default: null,
-  },
-  brands: {
-    type: Array,
-    default: () => [],
-  },
-  categories: {
-    type: Array,
-    default: () => [],
-  },
-  materials: {
-    type: Array,
-    default: () => [],
-  },
-  soles: {
-    type: Array,
-    default: () => [],
-  },
-  initialImages: {
-    type: Array,
-    default: () => [],
-  },
-  maxImages: {
-    type: Number,
-    default: 10,
-  },
-  formErrors: {
-    type: Object,
-    default: () => ({}),
-  },
-  submitting: {
-    type: Boolean,
-    default: false,
-  },
+  visible: { type: Boolean, default: false },
+  isEditMode: { type: Boolean, default: false },
+  initialProduct: { type: Object, default: null },
+  brands: { type: Array, default: () => [] },
+  categories: { type: Array, default: () => [] },
+  materials: { type: Array, default: () => [] },
+  soles: { type: Array, default: () => [] },
+  initialImages: { type: Array, default: () => [] },
+  maxImages: { type: Number, default: 10 },
+  formErrors: { type: Object, default: () => ({}) },
+  submitting: { type: Boolean, default: false },
   formData: {
     type: Object,
     default: () => ({
@@ -563,30 +571,36 @@ const emit = defineEmits([
   "quick-add-material",
   "quick-add-sole",
   "quick-add-category",
-  "images-change", // ✅ thêm dòng này
-  "image-remove", // ✅ thêm dòng này
+  "images-change",
+  "image-remove",
 ]);
 
 // Focus management
 const modalRef = ref(null);
-const { setupModalFocus, cleanupModalFocus, saveActiveElement } = useFocusManagement();
-const modalTitleId = computed(() => `product-modal-title-${Math.random().toString(36).substr(2, 9)}`);
+const { setupModalFocus, cleanupModalFocus, saveActiveElement } =
+  useFocusManagement();
+const modalTitleId = computed(
+  () => `product-modal-title-${Math.random().toString(36).substr(2, 9)}`
+);
 
 // Setup focus when modal opens
-watch(() => props.visible, (isOpen) => {
-  if (isOpen) {
-    saveActiveElement();
-    nextTick(() => {
+watch(
+  () => props.visible,
+  (isOpen) => {
+    if (isOpen) {
+      saveActiveElement();
+      nextTick(() => {
+        if (modalRef.value) {
+          setupModalFocus(modalRef.value);
+        }
+      });
+    } else {
       if (modalRef.value) {
-        setupModalFocus(modalRef.value);
+        cleanupModalFocus(modalRef.value);
       }
-    });
-  } else {
-    if (modalRef.value) {
-      cleanupModalFocus(modalRef.value);
     }
   }
-});
+);
 
 onUnmounted(() => {
   if (modalRef.value) {
@@ -598,14 +612,13 @@ onUnmounted(() => {
 // Form data - sync với parent
 // const localFormData = ref({ ...props.formData });
 const localFormData = ref(JSON.parse(JSON.stringify(props.formData)));
+const showColorPopup = ref(false);
+const showSizePopup = ref(false);
+const colorTargetIndex = ref(null);
+const sizeTargetIndex = ref(null);
+const selectedSizes = ref([]);
 
-// Child categories (chỉ hiển thị categories có parentId)
-const childCategories = computed(() => {
-  return props.categories.filter((cat) => cat.parentId != null);
-});
-// =======================
-// 1️⃣ Khi props.initialProduct thay đổi (đặc biệt khi edit)
-// =======================
+// ===== WATCHERS =====
 watch(
   () => props.initialProduct,
   (product) => {
@@ -642,9 +655,6 @@ watch(
   { immediate: true, deep: true } // ✅ Đổi thành deep: true để detect nested changes
 );
 
-// =======================
-// 2️⃣ Khi modal mở ra mà không có dữ liệu (tức là thêm mới)
-// =======================
 watch(
   () => props.visible,
   (isVisible) => {
@@ -666,9 +676,6 @@ watch(
   }
 );
 
-// =======================
-// 3️⃣ Emit khi người dùng nhập liệu (đủ, không cần 2 chiều)
-// =======================
 watch(
   localFormData,
   (newVal, oldVal) => {
@@ -679,73 +686,47 @@ watch(
   { deep: true }
 );
 
-// Handlers
-// const handleNameInput = (event) => {
-//   localFormData.value.name = event.target.value;
-//   if (!props.isEditMode) {
-//     localFormData.value.slug = generateSlugUtil(event.target.value);
-//   }
-// };
+// ===== HANDLERS (product fields) =====
 const handleNameInput = () => {
   if (!props.isEditMode) {
     localFormData.value.slug = generateSlugUtil(localFormData.value.name);
   }
 };
-
-const handleSlugInput = (event) => {
-  localFormData.value.slug = event.target.value;
-};
-
-const handleBrandChange = (event) => {
-  localFormData.value.brandId = event.target.value
-    ? Number(event.target.value)
-    : null;
-};
-
-const handleStatusChange = (event) => {
-  localFormData.value.isActive = event.target.value === "true";
-};
-
-const handleMaterialChange = (event) => {
-  localFormData.value.materialId = event.target.value
-    ? Number(event.target.value)
-    : null;
-};
-
-const handleSoleChange = (event) => {
-  localFormData.value.shoeSoleId = event.target.value
-    ? Number(event.target.value)
-    : null;
-};
-
-const handleDescriptionInput = (event) => {
-  localFormData.value.description = event.target.value;
-};
+const handleSlugInput = (e) => (localFormData.value.slug = e.target.value);
+const handleBrandChange = (e) =>
+  (localFormData.value.brandId = e.target.value
+    ? Number(e.target.value)
+    : null);
+const handleStatusChange = (e) =>
+  (localFormData.value.isActive = e.target.value === "true");
+const handleMaterialChange = (e) =>
+  (localFormData.value.materialId = e.target.value
+    ? Number(e.target.value)
+    : null);
+const handleSoleChange = (e) =>
+  (localFormData.value.shoeSoleId = e.target.value
+    ? Number(e.target.value)
+    : null);
+const handleDescriptionInput = (e) =>
+  (localFormData.value.description = e.target.value);
 
 const handleCategoryChange = (categoryId, event) => {
   if (event.target.checked) {
-    if (!localFormData.value.categoryIds.includes(categoryId)) {
-      localFormData.value.categoryIds.push(categoryId);
-    }
+    localFormData.value.categoryIds = [categoryId]; // chỉ cho phép 1 danh mục
   } else {
-    localFormData.value.categoryIds = localFormData.value.categoryIds.filter(
-      (id) => id !== categoryId
-    );
+    localFormData.value.categoryIds = [];
   }
+  emit("update:formData", { ...localFormData.value }); // ✅ cập nhật lên cha ngay
 };
 
-const handleImagesChange = (images) => {
-  emit("images-change", images);
-};
+// ===== Images
+const handleImagesChange = (images) => emit("images-change", images);
+const handleImageRemove = (payload) => emit("image-remove", payload);
 
-const handleImageRemove = (payload) => {
-  emit("image-remove", payload);
-};
-
+// ===== VARIANTS =====
 const handleAddVariant = () => {
   localFormData.value.variants.push({
-    // id: null,
-    id: props.isEditMode ? undefined : null, // ⚠️ Giữ undefined thay vì null khi edit
+    id: props.isEditMode ? undefined : null,
     sku: "",
     size: "",
     color: "",
@@ -760,29 +741,56 @@ const handleRemoveVariant = (index) => {
   localFormData.value.variants.splice(index, 1);
 };
 
-// const handleVariantInput = (index, field, event) => {
-//   const value =
-//     field === "priceBase" || field === "priceSale" || field === "stockQuantity"
-//       ? Number(event.target.value) || 0
-//       : event.target.value;
-//   localFormData.value.variants[index][field] = value;
-// };
-
-// const handleSubmit = () => {
-//   emit("submit", { ...localFormData.value });
-// };
-const handleSubmit = () => {
-  // 🔄 Cập nhật dữ liệu form cha trước khi submit
-  emit("update:formData", { ...localFormData.value });
-  // 🚀 Gửi form đi
-  emit("submit", { ...localFormData.value });
+// Popup mở/đóng
+const openColorPicker = (index) => {
+  colorTargetIndex.value = index;
+  showColorPopup.value = true;
+};
+const openSizePicker = (index) => {
+  sizeTargetIndex.value = index;
+  const currentSizes = localFormData.value.variants[index].size
+    ? localFormData.value.variants[index].size.split(",").map((s) => s.trim())
+    : [];
+  selectedSizes.value = currentSizes;
+  showSizePopup.value = true;
 };
 
+// Xử lý chọn màu/size
+const handleColorSelected = (color) => {
+  if (colorTargetIndex.value != null) {
+    localFormData.value.variants[colorTargetIndex.value].color = color.name;
+    autoGenerateSku(colorTargetIndex.value);
+  }
+};
+const handleSizesConfirmed = (sizes) => {
+  if (sizeTargetIndex.value != null) {
+    const sizeString = sizes.join(", ");
+    localFormData.value.variants[sizeTargetIndex.value].size = sizeString;
+    autoGenerateSku(sizeTargetIndex.value);
+  }
+};
 
+// Auto SKU cho biến thể
+const autoGenerateSku = (index) => {
+  const v = localFormData.value.variants[index];
+  const productName = localFormData.value.name || "";
+  if (productName && v.color && v.size) {
+    const brandPart = extractBrandCode(productName);
+    const modelPart = extractModelCode(productName);
+    const colorPart = shortenColor(v.color);
+    const sizePart = String(v.size).split(",")[0]?.trim() || ""; // Lấy size đầu nếu multi
+    v.sku = `${brandPart}-${modelPart}-${colorPart}-${sizePart}`;
+  }
+};
+
+// Submit/Close
+const handleSubmit = () => {
+  emit("update:formData", { ...localFormData.value });
+  emit("submit", { ...localFormData.value });
+};
 const handleClose = () => {
   emit("update:visible", false);
   emit("close");
-  // 🧹 Reset form local để tránh dữ liệu cũ hoặc nhân đôi variant
   localFormData.value = {
     id: null,
     name: "",
@@ -798,4 +806,9 @@ const handleClose = () => {
     variants: [],
   };
 };
+
+// Computed
+const childCategories = computed(() =>
+  props.categories.filter((cat) => cat.parentId != null)
+);
 </script>

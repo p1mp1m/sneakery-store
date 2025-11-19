@@ -51,7 +51,7 @@ public class AdminProductVariantService {
             // Lấy tất cả data không sort
             customPageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
-        
+
         Page<ProductVariant> variants = productVariantRepository.findWithFilters(
                 filter.getSearch(),
                 filter.getColor(),
@@ -60,12 +60,12 @@ public class AdminProductVariantService {
                 filter.getStockStatus(),
                 customPageable
         );
-        
+
         // Nếu sort theo color hoặc size, sort thủ công rồi paginate
         if (filter.getSortBy() != null && (filter.getSortBy().equalsIgnoreCase("color") || filter.getSortBy().equalsIgnoreCase("size"))) {
             List<ProductVariant> variantList = new ArrayList<>(variants.getContent());
             boolean isAsc = filter.getSortDirection() == null || filter.getSortDirection().equalsIgnoreCase("asc");
-            
+
             variantList.sort((v1, v2) -> {
                 if (filter.getSortBy().equalsIgnoreCase("color")) {
                     // Sort màu case-insensitive
@@ -90,14 +90,14 @@ public class AdminProductVariantService {
                 }
                 return 0;
             });
-            
+
             // Paginate sau khi sort
             int page = pageable.getPageNumber();
             int size = pageable.getPageSize();
             int start = page * size;
             int end = Math.min(start + size, variantList.size());
             List<ProductVariant> pagedList = start < variantList.size() ? variantList.subList(start, end) : new ArrayList<>();
-            
+
             // Tạo Page mới với data đã sort và paginate
             return new org.springframework.data.domain.PageImpl<>(
                     Objects.requireNonNull(pagedList.stream().map(this::convertToDto).collect(java.util.stream.Collectors.toList())),
@@ -105,7 +105,7 @@ public class AdminProductVariantService {
                     variantList.size()
             );
         }
-        
+
         return variants.map(this::convertToDto);
     }
 
@@ -135,11 +135,11 @@ public class AdminProductVariantService {
         variant.setPriceSale(requestDto.getPriceSale());
         variant.setCostPrice(requestDto.getCostPrice());
         variant.setStockQuantity(requestDto.getStockQuantity());
-        variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null 
-            ? requestDto.getLowStockThreshold() 
-            : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
+        variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null
+                ? requestDto.getLowStockThreshold()
+                : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
         variant.setWeightGrams(requestDto.getWeightGrams());
-        variant.setImageUrl(requestDto.getImageUrl());
+//        variant.setImageUrl(requestDto.getImageUrl());
         variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
         variant.setCreatedAt(LocalDateTime.now());
         variant.setUpdatedAt(LocalDateTime.now());
@@ -200,11 +200,11 @@ public class AdminProductVariantService {
                 variant.setPriceSale(requestDto.getPriceSale());
                 variant.setCostPrice(requestDto.getCostPrice());
                 variant.setStockQuantity(requestDto.getStockQuantity());
-                variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null 
-            ? requestDto.getLowStockThreshold() 
-            : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
+                variant.setLowStockThreshold(requestDto.getLowStockThreshold() != null
+                        ? requestDto.getLowStockThreshold()
+                        : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
                 variant.setWeightGrams(requestDto.getWeightGrams());
-                variant.setImageUrl(requestDto.getImageUrl());
+//                variant.setImageUrl(requestDto.getImageUrl());
                 variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
                 variant.setCreatedAt(LocalDateTime.now());
                 variant.setUpdatedAt(LocalDateTime.now());
@@ -246,7 +246,7 @@ public class AdminProductVariantService {
         variant.setStockQuantity(requestDto.getStockQuantity());
         variant.setLowStockThreshold(requestDto.getLowStockThreshold());
         variant.setWeightGrams(requestDto.getWeightGrams());
-        variant.setImageUrl(requestDto.getImageUrl());
+//        variant.setImageUrl(requestDto.getImageUrl());
         variant.setIsActive(requestDto.getIsActive());
         variant.setUpdatedAt(LocalDateTime.now());
 
@@ -256,7 +256,7 @@ public class AdminProductVariantService {
 
     /**
      * Xóa biến thể (hard delete)
-     * 
+     *
      * <p>Thực hiện hard delete bằng cách xóa tất cả các bản ghi liên quan trước:
      * <ul>
      *   <li>1. Xóa Warranties (theo variant_id)</li>
@@ -265,44 +265,44 @@ public class AdminProductVariantService {
      *   <li>4. Xóa OrderDetails (theo variant_id) - lưu ý: có thể ảnh hưởng đến lịch sử đơn hàng</li>
      *   <li>5. Xóa ProductVariant (hard delete)</li>
      * </ul>
-     * 
+     *
      * <p><b>Cảnh báo:</b> Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
      */
     public void deleteVariant(Long id) {
         ProductVariant variant = productVariantRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ProductVariantNotFoundException(id));
-        
+
         log.info("Bắt đầu xóa variant ID: {} (SKU: {}) và tất cả dữ liệu liên quan", id, variant.getSku());
-        
+
         // 1. Xóa Warranties (theo variant_id) - sử dụng native query
         int deletedWarranties = entityManager.createNativeQuery(
-                "DELETE FROM Warranties WHERE variant_id = :variantId")
+                        "DELETE FROM Warranties WHERE variant_id = :variantId")
                 .setParameter("variantId", id)
                 .executeUpdate();
         log.info("Đã xóa {} warranties cho variant ID: {}", deletedWarranties, id);
-        
+
         // 2. Xóa InventoryLogs (theo variant_id) - sử dụng native query
         int deletedLogs = entityManager.createNativeQuery(
-                "DELETE FROM Inventory_Logs WHERE variant_id = :variantId")
+                        "DELETE FROM Inventory_Logs WHERE variant_id = :variantId")
                 .setParameter("variantId", id)
                 .executeUpdate();
         log.info("Đã xóa {} inventory logs cho variant ID: {}", deletedLogs, id);
-        
+
         // 3. Xóa CartItems (theo variant_id) - sử dụng native query
         int deletedCartItems = entityManager.createNativeQuery(
-                "DELETE FROM Cart_Items WHERE variant_id = :variantId")
+                        "DELETE FROM Cart_Items WHERE variant_id = :variantId")
                 .setParameter("variantId", id)
                 .executeUpdate();
         log.info("Đã xóa {} cart items cho variant ID: {}", deletedCartItems, id);
-        
+
         // 4. Xóa OrderDetails (theo variant_id) - CẢNH BÁO: Có thể ảnh hưởng đến lịch sử đơn hàng
         // Tuy nhiên, user yêu cầu xóa hết, nên sẽ xóa
         int deletedOrderDetails = entityManager.createNativeQuery(
-                "DELETE FROM Order_Details WHERE variant_id = :variantId")
+                        "DELETE FROM Order_Details WHERE variant_id = :variantId")
                 .setParameter("variantId", id)
                 .executeUpdate();
         log.info("Đã xóa {} order details cho variant ID: {}", deletedOrderDetails, id);
-        
+
         // 5. Xóa ProductVariant (hard delete)
         productVariantRepository.delete(variant);
         log.info("Đã xóa variant ID: {} (SKU: {}) thành công", id, variant.getSku());
@@ -328,7 +328,7 @@ public class AdminProductVariantService {
     @Transactional(readOnly = true)
     public ProductVariantStatsDto getVariantStatistics() {
         List<ProductVariant> allVariants = productVariantRepository.findAll();
-        
+
         long totalVariants = allVariants.size();
         int lowStockThreshold = com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD;
         long inStockVariants = allVariants.stream()
@@ -340,12 +340,12 @@ public class AdminProductVariantService {
         long outOfStockVariants = allVariants.stream()
                 .filter(v -> v.getStockQuantity() == 0)
                 .count();
-        
+
         long totalStockValue = allVariants.stream()
                 .mapToLong(v -> v.getPriceBase().multiply(BigDecimal.valueOf(v.getStockQuantity())).longValue())
                 .sum();
-        
-        long averageStockPerVariant = totalVariants > 0 ? 
+
+        long averageStockPerVariant = totalVariants > 0 ?
                 allVariants.stream().mapToInt(ProductVariant::getStockQuantity).sum() / (int) totalVariants : 0;
 
         return ProductVariantStatsDto.builder()
@@ -365,9 +365,9 @@ public class AdminProductVariantService {
     private AdminProductVariantDto convertToDto(ProductVariant variant) {
         BigDecimal currentPrice = variant.getPriceSale() != null ? variant.getPriceSale() : variant.getPriceBase();
         String stockStatus = getStockStatus(variant.getStockQuantity());
-        int threshold = variant.getLowStockThreshold() != null 
-            ? variant.getLowStockThreshold() 
-            : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD;
+        int threshold = variant.getLowStockThreshold() != null
+                ? variant.getLowStockThreshold()
+                : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD;
         boolean isLowStock = variant.getStockQuantity() > 0 && variant.getStockQuantity() <= threshold;
         boolean isOutOfStock = variant.getStockQuantity() == 0;
 
@@ -375,18 +375,18 @@ public class AdminProductVariantService {
         Long productId = variant.getProduct() != null ? variant.getProduct().getId() : null;
         String productName = variant.getProduct() != null ? variant.getProduct().getName() : "Unknown Product";
         String productSlug = variant.getProduct() != null ? variant.getProduct().getSlug() : "";
-        String brandName = (variant.getProduct() != null && variant.getProduct().getBrand() != null) 
+        String brandName = (variant.getProduct() != null && variant.getProduct().getBrand() != null)
                 ? variant.getProduct().getBrand().getName() : "Unknown Brand";
 
-        String imageUrl = variant.getImageUrl();
+//        String imageUrl = variant.getImageUrl();
 
         // ✅ Added: nếu imageUrl null → lấy ảnh bìa từ bảng Product_Images
-        if ((imageUrl == null || imageUrl.isBlank()) && productId != null) {
-            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
-            if (coverImage.isPresent()) {
-                imageUrl = coverImage.get().getImageUrl();
-            }
-        }
+//        if ((imageUrl == null || imageUrl.isBlank()) && productId != null) {
+//            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+//            if (coverImage.isPresent()) {
+//                imageUrl = coverImage.get().getImageUrl();
+//            }
+//        }
 
         return AdminProductVariantDto.builder()
                 .id(variant.getId())
@@ -399,7 +399,7 @@ public class AdminProductVariantService {
                 .stockQuantity(variant.getStockQuantity())
                 .lowStockThreshold(variant.getLowStockThreshold())
                 .weightGrams(variant.getWeightGrams())
-                .imageUrl(imageUrl)
+//                .imageUrl(imageUrl)
                 .isActive(variant.getIsActive())
                 .createdAt(variant.getCreatedAt())
                 .updatedAt(variant.getUpdatedAt())

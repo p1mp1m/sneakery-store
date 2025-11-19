@@ -1,24 +1,39 @@
 <template>
   <router-link :to="`/home/products/${product.id}`" class="product-card-link">
     <div class="product-card group">
-      <div class="product-image-container">
+      <div
+        class="product-image-container relative overflow-hidden"
+        @mouseenter="isHover = true"
+        @mouseleave="isHover = false"
+      >
         <!-- Badges -->
         <div class="product-badges">
           <span v-if="product.isNew" class="badge badge-new">Mới</span>
-          <span v-if="product.isFeatured" class="badge badge-featured">Nổi bật</span>
-          <span v-if="!product.inStock" class="badge badge-out-of-stock">Hết hàng</span>
+          <span v-if="product.isFeatured" class="badge badge-featured"
+            >Nổi bật</span
+          >
+          <span v-if="!product.inStock" class="badge badge-out-of-stock"
+            >Hết hàng</span
+          >
         </div>
 
         <!-- Stock Badge -->
-        <div v-if="product.totalStock !== null && product.totalStock !== undefined" class="stock-badge">
-          <span 
+        <div
+          v-if="product.totalStock !== null && product.totalStock !== undefined"
+          class="stock-badge"
+        >
+          <span
             class="stock-badge-text"
             :class="{
               'stock-out': product.totalStock === 0 || !product.inStock,
-              'stock-ok': product.totalStock > 0 && product.inStock
+              'stock-ok': product.totalStock > 0 && product.inStock,
             }"
           >
-            {{ product.totalStock > 0 && product.inStock ? 'Còn hàng' : 'Hết hàng' }}
+            {{
+              product.totalStock > 0 && product.inStock
+                ? "Còn hàng"
+                : "Hết hàng"
+            }}
           </span>
         </div>
 
@@ -28,74 +43,105 @@
           :flashSale="productFlashSale"
           class="compact"
         />
-        
-        <img 
-          :src="optimizedImageUrl" 
-          class="product-image" 
+
+        <!-- Ảnh chính -->
+        <img
+          :src="mainImage"
+          class="product-image product-main transition-opacity duration-300"
+          :class="{ 'opacity-0': isHover }"
           :alt="product.name"
-          loading="lazy"
         />
+
+        <!-- Ảnh hover -->
+        <img
+          v-if="hoverImage"
+          :src="hoverImage"
+          class="product-image product-hover absolute inset-0 transition-opacity duration-300"
+          :class="{ 'opacity-100': isHover, 'opacity-0': !isHover }"
+          :alt="product.name"
+        />
+
+        <!-- Overlay -->
         <div class="product-overlay">
-          <button 
-            class="btn-icon btn-quick-view" 
-            @click.prevent="openQuickView" 
+          <button
+            class="btn-icon btn-quick-view"
+            @click.prevent="openQuickView"
             title="Xem nhanh"
           >
             <i class="material-icons">visibility</i>
           </button>
-          <button 
-            class="btn-icon btn-favorite" 
-            @click.prevent="handleToggleFavorite" 
+          <button
+            class="btn-icon btn-favorite"
+            @click.prevent="handleToggleFavorite"
             title="Yêu thích"
             :class="{ active: isInWishlist }"
             :disabled="isTogglingFavorite"
           >
             <i class="material-icons" v-if="!isTogglingFavorite">
-              {{ isInWishlist ? 'favorite' : 'favorite_border' }}
+              {{ isInWishlist ? "favorite" : "favorite_border" }}
             </i>
-            <div v-else class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+            <div
+              v-else
+              class="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"
+            ></div>
           </button>
         </div>
       </div>
-    
+
       <div class="product-info">
         <span class="brand-name">{{ getBrandName() }}</span>
         <h3 class="product-name">{{ product.name }}</h3>
-        
+
         <!-- Rating -->
         <div v-if="product.avgRating" class="product-rating">
           <div class="stars">
-            <i 
-              v-for="i in 5" 
+            <i
+              v-for="i in 5"
               :key="i"
               class="material-icons star"
               :class="{ filled: i <= Math.round(product.avgRating) }"
             >
-              {{ i <= Math.round(product.avgRating) ? 'star' : 'star_border' }}
+              {{ i <= Math.round(product.avgRating) ? "star" : "star_border" }}
             </i>
           </div>
           <span class="rating-text">
             {{ product.avgRating.toFixed(1) }}
-            <span v-if="product.reviewCount" class="review-count">({{ product.reviewCount }})</span>
+            <span v-if="product.reviewCount" class="review-count"
+              >({{ product.reviewCount }})</span
+            >
           </span>
         </div>
-        
+
         <div class="product-footer">
           <div class="price-wrapper">
-            <span v-if="productFlashSale && originalPrice > 0 && finalPrice < originalPrice" class="price-original">
+            <span
+              v-if="
+                productFlashSale &&
+                originalPrice > 0 &&
+                finalPrice < originalPrice
+              "
+              class="price-original"
+            >
               {{ formatCurrency(originalPrice) }}
             </span>
             <span class="price">{{ formatCurrency(finalPrice) }}</span>
           </div>
-          <button 
-            class="btn-add-cart" 
+          <button
+            class="btn-add-cart"
             @click.prevent="handleQuickAddToCart"
             :disabled="!canAddToCart || isAddingToCart"
-            :class="{ 'opacity-50 cursor-not-allowed': !canAddToCart || isAddingToCart }"
+            :class="{
+              'opacity-50 cursor-not-allowed': !canAddToCart || isAddingToCart,
+            }"
             title="Thêm nhanh vào giỏ hàng"
           >
-            <i class="material-icons" v-if="!isAddingToCart">add_shopping_cart</i>
-            <div v-else class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <i class="material-icons" v-if="!isAddingToCart"
+              >add_shopping_cart</i
+            >
+            <div
+              v-else
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></div>
           </button>
         </div>
       </div>
@@ -109,19 +155,20 @@
     @added-to-cart="handleQuickViewAddedToCart"
   />
 </template>
-  
+
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
-import { useCartStore } from '@/stores/cart';
-import { useWishlistStore } from '@/stores/wishlist';
-import { useFlashSaleStore } from '@/stores/flashSale';
-import notificationService from '@/utils/notificationService';
-import logger from '@/utils/logger';
-import FlashSaleBadge from '@/assets/components/common/FlashSaleBadge.vue';
-import QuickViewModal from '@/assets/components/common/QuickViewModal.vue';
-import { getOptimizedImageUrl } from '@/utils/cloudinaryHelper';
+import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+import { useCartStore } from "@/stores/cart";
+import { useWishlistStore } from "@/stores/wishlist";
+import { useFlashSaleStore } from "@/stores/flashSale";
+// import notificationService from "@/utils/notificationService";
+import notificationService from "@/utils/notificationService";
+import logger from "@/utils/logger";
+import FlashSaleBadge from "@/assets/components/common/FlashSaleBadge.vue";
+import QuickViewModal from "@/assets/components/common/QuickViewModal.vue";
+import { useProductImageStore } from "@/stores/productImages";
 
 // Props
 const props = defineProps({
@@ -137,6 +184,8 @@ const authStore = useAuthStore();
 const cartStore = useCartStore();
 const wishlistStore = useWishlistStore();
 const flashSaleStore = useFlashSaleStore();
+const productImageStore = useProductImageStore();
+const isHover = ref(false);
 
 // Reactive state
 const isAddingToCart = ref(false);
@@ -149,7 +198,7 @@ onMounted(async () => {
     try {
       await flashSaleStore.fetchActiveFlashSales();
     } catch (error) {
-      logger.warn('Failed to fetch flash sales in ProductCard:', error);
+      logger.warn("Failed to fetch flash sales in ProductCard:", error);
     }
   }
 });
@@ -167,50 +216,74 @@ const productFlashSale = computed(() => {
 // Computed - Optimized image URL với Cloudinary
 const optimizedImageUrl = computed(() => {
   // Ưu tiên mainImageUrl, sau đó imageUrl, cuối cùng placeholder
-  const imageUrl = props.product.mainImageUrl || props.product.imageUrl || '/placeholder-image.png';
-  
+  const imageUrl =
+    props.product.mainImageUrl ||
+    props.product.imageUrl ||
+    "/placeholder-image.png";
+
   // Nếu là Cloudinary URL, optimize cho thumbnail size (400x400)
-  if (imageUrl && imageUrl.startsWith('http')) {
+  if (imageUrl && imageUrl.startsWith("http")) {
     return getOptimizedImageUrl(imageUrl, {
       width: 400,
       height: 400,
-      quality: 'auto',
-      format: 'auto'
+      quality: "auto",
+      format: "auto",
     });
   }
-  
+
   return imageUrl;
 });
 
 // Helper function to get product price from variants or direct price
 const getProductPrice = () => {
   // If product has price directly
-  if (props.product.price !== null && props.product.price !== undefined && !isNaN(props.product.price)) {
+  if (
+    props.product.price !== null &&
+    props.product.price !== undefined &&
+    !isNaN(props.product.price)
+  ) {
     return Number(props.product.price);
   }
-  
+
   // If has variants, get price from first available variant
   if (props.product.variants && props.product.variants.length > 0) {
-    const firstVariant = firstAvailableVariant.value || props.product.variants[0];
+    const firstVariant =
+      firstAvailableVariant.value || props.product.variants[0];
     if (firstVariant) {
       // Prefer priceSale, fallback to priceBase
-      if (firstVariant.priceSale !== null && firstVariant.priceSale !== undefined && !isNaN(firstVariant.priceSale)) {
+      if (
+        firstVariant.priceSale !== null &&
+        firstVariant.priceSale !== undefined &&
+        !isNaN(firstVariant.priceSale)
+      ) {
         return Number(firstVariant.priceSale);
       }
-      if (firstVariant.priceBase !== null && firstVariant.priceBase !== undefined && !isNaN(firstVariant.priceBase)) {
+      if (
+        firstVariant.priceBase !== null &&
+        firstVariant.priceBase !== undefined &&
+        !isNaN(firstVariant.priceBase)
+      ) {
         return Number(firstVariant.priceBase);
       }
     }
   }
-  
+
   // If has priceBase or priceSale directly
-  if (props.product.priceSale !== null && props.product.priceSale !== undefined && !isNaN(props.product.priceSale)) {
+  if (
+    props.product.priceSale !== null &&
+    props.product.priceSale !== undefined &&
+    !isNaN(props.product.priceSale)
+  ) {
     return Number(props.product.priceSale);
   }
-  if (props.product.priceBase !== null && props.product.priceBase !== undefined && !isNaN(props.product.priceBase)) {
+  if (
+    props.product.priceBase !== null &&
+    props.product.priceBase !== undefined &&
+    !isNaN(props.product.priceBase)
+  ) {
     return Number(props.product.priceBase);
   }
-  
+
   return 0;
 };
 
@@ -235,12 +308,12 @@ const firstAvailableVariant = computed(() => {
   if (!props.product.variants || props.product.variants.length === 0) {
     return null;
   }
-  
+
   // Tìm variant đầu tiên có stock > 0
   const availableVariant = props.product.variants.find(
-    (v) => v.stockQuantity > 0 && (v.isActive !== false)
+    (v) => v.stockQuantity > 0 && v.isActive !== false
   );
-  
+
   // Nếu không tìm thấy, lấy variant đầu tiên
   return availableVariant || props.product.variants[0];
 });
@@ -248,15 +321,18 @@ const firstAvailableVariant = computed(() => {
 // Kiểm tra sản phẩm có thể thêm vào giỏ hàng
 const canAddToCart = computed(() => {
   // Kiểm tra stock
-  if (props.product.totalStock !== null && props.product.totalStock !== undefined) {
+  if (
+    props.product.totalStock !== null &&
+    props.product.totalStock !== undefined
+  ) {
     if (props.product.totalStock <= 0) return false;
   }
-  
+
   // Kiểm tra variants
   if (props.product.variants && props.product.variants.length > 0) {
     return firstAvailableVariant.value !== null;
   }
-  
+
   // Nếu không có variants, kiểm tra inStock
   return props.product.inStock !== false;
 });
@@ -274,54 +350,66 @@ const getBrandName = () => {
   if (productFlashSale.value?.brandName) {
     return productFlashSale.value.brandName;
   }
-  return 'Unknown';
+  return "Unknown";
 };
 
 const formatCurrency = (value) => {
-  if (value === null || value === undefined) return '0 ₫';
-  const numValue = typeof value === 'string' ? parseFloat(value) : value;
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(numValue);
+  if (value === null || value === undefined) return "0 ₫";
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(numValue);
 };
 
 const handleToggleFavorite = async (event) => {
   event.preventDefault();
   event.stopPropagation();
-  
+
   if (!authStore.isAuthenticated) {
-    notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào yêu thích');
+    notificationService.warning(
+      "Cảnh báo",
+      "Vui lòng đăng nhập để thêm vào yêu thích"
+    );
     router.push({
-      path: '/login',
-      query: { redirect: router.currentRoute.value.fullPath }
+      path: "/login",
+      query: { redirect: router.currentRoute.value.fullPath },
     });
     return;
   }
-  
+
   if (isTogglingFavorite.value) return;
-  
+
   isTogglingFavorite.value = true;
-  
+
   try {
     const result = await wishlistStore.toggleWishlist(props.product.id);
-    
-    if (result.action === 'added') {
-      notificationService.success('Thành công', 'Đã thêm vào yêu thích');
-      logger.log('Product added to wishlist:', props.product.id);
+
+    if (result.action === "added") {
+      notificationService.success("Thành công", "Đã thêm vào yêu thích");
+      logger.log("Product added to wishlist:", props.product.id);
     } else {
-      notificationService.success('Thành công', 'Đã xóa khỏi yêu thích');
-      logger.log('Product removed from wishlist:', props.product.id);
+      notificationService.success("Thành công", "Đã xóa khỏi yêu thích");
+      logger.log("Product removed from wishlist:", props.product.id);
     }
   } catch (error) {
-    logger.error('Error toggling favorite:', error);
-    
+    logger.error("Error toggling favorite:", error);
+
     // Xử lý lỗi cụ thể
     if (error.response?.status === 401) {
-      notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào yêu thích');
+      notificationService.warning(
+        "Cảnh báo",
+        "Vui lòng đăng nhập để thêm vào yêu thích"
+      );
       router.push({
-        path: '/login',
-        query: { redirect: router.currentRoute.value.fullPath }
+        path: "/login",
+        query: { redirect: router.currentRoute.value.fullPath },
       });
     } else {
-      notificationService.error('Lỗi', error.response?.data?.message || 'Không thể cập nhật yêu thích');
+      notificationService.error(
+        "Lỗi",
+        error.response?.data?.message || "Không thể cập nhật yêu thích"
+      );
     }
   } finally {
     isTogglingFavorite.value = false;
@@ -346,30 +434,30 @@ const handleQuickViewAddedToCart = () => {
 const handleQuickAddToCart = async (event) => {
   event.preventDefault();
   event.stopPropagation();
-  
+
   // Kiểm tra sản phẩm có thể thêm vào giỏ hàng
   if (!canAddToCart.value) {
-    notificationService.error('Lỗi', 'Sản phẩm này hiện không có sẵn');
+    notificationService.error("Lỗi", "Sản phẩm này hiện không có sẵn");
     return;
   }
-  
+
   // Nếu sản phẩm có nhiều variants, redirect đến trang chi tiết để chọn
   if (props.product.variants && props.product.variants.length > 1) {
     try {
       await router.push(`/home/products/${props.product.id}`);
     } catch (navError) {
-      logger.error('Navigation error:', navError);
-      notificationService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
+      logger.error("Navigation error:", navError);
+      notificationService.error("Lỗi", "Không thể mở trang chi tiết sản phẩm");
     }
     return;
   }
-  
+
   // Lấy variant ID
   let variantId = null;
   if (props.product.variants && props.product.variants.length > 0) {
     variantId = firstAvailableVariant.value?.id;
     if (!variantId) {
-      notificationService.error('Lỗi', 'Không tìm thấy biến thể sản phẩm');
+      notificationService.error("Lỗi", "Không tìm thấy biến thể sản phẩm");
       return;
     }
   } else if (props.product.variantId) {
@@ -379,40 +467,67 @@ const handleQuickAddToCart = async (event) => {
     try {
       await router.push(`/home/products/${props.product.id}`);
     } catch (navError) {
-      logger.error('Navigation error:', navError);
-      notificationService.error('Lỗi', 'Không thể mở trang chi tiết sản phẩm');
+      logger.error("Navigation error:", navError);
+      notificationService.error("Lỗi", "Không thể mở trang chi tiết sản phẩm");
     }
     return;
   }
-  
+
   if (isAddingToCart.value) return;
-  
+
   isAddingToCart.value = true;
-  
+
   try {
     // Sử dụng cart store để thêm vào giỏ hàng
     await cartStore.addItem(variantId, 1);
-    notificationService.success('Thành công', 'Đã thêm sản phẩm vào giỏ hàng');
-    logger.log('Product quick added to cart:', variantId);
+    notificationService.success("Thành công", "Đã thêm sản phẩm vào giỏ hàng");
+    logger.log("Product quick added to cart:", variantId);
   } catch (error) {
-    logger.error('Error quick adding to cart:', error);
-    
+    logger.error("Error quick adding to cart:", error);
+
     // Xử lý lỗi cụ thể
     if (error.response?.status === 401) {
-      notificationService.warning('Cảnh báo', 'Vui lòng đăng nhập để thêm vào giỏ hàng');
+      notificationService.warning(
+        "Cảnh báo",
+        "Vui lòng đăng nhập để thêm vào giỏ hàng"
+      );
       router.push({
-        path: '/login',
-        query: { redirect: router.currentRoute.value.fullPath }
+        path: "/login",
+        query: { redirect: router.currentRoute.value.fullPath },
       });
     } else if (error.response?.status === 400) {
-      notificationService.error('Lỗi', error.response?.data?.message || 'Sản phẩm không có sẵn hoặc đã hết hàng');
+      notificationService.error(
+        "Lỗi",
+        error.response?.data?.message ||
+          "Sản phẩm không có sẵn hoặc đã hết hàng"
+      );
     } else {
-      notificationService.error('Lỗi', error.response?.data?.message || 'Không thể thêm vào giỏ hàng');
+      notificationService.error(
+        "Lỗi",
+        error.response?.data?.message || "Không thể thêm vào giỏ hàng"
+      );
     }
   } finally {
     isAddingToCart.value = false;
   }
 };
+
+const productImages = computed(() => {
+  return productImageStore.imagesByProduct[props.product.id] || [];
+});
+
+const mainImage = computed(() => {
+  return (
+    productImages.value[0] ||
+    props.product.mainImageUrl ||
+    props.product.imageUrl ||
+    "/placeholder-image.png"
+  );
+});
+
+const hoverImage = computed(() => {
+  return productImages.value.length > 1 ? productImages.value[1] : null;
+});
 
 // Load wishlist status on mount
 onMounted(async () => {
@@ -421,15 +536,18 @@ onMounted(async () => {
       await wishlistStore.fetchWishlist();
     } catch (error) {
       // Silently fail - wishlist will be loaded when needed
-      logger.warn('Failed to fetch wishlist on mount:', error);
+      logger.warn("Failed to fetch wishlist on mount:", error);
     }
   }
 });
 
 // Watch for product changes
-watch(() => props.product.id, () => {
-  // Product changed, wishlist status will update automatically via computed
-});
+watch(
+  () => props.product.id,
+  () => {
+    // Product changed, wishlist status will update automatically via computed
+  }
+);
 </script>
 
 <style scoped>
@@ -732,5 +850,28 @@ watch(() => props.product.id, () => {
 
 .btn-add-cart i {
   font-size: 1.125rem;
+}
+
+.product-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+.product-main {
+  z-index: 5;
+}
+
+.product-hover {
+  z-index: 10;
 }
 </style>

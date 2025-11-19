@@ -13,6 +13,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
   const wishlistItems = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const loaded = ref(false)
   
   // Computed
   const wishlistCount = computed(() => wishlistItems.value.length)
@@ -31,12 +32,14 @@ export const useWishlistStore = defineStore('wishlist', () => {
    * Fetch wishlist từ server
    */
   const fetchWishlist = async () => {
+    if (loaded.value) return wishlistItems.value; 
     loading.value = true
     error.value = null
     
     try {
       const data = await userService.getWishlist()
       wishlistItems.value = data
+      loaded.value = true 
       return data
     } catch (err) {
       error.value = err.response?.data?.message || 'Không thể tải wishlist'
@@ -145,6 +148,7 @@ export const useWishlistStore = defineStore('wishlist', () => {
     wishlistItems.value = []
     loading.value = false
     error.value = null
+    loaded.value = false 
   }
 
   return {

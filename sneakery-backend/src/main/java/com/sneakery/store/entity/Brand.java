@@ -2,26 +2,33 @@ package com.sneakery.store.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Entity đại diện cho thương hiệu (Brand).
+ *
+ * <p>Quản lý đầy đủ các thông tin: logo, website, mô tả, trạng thái,
+ * ngày tạo, cập nhật, xóa mềm.</p>
+ */
 @Entity
 @Table(name = "Brands")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Brand {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id; // CSDL của bạn dùng 'int'
+    private Integer id;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(name = "slug", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String slug;
 
     @Column(name = "logo_url")
@@ -30,12 +37,12 @@ public class Brand {
     @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    // V3.1 fields
+    // === V3.1 Fields ===
     @Column(name = "website_url")
     private String websiteUrl;
 
     @Column(name = "is_active")
-    private Boolean isActive;
+    private Boolean isActive = true;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -44,22 +51,40 @@ public class Brand {
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    private LocalDateTime deletedAt; // Soft delete
 
     /**
-     * Định nghĩa quan hệ ngược lại với Product.
-     * Một Brand có nhiều Product.
-     * * - mappedBy = "brand": Chỉ ra rằng quan hệ này được quản lý bởi
-     * trường 'brand' bên trong class Product.
-     * * - fetch = FetchType.LAZY: Tốt cho hiệu năng. Sẽ không tải danh sách
-     * sản phẩm trừ khi ta gọi hàm getProducts().
-     *
-     * - @JsonIgnore: Cần thiết để tránh lỗi vòng lặp vô hạn (infinite loop)
-     * khi serialize JSON (Product -> Brand -> List<Product> -> Brand...).
+     * Quan hệ 1-n với Product.
+     * Tránh vòng lặp JSON (Product -> Brand -> Product...).
      */
     @OneToMany(mappedBy = "brand", fetch = FetchType.LAZY)
-    @JsonIgnore // Quan trọng: Tránh lỗi vòng lặp JSON
-    @ToString.Exclude // Tránh lỗi vòng lặp khi gọi .toString()
-    @EqualsAndHashCode.Exclude // Tránh lỗi vòng lặp khi gọi .equals()
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Product> products;
+
+    // =====================
+    //   Lifecycle Hooks
+    // =====================
+
+    /**
+     * Tự động set giá trị mặc định khi tạo mới.
+     */
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+
+        if (this.isActive == null) {
+            this.isActive = true;
+        }
+    }
+
+    /**
+     * Tự động update timestamp khi cập nhật.
+     */
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
