@@ -61,7 +61,7 @@
                       class="px-3 py-2 text-sm cursor-pointer hover:bg-purple-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                       @click="selectProduct(p)"
                     >
-                      {{ p.name }} - {{ p.brandName }}
+                      {{ p.code }} - {{ p.name }} - {{ p.brandName }}
                     </div>
 
                     <div
@@ -1035,11 +1035,17 @@ const filterProducts = () => {
     filteredProducts.value = products.value;
     return;
   }
-  filteredProducts.value = products.value.filter(
-    (p) =>
-      p.name.toLowerCase().includes(keyword) ||
-      p.brandName.toLowerCase().includes(keyword)
-  );
+  filteredProducts.value = products.value.filter((p) => {
+    const name = p.name?.toLowerCase() || "";
+    const brand = p.brandName?.toLowerCase() || "";
+    const code = p.code?.toLowerCase() || "";
+
+    return (
+      name.includes(keyword) ||
+      brand.includes(keyword) ||
+      code.includes(keyword)
+    );
+  });
 };
 
 const selectProduct = (p) => {

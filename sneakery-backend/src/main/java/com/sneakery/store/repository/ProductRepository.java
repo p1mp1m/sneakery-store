@@ -94,4 +94,12 @@ List<Product> findByIdInWithBrandAndCategories(@Param("ids") List<Long> ids);
      */
     @Query("SELECT COUNT(p) FROM Product p WHERE p.brand.id = :brandId AND p.deletedAt IS NULL")
     Long countByBrandId(@Param("brandId") Integer brandId);
+
+    @Query("""
+    SELECT MAX(CAST(SUBSTRING(p.code, LOCATE('-', p.code) + 1) AS int))
+    FROM Product p
+    WHERE p.brand.id = :brandId
+""")
+    Integer findLastNumberByBrand(@Param("brandId") Integer brandId);
+
 }

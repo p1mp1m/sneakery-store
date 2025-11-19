@@ -186,9 +186,14 @@ public class AdminProductService {
         product.setShoeSole(shoeSole);
 
         // 6️⃣ Sinh mã sản phẩm tự động
-        Long lastId = productRepository.findMaxId();
-        String newCode = codeGenerator.generateProductCode(lastId);
+//        Long lastId = productRepository.findMaxId();
+//        String newCode = codeGenerator.generateProductCode(lastId);
+//        product.setCode(newCode);
+        // 6️⃣ Sinh mã sản phẩm tự động theo BRAND
+        Integer lastNumber = productRepository.findLastNumberByBrand(brand.getId());
+        String newCode = codeGenerator.generateProductCodeByBrand(brand.getName(), lastNumber);
         product.setCode(newCode);
+
 
         // 7️⃣ Map Variants
         List<ProductVariant> variants = requestDto.getVariants().stream()
