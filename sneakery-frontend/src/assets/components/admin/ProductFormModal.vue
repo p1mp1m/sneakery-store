@@ -7,7 +7,7 @@
     >
       <div
         ref="modalRef"
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 scrollbar-hide"
         @click.stop
         role="dialog"
         :aria-modal="true"

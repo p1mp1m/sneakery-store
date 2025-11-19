@@ -643,7 +643,7 @@
                     role="group"
                     aria-label="Thao tác với sản phẩm"
                   >
-                    <button
+                    <!-- <button
                       @click="duplicateProduct(product.id)"
                       class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                       :aria-label="`Nhân bản sản phẩm ${product.name}`"
@@ -652,7 +652,7 @@
                       <i class="material-icons text-base" aria-hidden="true"
                         >content_copy</i
                       >
-                    </button>
+                    </button> -->
                     <button
                       v-permission="PERMISSIONS_EXPOSED.PRODUCT_UPDATE"
                       @click="openEditModal(product)"
@@ -3378,38 +3378,38 @@ const handleBulkUpdate = async () => {
 };
 
 // ===== DUPLICATE PRODUCT =====
-const duplicateProduct = async (productId) => {
-  let loadingToastId = null;
-  try {
-    // Hiển thị toast "Đang xử lý..." thay vì overlay
-    loadingToastId = notificationService.info(
-      "Đang xử lý...",
-      "Đang nhân bản sản phẩm",
-      { duration: 0 }
-    ); // duration: 0 = không tự đóng
+// const duplicateProduct = async (productId) => {
+//   let loadingToastId = null;
+//   try {
+//     // Hiển thị toast "Đang xử lý..." thay vì overlay
+//     loadingToastId = notificationService.info(
+//       "Đang xử lý...",
+//       "Đang nhân bản sản phẩm",
+//       { duration: 0 }
+//     ); // duration: 0 = không tự đóng
 
-    const duplicated = await adminStore.duplicateProduct(productId);
+//     const duplicated = await adminStore.duplicateProduct(productId);
 
-    // Đóng toast loading và hiển thị toast success
-    if (loadingToastId) {
-      notificationService.removeNotification(loadingToastId);
-    }
-    notificationService.success(
-      "Thành công",
-      `Đã nhân bản sản phẩm "${duplicated.name}" thành công!`
-    );
+//     // Đóng toast loading và hiển thị toast success
+//     if (loadingToastId) {
+//       notificationService.removeNotification(loadingToastId);
+//     }
+//     notificationService.success(
+//       "Thành công",
+//       `Đã nhân bản sản phẩm "${duplicated.name}" thành công!`
+//     );
 
-    await fetchProducts();
-    await fetchStatistics();
-  } catch (error) {
-    // Đóng toast loading nếu có lỗi
-    if (loadingToastId) {
-      notificationService.removeNotification(loadingToastId);
-    }
-    logger.error("Lỗi khi nhân bản sản phẩm:", error);
-    notificationService.apiError(error, "Không thể nhân bản sản phẩm");
-  }
-};
+//     await fetchProducts();
+//     await fetchStatistics();
+//   } catch (error) {
+//     // Đóng toast loading nếu có lỗi
+//     if (loadingToastId) {
+//       notificationService.removeNotification(loadingToastId);
+//     }
+//     logger.error("Lỗi khi nhân bản sản phẩm:", error);
+//     notificationService.apiError(error, "Không thể nhân bản sản phẩm");
+//   }
+// };
 
 // ===== FILTERS =====
 const changePage = (page) => {

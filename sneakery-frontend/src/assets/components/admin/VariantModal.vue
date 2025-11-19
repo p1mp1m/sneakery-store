@@ -5,8 +5,9 @@
     @click="handleOverlayClose"
   >
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 scrollbar-hide"
       @click.stop
+      @mousedown="handleModalClick"
     >
       <div
         class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10"
@@ -38,28 +39,41 @@
                 Sản phẩm <span class="text-red-500">*</span>
               </label>
               <template v-if="!isEdit">
-                <select
-                  v-model="formData.productId"
-                  :class="[
-                    'px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-                    errors.productId
-                      ? 'border-red-500 dark:border-red-500'
-                      : 'border-gray-300 dark:border-gray-600',
-                  ]"
-                  required
-                  @change="validateProductId"
-                  @blur="validateProductId"
-                >
-                  <option value="">Chọn sản phẩm</option>
-                  <option
-                    v-for="product in products"
-                    :key="product.id"
-                    :value="product.id"
+                <div class="relative" ref="productSelectRef">
+                  <!-- Ô nhập để tìm kiếm -->
+                  <input
+                    v-model="searchProductText"
+                    type="text"
+                    class="px-3 py-2 bg-white dark:bg-gray-700 border rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-full"
+                    placeholder="Nhập tên sản phẩm để tìm..."
+                    @focus="showProductDropdown = true"
+                    @input="filterProducts"
+                  />
+
+                  <!-- Dropdown kết quả -->
+                  <div
+                    v-show="showProductDropdown"
+                    class="absolute z-50 w-full bg-white dark:bg-gray-800 max-h-60 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg mt-1 scrollbar-hide"
                   >
-                    {{ product.name }} - {{ product.brandName }}
-                  </option>
-                </select>
+                    <div
+                      v-for="p in filteredProducts"
+                      :key="p.id"
+                      class="px-3 py-2 text-sm cursor-pointer hover:bg-purple-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                      @click="selectProduct(p)"
+                    >
+                      {{ p.name }} - {{ p.brandName }}
+                    </div>
+
+                    <div
+                      v-if="filteredProducts.length === 0"
+                      class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic"
+                    >
+                      Không tìm thấy sản phẩm phù hợp
+                    </div>
+                  </div>
+                </div>
               </template>
+
               <template v-else>
                 <div
                   class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-300 dark:border-gray-600 rounded-lg"
@@ -614,6 +628,25 @@ const removedImageUrls = ref([]); // lưu các URL bị xóa (ảnh DB)
 const sizeError = ref(""); // Error message cho size field
 const previousSizeValue = ref(""); // Lưu giá trị size trước khi mở popup
 
+// Tìm kiếm sản phẩm
+const searchProductText = ref("");
+const showProductDropdown = ref(false);
+
+const filteredProducts = ref([]);
+
+// ✅ ref để biết vùng select sản phẩm
+const productSelectRef = ref(null);
+
+const handleModalClick = (event) => {
+  // Nếu có ref và click KHÔNG nằm trong block select sản phẩm → đóng dropdown
+  if (
+    productSelectRef.value &&
+    !productSelectRef.value.contains(event.target)
+  ) {
+    showProductDropdown.value = false;
+  }
+};
+
 // ===== VALIDATION ERRORS =====
 const errors = reactive({
   productId: "",
@@ -996,6 +1029,45 @@ const populateForm = (variant) => {
 };
 
 // ===== MODAL LIFECYCLE =====
+const filterProducts = () => {
+  const keyword = searchProductText.value.toLowerCase().trim();
+  if (!keyword) {
+    filteredProducts.value = products.value;
+    return;
+  }
+  filteredProducts.value = products.value.filter(
+    (p) =>
+      p.name.toLowerCase().includes(keyword) ||
+      p.brandName.toLowerCase().includes(keyword)
+  );
+};
+
+const selectProduct = (p) => {
+  formData.productId = p.id;
+  searchProductText.value = `${p.name} - ${p.brandName}`;
+  showProductDropdown.value = false;
+  validateProductId();
+};
+
+// Ẩn dropdown khi click ra ngoài
+// document.addEventListener("click", (e) => {
+//   const dropdown = document.querySelector(".product-dropdown");
+//   if (!e.target.closest(".relative")) {
+//     showProductDropdown.value = false;
+//   }
+// });
+
+// Khi mở modal thì reset
+// watch(
+//   () => props.isOpen,
+//   (open) => {
+//     if (open) {
+//       searchProductText.value = "";
+//       filteredProducts.value = products.value;
+//     }
+//   }
+// );
+
 watch(
   () => props.isOpen,
   async (open) => {
@@ -1005,6 +1077,8 @@ watch(
 
     // Mặc định: rỗng (Create)
     galleryInitial.value = [];
+    searchProductText.value = "";
+    filteredProducts.value = products.value;
     resetKey.value++; // ép con reset sạch
 
     // Edit mode
