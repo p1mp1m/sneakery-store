@@ -860,7 +860,7 @@ public class OrderService {
                     .brandName(v.getProduct().getBrand().getName())
                     .size(v.getSize())
                     .color(v.getColor())
-                    .imageUrl(imageUrl)
+//                    .imageUrl(imageUrl)
                     .quantity(detail.getQuantity())
                     .unitPrice(detail.getUnitPrice())
                     .totalPrice(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))

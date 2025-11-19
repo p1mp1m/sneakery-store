@@ -376,14 +376,14 @@ public class CartService {
         BigDecimal unitPrice = getEffectivePrice(variant);
         
         // Lấy imageUrl từ variant, nếu null hoặc rỗng thì lấy ảnh primary từ Product_Images
-        String imageUrl = variant.getImageUrl();
-        if ((imageUrl == null || imageUrl.isBlank()) && variant.getProduct() != null) {
-            Long productId = variant.getProduct().getId();
-            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
-            if (coverImage.isPresent()) {
-                imageUrl = coverImage.get().getImageUrl();
-            }
-        }
+//        String imageUrl = variant.getImageUrl();
+//        if ((imageUrl == null || imageUrl.isBlank()) && variant.getProduct() != null) {
+//            Long productId = variant.getProduct().getId();
+//            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+//            if (coverImage.isPresent()) {
+//                imageUrl = coverImage.get().getImageUrl();
+//            }
+//        }
         
         return CartItemDto.builder()
                 .cartItemId(item.getId())
@@ -392,7 +392,7 @@ public class CartService {
                 .brandName(variant.getProduct().getBrand().getName())
                 .size(variant.getSize())
                 .color(variant.getColor())
-                .imageUrl(imageUrl)
+//                .imageUrl(imageUrl)
                 .quantity(item.getQuantity())
                 .unitPrice(unitPrice)
                 .totalPrice(unitPrice.multiply(BigDecimal.valueOf(item.getQuantity())))

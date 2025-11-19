@@ -448,6 +448,7 @@ import logger from "@/utils/logger";
 import couponService from "@/services/couponService";
 import LoadingSkeleton from "@/components/common/LoadingSkeleton.vue";
 import { formatPrice } from "@/utils/formatters";
+import axios from "axios";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -514,6 +515,29 @@ const totalAmount = computed(() => {
   const amountAfterDiscount = cart.value.subTotal - discountAmount.value;
   return amountAfterDiscount + shippingFee.value + taxAmount.value;
 });
+
+const loadVariantImagesForCart = async () => {
+  try {
+    if (!cart.value || !cart.value.items) return;
+
+    for (const item of cart.value.items) {
+      try {
+        const res = await axios.get(`/api/variant-images/${item.variantId}`);
+        const images = res.data;
+
+        // 🔥 lấy ảnh đầu tiên theo displayOrder hoặc index 0
+        item.imageUrl =
+          images?.sort(
+            (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)
+          )[0]?.imageUrl || item.imageUrl;
+      } catch (e) {
+        console.error("Error fetching variant image:", e);
+      }
+    }
+  } catch (err) {
+    console.error("Error loading all variant images:", err);
+  }
+};
 
 // Methods
 const fetchCart = async () => {
@@ -735,10 +759,18 @@ watch(
 );
 
 // Lifecycle
-onMounted(() => {
-  // Initialize coupon store and load from storage
+onMounted(async () => {
   couponStore.init();
-  fetchCart();
+  await fetchCart(); // tải cart
+  await loadVariantImagesForCart(); // 🔥 tải ảnh variant đầu tiên
   fetchActiveCoupons();
 });
+
+watch(
+  () => cart.value?.items,
+  async () => {
+    await loadVariantImagesForCart();
+  },
+  { deep: true }
+);
 </script>

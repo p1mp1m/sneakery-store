@@ -1184,7 +1184,7 @@ const buyNow = async () => {
 
 const fetchVariantImages = async (variantId) => {
   try {
-    const res = await axios.get(`/api/admin/variant-images/${variantId}`);
+    const res = await axios.get(`/api/variant-images/${variantId}`);
     variantImages.value = res.data || [];
 
     // Chọn ảnh đầu tiên làm ảnh lớn
