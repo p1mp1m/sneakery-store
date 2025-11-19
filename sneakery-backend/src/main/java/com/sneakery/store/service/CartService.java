@@ -153,37 +153,47 @@ public class CartService {
     @Transactional
     public CartDto addItemToCart(Long userId, AddToCartRequestDto requestDto) {
         Cart cart = getOrCreateCart(userId);
-        
-        // Tìm biến thể sản phẩm
-        ProductVariant variant = variantRepository.findById(Objects.requireNonNull(requestDto.getVariantId()))
-            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
 
-        // Kiểm tra số lượng tồn kho
-        if (variant.getStockQuantity() < requestDto.getQuantity()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+        ProductVariant variant = variantRepository.findById(
+                        Objects.requireNonNull(requestDto.getVariantId()))
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
+
+        int addQuantity = requestDto.getQuantity();
+        if (addQuantity <= 0) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
         }
 
-        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        // Tìm item đã có trong giỏ
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getVariant().getId().equals(requestDto.getVariantId()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
-            // Nếu đã có -> Cập nhật số lượng
             CartItem item = existingItem.get();
-            item.setQuantity(requestDto.getQuantity());
+
+            int newQty = item.getQuantity() + addQuantity; // 🔥 CỘNG DỒN
+
+            if (newQty > variant.getStockQuantity()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+            }
+
+            item.setQuantity(newQty);
         } else {
-            // Nếu chưa có -> Thêm mới
+            if (addQuantity > variant.getStockQuantity()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+            }
+
             CartItem newItem = new CartItem();
             newItem.setVariant(variant);
-            newItem.setQuantity(requestDto.getQuantity());
-            cart.addItem(newItem); // Dùng helper method
+            newItem.setQuantity(addQuantity);
+            cart.addItem(newItem);
         }
 
         cartRepository.save(cart);
-        // Tải lại chi tiết để trả về
+
         return getCartByUserId(userId);
     }
+
 
     /**
      * API 3: Xóa sản phẩm khỏi giỏ
@@ -239,37 +249,46 @@ public class CartService {
     @Transactional
     public CartDto addItemToGuestCart(String sessionId, AddToCartRequestDto requestDto) {
         Cart cart = getOrCreateGuestCart(sessionId);
-        
-        // Tìm biến thể sản phẩm
-        ProductVariant variant = variantRepository.findById(Objects.requireNonNull(requestDto.getVariantId()))
-            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
 
-        // Kiểm tra số lượng tồn kho
-        if (variant.getStockQuantity() < requestDto.getQuantity()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+        ProductVariant variant = variantRepository.findById(
+                        Objects.requireNonNull(requestDto.getVariantId()))
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
+
+        int addQuantity = requestDto.getQuantity();
+        if (addQuantity <= 0) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
         }
 
-        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getVariant().getId().equals(requestDto.getVariantId()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
-            // Nếu đã có -> Cập nhật số lượng
             CartItem item = existingItem.get();
-            item.setQuantity(requestDto.getQuantity());
+
+            int newQty = item.getQuantity() + addQuantity; // 🔥 CỘNG DỒN
+
+            if (newQty > variant.getStockQuantity()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+            }
+
+            item.setQuantity(newQty);
         } else {
-            // Nếu chưa có -> Thêm mới
+            if (addQuantity > variant.getStockQuantity()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+            }
+
             CartItem newItem = new CartItem();
             newItem.setVariant(variant);
-            newItem.setQuantity(requestDto.getQuantity());
+            newItem.setQuantity(addQuantity);
             cart.addItem(newItem);
         }
 
         cartRepository.save(cart);
-        // Tải lại chi tiết để trả về
+
         return getCartBySessionId(sessionId);
     }
+
 
     /**
      * API 6: Xóa sản phẩm khỏi guest cart
