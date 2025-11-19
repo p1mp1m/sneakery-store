@@ -1707,6 +1707,7 @@ const badgeAnimationKey = ref(0); // Key để trigger animation khi badge thay 
 // ⭐ Hover ảnh khi di chuột
 const hoverProduct = ref(null);
 const hoverImage = (product) => hoverProduct.value === product.id;
+const showingAll = ref(false);
 
 // Pagination state
 // ⭐ Phân trang POS
@@ -1802,6 +1803,8 @@ const loadPage = async (pageIndex = 0, filters = {}) => {
     loading.value = false;
   }
 };
+
+const hasMoreProducts = computed(() => !noMoreProducts.value);
 
 // const hasMoreProducts = computed(() => {
 //   return (
