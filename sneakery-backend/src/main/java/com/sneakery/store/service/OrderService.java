@@ -856,6 +856,7 @@ public class OrderService {
             
             return CartItemDto.builder()
                     .variantId(v.getId())
+                    .sku(detail.getVariantSku())
                     .productName(v.getProduct().getName())
                     .brandName(v.getProduct().getBrand().getName())
                     .size(v.getSize())

@@ -525,7 +525,7 @@
                 Quay lại
               </button>
               <button
-                @click="handleCheckout"
+                @click="showConfirmOrder = true"
                 :disabled="processing"
                 class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
               >
@@ -793,6 +793,38 @@
         </div>
       </div>
     </div>
+
+    <div
+         v-if="showConfirmOrder"
+        class="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+        @click.self="showConfirmOrder = false"
+       >
+     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
+       <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+          Xác nhận đặt hàng
+       </h3>
+
+       <p class="text-gray-600 dark:text-gray-400 mb-6">
+        Bạn có chắc chắn muốn đặt đơn hàng này không?
+      </p>
+
+      <div class="flex gap-3">
+         <button 
+          @click="showConfirmOrder = false"
+          class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+          >
+           Hủy
+        </button>
+
+          <button 
+            @click="confirmCheckout"
+           class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
+          >
+          Xác nhận
+         </button>
+        </div>
+     </div>
+  </div>
 </template>
 
 <script setup>
@@ -828,7 +860,7 @@ const steps = [
   { id: 2, title: 'Thanh toán', description: 'Chọn phương thức' },
   { id: 3, title: 'Xác nhận', description: 'Hoàn tất đơn hàng' },
 ];
-
+const showConfirmOrder = ref(false);
 // State
 const currentStep = ref(1);
 const loading = ref(true);
@@ -1178,6 +1210,10 @@ const saveAddress = async () => {
   }
 };
 
+const confirmCheckout = () => {
+  showConfirmOrder.value = false;
+  handleCheckout();
+};
 const handleCheckout = async () => {
   try {
     processing.value = true;

@@ -314,6 +314,9 @@
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
                     {{ item.brandName }}
                   </p>
+                  <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-1">
+                     SKU: {{ item.sku || 'N/A' }}
+                  </p> 
                   <div class="flex flex-wrap gap-2">
                     <span
                       class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs text-gray-700 dark:text-gray-300"
