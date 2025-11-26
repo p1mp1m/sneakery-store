@@ -591,7 +591,7 @@
         <router-link
           v-for="product in recentlyViewedProducts"
           :key="product.id"
-          :to="`/home/products/${product.slug || product.id}`"
+          :to="`/home/products/${product.id}`"
           class="group relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
           <div
@@ -701,9 +701,10 @@
         v-else
         class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"
       >
-        <div
+        <router-link
           v-for="product in recommendedProducts"
           :key="product.id"
+          :to="`/home/products/${product.id}`"
           class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
           <div
@@ -728,7 +729,7 @@
               {{ formatCurrency(product.price) }}
             </p>
           </div>
-        </div>
+        </router-link>
       </div>
     </div>
   </div>

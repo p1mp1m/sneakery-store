@@ -590,7 +590,7 @@
             </transition-group>
           </div>
 
-            <!-- Discount Section with Premium Design -->
+          <!-- Discount Section with Premium Design -->
           <div
             class="py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0"
           >
@@ -1662,7 +1662,7 @@ import notificationService from "@/utils/notificationService";
 import logger from "@/utils/logger";
 import { formatPrice, formatCurrency, formatDate } from "@/utils/formatters";
 import { useAdminProductImageStore } from "@/stores/adminProductImages";
-import toastService from "@/utils/toastService";
+// import toastService from "@/utils/toastService";
 const adminStore = useAdminStore();
 const adminImageStore = useAdminProductImageStore();
 
@@ -2416,7 +2416,10 @@ const validateCreateCustomer = () => {
 
 const handleCreateCustomer = async () => {
   if (!validateCreateCustomer()) {
-    notificationService.warning("Cảnh báo", "Vui lòng kiểm tra lại thông tin form!");
+    notificationService.warning(
+      "Cảnh báo",
+      "Vui lòng kiểm tra lại thông tin form!"
+    );
     return;
   }
 
