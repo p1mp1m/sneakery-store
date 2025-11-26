@@ -300,7 +300,10 @@
                   class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0"
                 >
                   <img
-                    :src="item.imageUrl || '/placeholder-image.png'"
+                    :src="
+                      variantImageCache.get(item.variantId) ||
+                      '/placeholder-image.png'
+                    "
                     :alt="item.productName"
                     class="w-full h-full object-cover"
                   />
@@ -315,8 +318,8 @@
                     {{ item.brandName }}
                   </p>
                   <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-1">
-                     SKU: {{ item.sku || 'N/A' }}
-                  </p> 
+                    SKU: {{ item.sku || "N/A" }}
+                  </p>
                   <div class="flex flex-wrap gap-2">
                     <span
                       class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs text-gray-700 dark:text-gray-300"
@@ -776,6 +779,7 @@ const loading = ref(true);
 const showDetail = ref(false);
 const selectedOrder = ref(null);
 let refreshInterval = null; // Polling interval
+const variantImageCache = ref(new Map());
 
 // Return Request Modal State
 const showReturnModal = ref(false);
@@ -888,6 +892,11 @@ const viewOrderDetail = async (orderId, silent = false) => {
     if (!silent) {
       showDetail.value = true;
     }
+    if (selectedOrder.value?.orderDetails?.length > 0) {
+      selectedOrder.value.orderDetails.forEach(async (item) => {
+        await loadVariantImage(item.variantId);
+      });
+    }
   } catch (error) {
     logger.error("Error fetching order detail:", error);
 
@@ -972,6 +981,34 @@ const cancelOrder = async (orderId) => {
       notificationService.error("Lỗi", errorMessage);
     }
   }
+};
+
+const loadVariantImage = async (variantId) => {
+  if (!variantId) return "/placeholder-image.png";
+
+  // Nếu đã cache rồi thì trả về luôn
+  if (variantImageCache.value.has(variantId)) {
+    return variantImageCache.value.get(variantId);
+  }
+
+  try {
+    const images = await userService.getVariantImages(variantId);
+
+    // Nếu API trả mảng VariantImageDto
+    if (Array.isArray(images) && images.length > 0) {
+      // Ưu tiên ảnh primary
+      const primary = images.find((img) => img.isPrimary === true);
+      const imageUrl = primary?.imageUrl || images[0].imageUrl;
+
+      variantImageCache.value.set(variantId, imageUrl);
+
+      return imageUrl;
+    }
+  } catch (error) {
+    logger.error("Error loading variant image:", error);
+  }
+
+  return "/placeholder-image.png";
 };
 
 const reorder = async (orderId) => {

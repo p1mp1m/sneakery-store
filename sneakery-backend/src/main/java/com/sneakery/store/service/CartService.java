@@ -3,6 +3,7 @@ package com.sneakery.store.service;
 import com.sneakery.store.dto.AddToCartRequestDto;
 import com.sneakery.store.dto.CartDto;
 import com.sneakery.store.dto.CartItemDto;
+import com.sneakery.store.dto.UpdateCartItemRequestDto;
 import com.sneakery.store.entity.Cart;
 import com.sneakery.store.entity.CartItem;
 import com.sneakery.store.entity.ProductVariant;
@@ -407,4 +408,35 @@ public class CartService {
                 ? variant.getPriceSale()
                 : variant.getPriceBase();
     }
+
+    @Transactional
+    public CartDto updateItemQuantity(Long userId, UpdateCartItemRequestDto requestDto) {
+        Cart cart = getOrCreateCart(userId);
+
+        ProductVariant variant = variantRepository.findById(
+                        Objects.requireNonNull(requestDto.getVariantId()))
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy biến thể sản phẩm"));
+
+        int newQuantity = requestDto.getQuantity();
+
+        if (newQuantity <= 0)
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
+
+        if (newQuantity > variant.getStockQuantity())
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+
+        CartItem item = cart.getItems().stream()
+                .filter(i -> i.getVariant().getId().equals(requestDto.getVariantId()))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không có trong giỏ"));
+
+        // ✅ SET – KHÔNG CỘNG
+        item.setQuantity(newQuantity);
+
+        cartRepository.save(cart);
+
+        // Load lại bằng query tối ưu
+        return getCartByUserId(userId);
+    }
+
 }

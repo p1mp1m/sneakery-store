@@ -344,6 +344,10 @@ class UserService {
     }
   }
 
+  async getVariantImages(variantId) {
+    return axios.get(`/api/variant-images/${variantId}`).then((res) => res.data);
+  }
+
   // ===== UTILITY METHODS =====
   handleError(error) {
     if (error.response) {
