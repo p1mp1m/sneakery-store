@@ -97,6 +97,10 @@ class ProductService {
             return [];
         }
     }
+
+    async getAllProductImages() {
+        return axios.get('/api/products/images');
+    }
 }
 
 export default new ProductService();
