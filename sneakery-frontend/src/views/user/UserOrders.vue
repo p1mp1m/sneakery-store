@@ -204,10 +204,10 @@
       @click.self="showDetail = false"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto hide-scrollbar animate-in fade-in zoom-in duration-200"
       >
         <div
-          class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 backdrop-blur-sm bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20"
+          class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30"
         >
           <h3
             class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
@@ -217,6 +217,18 @@
             >
             Chi tiết đơn hàng #{{ selectedOrder.id }}
           </h3>
+          <span
+            :class="[
+              'ml-3 inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-semibold',
+              getStatusClass(selectedOrder.status),
+            ]"
+          >
+            <i class="material-icons text-sm">{{
+              getStatusIcon(selectedOrder.status)
+            }}</i>
+            {{ getStatusText(selectedOrder.status) }}
+          </span>
+
           <button
             @click="showDetail = false"
             class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -423,7 +435,7 @@
                   Phương thức
                 </span>
                 <span class="font-medium text-gray-900 dark:text-gray-100">{{
-                  getPaymentMethodText(selectedOrder.payment.method)
+                  getPaymentMethodText(selectedOrder.payment.paymentMethod)
                 }}</span>
               </div>
               <div class="flex justify-between items-center">
@@ -594,8 +606,18 @@
         </div>
 
         <div
-          class="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+          class="flex justify-end p-6 border-t gap-4 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
         >
+          <!-- Nút đã nhận hàng -->
+          <button
+            v-if="canMarkAsReceived(selectedOrder?.status)"
+            @click="markAsReceived(selectedOrder.id)"
+            class="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
+          >
+            <i class="material-icons text-lg">check_circle</i>
+            Đã nhận hàng
+          </button>
+          <!-- Nút đóng -->
           <button
             @click="showDetail = false"
             class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
@@ -805,6 +827,7 @@ const normalizeStatusForDisplay = (status) => {
     confirmed: "Confirmed",
     packed: "Packed",
     refunded: "Refunded",
+    failed: "Failed",
   };
 
   return statusMap[status.toLowerCase()] || status;
@@ -836,7 +859,7 @@ const fetchOrders = async (silent = false) => {
         selectedOrder.value = {
           ...selectedOrder.value,
           ...updatedOrder,
-          status: normalizeStatusForDisplay(updatedOrder.status),
+          status: selectedOrder.value.status, // ❗ giữ nguyên status từ detail API
           // Giữ nguyên returnRequest từ selectedOrder (chi tiết) nếu có, nếu không thì lấy từ updatedOrder
           returnRequest:
             selectedOrder.value.returnRequest || updatedOrder.returnRequest,
@@ -871,8 +894,8 @@ const viewOrderDetail = async (orderId, silent = false) => {
       status: normalizeStatusForDisplay(data.status || "pending"),
       // Normalize status histories nếu có
       statusHistories: (Array.isArray(data.statusHistories)
-        ? data.statusHistories
-        : []
+        ? data.statusHistories.slice().reverse()
+        : selectedOrder.value?.statusHistories || []
       ).map((history) => ({
         ...history,
         status: normalizeStatusForDisplay(history.status || "pending"),
@@ -1055,6 +1078,7 @@ const getStatusClass = (status) => {
       "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400",
     Refunded:
       "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
+    Failed: "bg-red-200 dark:bg-red-900/40 text-red-800 dark:text-red-400",
   };
   return (
     statusMap[normalizedStatus] ||
@@ -1073,6 +1097,7 @@ const getStatusIcon = (status) => {
     Completed: "check_circle",
     Cancelled: "cancel",
     Refunded: "undo",
+    Failed: "local_shipping",
   };
   return iconMap[normalizedStatus] || "help";
 };
@@ -1088,6 +1113,7 @@ const getStatusText = (status) => {
     Completed: "Hoàn thành",
     Cancelled: "Đã hủy",
     Refunded: "Đã hoàn tiền",
+    Failed: "Giao hàng thất bại",
   };
   return statusMap[normalizedStatus] || normalizedStatus || status;
 };
@@ -1192,6 +1218,64 @@ const getReturnReasonText = (reason, includeNote = true) => {
   }
 
   return vietnameseReason;
+};
+
+// Chỉ hiện nút khi đơn hàng đang ở trạng thái "Shipped"
+const canMarkAsReceived = (status) => {
+  const normalized = getNormalizedStatus(status);
+  return normalized === "Shipped";
+};
+
+// Xác nhận đã nhận hàng + thanh toán
+const markAsReceived = async (orderId) => {
+  if (!selectedOrder.value) {
+    notificationService.error("Lỗi", "Không tìm thấy thông tin đơn hàng");
+    return;
+  }
+
+  const total =
+    selectedOrder.value.totalAmount || selectedOrder.value.total || 0;
+
+  try {
+    await confirmDialogService.confirm(
+      `Bạn chắc chắn muốn thanh toán số tiền ${formatPrice(
+        total
+      )} cho đơn hàng này không?`,
+      "Xác nhận thanh toán",
+      {
+        confirmButtonText: "Xác nhận",
+        cancelButtonText: "Hủy",
+        type: "warning",
+      }
+    );
+
+    // 👉 Gọi API cập nhật trạng thái đơn hàng
+    await userService.confirmOrderReceived(orderId);
+
+    notificationService.success(
+      "Thành công",
+      `Bạn đã xác nhận thanh toán ${formatPrice(
+        total
+      )} và nhận hàng thành công!`
+    );
+
+    // Update lại chi tiết đơn hàng
+    await viewOrderDetail(orderId, true);
+
+    // Refresh danh sách đơn hàng
+    await fetchOrders(true);
+  } catch (error) {
+    if (error !== "cancel") {
+      logger.error("Error confirming order received:", error);
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Không thể xác nhận đã nhận hàng";
+
+      notificationService.error("Lỗi", errorMessage);
+    }
+  }
 };
 
 // Get return reason note only (if exists)
@@ -1368,3 +1452,14 @@ const submitReturnRequest = async () => {
   }
 };
 </script>
+<style scoped>
+/* Ẩn scrollbar nhưng vẫn cho cuộn */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE + Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+</style>

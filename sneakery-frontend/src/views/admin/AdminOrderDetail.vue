@@ -46,7 +46,18 @@
             <i class="material-icons text-base">arrow_forward</i>
             Tiếp theo: {{ getStatusLabel(getNextStep(order.status)) }}
           </button>
+          <!-- Giao hàng thất bại -->
           <button
+            v-if="order && canMarkDeliveryFailed(order.status)"
+            @click="confirmStatusChange(order, 'Failed')"
+            class="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors text-sm font-medium"
+            title="Đánh dấu Giao hàng thất bại"
+          >
+            <i class="material-icons text-base">cancel_schedule_send</i>
+            Giao hàng thất bại
+          </button>
+
+          <!-- <button
             v-if="order && getPreviousStep(order.status)"
             @click="confirmStatusChange(order, getPreviousStep(order.status))"
             class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
@@ -56,7 +67,7 @@
           >
             <i class="material-icons text-base">arrow_back</i>
             Quay lại: {{ getStatusLabel(getPreviousStep(order.status)) }}
-          </button>
+          </button> -->
           <button
             v-if="order"
             @click="handlePrintInvoice(order)"
@@ -128,52 +139,106 @@
             class="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto pb-2"
           >
             <div
-              v-for="(step, index) in ORDER_STATUS_STEPS"
+              v-for="(step, index) in isPOSOrder
+                ? POS_STATUS_STEPS
+                : ORDER_STATUS_STEPS"
               :key="step"
               class="flex items-center flex-shrink-0"
             >
               <div
                 class="flex flex-col items-center gap-2"
                 :class="{
-                  'opacity-50': getStatusStepIndex(order.status) < index,
+                  'opacity-50': !isFailed && currentStepIndex < index,
                 }"
               >
+                <!-- CIRCLE ICON -->
                 <div
                   class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all"
                   :class="
-                    getStatusStepIndex(order.status) === index
+                    // Nếu đơn failed & đang là ô cuối (Hoàn thành)
+                    isFailed &&
+                    index ===
+                      (isPOSOrder
+                        ? POS_STATUS_STEPS.length
+                        : ORDER_STATUS_STEPS.length) -
+                        1
+                      ? 'bg-rose-600 text-white shadow-lg scale-110'
+                      : currentStepIndex === index
                       ? 'bg-purple-500 text-white shadow-lg scale-110'
-                      : getStatusStepIndex(order.status) > index
+                      : currentStepIndex > index
                       ? 'bg-emerald-500 text-white'
                       : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                   "
                 >
+                  <!-- FAILED ICON -->
                   <i
-                    v-if="getStatusStepIndex(order.status) > index"
+                    v-if="
+                      isFailed &&
+                      index ===
+                        (isPOSOrder
+                          ? POS_STATUS_STEPS.length
+                          : ORDER_STATUS_STEPS.length) -
+                          1
+                    "
                     class="material-icons text-base"
-                    >check</i
                   >
+                    cancel
+                  </i>
+
+                  <!-- DONE ICON -->
+                  <i
+                    v-else-if="currentStepIndex > index"
+                    class="material-icons text-base"
+                  >
+                    check
+                  </i>
+
+                  <!-- STEP NUMBER -->
                   <span v-else>{{ index + 1 }}</span>
                 </div>
                 <span
                   class="text-xs font-medium text-center whitespace-nowrap"
                   :class="
-                    getStatusStepIndex(order.status) === index
+                    isFailed &&
+                    index ===
+                      (isPOSOrder
+                        ? POS_STATUS_STEPS.length
+                        : ORDER_STATUS_STEPS.length) -
+                        1
+                      ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                      : currentStepIndex === index
                       ? 'text-purple-600 dark:text-purple-400 font-semibold'
-                      : getStatusStepIndex(order.status) > index
+                      : currentStepIndex > index
                       ? 'text-emerald-600 dark:text-emerald-400'
                       : 'text-gray-500 dark:text-gray-400'
                   "
                 >
-                  {{ getStatusLabel(step) }}
+                  {{
+                    isPOSOrder
+                      ? index === 0
+                        ? currentStepIndex === 1
+                          ? "Đã thanh toán"
+                          : "Chờ thanh toán"
+                        : "Hoàn thành"
+                      : isFailed && index === ORDER_STATUS_STEPS.length - 1
+                      ? "Giao hàng thất bại"
+                      : getStatusLabel(step)
+                  }}
                 </span>
               </div>
+              <!-- ARROW -->
               <i
-                v-if="index < ORDER_STATUS_STEPS.length - 1"
+                v-if="
+                  index <
+                  (isPOSOrder
+                    ? POS_STATUS_STEPS.length
+                    : ORDER_STATUS_STEPS.length) -
+                    1
+                "
                 class="material-icons text-gray-300 dark:text-gray-600 mx-2"
                 :class="{
-                  'text-emerald-400': getStatusStepIndex(order.status) > index,
-                  'text-purple-400': getStatusStepIndex(order.status) === index,
+                  'text-emerald-400': currentStepIndex > index,
+                  'text-purple-400': currentStepIndex === index,
                 }"
                 >arrow_forward</i
               >
@@ -312,7 +377,7 @@
                 >
                   Sản phẩm
                 </th>
-                 <th
+                <th
                   class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
                 >
                   SKU
@@ -341,6 +406,11 @@
                   class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
                 >
                   Thành tiền
+                </th>
+                <th
+                  class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+                >
+                  VAT (10%)
                 </th>
               </tr>
             </thead>
@@ -404,12 +474,18 @@
                 >
                   {{ formatCurrency(item.totalPrice) }}
                 </td>
+                <!-- VAT (10%) -->
+                <td
+                  class="px-4 py-4 text-right text-orange-600 dark:text-orange-400 font-medium"
+                >
+                  {{ formatCurrency(item.totalPrice * 0.1) }}
+                </td>
               </tr>
             </tbody>
             <tfoot class="bg-gray-50 dark:bg-gray-700/50">
               <tr>
                 <td
-                  colspan="5"
+                  colspan="7"
                   class="px-4 py-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-100"
                 >
                   Tổng cộng:
@@ -488,7 +564,7 @@
         </h3>
         <div class="space-y-4">
           <div
-            v-for="(history, index) in order.statusHistories"
+            v-for="(history, index) in sortedStatusHistories"
             :key="history.id"
             class="flex items-start gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0"
             :class="{ 'opacity-60': index > 0 }"
@@ -550,7 +626,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAdminStore } from "@/stores/admin";
 import AdminService from "@/services/adminService";
@@ -591,6 +667,8 @@ const ORDER_STATUS_STEPS = [
   "Completed", // 5: Hoàn thành
 ];
 
+const POS_STATUS_STEPS = ["Pending", "Completed"];
+
 // Normalize status
 const normalizeStatusForDisplay = (status) => {
   if (!status) return status;
@@ -603,11 +681,22 @@ const normalizeStatusForDisplay = (status) => {
     confirmed: "Confirmed",
     packed: "Packed",
     refunded: "Refunded",
+    failed: "Failed",
   };
   return statusMap[status.toLowerCase()] || status;
 };
 
 const getNormalizedStatusValue = (status) => {
+  if (!status) return "Pending";
+
+  // ✅ Nếu là POS & đã thanh toán thì ép về Completed
+  if (
+    isPOSOrder.value &&
+    order.value?.payment?.status?.toLowerCase() === "completed"
+  ) {
+    return "Completed";
+  }
+
   const normalized = normalizeStatusForDisplay(status);
   const validOptions = [
     "Pending",
@@ -618,9 +707,19 @@ const getNormalizedStatusValue = (status) => {
     "Confirmed",
     "Packed",
     "Refunded",
+    "Failed",
   ];
   return validOptions.includes(normalized) ? normalized : "Pending";
 };
+
+const isPOSOrder = computed(() => {
+  if (!order.value) return false;
+
+  return (
+    order.value.orderNumber?.startsWith("POS-") ||
+    order.value.addressShipping?.line2 === "Bán tại quầy"
+  );
+});
 
 // Lấy index của status trong flow
 const getStatusStepIndex = (status) => {
@@ -654,31 +753,73 @@ const getPreviousStep = (currentStatus) => {
 };
 
 // Kiểm tra xem có thể chuyển đến status mới không
+// const canChangeToStatus = (currentStatus, targetStatus) => {
+//   const currentIndex = getStatusStepIndex(currentStatus);
+//   const newIndex = getStatusStepIndex(targetStatus);
+
+//   if (currentIndex === -1 || newIndex === -1) {
+//     return false; // Status không hợp lệ
+//   }
+
+//   // Cho phép chuyển đến step tiếp theo
+//   if (newIndex === currentIndex + 1) {
+//     return true;
+//   }
+
+//   // Cho phép quay lại step trước đó
+//   if (newIndex === currentIndex - 1) {
+//     return true;
+//   }
+
+//   // Completed có thể quay về Processing
+//   if (
+//     getNormalizedStatusValue(currentStatus) === "Completed" &&
+//     targetStatus === "Processing"
+//   ) {
+//     return true;
+//   }
+
+//   return false;
+// };
 const canChangeToStatus = (currentStatus, targetStatus) => {
   const currentIndex = getStatusStepIndex(currentStatus);
   const newIndex = getStatusStepIndex(targetStatus);
+  const normalizedCurrent = getNormalizedStatusValue(currentStatus);
+
+  // ✅ SPECIAL: Cho phép Shipped → Cancelled (Giao hàng thất bại)
+  if (normalizedCurrent === "Shipped" && targetStatus === "Failed") {
+    return true;
+  }
+
+  // ✅ SPECIAL: Cho phép Shipped → Refunded (nếu bạn muốn hoàn tiền sau khi giao thất bại)
+  if (normalizedCurrent === "Shipped" && targetStatus === "Refunded") {
+    return true;
+  }
 
   if (currentIndex === -1 || newIndex === -1) {
-    return false; // Status không hợp lệ
+    return false;
   }
 
-  // Cho phép chuyển đến step tiếp theo
-  if (newIndex === currentIndex + 1) {
-    return true;
+  // ✅ BLOCK CASE: Shipped → Completed khi chưa thanh toán
+  if (normalizedCurrent === "Shipped" && targetStatus === "Completed") {
+    const paymentStatus = order.value?.payment?.status?.toLowerCase();
+
+    if (!paymentStatus || paymentStatus === "pending") {
+      notificationService.warning(
+        "Không thể hoàn thành đơn hàng",
+        "Đơn hàng chưa được thanh toán. Vui lòng xác nhận thanh toán trước khi hoàn thành."
+      );
+      return false;
+    }
   }
 
-  // Cho phép quay lại step trước đó
-  if (newIndex === currentIndex - 1) {
-    return true;
-  }
+  // Flow chuẩn
+  if (newIndex === currentIndex + 1) return true;
+  if (newIndex === currentIndex - 1) return true;
 
-  // Completed có thể quay về Processing
-  if (
-    getNormalizedStatusValue(currentStatus) === "Completed" &&
-    targetStatus === "Processing"
-  ) {
+  // Completed → Processing (cho rollback)
+  if (normalizedCurrent === "Completed" && targetStatus === "Processing")
     return true;
-  }
 
   return false;
 };
@@ -693,7 +834,7 @@ const confirmStatusChange = (order, targetStatus) => {
 
     // Kiểm tra xem có thể chuyển đổi không
     if (!canChangeToStatus(currentNormalizedStatus, targetStatus)) {
-      toastService.warning(
+      notificationService.warning(
         "Cảnh báo",
         "Không thể chuyển đổi trạng thái này. Vui lòng chuyển đổi theo thứ tự bước."
       );
@@ -719,7 +860,10 @@ const confirmStatusChange = (order, targetStatus) => {
     showStatusConfirm.value = true;
   } catch (error) {
     logger.error("❌ Error in confirmStatusChange:", error);
-    toastService.apiError(error, "Có lỗi xảy ra khi thay đổi trạng thái");
+    notificationService.apiError(
+      error,
+      "Có lỗi xảy ra khi thay đổi trạng thái"
+    );
   }
 };
 
@@ -744,7 +888,7 @@ const handleStatusUpdate = async () => {
     // Refresh order detail
     await fetchOrderDetail();
 
-    toastService.success(
+    notificationService.success(
       "Thành công",
       `Đã cập nhật trạng thái đơn hàng #${orderId} từ '${getStatusLabel(
         previousStatus
@@ -757,7 +901,10 @@ const handleStatusUpdate = async () => {
     logger.error("❌ Lỗi khi cập nhật trạng thái:", error);
     logger.error("Error details:", error.response || error.message);
 
-    toastService.apiError(error, "Không thể cập nhật trạng thái đơn hàng");
+    notificationService.apiError(
+      error,
+      "Không thể cập nhật trạng thái đơn hàng"
+    );
 
     // Restore old status on error
     order.value = { ...order.value, status: previousStatus };
@@ -811,6 +958,7 @@ const getStatusLabel = (status) => {
     Confirmed: "Đã xác nhận",
     Packed: "Đã đóng gói",
     Refunded: "Đã hoàn tiền",
+    Failed: "Giao hàng thất bại",
   };
   return labels[normalized] || normalized || status;
 };
@@ -833,6 +981,7 @@ const getStatusBadgeClass = (status) => {
       "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400",
     Refunded:
       "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+    Failed: "bg-rose-200 text-rose-800 dark:bg-rose-900/40 dark:text-rose-400",
   };
   return (
     classMap[normalized] ||
@@ -867,6 +1016,16 @@ const getPaymentStatusLabel = (status) => {
   return labels[status.toLowerCase()] || status;
 };
 
+const sortedStatusHistories = computed(() => {
+  if (!order.value?.statusHistories) return [];
+
+  return [...order.value.statusHistories].sort((a, b) => {
+    const dateA = new Date(a.changedAt || a.createdAt);
+    const dateB = new Date(b.changedAt || b.createdAt);
+    return dateB - dateA;
+  });
+});
+
 const getPaymentStatusClass = (status) => {
   if (!status)
     return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
@@ -887,18 +1046,23 @@ const getPaymentStatusClass = (status) => {
   );
 };
 
+const canMarkDeliveryFailed = (status) => {
+  const normalized = getNormalizedStatusValue(status);
+  return normalized === "Shipped";
+};
+
 const getColorHex = (colorName) => {
   // Map một số màu phổ biến
   const colorMap = {
-    Đen: "#000000",
-    Trắng: "#FFFFFF",
-    Xám: "#808080",
-    "Xanh dương": "#0000FF",
-    "Xanh lá": "#00FF00",
-    Đỏ: "#FF0000",
-    Vàng: "#FFFF00",
-    Hồng: "#FFC0CB",
-    Nâu: "#A52A2A",
+    Black: "#000000",
+    White: "#FFFFFF",
+    Gray: "#808080",
+    Blue: "#0000FF",
+    Green: "#00FF00",
+    Red: "#FF0000",
+    Yellow: "#FFFF00",
+    Pink: "#FFC0CB",
+    Brown: "#A52A2A",
   };
   return colorMap[colorName] || "#CCCCCC";
 };
@@ -920,6 +1084,37 @@ const handlePrintInvoice = (order) => {
     notificationService.apiError(error, "Không thể in hóa đơn");
   }
 };
+
+const isFailed = computed(() => {
+  if (!order.value?.status) return false;
+  return getNormalizedStatusValue(order.value.status) === "Failed";
+});
+
+// const currentStepIndex = computed(() => {
+//   if (!order.value?.status) return -1;
+
+//   // Nếu Failed thì ép index = bước cuối (Completed)
+//   if (getNormalizedStatusValue(order.value.status) === "Failed") {
+//     return ORDER_STATUS_STEPS.length - 1;
+//   }
+
+//   return getStatusStepIndex(order.value.status);
+// });
+const currentStepIndex = computed(() => {
+  if (!order.value?.status) return -1;
+
+  const normalized = getNormalizedStatusValue(order.value.status);
+
+  if (isPOSOrder.value) {
+    return POS_STATUS_STEPS.indexOf(normalized);
+  }
+
+  if (normalized === "Failed") {
+    return ORDER_STATUS_STEPS.length - 1;
+  }
+
+  return getStatusStepIndex(order.value.status);
+});
 
 const exportOrderToPDF = (order) => {
   if (!order) {

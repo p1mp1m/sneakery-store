@@ -33,6 +33,7 @@ public class AdminOrderService {
     private final CouponService couponService;
     private final LoyaltyService loyaltyService;
     private final AddressRepository addressRepository;
+    private static final BigDecimal VAT_RATE = BigDecimal.valueOf(0.1); // 10%
 
     @Transactional(readOnly = true)
     public Page<AdminOrderListDto> getAllOrders(Pageable pageable) {
@@ -459,12 +460,20 @@ public class AdminOrderService {
 
         order.setDiscountAmount(discountAmount);
 
-        // 7. Tính totalAmount
-        BigDecimal totalAmount = subtotal.subtract(discountAmount);
+        // 7. Tính VAT (10%) - KHÔNG LƯU VÀO DB
+        BigDecimal vatAmount = subtotal.multiply(VAT_RATE);
+
+        // 8. Tính totalAmount = subtotal - discount + VAT
+        BigDecimal totalAmount = subtotal
+                .subtract(discountAmount)
+                .add(vatAmount);
+
         if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
             totalAmount = BigDecimal.ZERO;
         }
+
         order.setTotalAmount(totalAmount);
+
 
         // 8. Tạo Payment với status "completed" (đã thanh toán tại quầy)
         // Map payment method từ frontend sang giá trị hợp lệ trong database
@@ -622,6 +631,9 @@ public class AdminOrderService {
             return CartItemDto.builder()
                     .variantId(v.getId())
                     .productName(v.getProduct().getName())
+                    .sku(detail.getVariantSku() != null && !detail.getVariantSku().isEmpty()
+                            ? detail.getVariantSku()
+                            : v.getSku())
                     .brandName(v.getProduct().getBrand().getName())
                     .size(v.getSize())
                     .color(v.getColor())

@@ -641,16 +641,25 @@
                 >-{{ formatCurrency(discountAmount) }}</span
               >
             </div>
+            <!-- VAT -->
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-600 dark:text-gray-400"> VAT (10%): </span>
+              <span class="font-semibold text-blue-600 dark:text-blue-400">
+                {{ formatCurrency(cartVat) }}
+              </span>
+            </div>
+
+            <!-- TOTAL -->
             <div
               class="flex items-center justify-between pt-1.5 border-t border-gray-200 dark:border-gray-700"
             >
-              <span class="text-sm font-bold text-gray-900 dark:text-gray-100"
-                >Tổng cộng:</span
-              >
+              <span class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                Tổng cộng:
+              </span>
               <span
                 class="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
               >
-                {{ formatCurrency(totalAmount) }}
+                {{ formatCurrency(cartGrandTotal) }}
               </span>
             </div>
           </div>
@@ -726,7 +735,7 @@
           </div>
 
           <!-- Checkout Button with Premium Design -->
-          <button
+          <!-- <button
             @click="processOrder"
             :disabled="cartItems.length === 0 || processing"
             class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:via-purple-600 hover:to-indigo-700 transition-all duration-300 font-bold text-sm shadow-xl hover:shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] flex-shrink-0 mt-2"
@@ -737,6 +746,14 @@
               >{{ processing ? "autorenew" : "shopping_cart_checkout" }}</i
             >
             {{ processing ? "Đang xử lý..." : "Thanh toán ngay" }}
+          </button> -->
+          <button
+            @click="openPreviewReceipt"
+            :disabled="cartItems.length === 0"
+            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:via-purple-600 hover:to-indigo-700 transition-all duration-300 font-bold text-sm shadow-xl"
+          >
+            <i class="material-icons text-lg">shopping_cart_checkout</i>
+            Thanh toán ngay
           </button>
         </div>
       </div>
@@ -747,7 +764,7 @@
       <div
         v-if="showReceipt"
         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-        @click="showReceipt = false"
+        @click.self="closeReceiptModal"
       >
         <div
           class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700 transform transition-all flex flex-col"
@@ -766,8 +783,21 @@
               HÓA ĐƠN BÁN HÀNG
             </h2>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-mono">
-              {{ currentReceipt?.orderNumber || `#${currentReceipt?.id}` }}
+              <template
+                v-if="currentReceipt?.orderNumber && currentReceipt?.id"
+              >
+                {{ currentReceipt.orderNumber }} - #{{ currentReceipt.id }}
+              </template>
+
+              <template v-else-if="currentReceipt?.orderNumber">
+                {{ currentReceipt.orderNumber }}
+              </template>
+
+              <template v-else-if="currentReceipt?.id">
+                #{{ currentReceipt.id }}
+              </template>
             </p>
+
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {{ formatDate(currentReceipt?.createdAt) }}
             </p>
@@ -835,6 +865,14 @@
                       >
                         {{ item.productName || item.name }}
                       </p>
+                      <!-- SKU -->
+                      <p
+                        v-if="item.sku"
+                        class="text-xs text-gray-400 dark:text-gray-500 mt-0.5 font-mono"
+                      >
+                        SKU: {{ item.sku }}
+                      </p>
+
                       <div
                         v-if="item.size || item.color"
                         class="flex items-center gap-2 mt-1"
@@ -873,18 +911,16 @@
             <div
               class="pt-4 border-t-2 border-gray-300 dark:border-gray-600 space-y-2"
             >
+              <!-- Subtotal -->
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600 dark:text-gray-400">Tạm tính:</span>
                 <span class="font-semibold text-gray-900 dark:text-gray-100">
-                  {{
-                    formatCurrency(
-                      currentReceipt?.subtotal ||
-                        currentReceipt?.totalAmount +
-                          (currentReceipt?.discountAmount || 0)
-                    )
-                  }}
+                  <!-- {{ formatCurrency(getReceiptSubTotal()) }} -->
+                  {{ formatCurrency(currentReceipt?.subtotal || 0) }}
                 </span>
               </div>
+
+              <!-- Discount -->
               <div
                 v-if="
                   currentReceipt?.discountAmount &&
@@ -896,44 +932,66 @@
                   v-if="currentReceipt?.couponCode"
                   class="flex items-center justify-between text-xs"
                 >
-                  <span class="text-gray-500 dark:text-gray-400"
-                    >Mã giảm giá:</span
-                  >
+                  <span class="text-gray-500 dark:text-gray-400">
+                    Mã giảm giá:
+                  </span>
                   <span
                     class="font-semibold text-purple-600 dark:text-purple-400"
-                    >{{ currentReceipt.couponCode }}</span
                   >
+                    {{ currentReceipt.couponCode }}
+                  </span>
                 </div>
+
                 <div class="flex items-center justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-400"
-                    >Giảm giá:</span
-                  >
-                  <span class="font-semibold text-red-600 dark:text-red-400"
-                    >-{{ formatCurrency(currentReceipt.discountAmount) }}</span
-                  >
+                  <span class="text-gray-600 dark:text-gray-400">
+                    Giảm giá:
+                  </span>
+                  <span class="font-semibold text-red-600 dark:text-red-400">
+                    -{{ formatCurrency(currentReceipt.discountAmount) }}
+                  </span>
                 </div>
               </div>
+
+              <!-- VAT -->
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400"
-                  >Phương thức:</span
-                >
-                <span class="font-semibold text-gray-900 dark:text-gray-100">{{
-                  getPaymentMethodLabel(
-                    currentReceipt?.paymentMethod ||
-                      currentReceipt?.payment?.paymentMethod
-                  )
-                }}</span>
+                <span class="text-gray-600 dark:text-gray-400">
+                  VAT (10%):
+                </span>
+                <span class="font-semibold text-blue-600 dark:text-blue-400">
+                  <!-- {{ formatCurrency(getReceiptVat()) }} -->
+                  {{ formatCurrency(currentReceipt?.vatAmount || 0) }}
+                </span>
               </div>
+
+              <!-- Payment method -->
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600 dark:text-gray-400">
+                  Phương thức:
+                </span>
+                <span class="font-semibold text-gray-900 dark:text-gray-100">
+                  {{
+                    getPaymentMethodLabel(
+                      currentReceipt?.paymentMethod ||
+                        currentReceipt?.payment?.paymentMethod
+                    )
+                  }}
+                </span>
+              </div>
+
+              <!-- TOTAL -->
               <div
                 class="flex items-center justify-between pt-2 border-t-2 border-gray-300 dark:border-gray-600"
               >
-                <span class="text-lg font-bold text-gray-900 dark:text-gray-100"
-                  >TỔNG CỘNG:</span
+                <span
+                  class="text-lg font-bold text-gray-900 dark:text-gray-100"
                 >
+                  TỔNG CỘNG:
+                </span>
                 <span
                   class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
                 >
-                  {{ formatCurrency(currentReceipt?.totalAmount) }}
+                  <!-- {{ formatCurrency(getReceiptGrandTotal()) }} -->
+                  {{ formatCurrency(currentReceipt?.totalAmount || 0) }}
                 </span>
               </div>
             </div>
@@ -956,15 +1014,32 @@
             class="p-6 border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 flex-shrink-0"
           >
             <div class="flex items-center gap-3">
+              <!-- CHỈ hiện khi đã xác nhận đơn hàng -->
               <button
+                v-if="currentReceipt?.id !== 'PREVIEW'"
                 @click="printReceipt"
                 class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-105"
               >
-                <i class="material-icons text-xl">print</i>
+                <i class="material-icons">print</i>
                 In hóa đơn
               </button>
               <button
-                @click="showReceipt = false"
+                v-if="currentReceipt?.id === 'PREVIEW'"
+                @click="confirmAndCreateOrder"
+                :disabled="processing"
+                class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-300 text-sm font-semibold shadow-lg hover:shadow-xl disabled:opacity-50"
+              >
+                <i
+                  class="material-icons"
+                  :class="{ 'animate-spin': processing }"
+                >
+                  {{ processing ? "autorenew" : "check_circle" }}
+                </i>
+
+                {{ processing ? "Đang xử lý..." : "Xác nhận thanh toán" }}
+              </button>
+              <button
+                @click="closeReceiptModal"
                 class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm font-semibold hover:scale-105"
               >
                 <i class="material-icons text-xl">close</i>
@@ -1662,6 +1737,7 @@ import notificationService from "@/utils/notificationService";
 import logger from "@/utils/logger";
 import { formatPrice, formatCurrency, formatDate } from "@/utils/formatters";
 import { useAdminProductImageStore } from "@/stores/adminProductImages";
+import { printInvoice } from "@/utils/pdfGenerator";
 // import toastService from "@/utils/toastService";
 const adminStore = useAdminStore();
 const adminImageStore = useAdminProductImageStore();
@@ -1815,6 +1891,16 @@ const hasMoreProducts = computed(() => !noMoreProducts.value);
 //   );
 // });
 
+const VAT_RATE = 0.1;
+
+const cartVat = computed(() => {
+  return Math.round(subtotal.value * VAT_RATE);
+});
+
+const cartGrandTotal = computed(() => {
+  return subtotal.value - discountAmount.value + cartVat.value;
+});
+
 // Methods
 const loadData = async () => {
   try {
@@ -1927,6 +2013,111 @@ const loadMore = async () => {
     logger.error("Error loading more products:", error);
   } finally {
     loadingMore.value = false;
+  }
+};
+
+const openPreviewReceipt = () => {
+  if (cartItems.value.length === 0) return;
+
+  // 1. Tạm tính
+  const previewSubtotal = cartItems.value.reduce((sum, item) => {
+    return sum + item.unitPrice * item.quantity;
+  }, 0);
+
+  // 2. VAT 10%
+  const previewVat = Math.round(previewSubtotal * 0.1);
+
+  // 3. Tổng cuối
+  const previewGrandTotal =
+    previewSubtotal + previewVat - (discountAmount.value || 0);
+
+  // 4. Gán dữ liệu vào receipt preview
+  currentReceipt.value = {
+    id: "PREVIEW",
+    orderNumber: "PREVIEW",
+    createdAt: new Date(),
+
+    customerId: selectedCustomer.value?.id || null,
+    customerName: selectedCustomer.value?.fullName || null,
+    customerEmail: selectedCustomer.value?.email || null,
+
+    paymentMethod: paymentMethod.value.toUpperCase(),
+
+    items: cartItems.value.map((item) => ({
+      productName: item.name,
+      size: item.size,
+      color: item.color,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      sku: item.sku,
+      variantId: item.variantId,
+    })),
+
+    subtotal: previewSubtotal,
+    vatAmount: previewVat,
+    discountAmount: discountAmount.value || 0,
+    couponCode: discountCode.value || null,
+    totalAmount: previewGrandTotal,
+  };
+
+  showReceipt.value = true;
+};
+
+const confirmAndCreateOrder = async () => {
+  if (cartItems.value.length === 0) {
+    notificationService.warning("Cảnh báo", "Giỏ hàng đang trống");
+    return;
+  }
+
+  try {
+    processing.value = true;
+
+    const orderData = {
+      items: cartItems.value.map((item) => ({
+        productId: item.id,
+        variantId: item.variantId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        sku: item.sku, // ✅ THÊM SKU
+      })),
+      customerId: selectedCustomer.value?.id || null,
+      discountCode: discountCode.value || null,
+      discountAmount: discountAmount.value,
+      paymentMethod: paymentMethod.value,
+      totalAmount: cartGrandTotal.value, // ✅ DÙNG GRAND TOTAL (có VAT + giảm giá)
+      notes: "Bán tại quầy POS",
+    };
+
+    logger.info("✅ Confirm POS Order:", orderData);
+
+    const result = await adminStore.createPOSOrder(orderData);
+
+    currentReceipt.value = {
+      ...result,
+      vatAmount: Math.round(
+        (result.subtotal || result.totalAmount + (result.discountAmount || 0)) *
+          0.1
+      ),
+    };
+
+    // Reset giỏ
+    cartItems.value = [];
+    discountCode.value = "";
+    discountAmount.value = 0;
+    selectedCustomer.value = null;
+    selectedCustomerLoyaltyPoints.value = null;
+
+    localStorage.removeItem("pos_cart");
+
+    // Refresh lịch sử
+    await loadSalesHistory();
+
+    notificationService.success("Thành công", "Thanh toán thành công 🎉");
+  } catch (error) {
+    logger.error("❌ Error confirm order:", error);
+    notificationService.apiError(error, "Không thể xác nhận đơn hàng");
+  } finally {
+    processing.value = false;
   }
 };
 
@@ -2213,81 +2404,81 @@ const handleBarcodeSearch = async () => {
   }
 };
 
-const processOrder = async () => {
-  if (cartItems.value.length === 0) {
-    notificationService.warning("Cảnh báo", "Giỏ hàng trống");
-    return;
-  }
+// const processOrder = async () => {
+//   if (cartItems.value.length === 0) {
+//     notificationService.warning("Cảnh báo", "Giỏ hàng trống");
+//     return;
+//   }
 
-  try {
-    processing.value = true;
+//   try {
+//     processing.value = true;
 
-    const orderData = {
-      items: cartItems.value.map((item) => ({
-        productId: item.id,
-        variantId: item.variantId,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      })),
-      customerId: selectedCustomer.value?.id || null,
-      discountCode: discountCode.value || null,
-      discountAmount: discountAmount.value,
-      paymentMethod: paymentMethod.value,
-      totalAmount: totalAmount.value,
-      notes: "",
-    };
+//     const orderData = {
+//       items: cartItems.value.map((item) => ({
+//         productId: item.id,
+//         variantId: item.variantId,
+//         quantity: item.quantity,
+//         unitPrice: item.unitPrice,
+//       })),
+//       customerId: selectedCustomer.value?.id || null,
+//       discountCode: discountCode.value || null,
+//       discountAmount: discountAmount.value,
+//       paymentMethod: paymentMethod.value,
+//       totalAmount: cartGrandTotal.value,
+//       notes: "",
+//     };
 
-    const result = await adminStore.createPOSOrder(orderData);
+//     const result = await adminStore.createPOSOrder(orderData);
 
-    // Show receipt
-    currentReceipt.value = result;
-    showReceipt.value = true;
+//     // Show receipt
+//     currentReceipt.value = result;
+//     showReceipt.value = true;
 
-    // Clear cart
-    cartItems.value = [];
-    discountCode.value = "";
-    discountAmount.value = 0;
-    // Xóa localStorage sau khi thanh toán thành công
-    localStorage.removeItem("pos_cart");
+//     // Clear cart
+//     cartItems.value = [];
+//     discountCode.value = "";
+//     discountAmount.value = 0;
+//     // Xóa localStorage sau khi thanh toán thành công
+//     localStorage.removeItem("pos_cart");
 
-    notificationService.success(
-      "Thành công",
-      "Đơn hàng đã được tạo thành công"
-    );
-  } catch (error) {
-    logger.error("Error processing order:", error);
+//     notificationService.success(
+//       "Thành công",
+//       "Đơn hàng đã được tạo thành công"
+//     );
+//   } catch (error) {
+//     logger.error("Error processing order:", error);
 
-    // Extract error message from different error formats
-    let errorMessage = "Không thể tạo đơn hàng";
+//     // Extract error message from different error formats
+//     let errorMessage = "Không thể tạo đơn hàng";
 
-    if (error?.message) {
-      // Error from handleError() returns { message, status, data }
-      errorMessage = error.message;
-    } else if (error?.response?.data?.message) {
-      // Direct axios error response
-      errorMessage = error.response.data.message;
-    } else if (error?.response?.data?.validationErrors) {
-      // Validation errors
-      const validationErrors = error.response.data.validationErrors;
-      const errorList = Object.entries(validationErrors)
-        .map(
-          ([field, messages]) =>
-            `${field}: ${
-              Array.isArray(messages) ? messages.join(", ") : messages
-            }`
-        )
-        .join("\n");
-      errorMessage = `Dữ liệu không hợp lệ:\n${errorList}`;
-    } else if (typeof error === "string") {
-      errorMessage = error;
-    }
+//     if (error?.message) {
+//       // Error from handleError() returns { message, status, data }
+//       errorMessage = error.message;
+//     } else if (error?.response?.data?.message) {
+//       // Direct axios error response
+//       errorMessage = error.response.data.message;
+//     } else if (error?.response?.data?.validationErrors) {
+//       // Validation errors
+//       const validationErrors = error.response.data.validationErrors;
+//       const errorList = Object.entries(validationErrors)
+//         .map(
+//           ([field, messages]) =>
+//             `${field}: ${
+//               Array.isArray(messages) ? messages.join(", ") : messages
+//             }`
+//         )
+//         .join("\n");
+//       errorMessage = `Dữ liệu không hợp lệ:\n${errorList}`;
+//     } else if (typeof error === "string") {
+//       errorMessage = error;
+//     }
 
-    // Show detailed error message
-    notificationService.apiError(error, "Không thể tạo đơn hàng");
-  } finally {
-    processing.value = false;
-  }
-};
+//     // Show detailed error message
+//     notificationService.apiError(error, "Không thể tạo đơn hàng");
+//   } finally {
+//     processing.value = false;
+//   }
+// };
 
 const resetCart = () => {
   cartItems.value = [];
@@ -2679,6 +2870,58 @@ const updateQuantity = (index, quantity) => {
   }
 };
 
+// const calculateVat = (amount) => {
+//   if (!amount || isNaN(amount)) return 0;
+//   return Math.round(amount * 0.1); // VAT 10%
+// };
+
+// const getReceiptSubtotal = () => {
+//   if (!currentReceipt?.value) return 0;
+
+//   return (
+//     currentReceipt.value.subtotal ||
+//     currentReceipt.value.totalAmount +
+//       (currentReceipt.value.discountAmount || 0)
+//   );
+// };
+
+// const getReceiptVat = () => {
+//   return calculateVat(getReceiptSubtotal());
+// };
+
+// const getReceiptGrandTotal = () => {
+//   const subtotal = getReceiptSubtotal();
+//   const discount = currentReceipt?.value?.discountAmount || 0;
+//   const vat = getReceiptVat();
+
+//   return subtotal - discount + vat;
+// };
+
+// ===== VAT FOR RECEIPT =====
+// const RECEIPT_VAT_RATE = 0.1
+
+const getReceiptSubTotal = () => {
+  if (!currentReceipt?.value) return 0;
+
+  return (
+    currentReceipt.value.subtotal ??
+    currentReceipt.value.totalAmount +
+      (currentReceipt.value.discountAmount || 0)
+  );
+};
+
+const getReceiptVat = () => {
+  return Math.round(getReceiptSubTotal() * VAT_RATE);
+};
+
+const getReceiptGrandTotal = () => {
+  const subtotal = getReceiptSubTotal();
+  const discount = currentReceipt?.value?.discountAmount || 0;
+  const vat = getReceiptVat();
+
+  return subtotal - discount + vat;
+};
+
 const applyDiscount = async () => {
   if (!discountCode.value || !discountCode.value.trim()) {
     notificationService.warning("Cảnh báo", "Vui lòng nhập mã giảm giá");
@@ -2748,57 +2991,152 @@ const applyDiscount = async () => {
   }
 };
 
+// const printReceipt = () => {
+//   if (!currentReceipt.value) return;
+
+//   // Chuẩn bị dữ liệu cho PDF generator
+//   const receiptData = {
+//     id: currentReceipt.value.id,
+//     orderNumber:
+//       currentReceipt.value.orderNumber || `POS-${currentReceipt.value.id}`,
+//     createdAt: currentReceipt.value.createdAt,
+//     status: currentReceipt.value.status || "Completed",
+//     customerName:
+//       currentReceipt.value.customerName ||
+//       selectedCustomer.value?.fullName ||
+//       "Khách vãng lai",
+//     customerEmail:
+//       currentReceipt.value.customerEmail || selectedCustomer.value?.email || "",
+//     customerPhone: selectedCustomer.value?.phoneNumber || "",
+//     shippingAddress: "Bán tại quầy - Không vận chuyển",
+//     paymentMethod:
+//       currentReceipt.value.paymentMethod ||
+//       currentReceipt.value.payment?.paymentMethod ||
+//       paymentMethod.value,
+//     subtotal:
+//       currentReceipt.value.subtotal ||
+//       currentReceipt.value.totalAmount +
+//         (currentReceipt.value.discountAmount || 0),
+//     discountAmount: currentReceipt.value.discountAmount || 0,
+//     totalAmount: currentReceipt.value.totalAmount,
+//     items: (
+//       currentReceipt.value.orderDetails ||
+//       currentReceipt.value.items ||
+//       []
+//     ).map((item) => ({
+//       id: item.id || item.variantId,
+//       productName: item.productName || item.name,
+//       variantName:
+//         item.size || item.color
+//           ? `${item.size || ""} ${item.color || ""}`.trim()
+//           : null,
+//       quantity: item.quantity,
+//       price: item.unitPrice || item.price || 0,
+//     })),
+//   };
+
+//   // Sử dụng PDF generator để in
+//   try {
+//     printInvoice(receiptData);
+//   } catch (error) {
+//     logger.error("Error printing receipt:", error);
+//     // Fallback: window.print() nếu có lỗi
+//     window.print();
+//   }
+// };
+// const printReceipt = () => {
+//   if (!currentReceipt.value) return;
+
+//   // ==== TÍNH SUBTOTAL AN TOÀN ====
+//   const safeSubtotal =
+//     currentReceipt.value.subtotal ??
+//     (currentReceipt.value.totalAmount || 0) +
+//       (currentReceipt.value.discountAmount || 0);
+
+//   // ==== LẤY SOURCE ITEMS (từ orderDetails hoặc items) ====
+//   const rawItems =
+//     currentReceipt.value.orderDetails || currentReceipt.value.items || [];
+
+//   // ==== MAP ITEMS + SKU ====
+//   const mappedItems = rawItems.map((item) => {
+//     const variantName =
+//       item.size || item.color
+//         ? `${item.size || ""} ${item.color || ""}`.trim()
+//         : null;
+
+//     return {
+//       id: item.id || item.variantId,
+
+//       // ✅ SKU: ưu tiên theo thứ tự
+//       sku:
+//         item.sku || // từ backend POS (CartItemDto)
+//         item.variantSku || // nếu dùng field variantSku
+//         (item.variant && item.variant.sku) || // nếu backend trả nested variant
+//         null,
+
+//       productName: item.productName || item.name || "Sản phẩm",
+
+//       variantName,
+
+//       quantity: item.quantity || 0,
+//       price: item.unitPrice || item.price || 0,
+//     };
+//   });
+
+//   // ==== CHUẨN BỊ DỮ LIỆU GỬI CHO PDF GENERATOR ====
+//   const receiptData = {
+//     id: currentReceipt.value.id,
+//     orderNumber:
+//       currentReceipt.value.orderNumber || `POS-${currentReceipt.value.id}`,
+//     createdAt: currentReceipt.value.createdAt,
+//     status: currentReceipt.value.status || "Completed",
+//     customerName:
+//       currentReceipt.value.customerName ||
+//       selectedCustomer.value?.fullName ||
+//       "Khách vãng lai",
+//     customerEmail:
+//       currentReceipt.value.customerEmail || selectedCustomer.value?.email || "",
+//     customerPhone: selectedCustomer.value?.phoneNumber || "",
+//     shippingAddress: "Bán tại quầy - Không vận chuyển",
+//     paymentMethod:
+//       currentReceipt.value.paymentMethod ||
+//       currentReceipt.value.payment?.paymentMethod ||
+//       paymentMethod.value,
+
+//     // ✅ SUBTOTAL: ưu tiên trường subtotal, fallback từ total + discount
+//     subtotal: safeSubtotal,
+
+//     discountAmount: currentReceipt.value.discountAmount || 0,
+//     totalAmount: currentReceipt.value.totalAmount || safeSubtotal,
+
+//     // ✅ ITEMS ĐÃ MAP (có SKU)
+//     items: mappedItems,
+//   };
+
+//   // Debug nếu cần
+//   // console.log("🧾 Receipt data for PDF:", receiptData);
+
+//   try {
+//     printInvoice(receiptData);
+//   } catch (error) {
+//     logger.error("Error printing receipt:", error);
+//     window.print();
+//   }
+// };
 const printReceipt = () => {
-  if (!currentReceipt.value) return;
+  if (!currentReceipt.value) {
+    notificationService.warning("Cảnh báo", "Không có hóa đơn để in");
+    return;
+  }
 
-  // Chuẩn bị dữ liệu cho PDF generator
-  const receiptData = {
-    id: currentReceipt.value.id,
-    orderNumber:
-      currentReceipt.value.orderNumber || `POS-${currentReceipt.value.id}`,
-    createdAt: currentReceipt.value.createdAt,
-    status: currentReceipt.value.status || "Completed",
-    customerName:
-      currentReceipt.value.customerName ||
-      selectedCustomer.value?.fullName ||
-      "Khách vãng lai",
-    customerEmail:
-      currentReceipt.value.customerEmail || selectedCustomer.value?.email || "",
-    customerPhone: selectedCustomer.value?.phoneNumber || "",
-    shippingAddress: "Bán tại quầy - Không vận chuyển",
-    paymentMethod:
-      currentReceipt.value.paymentMethod ||
-      currentReceipt.value.payment?.paymentMethod ||
-      paymentMethod.value,
-    subtotal:
-      currentReceipt.value.subtotal ||
-      currentReceipt.value.totalAmount +
-        (currentReceipt.value.discountAmount || 0),
-    discountAmount: currentReceipt.value.discountAmount || 0,
-    totalAmount: currentReceipt.value.totalAmount,
-    items: (
-      currentReceipt.value.orderDetails ||
-      currentReceipt.value.items ||
-      []
-    ).map((item) => ({
-      id: item.id || item.variantId,
-      productName: item.productName || item.name,
-      variantName:
-        item.size || item.color
-          ? `${item.size || ""} ${item.color || ""}`.trim()
-          : null,
-      quantity: item.quantity,
-      price: item.unitPrice || item.price || 0,
-    })),
-  };
-
-  // Sử dụng PDF generator để in
   try {
-    printInvoice(receiptData);
+    // ✅ Dùng trực tiếp dữ liệu currentReceipt (kế thừa từ order detail page)
+    printInvoice(currentReceipt.value);
+
+    notificationService.success("Thành công", "Đang mở cửa sổ in hóa đơn...");
   } catch (error) {
     logger.error("Error printing receipt:", error);
-    // Fallback: window.print() nếu có lỗi
-    window.print();
+    notificationService.apiError(error, "Không thể in hóa đơn");
   }
 };
 
@@ -3002,10 +3340,23 @@ const handleKeydown = (event) => {
   }
 
   // Ctrl + Enter: Process order
+  // if (event.ctrlKey && event.key === "Enter") {
+  //   event.preventDefault();
+  //   if (cartItems.value.length > 0) {
+  //     processOrder();
+  //   }
+  // }
   if (event.ctrlKey && event.key === "Enter") {
     event.preventDefault();
+
+    if (showReceipt.value && currentReceipt.value?.id === "PREVIEW") {
+      confirmAndCreateOrder(); // nếu đang ở modal thì xác nhận
+      return;
+    }
+
     if (cartItems.value.length > 0) {
-      processOrder();
+      // -   processOrder();
+      openPreviewReceipt(); // nếu chưa mở modal thì mở preview thôi
     }
   }
 
@@ -3090,6 +3441,19 @@ const loadCartFromLocalStorage = () => {
     logger.error("Error loading cart from localStorage:", error);
     localStorage.removeItem("pos_cart");
   }
+};
+
+const closeReceiptModal = () => {
+  showReceipt.value = false;
+  currentReceipt.value = null;
+
+  cartItems.value = [];
+  discountCode.value = "";
+  discountAmount.value = 0;
+  selectedCustomer.value = null;
+  selectedCustomerLoyaltyPoints.value = null;
+
+  localStorage.removeItem("pos_cart");
 };
 
 // Watch cartItems để tự động lưu vào localStorage

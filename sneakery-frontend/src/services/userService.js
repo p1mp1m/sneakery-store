@@ -88,6 +88,16 @@ class UserService {
     }
   }
 
+  // ===== CONFIRM RECEIVED & UPDATE PAYMENT =====
+  async confirmOrderReceived(orderId) {
+    try {
+      const response = await userApi.put(`/orders/${orderId}/confirm-received`)
+      return response.data
+    } catch (error) {
+      throw this.handleError(error)
+    }
+  }
+
   // ===== CART =====
   async getMyCart() {
     try {

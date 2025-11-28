@@ -694,6 +694,105 @@ public class OrderService {
     }
 
     /**
+     * User xác nhận đã nhận hàng (Đơn hàng -> DELIVERED, Payment -> COMPLETED)
+     *
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Kiểm tra đơn hàng có thuộc về user không</li>
+     *   <li>Kiểm tra trạng thái hiện tại phải là "shipped"</li>
+     *   <li>Cập nhật:
+     *     <ul>
+     *       <li>Order.status = "delivered"</li>
+     *       <li>Payment.status = "completed"</li>
+     *       <li>Payment.paidAt = now()</li>
+     *     </ul>
+     *   </li>
+     *   <li>Trừ tồn kho thực tế</li>
+     *   <li>Ghi OrderStatusHistory</li>
+     * </ol>
+     *
+     * @param orderId ID đơn hàng
+     * @param userId  ID user
+     */
+    @Transactional
+    public void confirmOrderReceived(Long orderId, Long userId) {
+
+        log.info("✅ User {} confirming received order #{}", userId, orderId);
+
+        // 1. Lấy order + check quyền sở hữu
+        Order order = orderRepository.findByIdAndUserIdWithDetails(orderId, userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng"));
+
+        String currentStatus = order.getStatus() != null ? order.getStatus().toLowerCase() : "";
+
+        // 2. Chỉ cho xác nhận khi đang shipped
+        if (!"shipped".equals(currentStatus)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Chỉ có thể xác nhận khi đơn hàng đang giao. Trạng thái hiện tại: " + order.getStatus());
+        }
+
+        // 3. Update PAYMENT first
+        if (order.getPayments() == null || order.getPayments().isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Không tìm thấy thông tin thanh toán của đơn hàng");
+        }
+
+        Payment payment = order.getPayments().get(0);
+
+        if (!"completed".equalsIgnoreCase(payment.getStatus())) {
+            payment.setStatus("completed");
+            payment.setPaidAt(LocalDateTime.now());
+            log.info("💰 Payment for order #{} has been COMPLETED", orderId);
+        }
+
+        // 4. Trừ tồn kho thực tế (theo đúng rule bạn ghi chú)
+        if (order.getOrderDetails() != null) {
+            for (OrderDetail detail : order.getOrderDetails()) {
+                ProductVariant variant = detail.getVariant();
+
+                if (variant != null) {
+                    int currentStock = variant.getStockQuantity();
+                    int quantityToReduce = detail.getQuantity();
+
+                    if (currentStock < quantityToReduce) {
+                        throw new ApiException(HttpStatus.BAD_REQUEST,
+                                "Không đủ tồn kho cho sản phẩm: " + variant.getProduct().getName());
+                    }
+
+                    variant.setStockQuantity(currentStock - quantityToReduce);
+                    variantRepository.save(variant);
+
+                    log.info("📦 Reduced stock for variant #{}: {} -> {}",
+                            variant.getId(), currentStock, (currentStock - quantityToReduce));
+                }
+            }
+        }
+
+        // 5. Cập nhật trạng thái order
+        order.setStatus("delivered");
+        orderRepository.save(order);
+
+        // 6. Ghi lịch sử trạng thái
+        OrderStatusHistory history = new OrderStatusHistory();
+        history.setOrder(order);
+        history.setStatus("delivered");
+        history.setChangedAt(LocalDateTime.now());
+
+        statusHistoryRepository.save(history);
+        order.getStatusHistories().add(history);
+
+        log.info("✅ Order #{} is now DELIVERED and PAYMENT COMPLETED", orderId);
+
+        // 7. Cộng điểm loyalty cho đơn hàng đã hoàn thành
+        try {
+            loyaltyService.earnPointsFromOrder(order);
+            log.info("🎁 Loyalty points have been added for order #{}", orderId);
+        } catch (Exception e) {
+            log.warn("⚠️ Cannot earn loyalty points for order #{}: {}", orderId, e.getMessage());
+        }
+    }
+
+
+    /**
      * Tạo yêu cầu đổi trả cho đơn hàng
      * 
      * <p>Phương thức này sẽ:

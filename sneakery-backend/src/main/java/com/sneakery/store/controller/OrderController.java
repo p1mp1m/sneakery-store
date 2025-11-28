@@ -340,5 +340,72 @@ public class OrderController {
         OrderDto order = orderService.getMyOrderById(orderId, userPrincipal.getId());
         return ResponseEntity.ok(order);
     }
+
+    /**
+     * Xác nhận đã nhận hàng (User xác nhận hoàn tất đơn hàng)
+     *
+     * <p>Phương thức này sẽ:
+     * <ol>
+     *   <li>Kiểm tra đơn hàng có thuộc về user hiện tại không</li>
+     *   <li>Kiểm tra đơn hàng đang ở trạng thái <b>SHIPPED</b></li>
+     *   <li>Cập nhật:
+     *     <ul>
+     *       <li>Order.status = DELIVERED</li>
+     *       <li>Payment.status = COMPLETED</li>
+     *       <li>Payment.paidAt = now()</li>
+     *     </ul>
+     *   </li>
+     *   <li>Thêm bản ghi mới vào OrderStatusHistory</li>
+     * </ol>
+     *
+     * <p><b>Lưu ý:</b>
+     * <ul>
+     *   <li>Chỉ được xác nhận khi đơn hàng đang ở trạng thái SHIPPED</li>
+     *   <li>Sau khi xác nhận sẽ chuyển sang trạng thái DELIVERED (Hoàn thành)</li>
+     *   <li>Không thể hoàn tác hành động này</li>
+     * </ul>
+     *
+     * @param userPrincipal User hiện tại (từ JWT)
+     * @param orderId ID đơn hàng cần xác nhận
+     * @return ResponseEntity chứa thông báo thành công
+     *
+     * @throws ApiException nếu:
+     * <ul>
+     *   <li>Không tìm thấy đơn hàng</li>
+     *   <li>Đơn hàng không thuộc về user</li>
+     *   <li>Trạng thái đơn hàng không hợp lệ (không phải SHIPPED)</li>
+     * </ul>
+     *
+     * @example
+     * <pre>
+     * PUT /api/orders/10052/confirm-received
+     * </pre>
+     */
+    @Operation(
+            summary = "Xác nhận đã nhận hàng",
+            description = "User xác nhận đã nhận hàng và hoàn tất đơn hàng (cập nhật Order + Payment). Chỉ áp dụng với đơn hàng đang SHIPPED."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Đã xác nhận nhận hàng thành công"),
+            @ApiResponse(responseCode = "400", description = "Đơn hàng không hợp lệ hoặc không thể xác nhận"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy đơn hàng")
+    })
+    @PutMapping("/{orderId}/confirm-received")
+    public ResponseEntity<?> confirmOrderReceived(
+            @AuthenticationPrincipal User userPrincipal,
+            @PathVariable Long orderId
+    ) {
+        log.info("📍 PUT /api/orders/{}/confirm-received - User: {}", orderId, userPrincipal.getId());
+
+        orderService.confirmOrderReceived(orderId, userPrincipal.getId());
+
+        return ResponseEntity.ok().body(
+                java.util.Map.of(
+                        "message", "Đã xác nhận nhận hàng và cập nhật thanh toán thành công",
+                        "orderId", orderId
+                )
+        );
+    }
+
 }
 

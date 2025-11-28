@@ -506,6 +506,133 @@
                   </div>
                 </div>
               </div>
+              <!-- ================= CHỌN PHƯƠNG THỨC THANH TOÁN ONLINE ================= -->
+              <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 translate-y-2"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 translate-y-2"
+              >
+                <div
+                  v-if="paymentMethod === 'online'"
+                  class="ml-10 mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"
+                >
+                  <!-- VNPay -->
+                  <div
+                    @click="onlineProvider = 'vnpay'"
+                    :class="[
+                      'relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 overflow-hidden',
+                      'hover:shadow-xl hover:-translate-y-1',
+                      onlineProvider === 'vnpay'
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300',
+                    ]"
+                  >
+                    <!-- Ribbon -->
+                    <div
+                      class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] px-3 py-0.5 rotate-12 translate-x-5 translate-y-3 shadow-md"
+                    >
+                      KHUYÊN DÙNG
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                      <!-- Logo VNPay -->
+                      <div
+                        class="w-14 h-14 rounded-xl bg-white flex items-center justify-center overflow-hidden border shadow-sm"
+                      >
+                        <img
+                          src="/vnpay-logo.png"
+                          alt="VNPay"
+                          class="w-full h-full object-contain p-1"
+                        />
+                      </div>
+
+                      <div class="flex-1">
+                        <h4
+                          class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+                        >
+                          Thanh toán qua VNPay
+                          <span
+                            class="text-[10px] px-2 py-0.5 rounded-full bg-blue-600/10 text-blue-600"
+                          >
+                            Phổ biến
+                          </span>
+                        </h4>
+
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                          ATM / Visa / Internet Banking / QR
+                        </p>
+                      </div>
+
+                      <i
+                        v-if="onlineProvider === 'vnpay'"
+                        class="material-icons text-blue-600 text-2xl animate-bounce"
+                      >
+                        verified
+                      </i>
+                    </div>
+                  </div>
+
+                  <!-- MoMo -->
+                  <div
+                    @click="onlineProvider = 'momo'"
+                    :class="[
+                      'relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 overflow-hidden',
+                      'hover:shadow-xl hover:-translate-y-1',
+                      onlineProvider === 'momo'
+                        ? 'border-pink-600 bg-pink-50 dark:bg-pink-900/20 shadow-lg shadow-pink-500/30'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-pink-400',
+                    ]"
+                  >
+                    <!-- Ribbon -->
+                    <div
+                      class="absolute top-0 right-0 bg-pink-600 text-white text-[10px] px-3 py-0.5 rotate-12 translate-x-5 translate-y-3 shadow-md"
+                    >
+                      HOT
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                      <!-- Logo MoMo -->
+                      <div
+                        class="w-14 h-14 rounded-xl bg-white flex items-center justify-center overflow-hidden border shadow-sm"
+                      >
+                        <img
+                          src="/momo-logo.png"
+                          alt="MoMo"
+                          class="w-full h-full object-contain p-1"
+                        />
+                      </div>
+
+                      <div class="flex-1">
+                        <h4
+                          class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+                        >
+                          Thanh toán qua MoMo
+                          <span
+                            class="text-[10px] px-2 py-0.5 rounded-full bg-pink-600/10 text-pink-600"
+                          >
+                            QR nhanh
+                          </span>
+                        </h4>
+
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                          Quét QR / Ví MoMo / SĐT
+                        </p>
+                      </div>
+
+                      <i
+                        v-if="onlineProvider === 'momo'"
+                        class="material-icons text-pink-600 text-2xl animate-bounce"
+                      >
+                        verified
+                      </i>
+                    </div>
+                  </div>
+                </div>
+              </transition>
+              <!-- ======================================================================== -->
             </div>
 
             <div
@@ -520,6 +647,7 @@
               </button>
               <button
                 @click="nextStep"
+                :disabled="paymentMethod === 'online' && !onlineProvider"
                 class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
               >
                 <span>Tiếp tục</span>
@@ -653,11 +781,27 @@
                     <strong
                       class="text-gray-900 dark:text-gray-100"
                       v-if="paymentMethod === 'cod'"
-                      >Thanh toán khi nhận hàng (COD)</strong
                     >
-                    <strong class="text-gray-900 dark:text-gray-100" v-else
-                      >Thanh toán trực tuyến</strong
+                      Thanh toán khi nhận hàng (COD)
+                    </strong>
+
+                    <strong
+                      v-else-if="onlineProvider === 'vnpay'"
+                      class="text-blue-600 dark:text-blue-400"
                     >
+                      Thanh toán qua VNPay
+                    </strong>
+
+                    <strong
+                      v-else-if="onlineProvider === 'momo'"
+                      class="text-pink-600 dark:text-pink-400"
+                    >
+                      Thanh toán qua MoMo
+                    </strong>
+
+                    <strong v-else class="text-red-500">
+                      Chưa chọn phương thức thanh toán
+                    </strong>
                   </div>
                   <div
                     v-if="paymentMethod === 'cod'"
@@ -1301,6 +1445,7 @@ const activeCoupons = ref([]);
 const loadingActiveCoupons = ref(false);
 const selectedCouponCode = ref("");
 const variantImageMap = ref(new Map());
+const onlineProvider = ref(""); // "vnpay" | "momo"
 
 // Use coupon store state
 const couponCode = computed({
@@ -1733,15 +1878,17 @@ const confirmCheckout = () => {
   showConfirmOrder.value = false;
   handleCheckout();
 };
+
 const handleCheckout = async () => {
   try {
     processing.value = true;
 
+    // ===============================
+    // GUEST CHECKOUT
+    // ===============================
     if (isGuest.value) {
-      // Guest checkout
       const sessionId = guestCartService.getSessionId();
 
-      // Validate guest address form
       if (
         !newAddress.value.recipientName ||
         !newAddress.value.phone ||
@@ -1753,7 +1900,7 @@ const handleCheckout = async () => {
           "Cảnh báo",
           "Vui lòng điền đầy đủ thông tin địa chỉ giao hàng"
         );
-        currentStep.value = 1; // Go back to address step
+        currentStep.value = 1;
         return;
       }
 
@@ -1768,68 +1915,130 @@ const handleCheckout = async () => {
         city: newAddress.value.city,
         ward: newAddress.value.ward || null,
         postalCode: newAddress.value.postalCode || null,
-        paymentMethod: paymentMethod.value,
+        paymentMethod:
+          paymentMethod.value === "online"
+            ? onlineProvider.value
+            : paymentMethod.value,
         customerNote: notes.value || null,
       };
 
-      const response = await axios.post(
-        API_ENDPOINTS.CART.GUEST_CHECKOUT,
-        guestCheckoutData
-      );
+      // ===============================
+      // 👉 ONLINE PAYMENT (GUEST)
+      // ===============================
+      if (paymentMethod.value === "online") {
+        if (onlineProvider.value === "vnpay") {
+          const { data } = await axios.post(
+            API_ENDPOINTS.PAYMENT.GUEST.VNPAY,
+            guestCheckoutData
+          );
 
-      notificationService.success("Thành công", "Đặt hàng thành công!");
+          if (!data?.paymentUrl) {
+            throw new Error("Không nhận được link VNPay");
+          }
 
-      // Clear guest cart
-      guestCartService.clearGuestCart();
+          window.location.href = data.paymentUrl;
+          return;
+        }
 
-      // Clear coupon after successful checkout
-      couponStore.clearCoupon();
-      logger.log("Coupon cleared after successful guest checkout");
+        if (onlineProvider.value === "momo") {
+          const { data } = await axios.post(
+            API_ENDPOINTS.PAYMENT.GUEST.MOMO,
+            guestCheckoutData
+          );
 
-      // Redirect to home or show success page
-      setTimeout(() => {
-        router.push({ name: "home" }).catch((err) => {
-          logger.error("Navigation error after guest checkout:", err);
-        });
-      }, 1500);
-    } else {
-      // Authenticated user checkout
-      const checkoutData = {
-        addressShippingId: selectedAddress.value,
-        addressBillingId: selectedAddress.value,
-        paymentMethod: paymentMethod.value,
-        couponCode: couponCode.value || null,
-        customerNote: notes.value || null,
-        pointsUsed:
-          usePoints.value && pointsToUse.value > 0 ? pointsToUse.value : null,
-      };
+          if (!data?.paymentUrl) {
+            throw new Error("Không nhận được link MoMo");
+          }
 
-      await userService.checkout(checkoutData);
-      notificationService.success("Thành công", "Đặt hàng thành công!");
-
-      // Clear user cart sau khi checkout thành công
-      try {
-        await userService.clearCart();
-        logger.log("✅ Cart đã được xóa sau khi thanh toán");
-      } catch (error) {
-        logger.warn(
-          "⚠️ Không thể xóa cart (có thể đã được xóa tự động):",
-          error
-        );
-        // Không hiển thị lỗi cho user vì backend đã xóa cart rồi
+          window.location.href = data.paymentUrl;
+          return;
+        }
       }
 
-      // Clear coupon after successful checkout
-      couponStore.clearCoupon();
-      logger.log("Coupon cleared after successful checkout");
+      // ===============================
+      // 👉 COD (GUEST)
+      // ===============================
+      await axios.post(API_ENDPOINTS.CART.GUEST_CHECKOUT, guestCheckoutData);
 
-      // Redirect to orders
+      notificationService.success("Thành công", "Đặt hàng thành công!");
+      guestCartService.clearGuestCart();
+      couponStore.clearCoupon();
+
       setTimeout(() => {
-        router.push({ name: "UserOrders" }).catch((err) => {
-          logger.error("Navigation error after checkout:", err);
-        });
+        router.push({ name: "home" });
       }, 1500);
+
+      return;
     }
+
+    // ===============================
+    // AUTHENTICATED USER
+    // ===============================
+    const checkoutData = {
+      addressShippingId: selectedAddress.value,
+      addressBillingId: selectedAddress.value,
+      paymentMethod:
+        paymentMethod.value === "online"
+          ? onlineProvider.value
+          : paymentMethod.value,
+
+      couponCode: couponCode.value || null,
+      customerNote: notes.value || null,
+      pointsUsed:
+        usePoints.value && pointsToUse.value > 0 ? pointsToUse.value : null,
+    };
+
+    // ===============================
+    // 👉 ONLINE PAYMENT (USER)
+    // ===============================
+    if (paymentMethod.value === "online") {
+      if (onlineProvider.value === "vnpay") {
+        const { data } = await axios.post(
+          API_ENDPOINTS.PAYMENT.USER.VNPAY,
+          checkoutData
+        );
+
+        if (!data?.paymentUrl) {
+          throw new Error("Không nhận được link VNPay");
+        }
+
+        window.location.href = data.paymentUrl;
+        return;
+      }
+
+      if (onlineProvider.value === "momo") {
+        const { data } = await axios.post(
+          API_ENDPOINTS.PAYMENT.USER.MOMO,
+          checkoutData
+        );
+
+        if (!data?.paymentUrl) {
+          throw new Error("Không nhận được link MoMo");
+        }
+
+        window.location.href = data.paymentUrl;
+        return;
+      }
+    }
+
+    // ===============================
+    // 👉 COD (USER)
+    // ===============================
+    await userService.checkout(checkoutData);
+
+    notificationService.success("Thành công", "Đặt hàng thành công!");
+
+    try {
+      await userService.clearCart();
+    } catch (e) {
+      console.warn("Cart đã được xóa bởi backend");
+    }
+
+    couponStore.clearCoupon();
+
+    setTimeout(() => {
+      router.push({ name: "UserOrders" });
+    }, 1500);
   } catch (error) {
     logger.error("Error during checkout:", error);
     notificationService.error(
@@ -1930,6 +2139,12 @@ onMounted(async () => {
     }
   } catch (error) {
     logger.error("Error in onMounted:", error);
+  }
+});
+
+watch(paymentMethod, (newVal) => {
+  if (newVal !== "online") {
+    onlineProvider.value = "";
   }
 });
 </script>

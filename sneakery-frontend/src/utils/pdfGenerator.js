@@ -122,8 +122,14 @@ function generateInvoiceHtml(order) {
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     thead { background: #2563eb; color: white; }
     th { padding: 14px; text-align: left; font-weight: 600; font-size: 13px; }
-    th.text-right { text-align: right; }
-    th.text-center { text-align: center; }
+    th.text-right,
+    td.text-right {
+      text-align: right;
+    }
+    th.text-center,
+    td.text-center {
+      text-align: center;
+    }
     td { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; }
     tbody tr:hover { background: #f9fafb; }
     .total-row { background: #f8f9fa; font-weight: bold; font-size: 16px; }
@@ -185,9 +191,11 @@ function generateInvoiceHtml(order) {
         <thead>
           <tr>
             <th>Sản phẩm</th>
+            <th class="text-center">SKU</th>
             <th class="text-center">Số lượng</th>
             <th class="text-right">Đơn giá</th>
             <th class="text-right">Thành tiền</th>
+            <th class="text-right">VAT (10%)</th>
           </tr>
         </thead>
         <tbody>
@@ -197,9 +205,11 @@ function generateInvoiceHtml(order) {
             const size = item.size ? `Size: ${item.size}` : ''
             const color = item.color ? `Màu: ${item.color}` : ''
             const variantInfo = [size, color].filter(Boolean).join(' | ')
+            const sku = item.sku || "N/A"
             const quantity = item.quantity || 1
             const unitPrice = item.unitPrice || item.price || 0
             const totalPrice = item.totalPrice || (unitPrice * quantity)
+            const vat = totalPrice * 0.1 || ((unitPrice * quantity) * 0.1)
             
             return `
             <tr>
@@ -208,14 +218,18 @@ function generateInvoiceHtml(order) {
                 ${brandName ? `<div class="product-brand">${brandName}</div>` : ''}
                 ${variantInfo ? `<div class="product-variant">${variantInfo}</div>` : ''}
               </td>
+              <td class="text-center" style="font-size:12px;">${sku}</td>
               <td class="text-center">${quantity}</td>
               <td class="text-right">${formatCurrency(unitPrice)}</td>
               <td class="text-right">${formatCurrency(totalPrice)}</td>
+              <td class="text-right" style="color:#d97706; font-weight:600;">
+                  ${formatCurrency(vat)}
+              </td>
             </tr>
             `
-          }).join('') : '<tr><td colspan="4" style="text-align: center; color: #666; padding: 20px;">Không có sản phẩm</td></tr>'}
+          }).join('') : '<tr><td colspan="5" style="text-align: center; color: #666; padding: 20px;">Không có sản phẩm</td></tr>'}
           <tr class="total-row">
-            <td colspan="3" style="text-align: right; font-size: 16px;">Tổng cộng:</td>
+            <td colspan="5" style="text-align: right; font-size: 16px;">Tổng cộng:</td>
             <td style="text-align: right; color: #2563eb; font-size: 18px;">${formatCurrency(order.totalAmount || 0)}</td>
           </tr>
         </tbody>

@@ -30,7 +30,7 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/api/auth/forgot-password',
     RESET_PASSWORD: '/api/auth/reset-password',
   },
-  
+
   // Products
   PRODUCTS: {
     BASE: '/api/products',
@@ -73,6 +73,19 @@ export const API_ENDPOINTS = {
     ACTIVE_COUPONS: '/api/orders/coupons/active',
     CANCEL: (id) => `/api/orders/${id}/cancel`,
   },
+
+  //Payments
+  PAYMENT: {
+    USER: {
+      VNPAY: "/api/payment/vnpay/create",
+      MOMO: "/api/payment/momo/create"
+    },
+
+    GUEST: {
+      VNPAY: "/api/guest/payment/vnpay/create",
+      MOMO: "/api/guest/payment/momo/create"
+    }
+    },
   
   // Flash Sales
   FLASH_SALES: {
