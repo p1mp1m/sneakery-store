@@ -164,5 +164,15 @@ public class AdminActivityLogController {
         activityLogRepository.deleteById(nonNullId);
         return ResponseEntity.ok("Đã xóa nhật ký hoạt động thành công");
     }
+
+    @PostMapping
+    @Transactional
+    public ResponseEntity<ActivityLogDto> createLog(@RequestBody ActivityLog activityLog) {
+        log.info("📝 Creating activity log: {}", activityLog);
+
+        ActivityLog saved = activityLogRepository.save(activityLog);
+        return ResponseEntity.ok(mapToDto(saved));
+    }
+
 }
 

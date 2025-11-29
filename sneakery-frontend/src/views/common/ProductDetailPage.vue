@@ -718,7 +718,7 @@
       </div>
 
       <!-- Related Products -->
-      <div
+      <!-- <div
         v-if="!loadingRelatedProducts && relatedProducts.length > 0"
         class="mb-12"
       >
@@ -732,10 +732,10 @@
             :product="relatedProduct"
           />
         </div>
-      </div>
+      </div> -->
 
       <!-- Loading Related Products -->
-      <div v-if="loadingRelatedProducts" class="mb-12">
+      <!-- <div v-if="loadingRelatedProducts" class="mb-12">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Sản phẩm tương tự
         </h2>
@@ -753,11 +753,11 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- Zoom Modal -->
-    <div
+    <!-- <div
       v-if="showZoom"
       class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
       @click="closeZoom"
@@ -775,7 +775,7 @@
           class="w-full h-auto rounded-xl"
         />
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 

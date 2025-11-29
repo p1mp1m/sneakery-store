@@ -837,6 +837,9 @@ const normalizeStatusForDisplay = (status) => {
     packed: "Packed",
     refunded: "Refunded",
     failed: "Failed",
+    approved: "Approved",
+    rejected: "Rejected",
+    completed: "Completed",
     return_pending: "Return_Pending",
     return_approved: "Return_Approved",
     return_rejected: "Return_Rejected",
@@ -1092,6 +1095,9 @@ const getStatusClass = (status) => {
     Refunded:
       "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
     Failed: "bg-red-200 dark:bg-red-900/40 text-red-800 dark:text-red-400",
+    Approved:
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+    Rejected: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
     Return_Pending:
       "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400",
     Return_Approved:
@@ -1119,6 +1125,8 @@ const getStatusIcon = (status) => {
     Cancelled: "cancel",
     Refunded: "undo",
     Failed: "local_shipping",
+    Approved: "check_circle_outline",
+    Rejected: "cancel",
     Return_Pending: "assignment_return",
     Return_Approved: "check_circle_outline",
     Return_Rejected: "cancel",
@@ -1139,6 +1147,8 @@ const getStatusText = (status) => {
     Cancelled: "Đã hủy",
     Refunded: "Đã hoàn tiền",
     Failed: "Giao hàng thất bại",
+    Approved: "Đã duyệt",
+    Rejected: "Đã từ chối",
     Return_Pending: "Chờ xử lý hoàn trả",
     Return_Approved: "Đã duyệt hoàn trả",
     Return_Rejected: "Từ chối hoàn trả",
@@ -1175,12 +1185,14 @@ const getReturnRequestBadgeClass = (status) => {
       "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
     approved:
       "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-    processing:
-      "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-    packed:
-      "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400",
-    refunded:
-      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+    completed:
+      "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+    // processing:
+    //   "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
+    // packed:
+    //   "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400",
+    // refunded:
+    //   "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
     rejected: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
   };
   return (
@@ -1196,9 +1208,10 @@ const getReturnRequestIcon = (status) => {
   const iconMap = {
     pending: "schedule",
     approved: "check_circle_outline",
-    processing: "autorenew",
-    packed: "inventory_2",
-    refunded: "check_circle",
+    completed: "check_circle",
+    // processing: "autorenew",
+    // packed: "inventory_2",
+    // refunded: "check_circle",
     rejected: "cancel",
   };
   return iconMap[statusLower] || "help";
@@ -1211,9 +1224,10 @@ const getReturnRequestText = (status) => {
   const statusMap = {
     pending: "Chờ xử lý",
     approved: "Đã xác nhận",
-    processing: "Đang xử lý",
-    packed: "Đã đóng gói",
-    refunded: "Đã hoàn tiền",
+    completed: "Hoàn thành",
+    // processing: "Đang xử lý",
+    // packed: "Đã đóng gói",
+    // refunded: "Đã hoàn tiền",
     rejected: "Từ chối",
   };
   return statusMap[statusLower] || status;
