@@ -2,9 +2,10 @@ package com.sneakery.store.service;
 
 import com.sneakery.store.dto.AdminReturnDto;
 import com.sneakery.store.dto.AdminReturnListDto;
-import com.sneakery.store.entity.ReturnRequest;
-import com.sneakery.store.entity.User;
+import com.sneakery.store.entity.*;
 import com.sneakery.store.exception.ApiException;
+import com.sneakery.store.repository.OrderStatusHistoryRepository;
+import com.sneakery.store.repository.ProductVariantRepository;
 import com.sneakery.store.repository.ReturnRequestRepository;
 import com.sneakery.store.repository.UserRepository;
 import com.sneakery.store.util.JsonUtil;
@@ -31,6 +32,8 @@ public class AdminReturnService {
 
     private final ReturnRequestRepository returnRequestRepository;
     private final UserRepository userRepository;
+    private final OrderStatusHistoryRepository statusHistoryRepository;
+    private final ProductVariantRepository variantRepository;
 
     /**
      * Lấy tất cả return requests với pagination và filter
@@ -88,6 +91,65 @@ public class AdminReturnService {
                 returnRequest.setApprovedAt(LocalDateTime.now());
             }
 
+            // ====== UPDATE ORDER STATUS ======
+            switch (status.toLowerCase()) {
+                case "approved":
+                    returnRequest.getOrder().setStatus("return_approved");
+                    break;
+
+                case "rejected":
+                    returnRequest.getOrder().setStatus("return_rejected");
+                    break;
+
+                case "completed":
+                    returnRequest.getOrder().setStatus("return_completed");
+                    // ====== RESTOCK VARIANTS HERE ======
+                    Order order = returnRequest.getOrder();
+
+                    if (order.getOrderDetails() == null || order.getOrderDetails().isEmpty()) {
+                        log.warn("⚠️ Order #{} không có OrderDetails nào – bỏ qua restock", order.getId());
+                    } else {
+                        log.info("🔄 Restocking inventory for Order #{} – {} items",
+                                order.getId(), order.getOrderDetails().size());
+
+                        for (OrderDetail detail : order.getOrderDetails()) {
+                            ProductVariant variant = detail.getVariant();
+
+                            if (variant == null) {
+                                log.error("⚠️ OrderDetail #{} không có ProductVariant → SKIP restock",
+                                        detail.getId());
+                                continue;
+                            }
+
+                            int qty = detail.getQuantity();
+                            int oldStock = variant.getStockQuantity();
+                            int newStock = oldStock + qty;
+
+                            variant.setStockQuantity(newStock);
+                            variantRepository.save(variant);
+
+                            log.info("🟢 Restocked Variant #{} | {} → {} (+{})",
+                                    variant.getId(), oldStock, newStock, qty);
+                        }
+                    }
+                    break;
+
+                default:
+                    throw new ApiException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: " + status);
+            }
+
+            returnRequest.getOrder().setUpdatedAt(LocalDateTime.now());
+
+            // ====== SAVE ORDER STATUS HISTORY ======
+            OrderStatusHistory history = new OrderStatusHistory();
+            history.setOrder(returnRequest.getOrder());
+            history.setStatus(returnRequest.getOrder().getStatus());
+            history.setChangedAt(LocalDateTime.now());
+            history.setNote(adminNote);
+            statusHistoryRepository.save(history);
+
+            returnRequest.getOrder().getStatusHistories().add(history);
+
             // Save entity
             returnRequestRepository.save(returnRequest);
             
@@ -129,10 +191,14 @@ public class AdminReturnService {
         returnRequest.setStatus("completed");
         returnRequest.setApprovedBy(admin);
 
+        // ====== UPDATE ORDER STATUS ======
+        returnRequest.getOrder().setStatus("return_completed");
+        returnRequest.getOrder().setUpdatedAt(LocalDateTime.now());
+
         // Save entity (changes will be flushed when transaction commits)
         // Note: We use the entity loaded with findByIdWithDetails, so all relationships are already loaded
         ReturnRequest saved = returnRequestRepository.save(returnRequest);
-        
+
         // Convert to DTO using the saved entity (relationships are already loaded from findByIdWithDetails)
         return convertToDto(saved);
     }

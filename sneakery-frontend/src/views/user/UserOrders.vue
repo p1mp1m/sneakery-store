@@ -617,6 +617,15 @@
             <i class="material-icons text-lg">check_circle</i>
             Đã nhận hàng
           </button>
+          <!-- ⭐ Nút Trả hàng / Hoàn tiền -->
+          <button
+            v-if="canRequestReturn(selectedOrder?.status)"
+            @click="openReturnModal"
+            class="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
+          >
+            <i class="material-icons text-lg">assignment_return</i>
+            Trả hàng / Hoàn tiền
+          </button>
           <!-- Nút đóng -->
           <button
             @click="showDetail = false"
@@ -828,6 +837,10 @@ const normalizeStatusForDisplay = (status) => {
     packed: "Packed",
     refunded: "Refunded",
     failed: "Failed",
+    return_pending: "Return_Pending",
+    return_approved: "Return_Approved",
+    return_rejected: "Return_Rejected",
+    return_completed: "Return_Completed",
   };
 
   return statusMap[status.toLowerCase()] || status;
@@ -1079,6 +1092,14 @@ const getStatusClass = (status) => {
     Refunded:
       "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
     Failed: "bg-red-200 dark:bg-red-900/40 text-red-800 dark:text-red-400",
+    Return_Pending:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400",
+    Return_Approved:
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+    Return_Rejected:
+      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
+    Return_Completed:
+      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
   };
   return (
     statusMap[normalizedStatus] ||
@@ -1098,6 +1119,10 @@ const getStatusIcon = (status) => {
     Cancelled: "cancel",
     Refunded: "undo",
     Failed: "local_shipping",
+    Return_Pending: "assignment_return",
+    Return_Approved: "check_circle_outline",
+    Return_Rejected: "cancel",
+    Return_Completed: "check_circle",
   };
   return iconMap[normalizedStatus] || "help";
 };
@@ -1114,6 +1139,10 @@ const getStatusText = (status) => {
     Cancelled: "Đã hủy",
     Refunded: "Đã hoàn tiền",
     Failed: "Giao hàng thất bại",
+    Return_Pending: "Chờ xử lý hoàn trả",
+    Return_Approved: "Đã duyệt hoàn trả",
+    Return_Rejected: "Từ chối hoàn trả",
+    Return_Completed: "Hoàn thành hoàn trả",
   };
   return statusMap[normalizedStatus] || normalizedStatus || status;
 };
@@ -1355,11 +1384,56 @@ const closeReturnModal = () => {
   returnFormErrors.value = {};
 };
 
+const canRequestReturn = (status) => {
+  const normalized = getNormalizedStatus(status);
+  return normalized === "Completed";
+};
+
+const openReturnModal = () => {
+  showReturnModal.value = true;
+};
+
+// const handleImageSelect = (event) => {
+//   const files = event.target.files;
+//   if (!files || files.length === 0) return;
+
+//   Array.from(files).forEach((file) => {
+//     if (file.type.startsWith("image/")) {
+//       const reader = new FileReader();
+//       reader.onload = (e) => {
+//         returnForm.value.images.push(e.target.result);
+//       };
+//       reader.readAsDataURL(file);
+//     }
+//   });
+
+//   // Reset input để có thể chọn lại cùng file
+//   event.target.value = "";
+// };
 const handleImageSelect = (event) => {
   const files = event.target.files;
   if (!files || files.length === 0) return;
 
-  Array.from(files).forEach((file) => {
+  // Số ảnh hiện có
+  const currentCount = returnForm.value.images.length;
+
+  // Nếu đã đủ 5 ảnh → chặn hoàn toàn
+  if (currentCount >= 5) {
+    notificationService.warning(
+      "Giới hạn hình ảnh",
+      "Bạn chỉ được tải lên tối đa 5 hình ảnh."
+    );
+    event.target.value = "";
+    return;
+  }
+
+  // Số ảnh có thể thêm
+  const remaining = 5 - currentCount;
+
+  // Chỉ nhận tối đa 'remaining' ảnh
+  const acceptedFiles = Array.from(files).slice(0, remaining);
+
+  acceptedFiles.forEach((file) => {
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -1369,7 +1443,15 @@ const handleImageSelect = (event) => {
     }
   });
 
-  // Reset input để có thể chọn lại cùng file
+  // Nếu user chọn nhiều hơn allowed
+  if (files.length > remaining) {
+    notificationService.warning(
+      "Giới hạn hình ảnh",
+      `Bạn chỉ có thể thêm tối đa ${remaining} hình nữa (tối đa 5 hình).`
+    );
+  }
+
+  // Reset input
   event.target.value = "";
 };
 

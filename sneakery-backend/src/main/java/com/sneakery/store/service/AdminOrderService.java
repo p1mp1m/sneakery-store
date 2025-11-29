@@ -34,6 +34,7 @@ public class AdminOrderService {
     private final LoyaltyService loyaltyService;
     private final AddressRepository addressRepository;
     private static final BigDecimal VAT_RATE = BigDecimal.valueOf(0.1); // 10%
+    private final ReturnRequestRepository returnRequestRepository;
 
     @Transactional(readOnly = true)
     public Page<AdminOrderListDto> getAllOrders(Pageable pageable) {
@@ -193,6 +194,48 @@ public class AdminOrderService {
     }
 
     private AdminOrderDetailDto convertToOrderDetailDto(Order order) {
+        // === Load Return Request (nếu có) ===
+        ReturnRequestDto returnRequestDto = null;
+
+        try {
+            ReturnRequest returnRequest = returnRequestRepository.findByOrderIdWithDetails(order.getId()).orElse(null);
+
+            if (returnRequest != null) {
+                returnRequestDto = ReturnRequestDto.builder()
+                        .id(returnRequest.getId())
+                        .orderId(order.getId())
+
+                        // User yêu cầu đổi trả
+                        .userId(returnRequest.getUser() != null ? returnRequest.getUser().getId() : null)
+                        .customerName(returnRequest.getUser() != null ? returnRequest.getUser().getFullName() : null)
+                        .customerEmail(returnRequest.getUser() != null ? returnRequest.getUser().getEmail() : null)
+
+                        // Nội dung
+                        .reason(returnRequest.getReason())
+                        .status(returnRequest.getStatus())
+
+                        // Images JSON → List<String>
+                        .images(decodeImagesJson(returnRequest.getImagesJson()))
+
+                        .adminNote(returnRequest.getAdminNote())
+
+                        // Admin duyệt
+                        .approvedByName(
+                                (returnRequest.getApprovedBy() != null)
+                                        ? returnRequest.getApprovedBy().getFullName()
+                                        : null
+                        )
+                        .approvedAt(returnRequest.getApprovedAt())
+
+                        // Timestamps
+                        .createdAt(returnRequest.getCreatedAt())
+                        .updatedAt(returnRequest.getUpdatedAt())
+                        .build();
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Cannot load ReturnRequest for order {}: {}", order.getId(), e.getMessage());
+        }
+
         List<CartItemDto> detailDtos = order.getOrderDetails().stream().map(detail -> {
             var v = detail.getVariant();
 
@@ -287,7 +330,19 @@ public class AdminOrderService {
                 .payment(paymentDto)
                 .orderDetails(detailDtos)
                 .statusHistories(historyDtos)
+                .returnRequest(returnRequestDto)
                 .build();
+    }
+
+    private List<String> decodeImagesJson(String imagesJson) {
+        if (imagesJson == null || imagesJson.isBlank()) return List.of();
+        try {
+            return new com.fasterxml.jackson.databind.ObjectMapper()
+                    .readValue(imagesJson, new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            log.error("❌ Failed to decode images JSON: {}", e.getMessage());
+            return List.of();
+        }
     }
 
     private AddressDto convertToAddressDto(Address address) {

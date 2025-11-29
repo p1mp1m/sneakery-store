@@ -171,10 +171,18 @@
             >
               <option value="">Tất cả</option>
               <option value="Pending">Chờ xử lý</option>
+              <option value="Confirmed">Đã xác nhận</option>
               <option value="Processing">Đang xử lý</option>
+              <option value="Packed">Đã đóng gói</option>
               <option value="Shipped">Đã gửi hàng</option>
               <option value="Completed">Hoàn thành</option>
               <option value="Cancelled">Đã hủy</option>
+              <option value="Cancelled">Đã hủy</option>
+              <option value="Refunded">Trả hàng/Hoàn tiền</option>
+              <option value="Return_Pending">Yêu cầu trả hàng</option>
+              <option value="Return_Approved">Đã duyệt trả hàng</option>
+              <option value="Return_Rejected">Từ chối trả hàng</option>
+              <option value="Return_Completed">Hoàn tất trả hàng</option>
             </select>
           </div>
 
@@ -247,7 +255,7 @@
 
     <!-- Bulk Action Bar for Orders -->
     <div
-      v-if="selectedOrders.length > 0"
+      v-show="selectedOrders.length > 0"
       class="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800 mb-4"
     >
       <div
@@ -294,7 +302,6 @@
 
     <!-- Orders List -->
     <div
-      v-else
       class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
       <div class="overflow-x-auto">
@@ -303,7 +310,7 @@
             class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600"
           >
             <tr>
-              <th
+              <!-- <th
                 class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-10"
               >
                 <input
@@ -312,7 +319,7 @@
                   @change="toggleSelectAllOrders"
                   class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
-              </th>
+              </th> -->
               <th
                 class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
               >
@@ -353,14 +360,14 @@
               :key="order.id"
               class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
             >
-              <td class="px-4 py-4">
+              <!-- <td class="px-4 py-4">
                 <input
                   type="checkbox"
                   :checked="selectedOrders.includes(order.id)"
                   @change="toggleSelectOrder(order.id)"
                   class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
-              </td>
+              </td> -->
               <td class="px-4 py-4">
                 <code
                   class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono text-gray-900 dark:text-gray-100"
@@ -438,7 +445,7 @@
                     <i class="material-icons text-base">print</i>
                   </button>
                   <button
-                    v-if="order.status !== 'Cancelled'"
+                    v-if="canCancelOrder(order.status)"
                     @click="handleCancelOrder(order)"
                     class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                     title="Hủy đơn hàng"
@@ -878,6 +885,12 @@ const clearOrderSelection = () => {
   bulkStatus.value = "";
 };
 
+const canCancelOrder = (status) => {
+  const normalized = getNormalizedStatusValue(status);
+  const cancellableStatuses = ["Pending", "Confirmed", "Processing"];
+  return cancellableStatuses.includes(normalized);
+};
+
 const bulkUpdateStatus = () => {
   if (!bulkStatus.value) {
     notificationService.warning("Cảnh báo", "Vui lòng chọn trạng thái!");
@@ -937,7 +950,7 @@ const fetchOrders = async () => {
   try {
     loading.value = true;
 
-    // Prepare filters for API
+    // 1) Load trang hiện tại
     const apiFilters = {
       search: filters.value.search || undefined,
       status: filters.value.status || undefined,
@@ -950,24 +963,64 @@ const fetchOrders = async () => {
       pageSize.value,
       apiFilters
     );
+
     const rawOrders = result.content || [];
 
-    // Normalize status từ backend format sang frontend format để hiển thị
-    orders.value = rawOrders.map((order) => ({
+    // Convert orders bình thường
+    let pageOrders = rawOrders.map((order) => ({
       ...order,
       status: normalizeStatusForDisplay(order.status),
-      _originalStatus: normalizeStatusForDisplay(order.status), // Store normalized status
+      _originalStatus: normalizeStatusForDisplay(order.status),
     }));
 
+    // ⭐⭐ Chỉ ưu tiên Return_Pending trên TRANG ĐẦU TIÊN ⭐⭐
+    if (currentPage.value === 0) {
+      // 2) Lấy toàn bộ Return_Pending
+      const specialOrders = await fetchReturnPendingOrders();
+
+      // 3) Ghép Return_Pending lên đầu (tránh trùng lặp)
+      const specialIds = specialOrders.map((o) => o.id);
+
+      // Lọc đơn bình thường (không phải Return_Pending)
+      pageOrders = pageOrders.filter((o) => !specialIds.includes(o.id));
+
+      // Ghép vào đầu
+      pageOrders = [...specialOrders, ...pageOrders];
+    }
+
+    // Set kết quả cuối
+    orders.value = pageOrders;
+
+    // Update tổng phần tử
     totalItems.value = result.totalElements || 0;
 
-    // Calculate stats
     calculateStats();
   } catch (error) {
     logger.error("Lỗi khi tải danh sách đơn hàng:", error);
     notificationService.apiError(error, "Không thể tải danh sách đơn hàng");
   } finally {
     loading.value = false;
+  }
+};
+
+const fetchReturnPendingOrders = async () => {
+  try {
+    const result = await adminStore.fetchOrders(
+      0,
+      1000, // lấy tối đa trong 1 lần
+      { status: "Return_Pending" }
+    );
+
+    const rawOrders = result.content || [];
+
+    return rawOrders.map((order) => ({
+      ...order,
+      status: normalizeStatusForDisplay(order.status),
+      _originalStatus: normalizeStatusForDisplay(order.status),
+    }));
+  } catch (error) {
+    console.error("Error loading Return_Pending orders", error);
+    return [];
   }
 };
 
@@ -1092,7 +1145,6 @@ const getPreviousStep = (currentStatus) => {
     return null; // Đã ở bước đầu
   }
 
-  // Completed có thể quay về Processing
   const normalized = getNormalizedStatusValue(currentStatus);
   if (normalized === "Completed") {
     return "Processing";
@@ -1103,6 +1155,20 @@ const getPreviousStep = (currentStatus) => {
 
 // Kiểm tra xem có thể chuyển đến status mới không
 const canChangeToStatus = (currentStatus, newStatus) => {
+  const normalizedCurrent = getNormalizedStatusValue(currentStatus);
+
+  // ❌ Không cho chuyển từ trạng thái Return_Pending, Return_Approved, Return_Rejected, Return_Completed
+  if (
+    [
+      "Return_Pending",
+      "Return_Approved",
+      "Return_Rejected",
+      "Return_Completed",
+    ].includes(normalizedCurrent)
+  ) {
+    return false;
+  }
+
   const currentIndex = getStatusStepIndex(currentStatus);
   const newIndex = getStatusStepIndex(newStatus);
 
@@ -1116,17 +1182,16 @@ const canChangeToStatus = (currentStatus, newStatus) => {
   }
 
   // Cho phép quay lại step trước đó
-  if (newIndex === currentIndex - 1) {
-    return true;
-  }
+  // if (newIndex === currentIndex - 1) {
+  //   return true;
+  // }
 
-  // Completed có thể quay về Processing
-  if (
-    getNormalizedStatusValue(currentStatus) === "Completed" &&
-    newStatus === "Processing"
-  ) {
-    return true;
-  }
+  // if (
+  //   getNormalizedStatusValue(currentStatus) === "Completed" &&
+  //   newStatus === "Processing"
+  // ) {
+  //   return true;
+  // }
 
   return false;
 };
@@ -1254,6 +1319,10 @@ const normalizeStatusForDisplay = (status) => {
     packed: "Packed",
     refunded: "Refunded",
     failed: "Failed",
+    return_pending: "Return_Pending",
+    return_approved: "Return_Approved",
+    return_rejected: "Return_Rejected",
+    return_completed: "Return_Completed",
   };
 
   return statusMap[status.toLowerCase()] || status;
@@ -1273,6 +1342,10 @@ const getNormalizedStatusValue = (status) => {
     "Packed",
     "Refunded",
     "Failed",
+    "Return_Pending",
+    "Return_Approved",
+    "Return_Rejected",
+    "Return_Completed",
   ];
   return validOptions.includes(normalized) ? normalized : "Pending";
 };
@@ -1296,6 +1369,14 @@ const getStatusBadgeClass = (status) => {
     Refunded:
       "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
     Failed: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    Return_Pending:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400",
+    Return_Approved:
+      "bg-lime-100 dark:bg-lime-900/30 text-lime-700 dark:text-lime-400",
+    Return_Rejected:
+      "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400",
+    Return_Completed:
+      "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400",
   };
 
   return (
@@ -1318,6 +1399,10 @@ const getStatusLabel = (status) => {
     Packed: "Đã đóng gói",
     Refunded: "Đã hoàn tiền",
     Failed: "Giao hàng thất bại",
+    Return_Pending: "Yêu cầu trả hàng",
+    Return_Approved: "Đã duyệt trả hàng",
+    Return_Rejected: "Từ chối trả hàng",
+    Return_Completed: "Hoàn tất trả hàng",
   };
   return labels[normalized] || normalized || status;
 };
@@ -1381,7 +1466,7 @@ const exportToPDF = () => {
   );
 };
 
-const handlePrintInvoice = (order) => {
+const handlePrintInvoice = async (order) => {
   if (!order) {
     notificationService.warning(
       "Cảnh báo",
@@ -1391,10 +1476,11 @@ const handlePrintInvoice = (order) => {
   }
 
   try {
-    printInvoice(order);
+    const fullOrder = await AdminService.getOrderById(order.id); // ⬅ lấy full order
+    printInvoice(fullOrder); // ⬅ in bản đầy đủ
     notificationService.success("Thành công", "Đang mở cửa sổ in hóa đơn...");
   } catch (error) {
-    logger.error("Error printing invoice:", error);
+    logger.error("Lỗi khi in hóa đơn:", error);
     notificationService.apiError(error, "Không thể in hóa đơn");
   }
 };

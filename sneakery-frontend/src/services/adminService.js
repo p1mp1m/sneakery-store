@@ -771,6 +771,53 @@ class AdminService {
     }
   }
 
+  // ===== RETURN REQUEST ACTIONS (Approve / Reject / Complete) =====
+
+/**
+ * Duyệt yêu cầu đổi trả
+ */
+async approveReturn(id, adminNote = '') {
+  try {
+    const response = await adminApi.put(`/returns/${id}/status`, {
+      status: 'approved',
+      adminNote
+    });
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
+  }
+}
+
+/**
+ * Từ chối yêu cầu đổi trả
+ */
+async rejectReturn(id, adminNote = '') {
+  try {
+    const response = await adminApi.put(`/returns/${id}/status`, {
+      status: 'rejected',
+      adminNote
+    });
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
+  }
+}
+
+/**
+ * Đánh dấu đã xử lý xong đổi / trả hàng
+ */
+async completeReturn(id, adminNote = '') {
+  try {
+    const response = await adminApi.put(`/returns/${id}/status`, {
+      status: 'completed',
+      adminNote
+    });
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
+  }
+}
+
   // ===== WARRANTY =====
   async getWarranties(page = 0, size = 10, filters = {}) {
     try {

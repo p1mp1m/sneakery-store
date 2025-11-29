@@ -235,13 +235,125 @@
                     : ORDER_STATUS_STEPS.length) -
                     1
                 "
-                class="material-icons text-gray-300 dark:text-gray-600 mx-2"
+                class="material-icons mx-2"
                 :class="{
                   'text-emerald-400': currentStepIndex > index,
                   'text-purple-400': currentStepIndex === index,
                 }"
                 >arrow_forward</i
               >
+            </div>
+          </div>
+        </div>
+        <!-- Return Status Flow -->
+        <div
+          v-if="order?.returnRequest"
+          class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mt-4"
+        >
+          <h3
+            class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
+          >
+            <i class="material-icons text-purple-600 dark:text-purple-400"
+              >undo</i
+            >
+            Trạng thái đổi / trả hàng
+          </h3>
+
+          <div
+            class="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto pb-2"
+          >
+            <div
+              v-for="(step, index) in [
+                'Return_Pending',
+                'Return_Approved',
+                'Return_Completed',
+              ]"
+              :key="step"
+              class="flex items-center flex-shrink-0"
+            >
+              <div
+                class="flex flex-col items-center gap-2"
+                :class="{ 'opacity-50': returnStepIndex < index }"
+              >
+                <!-- CIRCLE -->
+                <div
+                  class="w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold transition-all"
+                  :class="
+                    // REJECTED MODE
+                    isReturnRejected && index === 1
+                      ? 'bg-rose-600 text-white shadow-lg scale-110'
+                      : isReturnRejected && index === 2
+                      ? 'bg-rose-600 text-white shadow-lg scale-110'
+                      : // COMPLETED NORMAL
+                      returnStepIndex === index
+                      ? 'bg-purple-500 text-white shadow-lg scale-110'
+                      : returnStepIndex > index
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                  "
+                >
+                  <!-- REJECTED ICON -->
+                  <i
+                    v-if="isReturnRejected && index >= 1"
+                    class="material-icons text-base"
+                  >
+                    cancel
+                  </i>
+
+                  <!-- DONE ICON -->
+                  <i
+                    v-else-if="returnStepIndex > index"
+                    class="material-icons text-base"
+                  >
+                    check
+                  </i>
+
+                  <!-- NUMBER -->
+                  <span v-else>{{ index + 1 }}</span>
+                </div>
+
+                <!-- LABEL -->
+                <span
+                  class="text-xs font-medium text-center whitespace-nowrap"
+                  :class="
+                    isReturnRejected && index >= 1
+                      ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                      : returnStepIndex === index
+                      ? 'text-purple-600 dark:text-purple-400 font-semibold'
+                      : returnStepIndex > index
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-gray-500 dark:text-gray-400'
+                  "
+                >
+                  {{
+                    index === 0
+                      ? "Chờ xử lý"
+                      : index === 1
+                      ? isReturnRejected
+                        ? "Đã từ chối"
+                        : "Đã duyệt"
+                      : isReturnRejected
+                      ? "Kết thúc (Từ chối)"
+                      : "Hoàn tất"
+                  }}
+                </span>
+              </div>
+
+              <!-- ARROW -->
+              <i
+                v-if="index < 2"
+                class="material-icons mx-2"
+                :class="{
+                  'text-emerald-400':
+                    returnStepIndex > index && !isReturnRejected,
+                  'text-rose-400': isReturnRejected && index >= 0,
+                  'text-purple-400':
+                    returnStepIndex === index && !isReturnRejected,
+                  'text-gray-300 dark:text-gray-600': returnStepIndex < index,
+                }"
+              >
+                arrow_forward
+              </i>
             </div>
           </div>
         </div>
@@ -548,6 +660,150 @@
           </div>
         </div>
       </div>
+      <!-- Return Request -->
+      <div
+        v-if="order.returnRequest"
+        class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+      >
+        <h3
+          class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400">
+            undo
+          </i>
+          Yêu cầu đổi / trả hàng
+        </h3>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Left -->
+          <div class="space-y-4">
+            <div>
+              <span class="text-sm text-gray-600 dark:text-gray-400"
+                >Người yêu cầu:</span
+              >
+              <p
+                class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+              >
+                {{ order.returnRequest.customerName }}
+              </p>
+            </div>
+
+            <div>
+              <span class="text-sm text-gray-600 dark:text-gray-400"
+                >Email:</span
+              >
+              <p
+                class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+              >
+                {{ order.returnRequest.customerEmail }}
+              </p>
+            </div>
+
+            <div>
+              <span class="text-sm text-gray-600 dark:text-gray-400"
+                >Ngày gửi:</span
+              >
+              <p
+                class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+              >
+                {{ formatDateTime(order.returnRequest.createdAt) }}
+              </p>
+            </div>
+
+            <div>
+              <span class="text-sm text-gray-600 dark:text-gray-400"
+                >Trạng thái:</span
+              >
+              <p
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium mt-1 rounded-full"
+                :class="getStatusBadgeClass(order.returnRequest.status)"
+              >
+                {{ getStatusLabel(order.returnRequest.status) }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Right -->
+          <div>
+            <span class="text-sm text-gray-600 dark:text-gray-400">Lý do:</span>
+            <p
+              class="text-base whitespace-pre-line font-medium text-gray-900 dark:text-gray-100 mt-1 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md"
+            >
+              {{ order.returnRequest.reason }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Images -->
+        <div class="mt-6">
+          <span class="text-sm text-gray-600 dark:text-gray-400"
+            >Hình ảnh đính kèm:</span
+          >
+
+          <div
+            v-if="
+              order.returnRequest.images &&
+              order.returnRequest.images.length > 0
+            "
+            class="flex gap-3 flex-wrap mt-3"
+          >
+            <img
+              v-for="(img, i) in order.returnRequest.images"
+              :key="i"
+              :src="img"
+              class="w-32 h-32 object-cover rounded-lg cursor-pointer border border-gray-200 dark:border-gray-700 hover:scale-105 transition-all"
+              @click="openImagePreview(img)"
+            />
+          </div>
+
+          <p v-else class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Không có hình ảnh
+          </p>
+        </div>
+
+        <!-- Admin Note -->
+        <div v-if="order.returnRequest.adminNote" class="mt-6">
+          <span class="text-sm text-gray-600 dark:text-gray-400"
+            >Ghi chú của admin:</span
+          >
+          <p
+            class="text-base mt-1 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md"
+          >
+            {{ order.returnRequest.adminNote }}
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-6 flex gap-3">
+          <button
+            v-if="order.returnRequest.status === 'pending'"
+            @click="approveReturn(order.returnRequest.id)"
+            class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center gap-2"
+          >
+            <i class="material-icons text-base">check_circle</i>
+            Duyệt yêu cầu
+          </button>
+
+          <button
+            v-if="order.returnRequest.status === 'pending'"
+            @click="rejectReturn(order.returnRequest.id)"
+            class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center gap-2"
+          >
+            <i class="material-icons text-base">cancel</i>
+            Từ chối yêu cầu
+          </button>
+
+          <button
+            v-if="order.returnRequest.status === 'approved'"
+            @click="markReturnCompleted(order.returnRequest.id)"
+            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2"
+          >
+            <i class="material-icons text-base">check</i>
+            Hoàn tất xử lý
+          </button>
+        </div>
+      </div>
 
       <!-- Status History -->
       <div
@@ -623,6 +879,17 @@
       @cancel="handleCancelStatusChange"
     />
   </div>
+  <!-- Image Preview Modal -->
+  <div
+    v-if="previewImage"
+    class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+    @click="previewImage = null"
+  >
+    <img
+      :src="previewImage"
+      class="max-w-[90%] max-h-[90%] rounded-lg shadow-lg"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -682,8 +949,49 @@ const normalizeStatusForDisplay = (status) => {
     packed: "Packed",
     refunded: "Refunded",
     failed: "Failed",
+    rejected: "Rejected",
+    approved: "Approved",
+    completed: "Completed",
+    return_pending: "Return_Pending",
+    return_approved: "Return_Approved",
+    return_rejected: "Return_Rejected",
+    return_completed: "Return_Completed",
   };
   return statusMap[status.toLowerCase()] || status;
+};
+
+const previewImage = ref(null);
+const openImagePreview = (img) => {
+  previewImage.value = img;
+};
+const approveReturn = async (returnId) => {
+  try {
+    const res = await AdminService.approveReturn(returnId);
+    notificationService.success("Đã duyệt yêu cầu");
+    fetchOrderDetail();
+  } catch (err) {
+    notificationService.apiError(err, "Không thể duyệt yêu cầu");
+  }
+};
+
+const rejectReturn = async (returnId) => {
+  try {
+    const res = await AdminService.rejectReturn(returnId);
+    notificationService.success("Đã từ chối yêu cầu");
+    fetchOrderDetail();
+  } catch (err) {
+    notificationService.apiError(err, "Không thể từ chối yêu cầu");
+  }
+};
+
+const markReturnCompleted = async (returnId) => {
+  try {
+    const res = await AdminService.completeReturn(returnId);
+    notificationService.success("Đã hoàn tất xử lý đổi trả");
+    fetchOrderDetail();
+  } catch (err) {
+    notificationService.apiError(err, "Không thể hoàn tất xử lý");
+  }
 };
 
 const getNormalizedStatusValue = (status) => {
@@ -708,6 +1016,10 @@ const getNormalizedStatusValue = (status) => {
     "Packed",
     "Refunded",
     "Failed",
+    "Return_Pending",
+    "Return_Approved",
+    "Return_Rejected",
+    "Return_Completed",
   ];
   return validOptions.includes(normalized) ? normalized : "Pending";
 };
@@ -959,6 +1271,12 @@ const getStatusLabel = (status) => {
     Packed: "Đã đóng gói",
     Refunded: "Đã hoàn tiền",
     Failed: "Giao hàng thất bại",
+    Rejected: "Đã từ chối",
+    Approved: "Đã duyệt",
+    Return_Pending: "Chờ xử lý trả hàng",
+    Return_Approved: "Yêu cầu đổi trả đã được duyệt",
+    Return_Rejected: "Yêu cầu đổi trả đã bị từ chối",
+    Return_Completed: "Đã hoàn tất đổi trả",
   };
   return labels[normalized] || normalized || status;
 };
@@ -981,7 +1299,18 @@ const getStatusBadgeClass = (status) => {
       "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400",
     Refunded:
       "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+    Rejected: "bg-red-200 text-red-800 dark:bg-red-900/40 dark:text-red-400",
+    Approved:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
     Failed: "bg-rose-200 text-rose-800 dark:bg-rose-900/40 dark:text-rose-400",
+    Return_Pending:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    Return_Approved:
+      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+    Return_Rejected:
+      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    Return_Completed:
+      "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400",
   };
   return (
     classMap[normalized] ||
@@ -1045,6 +1374,22 @@ const getPaymentStatusClass = (status) => {
     "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
   );
 };
+
+const returnStepIndex = computed(() => {
+  if (!order.value?.returnRequest) return -1;
+  const st = order.value.returnRequest.status.toLowerCase();
+
+  if (st === "pending") return 0;
+  if (st === "approved") return 1;
+  if (st === "rejected") return 1; // same step index but with reject styles
+  if (st === "completed") return 2;
+
+  return 0;
+});
+
+const isReturnRejected = computed(() => {
+  return order.value?.returnRequest?.status?.toLowerCase() === "rejected";
+});
 
 const canMarkDeliveryFailed = (status) => {
   const normalized = getNormalizedStatusValue(status);

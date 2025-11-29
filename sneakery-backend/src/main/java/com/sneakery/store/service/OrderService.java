@@ -859,7 +859,17 @@ public class OrderService {
                     : null) // Convert images list to JSON, or null if empty
                 .adminNote(null) // Admin note sẽ được set sau khi admin duyệt
                 .build();
-        
+        // 🔥 6. CẬP NHẬT ORDER STATUS
+        order.setStatus("return_pending");
+        orderRepository.save(order);
+
+        // 🔥 7. GHI LỊCH SỬ TRẠNG THÁI
+        OrderStatusHistory history = new OrderStatusHistory();
+        history.setOrder(order);
+        history.setStatus("return_pending");
+        history.setChangedAt(LocalDateTime.now());
+        statusHistoryRepository.save(history);
+        order.getStatusHistories().add(history);
         // 6. Lưu ReturnRequest
         @SuppressWarnings("null")
         ReturnRequest savedReturnRequest = returnRequestRepository.save(returnRequest);
