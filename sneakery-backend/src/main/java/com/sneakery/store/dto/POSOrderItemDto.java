@@ -27,8 +27,8 @@ public class POSOrderItemDto {
     @Min(value = 1, message = "Số lượng phải lớn hơn 0")
     private Integer quantity;
     
-    @NotNull(message = "Giá đơn vị không được để trống")
-    @Min(value = 0, message = "Giá đơn vị phải >= 0")
-    private BigDecimal unitPrice;
+//    @NotNull(message = "Giá đơn vị không được để trống")
+//    @Min(value = 0, message = "Giá đơn vị phải >= 0")
+//    private BigDecimal unitPrice;
 }
 

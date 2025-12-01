@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -105,47 +106,47 @@ public class LoyaltyService {
     @Transactional
     public BigDecimal redeemPoints(Long userId, int pointsToUse, Order order) {
         log.info("🎁 Redeeming {} points for user {}", pointsToUse, userId);
-        
+
         // Validate user
         User user = userRepository.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User không tồn tại"));
-        
+
         // Check balance
         int currentBalance = getUserPointsBalance(userId);
-        
         if (pointsToUse > currentBalance) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, 
-                String.format("Không đủ điểm. Số dư: %d, yêu cầu: %d", currentBalance, pointsToUse));
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    String.format("Không đủ điểm. Số dư: %d, yêu cầu: %d", currentBalance, pointsToUse));
         }
-        
+
         if (pointsToUse <= 0) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Số điểm phải lớn hơn 0");
         }
-        
-        // Tính discount amount
+
+        // Convert to discount
         BigDecimal discountAmount = BigDecimal.valueOf(pointsToUse * VND_PER_POINT);
-        
-        // Validate không vượt quá total amount
-        if (discountAmount.compareTo(order.getTotalAmount()) > 0) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Số điểm sử dụng vượt quá giá trị đơn hàng");
-        }
-        
-        // Tạo redemption record
+
+        // Tạo record REDEEM chuẩn DB CHECK
         LoyaltyPoint redemption = new LoyaltyPoint();
         redemption.setUser(user);
-        redemption.setPoints(pointsToUse);
+
+        // ⭐ DB CHECK: redeem phải là điểm âm
+        redemption.setPoints(-pointsToUse);
+
         redemption.setTransactionType("redeem");
         redemption.setRedeemedInOrder(order);
-        redemption.setDescription(String.format("Đổi điểm cho đơn hàng %s", order.getOrderNumber()));
-        
+        redemption.setDescription("Đổi điểm cho đơn hàng " + order.getOrderNumber());
+
+        // ⭐ DB CHECK: redeem phải expiresAt = NULL
+        redemption.setExpiresAt(null);
+
         loyaltyPointRepository.save(redemption);
-        
+
         // Update order
         order.setPointsUsed(pointsToUse);
-        
-        log.info("✅ User {} redeemed {} points = {} VND discount", 
-            userId, pointsToUse, discountAmount);
-        
+
+        log.info("✅ User {} redeemed {} points = {} VND discount",
+                userId, pointsToUse, discountAmount);
+
         return discountAmount;
     }
 
@@ -169,6 +170,16 @@ public class LoyaltyService {
         loyaltyPointRepository.save(bonus);
         
         log.info("✅ Awarded {} bonus points to user {}", points, userId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void redeemPointsInNewTx(Long userId, int pointsToUse, Order order) {
+        redeemPoints(userId, pointsToUse, order);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void earnPointsInNewTx(Order order) {
+        earnPointsFromOrder(order);
     }
 
     /**

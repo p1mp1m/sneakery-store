@@ -618,18 +618,71 @@
               </button>
             </div>
           </div>
+          <!-- Loyalty Points Section -->
+          <div
+            v-if="selectedCustomer && selectedCustomerLoyaltyPoints !== null"
+            class="py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0"
+          >
+            <label
+              class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5"
+            >
+              Sử dụng điểm thưởng
+            </label>
+
+            <div class="flex items-center gap-2">
+              <input
+                type="number"
+                v-model.number="loyaltyPointsToUse"
+                @input="
+                  handleLoyaltyPointsInput();
+                  applyLoyaltyPoints();
+                "
+                class="w-32 px-3 py-1.5 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg text-xs text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                :max="selectedCustomerLoyaltyPoints"
+                min="0"
+                placeholder="0"
+              />
+
+              <!-- Button: use max points -->
+              <button
+                @click="useMaxLoyaltyPoints"
+                class="px-4 py-1.5 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all text-xs font-semibold shadow-md hover:shadow-xl"
+              >
+                Tối đa
+              </button>
+            </div>
+
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Điểm khả dụng:
+              <span class="font-semibold text-purple-600 dark:text-purple-400">
+                {{ selectedCustomerLoyaltyPoints }}
+              </span>
+              – Mỗi 1 điểm = 1.000₫
+            </p>
+
+            <p
+              v-if="loyaltyDiscountAmount > 0"
+              class="text-xs text-green-600 dark:text-green-400 mt-1"
+            >
+              Đã áp dụng: -{{ formatCurrency(loyaltyDiscountAmount) }}
+            </p>
+          </div>
+
           <!-- Cart Summary with Premium Design -->
           <div
             class="space-y-1.5 py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0"
           >
+            <!-- SUBTOTAL -->
             <div class="flex items-center justify-between text-xs">
               <span class="text-gray-600 dark:text-gray-400 font-medium"
                 >Tạm tính:</span
               >
-              <span class="text-gray-900 dark:text-gray-100 font-semibold">{{
-                formatCurrency(subtotal)
-              }}</span>
+              <span class="text-gray-900 dark:text-gray-100 font-semibold">
+                {{ formatCurrency(subtotal) }}
+              </span>
             </div>
+
+            <!-- COUPON DISCOUNT -->
             <div
               v-if="discountAmount > 0"
               class="flex items-center justify-between text-xs"
@@ -637,19 +690,33 @@
               <span class="text-gray-600 dark:text-gray-400 font-medium"
                 >Giảm giá:</span
               >
-              <span class="text-red-600 dark:text-red-400 font-semibold"
-                >-{{ formatCurrency(discountAmount) }}</span
-              >
+              <span class="text-red-600 dark:text-red-400 font-semibold">
+                -{{ formatCurrency(discountAmount) }}
+              </span>
             </div>
+
+            <!-- LOYALTY POINT DISCOUNT -->
+            <div
+              v-if="loyaltyDiscountAmount > 0"
+              class="flex items-center justify-between text-xs"
+            >
+              <span class="text-gray-600 dark:text-gray-400 font-medium">
+                Điểm thưởng:
+              </span>
+              <span class="text-green-600 dark:text-green-400 font-semibold">
+                -{{ formatCurrency(loyaltyDiscountAmount) }}
+              </span>
+            </div>
+
             <!-- VAT -->
             <div class="flex items-center justify-between text-sm">
-              <span class="text-gray-600 dark:text-gray-400"> VAT (10%): </span>
+              <span class="text-gray-600 dark:text-gray-400">VAT (10%):</span>
               <span class="font-semibold text-blue-600 dark:text-blue-400">
                 {{ formatCurrency(cartVat) }}
               </span>
             </div>
 
-            <!-- TOTAL -->
+            <!-- GRAND TOTAL -->
             <div
               class="flex items-center justify-between pt-1.5 border-t border-gray-200 dark:border-gray-700"
             >
@@ -663,7 +730,6 @@
               </span>
             </div>
           </div>
-
           <!-- Payment Section with Premium Design -->
           <div
             class="py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0"
@@ -764,7 +830,7 @@
       <div
         v-if="showReceipt"
         class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-        @click.self="closeReceiptModal"
+        @click.self="hideReceiptOnly"
       >
         <div
           class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700 transform transition-all flex flex-col"
@@ -915,26 +981,19 @@
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600 dark:text-gray-400">Tạm tính:</span>
                 <span class="font-semibold text-gray-900 dark:text-gray-100">
-                  <!-- {{ formatCurrency(getReceiptSubTotal()) }} -->
                   {{ formatCurrency(currentReceipt?.subtotal || 0) }}
                 </span>
               </div>
 
               <!-- Discount -->
-              <div
-                v-if="
-                  currentReceipt?.discountAmount &&
-                  currentReceipt.discountAmount > 0
-                "
-                class="space-y-1"
-              >
+              <div v-if="currentReceipt?.discountAmount > 0" class="space-y-1">
                 <div
                   v-if="currentReceipt?.couponCode"
                   class="flex items-center justify-between text-xs"
                 >
-                  <span class="text-gray-500 dark:text-gray-400">
-                    Mã giảm giá:
-                  </span>
+                  <span class="text-gray-500 dark:text-gray-400"
+                    >Mã giảm giá:</span
+                  >
                   <span
                     class="font-semibold text-purple-600 dark:text-purple-400"
                   >
@@ -943,31 +1002,41 @@
                 </div>
 
                 <div class="flex items-center justify-between text-sm">
-                  <span class="text-gray-600 dark:text-gray-400">
-                    Giảm giá:
-                  </span>
+                  <span class="text-gray-600 dark:text-gray-400"
+                    >Giảm giá:</span
+                  >
                   <span class="font-semibold text-red-600 dark:text-red-400">
                     -{{ formatCurrency(currentReceipt.discountAmount) }}
                   </span>
                 </div>
               </div>
 
+              <!-- Loyalty -->
+              <div
+                v-if="currentReceipt?.loyaltyDiscountAmount > 0"
+                class="flex items-center justify-between text-sm"
+              >
+                <span class="text-gray-600 dark:text-gray-400"
+                  >Điểm thưởng:</span
+                >
+                <span class="font-semibold text-green-600 dark:text-green-400">
+                  -{{ formatCurrency(currentReceipt.loyaltyDiscountAmount) }}
+                </span>
+              </div>
+
               <!-- VAT -->
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">
-                  VAT (10%):
-                </span>
+                <span class="text-gray-600 dark:text-gray-400">VAT (10%):</span>
                 <span class="font-semibold text-blue-600 dark:text-blue-400">
-                  <!-- {{ formatCurrency(getReceiptVat()) }} -->
                   {{ formatCurrency(currentReceipt?.vatAmount || 0) }}
                 </span>
               </div>
 
               <!-- Payment method -->
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">
-                  Phương thức:
-                </span>
+                <span class="text-gray-600 dark:text-gray-400"
+                  >Phương thức:</span
+                >
                 <span class="font-semibold text-gray-900 dark:text-gray-100">
                   {{
                     getPaymentMethodLabel(
@@ -982,15 +1051,12 @@
               <div
                 class="flex items-center justify-between pt-2 border-t-2 border-gray-300 dark:border-gray-600"
               >
-                <span
-                  class="text-lg font-bold text-gray-900 dark:text-gray-100"
+                <span class="text-lg font-bold text-gray-900 dark:text-gray-100"
+                  >TỔNG CỘNG:</span
                 >
-                  TỔNG CỘNG:
-                </span>
                 <span
                   class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
                 >
-                  <!-- {{ formatCurrency(getReceiptGrandTotal()) }} -->
                   {{ formatCurrency(currentReceipt?.totalAmount || 0) }}
                 </span>
               </div>
@@ -1784,6 +1850,9 @@ const hoverProduct = ref(null);
 const hoverImage = (product) => hoverProduct.value === product.id;
 const showingAll = ref(false);
 
+const loyaltyPointsToUse = ref(0);
+const loyaltyDiscountAmount = ref(0);
+
 // Pagination state
 // ⭐ Phân trang POS
 const pageIndex = ref(0);
@@ -1891,14 +1960,44 @@ const hasMoreProducts = computed(() => !noMoreProducts.value);
 //   );
 // });
 
+// const VAT_RATE = 0.1;
+
+// const cartVat = computed(() => {
+//   return Math.round(subtotal.value * VAT_RATE);
+// });
+
+// // const cartGrandTotal = computed(() => {
+// //   return subtotal.value - discountAmount.value + cartVat.value;
+// // });
+// const cartGrandTotal = computed(() => {
+//   return (
+//     subtotal.value -
+//     discountAmount.value -
+//     loyaltyDiscountAmount.value +
+//     cartVat.value
+//   );
+// });
 const VAT_RATE = 0.1;
 
-const cartVat = computed(() => {
-  return Math.round(subtotal.value * VAT_RATE);
+// Số tiền chịu thuế sau khi trừ mã giảm giá + điểm thưởng
+const taxableAmount = computed(() => {
+  const base =
+    subtotal.value -
+    (discountAmount.value || 0) -
+    (loyaltyDiscountAmount.value || 0);
+
+  // Không để âm
+  return base > 0 ? base : 0;
 });
 
+// VAT = 10% của phần tiền chịu thuế
+const cartVat = computed(() => {
+  return Math.round(taxableAmount.value * VAT_RATE);
+});
+
+// Tổng cộng = tiền chịu thuế + VAT
 const cartGrandTotal = computed(() => {
-  return subtotal.value - discountAmount.value + cartVat.value;
+  return taxableAmount.value + cartVat.value;
 });
 
 // Methods
@@ -2016,22 +2115,73 @@ const loadMore = async () => {
   }
 };
 
+const useMaxLoyaltyPoints = () => {
+  loyaltyPointsToUse.value = selectedCustomerLoyaltyPoints.value || 0;
+  applyLoyaltyPoints();
+};
+
+const handleLoyaltyPointsInput = () => {
+  const available = selectedCustomerLoyaltyPoints.value || 0;
+
+  if (loyaltyPointsToUse.value < 0) {
+    loyaltyPointsToUse.value = 0;
+  }
+  if (loyaltyPointsToUse.value > available) {
+    loyaltyPointsToUse.value = available;
+  }
+};
+
+const applyLoyaltyPoints = () => {
+  const available = selectedCustomerLoyaltyPoints.value || 0;
+  const input = loyaltyPointsToUse.value || 0;
+
+  if (input <= 0) {
+    loyaltyDiscountAmount.value = 0;
+    return;
+  }
+
+  let discount = input * 1000;
+
+  // Không cho vượt quá subtotal sau mã giảm giá
+  const maxDiscount = subtotal.value - discountAmount.value;
+  if (discount > maxDiscount) {
+    discount = maxDiscount;
+    loyaltyPointsToUse.value = Math.floor(discount / 1000);
+  }
+
+  // Không cho vượt quá điểm hiện có
+  if (loyaltyPointsToUse.value > available) {
+    loyaltyPointsToUse.value = available;
+    discount = available * 1000;
+  }
+
+  loyaltyDiscountAmount.value = discount;
+};
+
 const openPreviewReceipt = () => {
   if (cartItems.value.length === 0) return;
 
-  // 1. Tạm tính
-  const previewSubtotal = cartItems.value.reduce((sum, item) => {
-    return sum + item.unitPrice * item.quantity;
-  }, 0);
+  // === 1. Subtotal ===
+  const previewSubtotal = cartItems.value.reduce(
+    (sum, item) => sum + item.unitPrice * item.quantity,
+    0
+  );
 
-  // 2. VAT 10%
-  const previewVat = Math.round(previewSubtotal * 0.1);
+  // === 2. Giảm giá (coupon + loyalty) ===
+  const couponDiscount = discountAmount.value || 0;
+  const loyaltyDiscount = loyaltyDiscountAmount.value || 0;
 
-  // 3. Tổng cuối
-  const previewGrandTotal =
-    previewSubtotal + previewVat - (discountAmount.value || 0);
+  // === 3. Tiền chịu VAT ===
+  let taxable = previewSubtotal - couponDiscount - loyaltyDiscount;
+  if (taxable < 0) taxable = 0;
 
-  // 4. Gán dữ liệu vào receipt preview
+  // === 4. VAT 10% ===
+  const previewVat = Math.round(taxable * VAT_RATE);
+
+  // === 5. Tổng cuối ===
+  const previewGrandTotal = taxable + previewVat;
+
+  // === 6. Build dữ liệu hóa đơn ===
   currentReceipt.value = {
     id: "PREVIEW",
     orderNumber: "PREVIEW",
@@ -2040,6 +2190,9 @@ const openPreviewReceipt = () => {
     customerId: selectedCustomer.value?.id || null,
     customerName: selectedCustomer.value?.fullName || null,
     customerEmail: selectedCustomer.value?.email || null,
+
+    loyaltyPointsUsed: loyaltyPointsToUse.value || 0,
+    loyaltyDiscountAmount: loyaltyDiscount,
 
     paymentMethod: paymentMethod.value.toUpperCase(),
 
@@ -2054,8 +2207,9 @@ const openPreviewReceipt = () => {
     })),
 
     subtotal: previewSubtotal,
+    discountAmount: couponDiscount,
+    loyaltyDiscountAmount: loyaltyDiscount,
     vatAmount: previewVat,
-    discountAmount: discountAmount.value || 0,
     couponCode: discountCode.value || null,
     totalAmount: previewGrandTotal,
   };
@@ -2072,44 +2226,134 @@ const confirmAndCreateOrder = async () => {
   try {
     processing.value = true;
 
+    // === 1. SUBTOTAL ===
+    const subtotal = cartItems.value.reduce(
+      (sum, item) => sum + item.unitPrice * item.quantity,
+      0
+    );
+
+    // === 2. DISCOUNTS ===
+    const couponDiscount = discountAmount.value || 0;
+    const loyaltyDiscount = loyaltyDiscountAmount.value || 0;
+
+    // === 3. TIỀN CHỊU THUẾ ===
+    let taxable = subtotal - couponDiscount - loyaltyDiscount;
+    if (taxable < 0) taxable = 0;
+
+    // === 4. VAT ===
+    const vatAmount = Math.round(taxable * VAT_RATE);
+
+    // === 5. TỔNG THANH TOÁN ===
+    const grandTotal = taxable + vatAmount;
+
+    // === 6. Build order data gửi backend ===
+    // const orderData = {
+    //   items: cartItems.value.map((item) => ({
+    //     productId: item.id,
+    //     variantId: item.variantId,
+    //     quantity: item.quantity,
+    //     unitPrice: item.unitPrice,
+    //     sku: item.sku,
+    //   })),
+
+    //   customerId: selectedCustomer.value?.id || null,
+
+    //   discountCode: discountCode.value || null,
+    //   discountAmount: couponDiscount,
+
+    //   pointsUsed: loyaltyPointsToUse.value || 0,
+    //   pointsDiscount: loyaltyDiscountAmount.value || 0,
+
+    //   subtotal,
+    //   taxableAmount: taxable,
+    //   taxAmount: vatAmount,
+    //   totalAmount: grandTotal,
+
+    //   paymentMethod: paymentMethod.value,
+    //   notes: "Bán tại quầy POS",
+    // };
     const orderData = {
       items: cartItems.value.map((item) => ({
         productId: item.id,
         variantId: item.variantId,
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        sku: item.sku, // ✅ THÊM SKU
       })),
+
       customerId: selectedCustomer.value?.id || null,
+
+      // ⭐ GỬI THÊM THÔNG TIN KHÁCH HÀNG
+      customerName: selectedCustomer.value?.fullName || null,
+      customerEmail: selectedCustomer.value?.email || null,
+      customerPhone: selectedCustomer.value?.phoneNumber || null,
+
       discountCode: discountCode.value || null,
-      discountAmount: discountAmount.value,
+
+      pointsUsed: loyaltyPointsToUse.value || 0,
+
       paymentMethod: paymentMethod.value,
-      totalAmount: cartGrandTotal.value, // ✅ DÙNG GRAND TOTAL (có VAT + giảm giá)
-      notes: "Bán tại quầy POS",
+
+      customerNote: "Bán tại quầy POS",
     };
 
-    logger.info("✅ Confirm POS Order:", orderData);
+    logger.info("✅ Confirm POS Order - Final Data:", orderData);
 
+    // === 7. Gửi backend ===
     const result = await adminStore.createPOSOrder(orderData);
 
+    // === 8. Build hóa đơn sau khi backend trả về ===
     currentReceipt.value = {
       ...result,
-      vatAmount: Math.round(
-        (result.subtotal || result.totalAmount + (result.discountAmount || 0)) *
-          0.1
-      ),
+
+      // === PRICE FIELDS ===
+      subtotal: result.subtotal,
+      discountAmount: result.discountAmount || 0,
+      loyaltyDiscountAmount: result.pointsDiscount || 0,
+      vatAmount: result.taxAmount || 0,
+      totalAmount: result.totalAmount,
+
+      // CUSTOMER
+      customerName:
+        result.posCustomerName ||
+        result.addressShipping?.recipientName ||
+        "Khách vãng lai",
+
+      customerPhone:
+        result.posCustomerPhone || result.addressShipping?.phone || "",
+
+      customerEmail:
+        result.posCustomerEmail || selectedCustomer.value?.email || "",
+      customerAddress: [
+        result.addressShipping?.line1,
+        result.addressShipping?.line2,
+        result.addressShipping?.ward,
+        result.addressShipping?.district,
+        result.addressShipping?.city,
+      ]
+        .filter(Boolean)
+        .join(", "),
+
+      // === PAYMENT ===
+      paymentMethod:
+        result.payment?.paymentMethod || result.paymentMethod || "cash",
+
+      paymentAmount: result.payment?.amount || result.totalAmount || 0,
+
+      // === ITEMS ===
+      orderDetails: result.orderDetails || result.items || [],
     };
 
-    // Reset giỏ
+    // === 9. Reset giỏ hàng ===
     cartItems.value = [];
     discountCode.value = "";
     discountAmount.value = 0;
+
+    loyaltyPointsToUse.value = 0;
+    loyaltyDiscountAmount.value = 0;
     selectedCustomer.value = null;
     selectedCustomerLoyaltyPoints.value = null;
 
     localStorage.removeItem("pos_cart");
 
-    // Refresh lịch sử
     await loadSalesHistory();
 
     notificationService.success("Thành công", "Thanh toán thành công 🎉");
@@ -3453,7 +3697,19 @@ const closeReceiptModal = () => {
   selectedCustomer.value = null;
   selectedCustomerLoyaltyPoints.value = null;
 
+  // 🧹 Clear loyalty points usage
+  loyaltyPointsToUse.value = 0;
+  loyaltyDiscountAmount.value = 0;
+
+  // Nếu muốn reset badge animation, không bắt buộc
+  badgeAnimationKey.value++;
+
   localStorage.removeItem("pos_cart");
+};
+
+const hideReceiptOnly = () => {
+  showReceipt.value = false;
+  currentReceipt.value = null;
 };
 
 // Watch cartItems để tự động lưu vào localStorage

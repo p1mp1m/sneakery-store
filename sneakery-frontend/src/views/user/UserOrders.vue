@@ -414,83 +414,149 @@
           </div>
 
           <!-- Payment Info -->
+          <!-- Payment Info -->
           <div>
             <h4
               class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2"
             >
               <i class="material-icons text-purple-600 dark:text-purple-400"
-                >payment</i
+                >payments</i
               >
-              Thanh toán
+              Chi tiết thanh toán
             </h4>
+
             <div
-              v-if="selectedOrder.payment"
               class="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 space-y-4"
             >
+              <!-- Subtotal -->
               <div class="flex justify-between items-center">
-                <span
-                  class="text-gray-600 dark:text-gray-400 flex items-center gap-2"
-                >
-                  <i class="material-icons text-base">credit_card</i>
-                  Phương thức
-                </span>
-                <span class="font-medium text-gray-900 dark:text-gray-100">{{
-                  getPaymentMethodText(selectedOrder.payment.paymentMethod)
-                }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span
-                  class="text-gray-600 dark:text-gray-400 flex items-center gap-2"
-                >
-                  <i class="material-icons text-base">info</i>
-                  Trạng thái
-                </span>
-                <span
-                  :class="[
-                    'inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium',
-                    selectedOrder.payment.status === 'completed'
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                      : selectedOrder.payment.status === 'pending'
-                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
-                  ]"
-                >
-                  <i class="material-icons text-sm">{{
-                    selectedOrder.payment.status === "completed"
-                      ? "check_circle"
-                      : selectedOrder.payment.status === "pending"
-                      ? "schedule"
-                      : "error"
-                  }}</i>
-                  {{ getPaymentStatusText(selectedOrder.payment.status) }}
+                <span class="text-gray-600 dark:text-gray-400">Tạm tính</span>
+                <span class="font-semibold text-gray-900 dark:text-gray-100">
+                  {{ formatPrice(selectedOrder.subtotal || 0) }}
                 </span>
               </div>
+
+              <!-- Coupon -->
               <div
-                class="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700"
+                v-if="selectedOrder.discountAmount > 0"
+                class="flex justify-between items-center"
               >
                 <span
-                  class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+                  class="text-gray-600 dark:text-gray-400 flex items-center gap-2"
                 >
-                  <i class="material-icons text-base">attach_money</i>
+                  Mã giảm giá
+                  <span
+                    v-if="selectedOrder.couponCode"
+                    class="px-2 py-0.5 rounded text-xs font-bold bg-purple-200 text-purple-700 dark:bg-purple-800 dark:text-purple-300"
+                  >
+                    {{ selectedOrder.couponCode }}
+                  </span>
+                </span>
+                <span class="font-semibold text-red-600 dark:text-red-400">
+                  -{{ formatPrice(selectedOrder.discountAmount) }}
+                </span>
+              </div>
+
+              <!-- Loyalty Points -->
+              <div
+                v-if="selectedOrder.pointsUsed > 0"
+                class="flex justify-between items-center"
+              >
+                <span class="text-gray-600 dark:text-gray-400">
+                  Điểm thưởng ({{ selectedOrder.pointsUsed }} điểm)
+                </span>
+                <span class="font-semibold text-red-600 dark:text-red-400">
+                  -{{ formatPrice(selectedOrder.pointsDiscount || 0) }}
+                </span>
+              </div>
+
+              <!-- VAT -->
+              <div
+                v-if="selectedOrder.taxAmount > 0"
+                class="flex justify-between items-center"
+              >
+                <span class="text-gray-600 dark:text-gray-400">VAT</span>
+                <span class="font-semibold text-gray-900 dark:text-gray-100">
+                  {{ formatPrice(selectedOrder.taxAmount) }}
+                </span>
+              </div>
+
+              <!-- Shipping -->
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600 dark:text-gray-400"
+                  >Phí vận chuyển</span
+                >
+                <span class="font-semibold text-gray-900 dark:text-gray-100">
+                  {{ formatPrice(selectedOrder.shippingFee || 0) }}
+                </span>
+              </div>
+
+              <!-- Payment Divider -->
+              <hr class="border-gray-300 dark:border-gray-700" />
+
+              <!-- TOTAL -->
+              <div class="flex justify-between items-center">
+                <span
+                  class="text-lg font-semibold text-gray-900 dark:text-gray-100"
+                >
                   Tổng cộng
                 </span>
                 <span
                   class="text-2xl font-bold text-purple-600 dark:text-purple-400"
-                  >{{
-                    formatPrice(
-                      selectedOrder.totalAmount || selectedOrder.total || 0
-                    )
-                  }}</span
                 >
+                  {{ formatPrice(selectedOrder.totalAmount || 0) }}
+                </span>
               </div>
-            </div>
-            <div
-              v-else
-              class="p-5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700/50"
-            >
-              <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
-                Chưa có thông tin thanh toán
-              </p>
+
+              <!-- Payment Method -->
+              <div
+                v-if="selectedOrder.payment"
+                class="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3"
+              >
+                <div class="flex justify-between items-center">
+                  <span
+                    class="text-gray-600 dark:text-gray-400 flex items-center gap-1"
+                  >
+                    <i class="material-icons text-base">credit_card</i>
+                    Phương thức thanh toán
+                  </span>
+                  <span class="font-medium text-gray-900 dark:text-gray-100">
+                    {{
+                      getPaymentMethodText(selectedOrder.payment.paymentMethod)
+                    }}
+                  </span>
+                </div>
+
+                <div class="flex justify-between items-center">
+                  <span
+                    class="text-gray-600 dark:text-gray-400 flex items-center gap-1"
+                  >
+                    <i class="material-icons text-base">info</i>
+                    Trạng thái
+                  </span>
+                  <span
+                    :class="[
+                      'inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium',
+                      selectedOrder.payment.status === 'completed'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                        : selectedOrder.payment.status === 'pending'
+                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+                    ]"
+                  >
+                    <i class="material-icons text-sm">
+                      {{
+                        selectedOrder.payment.status === "completed"
+                          ? "check_circle"
+                          : selectedOrder.payment.status === "pending"
+                          ? "schedule"
+                          : "error"
+                      }}
+                    </i>
+                    {{ getPaymentStatusText(selectedOrder.payment.status) }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 

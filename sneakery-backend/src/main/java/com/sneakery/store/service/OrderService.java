@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -257,56 +258,60 @@ public class OrderService {
         // 9. Tính shipping fee dựa trên địa chỉ giao hàng
         BigDecimal shippingFee = calculateShippingFee(shippingAddress);
         order.setShippingFee(shippingFee);
-        
-        // 10. Tính tax amount (VAT 10% trên subtotal sau discount)
-        BigDecimal amountAfterDiscount = subtotal.subtract(discountAmount);
-        BigDecimal taxAmount = amountAfterDiscount.multiply(BigDecimal.valueOf(0.10))
-                .setScale(2, java.math.RoundingMode.HALF_UP);
-        order.setTaxAmount(taxAmount);
-        
-        // 11. Tính total amount tạm thời (trước khi trừ points)
-        BigDecimal tempTotal = amountAfterDiscount.add(shippingFee).add(taxAmount);
-        
-        // 12. Xử lý loyalty points nếu có (validate và tính discount)
-        Integer pointsUsed = requestDto.getPointsUsed() != null && requestDto.getPointsUsed() > 0 ? requestDto.getPointsUsed() : 0;
+
+        // 9. amountAfterCoupon
+        BigDecimal amountAfterCoupon = subtotal.subtract(discountAmount);
+
+// 10. loyalty points BEFORE VAT (FE logic)
+// --> Declare pointsUsed FIRST
+        Integer pointsUsed = Optional.ofNullable(requestDto.getPointsUsed())
+                .filter(p -> p > 0)
+                .orElse(0);
+
         BigDecimal pointsDiscount = BigDecimal.ZERO;
-        
+
         if (pointsUsed > 0) {
-            try {
-                // Validate balance
-                int currentBalance = loyaltyService.getUserPointsBalance(userId);
-                if (pointsUsed > currentBalance) {
-                    throw new ApiException(HttpStatus.BAD_REQUEST, 
-                        String.format("Không đủ điểm. Số dư: %d, yêu cầu: %d", currentBalance, pointsUsed));
-                }
-                
-                // Tính discount từ points (1 point = 1000 VND)
-                pointsDiscount = BigDecimal.valueOf(pointsUsed).multiply(BigDecimal.valueOf(1000));
-                
-                // Đảm bảo không giảm nhiều hơn tempTotal
-                if (pointsDiscount.compareTo(tempTotal) > 0) {
-                    pointsDiscount = tempTotal;
-                    pointsUsed = pointsDiscount.divide(BigDecimal.valueOf(1000), 0, java.math.RoundingMode.DOWN).intValue();
-                }
-                
-                order.setPointsUsed(pointsUsed);
-                tempTotal = tempTotal.subtract(pointsDiscount);
-            } catch (ApiException e) {
-                // Nếu có lỗi, throw lại để user biết
-                throw e;
-            } catch (Exception e) {
-                log.warn("Error validating points: {}", e.getMessage());
-                pointsUsed = 0;
-                order.setPointsUsed(0);
+            int currentBalance = loyaltyService.getUserPointsBalance(userId);
+
+            if (pointsUsed > currentBalance) {
+                throw new ApiException(HttpStatus.BAD_REQUEST,
+                        "Không đủ điểm thưởng");
             }
+
+            pointsDiscount = BigDecimal.valueOf(pointsUsed * 1000L);
+
+            // Không cho vượt quá amountAfterCoupon
+            if (pointsDiscount.compareTo(amountAfterCoupon) > 0) {
+                pointsDiscount = amountAfterCoupon;
+                pointsUsed = pointsDiscount
+                        .divide(BigDecimal.valueOf(1000), 0, RoundingMode.DOWN)
+                        .intValue();
+            }
+
+            order.setPointsUsed(pointsUsed);
         }
 
-        // 13. Tính final total amount (sau khi trừ points discount)
-        BigDecimal finalTotal = tempTotal;
-        if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
-            finalTotal = BigDecimal.ZERO;
-        }
+// 11. amountAfterDiscounts BEFORE VAT
+        BigDecimal amountAfterDiscounts = amountAfterCoupon.subtract(pointsDiscount);
+
+// 12. VAT 10%
+        BigDecimal taxAmount = amountAfterDiscounts
+                .multiply(BigDecimal.valueOf(0.10))
+                .setScale(2, RoundingMode.HALF_UP);
+        order.setTaxAmount(taxAmount);
+
+// 13. Shipping fee
+//        BigDecimal shippingFee = calculateShippingFee(shippingAddress);
+//        order.setShippingFee(shippingFee);
+
+// 14. Final Total
+        BigDecimal finalTotal = amountAfterDiscounts
+                .add(taxAmount)
+                .add(shippingFee)
+                .max(BigDecimal.ZERO);
+
         order.setTotalAmount(finalTotal);
+
 
         // 14. Set customer note nếu có
         if (requestDto.getCustomerNote() != null && !requestDto.getCustomerNote().trim().isEmpty()) {
@@ -328,12 +333,13 @@ public class OrderService {
         history.setChangedAt(LocalDateTime.now());
         order.getStatusHistories().add(history);
 
-        Order savedOrder = orderRepository.save(order);
-        
+//        Order savedOrder = orderRepository.save(order);
+        Order savedOrder = orderRepository.saveAndFlush(order);
+
         // 17. Redeem loyalty points sau khi order được lưu (có ID)
         if (pointsUsed > 0) {
             try {
-                loyaltyService.redeemPoints(userId, pointsUsed, savedOrder);
+                loyaltyService.redeemPointsInNewTx(userId, pointsUsed, savedOrder);
                 log.info("✅ Redeemed {} points for order {}", pointsUsed, savedOrder.getId());
             } catch (Exception e) {
                 log.error("Failed to redeem points for order {}: {}", savedOrder.getId(), e.getMessage(), e);
@@ -450,75 +456,75 @@ public class OrderService {
         BigDecimal subtotal = totalAmount;
         order.setSubtotal(subtotal);
 
-        // 8. Xử lý coupon nếu có
+        // -------------------------------------------------------------
+// 🔥 NEW LOGIC – START (Guest FE-aligned calculation)
+// -------------------------------------------------------------
+
+// 8. Áp dụng coupon
         BigDecimal discountAmount = BigDecimal.ZERO;
         Coupon coupon = null;
+
         if (requestDto.getCouponCode() != null && !requestDto.getCouponCode().trim().isEmpty()) {
             try {
                 CouponDto couponDto = couponService.validateCouponCode(requestDto.getCouponCode());
-                coupon = couponRepository.findById(Objects.requireNonNull(couponDto.getId())).orElse(null);
-                
+                coupon = couponRepository.findById(couponDto.getId()).orElse(null);
+
                 if (coupon != null) {
-                    // Tính discount amount
                     if ("percent".equalsIgnoreCase(coupon.getDiscountType())) {
-                        BigDecimal discount = subtotal.multiply(coupon.getValue()).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
-                        if (coupon.getMaxDiscountAmount() != null && discount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
+                        BigDecimal discount = subtotal.multiply(coupon.getValue())
+                                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+                        if (coupon.getMaxDiscountAmount() != null &&
+                                discount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
                             discount = coupon.getMaxDiscountAmount();
                         }
                         discountAmount = discount;
                     } else if ("fixed".equalsIgnoreCase(coupon.getDiscountType())) {
-                        discountAmount = coupon.getValue();
-                        if (discountAmount.compareTo(subtotal) > 0) {
-                            discountAmount = subtotal;
-                        }
+                        discountAmount = coupon.getValue().min(subtotal);
                     }
-                    
-                    // Kiểm tra minOrderAmount
-                    if (coupon.getMinOrderAmount() != null && subtotal.compareTo(coupon.getMinOrderAmount()) < 0) {
-                        throw new ApiException(HttpStatus.BAD_REQUEST, 
-                                String.format("Đơn hàng tối thiểu %s để áp dụng mã giảm giá", 
-                                        formatCurrency(coupon.getMinOrderAmount())));
+
+                    if (coupon.getMinOrderAmount() != null &&
+                            subtotal.compareTo(coupon.getMinOrderAmount()) < 0) {
+                        throw new ApiException(HttpStatus.BAD_REQUEST,
+                                "Đơn hàng tối thiểu " + formatCurrency(coupon.getMinOrderAmount())
+                                        + " để áp dụng mã giảm giá");
                     }
-                    
-                    // Cập nhật usesCount
-                    if (coupon.getUsesCount() == null) {
-                        coupon.setUsesCount(0);
-                    }
-                    coupon.setUsesCount(coupon.getUsesCount() + 1);
+
+                    coupon.setUsesCount(Optional.ofNullable(coupon.getUsesCount()).orElse(0) + 1);
                     couponRepository.save(coupon);
-                    
+
                     order.setCoupon(coupon);
                 }
-            } catch (ApiException e) {
-                throw e;
             } catch (Exception e) {
-                log.warn("Error applying coupon: {}", e.getMessage());
+                log.warn("Coupon error: {}", e.getMessage());
             }
         }
-        
+
         order.setDiscountAmount(discountAmount);
 
-        // 9. Tính shipping fee
+// 9. amountAfterCoupon
+        BigDecimal amountAfterCoupon = subtotal.subtract(discountAmount);
+
+// 10. Loyalty disabled for guest
+        Integer pointsUsed = 0;
+        BigDecimal pointsDiscount = BigDecimal.ZERO;
+        order.setPointsUsed(0);
+
+// 11. amountAfterDiscountsBeforeVAT
+        BigDecimal amountAfterDiscounts = amountAfterCoupon;
+
+// 12. TAX 10%
+        BigDecimal taxAmount = amountAfterDiscounts.multiply(BigDecimal.valueOf(0.10))
+                .setScale(2, RoundingMode.HALF_UP);
+        order.setTaxAmount(taxAmount);
+
+// 13. Shipping fee
         BigDecimal shippingFee = calculateShippingFee(shippingAddress);
         order.setShippingFee(shippingFee);
 
-        // 10. Tính tax amount (VAT 10% trên subtotal sau discount)
-        BigDecimal amountAfterDiscount = subtotal.subtract(discountAmount);
-        BigDecimal taxAmount = amountAfterDiscount.multiply(BigDecimal.valueOf(0.10))
-                .setScale(2, java.math.RoundingMode.HALF_UP);
-        order.setTaxAmount(taxAmount);
-
-        // 11. Tính total amount
-        BigDecimal finalTotal = amountAfterDiscount.add(shippingFee).add(taxAmount);
-        if (finalTotal.compareTo(BigDecimal.ZERO) < 0) {
-            finalTotal = BigDecimal.ZERO;
-        }
-        order.setTotalAmount(finalTotal);
-
-        // 12. Set customer note
-        if (requestDto.getCustomerNote() != null && !requestDto.getCustomerNote().trim().isEmpty()) {
-            order.setCustomerNote(requestDto.getCustomerNote());
-        }
+// 14. Final total
+        BigDecimal finalTotal = amountAfterDiscounts.add(taxAmount).add(shippingFee);
+        order.setTotalAmount(finalTotal.max(BigDecimal.ZERO));
 
         // 13. Tạo Payment
         Payment payment = new Payment();
@@ -1024,6 +1030,14 @@ public class OrderService {
                 .subtotal(order.getSubtotal())
                 .discountAmount(order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO)
                 .couponCode(couponCode)
+                .shippingFee(order.getShippingFee())      // ⬅️ NEW
+                .taxAmount(order.getTaxAmount())          // ⬅️ NEW
+                .pointsUsed(order.getPointsUsed())        // ⬅️ NEW
+                .pointsDiscount(
+                        order.getPointsUsed() != null
+                                ? BigDecimal.valueOf(order.getPointsUsed() * 1000L)
+                                : BigDecimal.ZERO
+                )                                         // ⬅️ NEW
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
                 .addressShipping(convertToAddressDto(order.getAddressShipping()))

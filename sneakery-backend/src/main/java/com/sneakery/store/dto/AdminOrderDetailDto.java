@@ -11,24 +11,39 @@ import java.util.List;
 @Builder
 public class AdminOrderDetailDto {
     private Long id;
+    private String orderNumber;
     private String status;
+
+    // 💰 Thông tin giá
+    private BigDecimal subtotal;
+    private BigDecimal discountAmount;
+    private String couponCode;
+    private BigDecimal shippingFee;
+    private BigDecimal taxAmount;
+    private Integer pointsUsed;
+    private BigDecimal pointsDiscount;
     private BigDecimal totalAmount;
+
     private LocalDateTime createdAt;
-    
-    // Thông tin khách hàng
+
+    // 👤 Customer
     private Long userId;
     private String customerName;
     private String customerEmail;
-    
-    // Địa chỉ
+
+    // 🏠 Address
     private AddressDto addressShipping;
     private AddressDto addressBilling;
-    
-    // Chi tiết
-    private PaymentDto payment;
-    private List<CartItemDto> orderDetails;
-    private List<OrderStatusHistoryDto> statusHistories;
-    @Schema(description = "Thông tin yêu cầu trả hàng (nếu có)")
-    private ReturnRequestDto returnRequest;
 
+    // 💳 Payment
+    private PaymentDto payment;
+
+    // 📦 Items
+    private List<CartItemDto> orderDetails;
+
+    // 🕒 Status history
+    private List<OrderStatusHistoryDto> statusHistories;
+
+    // 🔁 Return Request
+    private ReturnRequestDto returnRequest;
 }

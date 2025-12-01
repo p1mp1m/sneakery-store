@@ -1419,7 +1419,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const loyaltyStore = useLoyaltyStore();
 const couponStore = useCouponStore();
-const { currentBalance } = storeToRefs(loyaltyStore);
+const { balance: currentBalance } = storeToRefs(loyaltyStore);
 
 // Check if user is authenticated
 const isGuest = computed(() => !authStore.isAuthenticated);
@@ -1474,14 +1474,31 @@ const newAddress = ref({
 // Loyalty Points
 const usePoints = ref(false);
 const pointsToUse = ref(0);
+// const maxPointsUsable = computed(() => {
+//   if (!cart.value) return 0;
+//   const maxFromBalance = currentBalance.value || 0;
+//   const subTotalValue = Number(cart.value.subTotal) || 0;
+//   const maxFromOrderValue = Math.floor(
+//     (subTotalValue + Number(shippingFee.value)) / 1000
+//   ); // 1 point = 1000 VND
+//   return Math.min(maxFromBalance, maxFromOrderValue);
+// });
 const maxPointsUsable = computed(() => {
   if (!cart.value) return 0;
-  const maxFromBalance = currentBalance.value || 0;
-  const subTotalValue = Number(cart.value.subTotal) || 0;
-  const maxFromOrderValue = Math.floor(
-    (subTotalValue + Number(shippingFee.value)) / 1000
-  ); // 1 point = 1000 VND
-  return Math.min(maxFromBalance, maxFromOrderValue);
+
+  const subTotal = Number(cart.value.subTotal) || 0;
+  const coupon = Number(couponDiscountAmount.value) || 0;
+
+  // Số tiền còn lại sau giảm giá coupon
+  const amountAfterCoupon = Math.max(subTotal - coupon, 0);
+
+  // Loyalty: 1 point = 1000 VND
+  const maxByOrderValue = Math.floor(amountAfterCoupon / 1000);
+
+  // Số dư điểm hiện tại của user
+  const maxByBalance = currentBalance.value || 0;
+
+  return Math.min(maxByOrderValue, maxByBalance);
 });
 
 // Computed
@@ -1876,6 +1893,13 @@ const saveAddress = async () => {
 
 const confirmCheckout = () => {
   showConfirmOrder.value = false;
+  if (usePoints.value && pointsToUse.value > maxPointsUsable.value) {
+    notificationService.error(
+      "Lỗi điểm thưởng",
+      `Bạn chỉ có thể sử dụng tối đa ${maxPointsUsable.value.toLocaleString()} điểm.`
+    );
+    return;
+  }
   handleCheckout();
 };
 

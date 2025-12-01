@@ -519,13 +519,10 @@
                 >
                   Thành tiền
                 </th>
-                <th
-                  class="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
-                >
-                  VAT (10%)
-                </th>
               </tr>
             </thead>
+
+            <!-- BODY -->
             <tbody
               class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
             >
@@ -554,58 +551,92 @@
                     </div>
                   </div>
                 </td>
+
                 <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {{ item.sku }}
                 </td>
+
                 <td class="px-4 py-4 text-sm text-gray-900 dark:text-gray-100">
                   {{ item.size }}
                 </td>
+
                 <td class="px-4 py-4">
                   <div class="flex items-center gap-2">
                     <span
                       class="w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600"
                       :style="{ backgroundColor: getColorHex(item.color) }"
                     ></span>
-                    <span class="text-sm text-gray-900 dark:text-gray-100">{{
-                      item.color
-                    }}</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ item.color }}
+                    </span>
                   </div>
                 </td>
+
                 <td
                   class="px-4 py-4 text-right text-sm text-gray-900 dark:text-gray-100"
                 >
                   {{ item.quantity }}
                 </td>
+
                 <td
                   class="px-4 py-4 text-right text-sm text-gray-900 dark:text-gray-100"
                 >
                   {{ formatCurrency(item.unitPrice) }}
                 </td>
+
                 <td
                   class="px-4 py-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-100"
                 >
                   {{ formatCurrency(item.totalPrice) }}
                 </td>
-                <!-- VAT (10%) -->
-                <td
-                  class="px-4 py-4 text-right text-orange-600 dark:text-orange-400 font-medium"
-                >
-                  {{ formatCurrency(item.totalPrice * 0.1) }}
-                </td>
               </tr>
             </tbody>
+
+            <!-- FOOTER — ORDER TOTAL SUMMARY -->
             <tfoot class="bg-gray-50 dark:bg-gray-700/50">
               <tr>
-                <td
-                  colspan="7"
-                  class="px-4 py-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-100"
-                >
-                  Tổng cộng:
-                </td>
-                <td
-                  class="px-4 py-4 text-right text-lg font-bold text-purple-600 dark:text-purple-400"
-                >
-                  {{ formatCurrency(order.totalAmount) }}
+                <td colspan="7" class="px-4 py-2">
+                  <div
+                    class="max-w-md ml-auto space-y-1 text-sm text-gray-700 dark:text-gray-300"
+                  >
+                    <div class="flex justify-between">
+                      <span>Tạm tính:</span>
+                      <span>{{ formatCurrency(order.subtotal) }}</span>
+                    </div>
+
+                    <div
+                      v-if="order.discountAmount > 0"
+                      class="flex justify-between text-amber-600 dark:text-amber-400"
+                    >
+                      <span>Giảm giá coupon:</span>
+                      <span>- {{ formatCurrency(order.discountAmount) }}</span>
+                    </div>
+
+                    <div
+                      v-if="order.pointsUsed > 0"
+                      class="flex justify-between text-blue-600 dark:text-blue-400"
+                    >
+                      <span>Điểm thưởng ({{ order.pointsUsed }} điểm):</span>
+                      <span>- {{ formatCurrency(order.pointsDiscount) }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                      <span>Phí vận chuyển:</span>
+                      <span>{{ formatCurrency(order.shippingFee) }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                      <span>VAT:</span>
+                      <span>{{ formatCurrency(order.taxAmount) }}</span>
+                    </div>
+
+                    <div
+                      class="flex justify-between text-lg font-bold text-purple-600 dark:text-purple-400 pt-2 border-t border-gray-300 dark:border-gray-600"
+                    >
+                      <span>Tổng tiền:</span>
+                      <span>{{ formatCurrency(order.totalAmount) }}</span>
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tfoot>
@@ -626,7 +657,9 @@
           >
           Thông tin thanh toán
         </h3>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Payment Method -->
           <div>
             <span class="text-sm text-gray-600 dark:text-gray-400"
               >Phương thức:</span
@@ -637,6 +670,8 @@
               {{ getPaymentMethodLabel(order.payment.paymentMethod) }}
             </p>
           </div>
+
+          <!-- Payment Status -->
           <div>
             <span class="text-sm text-gray-600 dark:text-gray-400"
               >Trạng thái:</span
@@ -648,6 +683,20 @@
               {{ getPaymentStatusLabel(order.payment.status) }}
             </p>
           </div>
+
+          <!-- Payment Amount -->
+          <div>
+            <span class="text-sm text-gray-600 dark:text-gray-400"
+              >Số tiền thanh toán:</span
+            >
+            <p
+              class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1"
+            >
+              {{ formatCurrency(order.payment.amount) }}
+            </p>
+          </div>
+
+          <!-- Paid At -->
           <div v-if="order.payment.paidAt">
             <span class="text-sm text-gray-600 dark:text-gray-400"
               >Ngày thanh toán:</span

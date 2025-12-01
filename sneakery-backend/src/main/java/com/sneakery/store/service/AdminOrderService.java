@@ -319,19 +319,46 @@ public class AdminOrderService {
 
         return AdminOrderDetailDto.builder()
                 .id(order.getId())
+                .orderNumber(order.getOrderNumber())
                 .status(order.getStatus())
+
+                // 💰 Tiền
+                .subtotal(order.getSubtotal())
+                .discountAmount(order.getDiscountAmount())
+                .couponCode(order.getCoupon() != null ? order.getCoupon().getCode() : null)
+                .shippingFee(order.getShippingFee())
+                .taxAmount(order.getTaxAmount())
+                .pointsUsed(order.getPointsUsed())
+                .pointsDiscount(order.getPointsUsed() != null
+                        ? BigDecimal.valueOf(order.getPointsUsed() * 1000L)
+                        : BigDecimal.ZERO)
                 .totalAmount(order.getTotalAmount())
+
+                // ⏱️ thời gian
                 .createdAt(order.getCreatedAt())
+
+                // 👤 User
                 .userId(order.getUser() != null ? order.getUser().getId() : null)
                 .customerName(order.getUser() != null ? order.getUser().getFullName() : "Guest")
                 .customerEmail(order.getUser() != null ? order.getUser().getEmail() : "N/A")
+
+                // 🏠 Address
                 .addressShipping(convertToAddressDto(order.getAddressShipping()))
                 .addressBilling(convertToAddressDto(order.getAddressBilling()))
+
+                // 💳 Payment
                 .payment(paymentDto)
+
+                // 📦 Items
                 .orderDetails(detailDtos)
+
+                // 🕒 Status
                 .statusHistories(historyDtos)
+
+                // 🔁 Return request
                 .returnRequest(returnRequestDto)
                 .build();
+
     }
 
     private List<String> decodeImagesJson(String imagesJson) {
@@ -369,204 +396,237 @@ public class AdminOrderService {
     public OrderDto createPOSOrder(POSOrderRequestDto requestDto) {
         log.info("📦 Creating POS order with {} items", requestDto.getItems().size());
 
-        // 1. Generate order number: POS-YYYYMMDD-XXXX
+        // 1. Generate order number
         String orderNumber = generatePOSOrderNumber();
 
-        // 2. Lấy User nếu có customerId
+        // 2. Get customer (optional)
         User user = null;
         if (requestDto.getCustomerId() != null) {
-            user = userRepository.findById(Objects.requireNonNull(requestDto.getCustomerId()))
+            user = userRepository.findById(requestDto.getCustomerId())
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy khách hàng"));
         }
 
-        // 3. Tạo địa chỉ mặc định cho POS (hoặc null nếu không cần)
-        Address posAddress = createPOSDefaultAddress(user);
+        // 3. Create POS default address
+        Address posAddress = new Address();
 
-        // 4. Tạo Order
+        posAddress.setRecipientName(
+                requestDto.getCustomerName() != null ?
+                        requestDto.getCustomerName() :
+                        (user != null ? user.getFullName() : "Khách vãng lai")
+        );
+
+//        posAddress.setEmail(
+//                requestDto.getCustomerEmail() != null ?
+//                        requestDto.getCustomerEmail() :
+//                        (user != null ? user.getEmail() : null)
+//        );
+
+        posAddress.setPhone(
+                requestDto.getCustomerPhone() != null ?
+                        requestDto.getCustomerPhone() :
+                        (user != null ? user.getPhoneNumber() : null)
+        );
+
+        posAddress.setLine1("Cửa hàng Sneakery");
+        posAddress.setLine2("Bán tại quầy POS");
+        posAddress.setCity("Hà Nội");
+        posAddress.setDistrict("Quận Hoàn Kiếm");
+        posAddress.setWard("Phường Tràng Tiền");
+        posAddress.setPostalCode("100000");
+
+        Address savedAddress = addressRepository.save(posAddress);
+
+        // 4. Initialize order
         Order order = new Order();
         order.setUser(user);
         order.setOrderNumber(orderNumber);
-        order.setAddressShipping(posAddress);
-        order.setAddressBilling(posAddress);
+        order.setAddressShipping(savedAddress);
+        order.setAddressBilling(savedAddress);
         order.setCreatedAt(LocalDateTime.now());
-        order.setStatus("delivered"); // POS orders bán tại quầy, trạng thái delivered ngay
-        order.setShippingFee(BigDecimal.ZERO); // POS không có phí ship
-        order.setSubtotal(BigDecimal.ZERO); // Sẽ tính sau
+        order.setStatus("delivered");
+        order.setShippingFee(BigDecimal.ZERO);
+        order.setSubtotal(BigDecimal.ZERO);
 
-        // 5. Xử lý items và tính subtotal
         BigDecimal subtotal = BigDecimal.ZERO;
-        for (POSOrderItemDto itemDto : requestDto.getItems()) {
-            ProductVariant variant;
 
-            // Lấy variant
+        // 5. Handle items
+        for (POSOrderItemDto itemDto : requestDto.getItems()) {
+
+            ProductVariant variant;
             if (itemDto.getVariantId() != null) {
                 variant = variantRepository.findByIdWithDetails(itemDto.getVariantId())
                         .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,
-                                "Không tìm thấy variant với ID: " + itemDto.getVariantId()));
+                                "Không tìm thấy variant ID: " + itemDto.getVariantId()));
             } else {
-                // Nếu không có variantId, lấy variant đầu tiên của product
                 variant = variantRepository.findWithFilters(
-                        null, null, null, itemDto.getProductId(), null,
-                        org.springframework.data.domain.PageRequest.of(0, 1)).getContent().stream().findFirst()
+                                null, null, null, itemDto.getProductId(), null,
+                                org.springframework.data.domain.PageRequest.of(0, 1))
+                        .getContent().stream().findFirst()
                         .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND,
                                 "Không tìm thấy variant cho product ID: " + itemDto.getProductId()));
             }
 
-            // Kiểm tra tồn kho
+            // Stock check
             if (variant.getStockQuantity() == null || variant.getStockQuantity() < itemDto.getQuantity()) {
                 throw new ApiException(HttpStatus.BAD_REQUEST,
-                        String.format("Sản phẩm %s (Size: %s, Color: %s) không đủ hàng. Tồn kho: %d, Yêu cầu: %d",
+                        String.format("Sản phẩm %s (Size %s, Color %s) không đủ kho",
                                 variant.getProduct().getName(),
                                 variant.getSize(),
-                                variant.getColor(),
-                                variant.getStockQuantity() != null ? variant.getStockQuantity() : 0,
-                                itemDto.getQuantity()));
+                                variant.getColor()));
             }
 
-            // Giảm tồn kho
+            // Deduct stock
             int newStock = variant.getStockQuantity() - itemDto.getQuantity();
             variant.setStockQuantity(newStock);
             variantRepository.save(variant);
 
-            // Lấy giá từ database (effective price: priceSale nếu có, nếu không thì
-            // priceBase)
-            BigDecimal effectivePrice = getEffectivePrice(variant);
+            // Get price
+            BigDecimal price = getEffectivePrice(variant);
 
-            // Validate giá: Nếu giá từ frontend khác với giá database, log warning và dùng
-            // giá từ database
-            if (itemDto.getUnitPrice().compareTo(effectivePrice) != 0) {
-                log.warn("⚠️ Price mismatch for variant {}: Frontend sent {}, Database has {}. Using database price.",
-                        variant.getId(), itemDto.getUnitPrice(), effectivePrice);
-            }
-
-            // Tạo OrderDetail - LUÔN dùng giá từ database để đảm bảo tính nhất quán
+            // Create order detail
             OrderDetail detail = new OrderDetail();
             detail.setOrder(order);
             detail.setVariant(variant);
             detail.setQuantity(itemDto.getQuantity());
-            detail.setUnitPrice(effectivePrice); // Dùng giá từ database, không tin tưởng frontend
-
-            // Set các trường denormalized (lưu lại thông tin tại thời điểm mua hàng)
+            detail.setUnitPrice(price);
             detail.setProductName(variant.getProduct().getName());
-            detail.setVariantSku(variant.getSku() != null ? variant.getSku() : "");
-            detail.setSize(variant.getSize() != null ? variant.getSize() : "");
-            detail.setColor(variant.getColor() != null ? variant.getColor() : "");
+            detail.setVariantSku(variant.getSku());
+            detail.setSize(variant.getSize());
+            detail.setColor(variant.getColor());
 
-            // Tính total_price
-            BigDecimal totalPrice = effectivePrice.multiply(BigDecimal.valueOf(itemDto.getQuantity()));
+            BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(itemDto.getQuantity()));
             detail.setTotalPrice(totalPrice);
 
             order.getOrderDetails().add(detail);
+
             subtotal = subtotal.add(totalPrice);
         }
 
         order.setSubtotal(subtotal);
 
-        // 6. Xử lý coupon nếu có
+        // =============================
+        // 6. Handle COUPON (Like Client)
+        // =============================
         BigDecimal discountAmount = BigDecimal.ZERO;
         Coupon coupon = null;
-        if (requestDto.getDiscountCode() != null && !requestDto.getDiscountCode().trim().isEmpty()) {
-            try {
-                CouponDto couponDto = couponService.validateCouponCode(requestDto.getDiscountCode());
-                coupon = couponRepository.findById(Objects.requireNonNull(couponDto.getId())).orElse(null);
 
-                if (coupon != null) {
-                    // Tính discount amount
-                    if ("percent".equalsIgnoreCase(coupon.getDiscountType())) {
-                        BigDecimal discount = subtotal.multiply(coupon.getValue()).divide(BigDecimal.valueOf(100));
-                        if (coupon.getMaxDiscountAmount() != null
-                                && discount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
-                            discount = coupon.getMaxDiscountAmount();
-                        }
-                        discountAmount = discount;
-                    } else if ("fixed".equalsIgnoreCase(coupon.getDiscountType())) {
-                        discountAmount = coupon.getValue();
-                    }
+        if (requestDto.getDiscountCode() != null && !requestDto.getDiscountCode().isBlank()) {
+            CouponDto couponDto = couponService.validateCouponCode(requestDto.getDiscountCode());
+            coupon = couponRepository.findById(couponDto.getId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Coupon không tồn tại"));
 
-                    // Kiểm tra minOrderAmount
-                    if (coupon.getMinOrderAmount() != null && subtotal.compareTo(coupon.getMinOrderAmount()) < 0) {
-                        throw new ApiException(HttpStatus.BAD_REQUEST,
-                                String.format("Đơn hàng tối thiểu %s để áp dụng mã giảm giá",
-                                        formatCurrency(coupon.getMinOrderAmount())));
-                    }
-
-                    // Cập nhật usesCount
-                    if (coupon.getUsesCount() == null) {
-                        coupon.setUsesCount(0);
-                    }
-                    coupon.setUsesCount(coupon.getUsesCount() + 1);
-                    couponRepository.save(coupon);
-
-                    order.setCoupon(coupon);
+            if ("percent".equalsIgnoreCase(coupon.getDiscountType())) {
+                discountAmount = subtotal.multiply(coupon.getValue())
+                        .divide(BigDecimal.valueOf(100));
+                if (coupon.getMaxDiscountAmount() != null &&
+                        discountAmount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
+                    discountAmount = coupon.getMaxDiscountAmount();
                 }
-            } catch (ApiException e) {
-                // Re-throw ApiException để frontend xử lý
-                throw e;
-            } catch (Exception e) {
-                // Log các exception khác và tiếp tục mà không áp dụng coupon
-                log.warn("Error applying coupon: {}", e.getMessage());
+            } else {
+                discountAmount = coupon.getValue();
             }
-        }
 
-        // Nếu có discountAmount từ request, dùng nó (đã validate ở frontend)
-        if (requestDto.getDiscountAmount() != null && requestDto.getDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
-            discountAmount = requestDto.getDiscountAmount();
+            if (coupon.getMinOrderAmount() != null &&
+                    subtotal.compareTo(coupon.getMinOrderAmount()) < 0) {
+                throw new ApiException(HttpStatus.BAD_REQUEST,
+                        "Đơn hàng chưa đạt giá trị tối thiểu để dùng mã giảm giá");
+            }
+
+            order.setCoupon(coupon);
+
+            // Update uses
+            coupon.setUsesCount((coupon.getUsesCount() == null ? 0 : coupon.getUsesCount()) + 1);
+            couponRepository.save(coupon);
         }
 
         order.setDiscountAmount(discountAmount);
 
-        // 7. Tính VAT (10%) - KHÔNG LƯU VÀO DB
-        BigDecimal vatAmount = subtotal.multiply(VAT_RATE);
+        // =============================
+        // 7. Handle LOYALTY POINTS
+        // =============================
+        int pointsUsed = requestDto.getPointsUsed() != null ? requestDto.getPointsUsed() : 0;
+        BigDecimal pointsDiscount = BigDecimal.ZERO;
 
-        // 8. Tính totalAmount = subtotal - discount + VAT
-        BigDecimal totalAmount = subtotal
-                .subtract(discountAmount)
-                .add(vatAmount);
-
-        if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
-            totalAmount = BigDecimal.ZERO;
+        if (user != null && pointsUsed > 0) {
+            // Apply redeem
+            pointsDiscount = loyaltyService.redeemPoints(user.getId(), pointsUsed, order);
+            order.setPointsUsed(pointsUsed);
         }
 
+        // =============================
+        // 8. TAX CALCULATION (Like Client)
+        // =============================
+
+        BigDecimal taxableAmount = subtotal
+                .subtract(discountAmount)
+                .subtract(pointsDiscount);
+
+        if (taxableAmount.compareTo(BigDecimal.ZERO) < 0) taxableAmount = BigDecimal.ZERO;
+
+        BigDecimal taxAmount = taxableAmount.multiply(VAT_RATE);
+        order.setTaxAmount(taxAmount);
+
+        BigDecimal totalAmount = taxableAmount.add(taxAmount);
         order.setTotalAmount(totalAmount);
 
-
-        // 8. Tạo Payment với status "completed" (đã thanh toán tại quầy)
-        // Map payment method từ frontend sang giá trị hợp lệ trong database
-        String paymentMethod = mapPaymentMethod(requestDto.getPaymentMethod());
-
+        // =============================
+        // 9. Payment
+        // =============================
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(totalAmount);
-        payment.setPaymentMethod(paymentMethod);
+        payment.setPaymentMethod(mapPaymentMethod(requestDto.getPaymentMethod()));
         payment.setStatus("completed");
         payment.setPaidAt(LocalDateTime.now());
+
         order.getPayments().add(payment);
 
-        // 9. Tạo OrderStatusHistory
+        // =============================
+        // 10. Status history
+        // =============================
         OrderStatusHistory history = new OrderStatusHistory();
         history.setOrder(order);
-        history.setStatus("delivered"); // POS orders bán tại quầy, trạng thái delivered ngay
+        history.setStatus("delivered");
         history.setChangedAt(LocalDateTime.now());
         order.getStatusHistories().add(history);
 
-        // 10. Lưu order
+        // =============================
+        // 11. Save order
+        // =============================
         Order savedOrder = orderRepository.save(order);
-        log.info("✅ POS order created: {} - Total: {}", orderNumber, totalAmount);
 
-        // 11. Tích điểm loyalty nếu có customerId
+        // =============================
+        // 12. Earn points afterwards
+        // =============================
         if (user != null) {
-            try {
-                // Tích điểm từ đơn hàng POS (status = delivered)
-                loyaltyService.earnPointsFromOrder(savedOrder);
-                log.info("✅ Customer {} earned points from POS order {}", user.getId(), orderNumber);
-            } catch (Exception e) {
-                log.warn("Error awarding loyalty points: {}", e.getMessage());
-                // Không throw exception để không làm fail order creation
-            }
+            loyaltyService.earnPointsFromOrder(savedOrder);
         }
 
-        // 12. Convert to DTO
-        return convertToOrderDto(savedOrder);
+        // =============================
+        // 13. Return DTO
+        // =============================
+        // 13. Build DTO (và inject thêm thông tin POS từ request)
+        OrderDto dto = convertToOrderDto(savedOrder);
+        // Ưu tiên thông tin do POS nhập, fallback sang user nếu có
+        dto.setPosCustomerName(
+                requestDto.getCustomerName() != null && !requestDto.getCustomerName().isBlank()
+                        ? requestDto.getCustomerName()
+                        : (user != null ? user.getFullName() : "Khách vãng lai")
+        );
+
+        dto.setPosCustomerEmail(
+                requestDto.getCustomerEmail() != null && !requestDto.getCustomerEmail().isBlank()
+                        ? requestDto.getCustomerEmail()
+                        : (user != null ? user.getEmail() : null)
+        );
+
+        dto.setPosCustomerPhone(
+                requestDto.getCustomerPhone() != null && !requestDto.getCustomerPhone().isBlank()
+                        ? requestDto.getCustomerPhone()
+                        : (user != null ? user.getPhoneNumber() : null)
+        );
+
+        return dto;
     }
 
     /**
@@ -681,54 +741,119 @@ public class AdminOrderService {
      * Convert Order to OrderDto (cho POS)
      */
     private OrderDto convertToOrderDto(Order order) {
-        List<CartItemDto> detailDtos = order.getOrderDetails().stream().map(detail -> {
-            var v = detail.getVariant();
-            return CartItemDto.builder()
-                    .variantId(v.getId())
-                    .productName(v.getProduct().getName())
-                    .sku(detail.getVariantSku() != null && !detail.getVariantSku().isEmpty()
+
+        // ================================
+        // 1) Convert OrderDetails -> CartItemDto
+        // ================================
+        List<CartItemDto> detailDtos = order.getOrderDetails().stream()
+                .map(detail -> {
+
+                    ProductVariant v = detail.getVariant();
+
+                    String sku = (detail.getVariantSku() != null && !detail.getVariantSku().isEmpty())
                             ? detail.getVariantSku()
-                            : v.getSku())
-                    .brandName(v.getProduct().getBrand().getName())
-                    .size(v.getSize())
-                    .color(v.getColor())
-//                    .imageUrl(v.getImageUrl())
-                    .quantity(detail.getQuantity())
-                    .unitPrice(detail.getUnitPrice())
-                    .totalPrice(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
-                    .build();
-        }).collect(Collectors.toList());
+                            : (v != null ? v.getSku() : "");
 
+                    return CartItemDto.builder()
+                            .variantId(v != null ? v.getId() : null)
+                            .productName(detail.getProductName())                 // dùng denormalized name
+                            .sku(sku)
+                            .brandName(v != null && v.getProduct() != null && v.getProduct().getBrand() != null
+                                    ? v.getProduct().getBrand().getName()
+                                    : "N/A")
+                            .size(detail.getSize())
+                            .color(detail.getColor())
+                            .quantity(detail.getQuantity())
+                            .unitPrice(detail.getUnitPrice())
+                            .totalPrice(detail.getUnitPrice()
+                                    .multiply(BigDecimal.valueOf(detail.getQuantity())))
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+
+        // ================================
+        // 2) Convert Payment
+        // ================================
         Payment p = order.getPayments().stream().findFirst().orElse(null);
-        PaymentDto paymentDto = (p == null) ? null
-                : PaymentDto.builder()
-                        .id(p.getId())
-                        .paymentMethod(p.getPaymentMethod())
-                        .status(p.getStatus())
-                        .amount(p.getAmount())
-                        .paidAt(p.getPaidAt())
-                        .orderId(order.getId())
-                        .orderNumber(order.getOrderNumber())
-                        .build();
 
-        // Lấy coupon code nếu có
-        String couponCode = null;
-        if (order.getCoupon() != null) {
-            couponCode = order.getCoupon().getCode();
+        PaymentDto paymentDto = (p == null) ? null : PaymentDto.builder()
+                .id(p.getId())
+                .paymentMethod(p.getPaymentMethod())
+                .status(p.getStatus())
+                .amount(p.getAmount())
+                .paidAt(p.getPaidAt())
+                .orderId(order.getId())
+                .orderNumber(order.getOrderNumber())
+                .build();
+
+
+        // ================================
+        // 3) Coupon code
+        // ================================
+        String couponCode = (order.getCoupon() != null) ? order.getCoupon().getCode() : null;
+
+
+        // ================================
+        // 4) Loyalty points: pointsUsed & pointsDiscount (không có trong DB)
+        // ================================
+        Integer pointsUsed = order.getPointsUsed() != null ? order.getPointsUsed() : 0;
+
+        BigDecimal pointsDiscount = BigDecimal.valueOf(pointsUsed)
+                .multiply(BigDecimal.valueOf(1000)); // 1 point = 1000 VND
+
+
+        // ================================
+        // 5) Taxable Amount (subtotal - discount - pointsDiscount)
+        // ================================
+        BigDecimal subtotal = order.getSubtotal() != null ? order.getSubtotal() : BigDecimal.ZERO;
+        BigDecimal discountAmount = order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO;
+
+        BigDecimal taxableAmount = subtotal
+                .subtract(discountAmount)
+                .subtract(pointsDiscount);
+
+        if (taxableAmount.compareTo(BigDecimal.ZERO) < 0) {
+            taxableAmount = BigDecimal.ZERO;
         }
 
+
+        // ================================
+        // 6) Tax amount
+        // ================================
+        BigDecimal taxAmount = order.getTaxAmount() != null ? order.getTaxAmount() : BigDecimal.ZERO;
+
+
+        // ================================
+        // 7) Build OrderDto
+        // ================================
         return OrderDto.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .status(order.getStatus())
-                .subtotal(order.getSubtotal())
-                .discountAmount(order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO)
+                .subtotal(subtotal)
+                .discountAmount(discountAmount)
                 .couponCode(couponCode)
+
+                // ⭐ Các field bổ sung cho Client A
+                .pointsUsed(pointsUsed)
+                .pointsDiscount(pointsDiscount)
+                .taxableAmount(taxableAmount)
+                .taxAmount(taxAmount)
+
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
                 .addressShipping(convertToAddressDto(order.getAddressShipping()))
                 .payment(paymentDto)
                 .orderDetails(detailDtos)
+                .statusHistories(order.getStatusHistories().stream()
+                        .map(h -> OrderStatusHistoryDto.builder()
+                                .id(h.getId())
+                                .status(h.getStatus())
+                                .changedAt(h.getChangedAt())
+                                .build())
+                        .collect(Collectors.toList()))
+                .returnRequest(null) // nếu có return request bạn tự fill vào
                 .build();
     }
 
