@@ -31,73 +31,47 @@ class ProductService {
         }
     }
 
-    // Tìm kiếm sản phẩm với filters
-    async searchProducts(keyword = '', filters = {}) {
-        try {
-            const response = await axios.get(API_ENDPOINTS.PRODUCTS.SEARCH, {
-                params: {
-                    keyword: keyword,
-                    ...filters
-                }
-            });
-            return response.data;
-        } catch (error) {
-            logger.error('Error searching products:', error);
-            throw error;
-        }
+    // Tìm kiếm sản phẩm theo brand/category/page/size
+    async searchProducts(filters = {}) {
+    try {
+        const response = await axios.get(API_ENDPOINTS.PRODUCTS.SEARCH, {
+        params: {
+            brand: filters.brand || undefined,
+            category: filters.category || undefined,
+            page: filters.page ?? 0,
+            size: filters.size ?? 20,
+        },
+        });
+
+        return response.data;
+    } catch (error) {
+        logger.error("Error searching products:", error);
+        throw error;
+    }
     }
 
-    // Lấy sản phẩm tương tự (dựa trên brand hoặc category)
-    async getRelatedProducts(productId, brandId = null, categoryIds = [], limit = 4) {
-        try {
-            // Fetch sản phẩm cùng brand trước, nếu không đủ thì lấy thêm sản phẩm cùng category
-            const params = {
-                page: 0,
-                size: limit + 1 // Lấy thêm 1 để loại bỏ sản phẩm hiện tại
-            };
-            
-            if (brandId) {
-                params.brandId = brandId;
+    // Lấy sản phẩm tương tự (ưu tiên brand → category)
+    async getRelatedProducts(id, brandId = null, categoryIds = [], limit = 4) {
+    try {
+        const response = await axios.get(
+        API_ENDPOINTS.PRODUCTS.RELATED(id),
+        {
+            params: {
+            brandId,
+            categoryIds,  // backend sẽ tự map thành categoryIds=1&categoryIds=2...
+            limit
             }
-            
-            const response = await axios.get(API_ENDPOINTS.PRODUCTS.BASE, { params });
-            let products = response.data.content || [];
-            
-            // Loại bỏ sản phẩm hiện tại
-            products = products.filter(p => p.id !== productId);
-            
-            // Nếu không đủ sản phẩm cùng brand, lấy thêm sản phẩm cùng category
-            if (products.length < limit && categoryIds.length > 0) {
-                const categoryParams = {
-                    page: 0,
-                    size: limit - products.length + 1
-                };
-                
-                // Lấy sản phẩm cùng category đầu tiên
-                if (categoryIds[0]) {
-                    categoryParams.categoryId = categoryIds[0];
-                }
-                
-                const categoryResponse = await axios.get(API_ENDPOINTS.PRODUCTS.BASE, { params: categoryParams });
-                const categoryProducts = categoryResponse.data.content || [];
-                
-                // Thêm sản phẩm cùng category (loại bỏ trùng và sản phẩm hiện tại)
-                const additionalProducts = categoryProducts
-                    .filter(p => p.id !== productId && !products.find(existing => existing.id === p.id))
-                    .slice(0, limit - products.length);
-                
-                products = [...products, ...additionalProducts];
-            }
-            
-            // Giới hạn số lượng
-            return products.slice(0, limit);
-        } catch (error) {
-            logger.error('Error fetching related products:', error);
-            // Trả về mảng rỗng nếu có lỗi
-            return [];
         }
+        );
+
+        return response.data;
+    } catch (error) {
+        logger.error("Error fetching related products:", error);
+        return [];
+    }
     }
 
+    // Lấy tất cả hình ảnh sản phẩm (dùng cho admin)
     async getAllProductImages() {
         return axios.get('/api/products/images');
     }

@@ -589,9 +589,9 @@
         class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"
       >
         <router-link
-          v-for="product in recentlyViewedProducts"
+          v-for="product in paginatedRecentlyViewed"
           :key="product.id"
-          :to="`/home/products/${product.id}`"
+          :to="`/home/products/${product.slug}`"
           class="group relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
           <div
@@ -672,6 +672,23 @@
           </div>
         </router-link>
       </div>
+      <!-- Dot Pagination -->
+      <div
+        v-if="rvTotalPages > 1"
+        class="flex items-center justify-center gap-2 mt-4 py-3"
+      >
+        <button
+          v-for="page in rvTotalPages"
+          :key="page"
+          @click="rvCurrentPage = page"
+          :class="[
+            'w-3 h-3 rounded-full transition-all duration-300',
+            rvCurrentPage === page
+              ? 'bg-purple-600 dark:bg-purple-400 w-6'
+              : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500',
+          ]"
+        ></button>
+      </div>
     </div>
 
     <!-- Recommended Products -->
@@ -704,7 +721,7 @@
         <router-link
           v-for="product in recommendedProducts"
           :key="product.id"
-          :to="`/home/products/${product.id}`"
+          :to="`/home/products/${product.slug}`"
           class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-200"
         >
           <div
@@ -797,6 +814,19 @@ const getStatusText = (status) => {
   return statusMap[status] || status;
 };
 
+// Pagination Recently Viewed
+const rvCurrentPage = ref(1);
+const rvPageSize = 6;
+
+const rvTotalPages = computed(() => {
+  return Math.ceil(recentlyViewedProducts.value.length / rvPageSize);
+});
+
+const paginatedRecentlyViewed = computed(() => {
+  const start = (rvCurrentPage.value - 1) * rvPageSize;
+  return recentlyViewedProducts.value.slice(start, start + rvPageSize);
+});
+
 // Load và enrich recently viewed products với data từ API
 const loadRecentlyViewedProducts = async () => {
   if (loadingRecentlyViewed.value) return;
@@ -820,13 +850,7 @@ const loadRecentlyViewedProducts = async () => {
     const newProducts = products
       .filter((p) => p !== null)
       .map((product) => {
-        let price = 0;
-        if (product.variants?.length > 0) {
-          const v = product.variants[0];
-          price = v.priceSale || v.priceBase || 0;
-        } else {
-          price = product.priceSale || product.priceBase || product.price || 0;
-        }
+        const price = getProductPrice(product);
 
         // let imageUrl = null;
         // if (product.variants?.[0]?.imageUrl) {
@@ -853,6 +877,12 @@ const loadRecentlyViewedProducts = async () => {
         //     recentlyViewed.value.find((p) => p.id === product.id)?.viewedAt ||
         //     new Date().toISOString(),
         // };
+
+        // ⭐ NEW: Lấy categories từ backend
+        const categoryIds = product.categories?.map((c) => c.id) || [];
+        const categoryNames = product.categories?.map((c) => c.name) || [];
+        const firstCategory = categoryNames[0] || null;
+
         return {
           id: product.id,
           name: product.name,
@@ -860,6 +890,9 @@ const loadRecentlyViewedProducts = async () => {
           brandName: product.brand?.name || product.brandName || "Unknown",
           imageUrl,
           price,
+          categoryIds,
+          categoryNames,
+          firstCategory,
           viewedAt:
             recentlyViewed.value.find((p) => p.id === product.id)?.viewedAt ||
             new Date().toISOString(),
@@ -1003,36 +1036,36 @@ const loadDashboardData = async () => {
       }
     }
 
-    try {
-      // Load recommended products từ API - lấy top sản phẩm
-      const productsResponse = await ProductService.getProducts(0, 6);
-      const products =
-        productsResponse.data?.content || productsResponse.data || [];
+    // try {
+    //   // Load recommended products từ API - lấy top sản phẩm
+    //   const productsResponse = await ProductService.getProducts(0, 6);
+    //   const products =
+    //     productsResponse.data?.content || productsResponse.data || [];
 
-      recommendedProducts.value = products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        brandName: product.brand?.name || product.brandName || "Unknown",
-        price: product.price || product.priceBase || 0,
-        imageUrl:
-          productImageMap.value.get(product.id) || "/placeholder-image.png",
-        slug: product.slug,
-      }));
+    //   recommendedProducts.value = products.map((product) => ({
+    //     id: product.id,
+    //     name: product.name,
+    //     brandName: product.brand?.name || product.brandName || "Unknown",
+    //     price: product.price || product.priceBase || 0,
+    //     imageUrl:
+    //       productImageMap.value.get(product.id) || "/placeholder-image.png",
+    //     slug: product.slug,
+    //   }));
 
-      if (recommendedProducts.value.length === 0) {
-        notificationService.info("Thông tin", "Chưa có sản phẩm đề xuất");
-      } else {
-        logger.log(
-          "✅ Recommended products loaded from API:",
-          recommendedProducts.value.length,
-          "products"
-        );
-      }
-    } catch (error) {
-      logger.error("Error loading recommended products:", error);
-      recommendedProducts.value = [];
-      notificationService.warning("Cảnh báo", "Không thể tải sản phẩm đề xuất");
-    }
+    //   if (recommendedProducts.value.length === 0) {
+    //     notificationService.info("Thông tin", "Chưa có sản phẩm đề xuất");
+    //   } else {
+    //     logger.log(
+    //       "✅ Recommended products loaded from API:",
+    //       recommendedProducts.value.length,
+    //       "products"
+    //     );
+    //   }
+    // } catch (error) {
+    //   logger.error("Error loading recommended products:", error);
+    //   recommendedProducts.value = [];
+    //   notificationService.warning("Cảnh báo", "Không thể tải sản phẩm đề xuất");
+    // }
   } catch (error) {
     logger.error("Error loading dashboard data:", error);
     notificationService.error("Lỗi", "Không thể tải dữ liệu dashboard");
@@ -1055,9 +1088,115 @@ watch(
 //   // Load recently viewed products after dashboard data
 //   await loadRecentlyViewedProducts();
 // });
+
+const getProductPrice = (p) => {
+  if (p.variants?.length > 0) {
+    const v = p.variants[0];
+    return v.priceSale || v.priceBase || 0;
+  }
+  return p.priceSale || p.priceBase || p.price || 0;
+};
+
+// 🔥 Load recommended products theo 3 tiêu chí:
+// 1) Brand → 2) Category → 3) Random fallback
+const loadRecommendedProducts = async () => {
+  try {
+    if (!recentlyViewedProducts.value.length) {
+      recommendedProducts.value = [];
+      return;
+    }
+
+    // Lấy sản phẩm xem gần nhất
+    const lastViewed = [...recentlyViewedProducts.value].sort(
+      (a, b) => new Date(b.viewedAt) - new Date(a.viewedAt)
+    )[0];
+
+    const brand = lastViewed.brandName;
+    const productId = lastViewed.id;
+    const category = lastViewed.firstCategory || null; // <- bạn phải map thêm ở loadRecentlyViewed
+
+    let results = [];
+
+    // -------------------------
+    // 1️⃣ Lọc theo BRAND
+    // -------------------------
+    if (brand) {
+      const resBrand = await ProductService.searchProducts({
+        brand: brand,
+        page: 0,
+        size: 20,
+      });
+
+      const brandProducts =
+        resBrand?.data?.content || resBrand?.content || resBrand || [];
+
+      results.push(...brandProducts);
+    }
+
+    // -------------------------
+    // 2️⃣ Lọc theo CATEGORY
+    // -------------------------
+    if (results.length < 6 && category) {
+      const resCate = await ProductService.searchProducts({
+        category: category,
+        page: 0,
+        size: 20,
+      });
+
+      const cateProducts = (resCate.content || []).filter(
+        (p) => p.id !== productId && !results.some((x) => x.id === p.id)
+      );
+
+      results.push(...cateProducts);
+    }
+
+    // -------------------------
+    // 3️⃣ Lấy random fallback
+    // -------------------------
+    if (results.length < 6) {
+      const resRandom = await ProductService.getProducts(0, 20);
+      const randomData = resRandom.data?.content || [];
+
+      const extra = randomData.filter(
+        (p) => p.id !== productId && !results.some((x) => x.id === p.id)
+      );
+
+      results.push(...extra);
+    }
+
+    // -------------------------
+    // 4️⃣ Giới hạn 6 sản phẩm
+    // -------------------------
+    results = results.slice(0, 6);
+
+    // -------------------------
+    // 5️⃣ Chuẩn hóa output
+    // -------------------------
+    recommendedProducts.value = results.map((product) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      brandName: product.brand?.name || product.brandName,
+      price: getProductPrice(product),
+      imageUrl:
+        productImageMap.value.get(product.id) || "/placeholder-image.png",
+    }));
+  } catch (error) {
+    console.error("❌ Error loading recommended products:", error);
+    recommendedProducts.value = [];
+  }
+};
+
+watch(
+  () => recentlyViewedProducts.value,
+  () => loadRecommendedProducts(),
+  { deep: true }
+);
+
 onMounted(async () => {
   await loadProductImages(); // ✅ Load toàn bộ ảnh trước
   await loadDashboardData();
   await loadRecentlyViewedProducts();
+  await loadRecommendedProducts();
 });
 </script>

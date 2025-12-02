@@ -25,6 +25,15 @@
         </div>
       </div>
 
+      <!-- SHIPPING OVERLAY (CHE TOÀN BỘ PHẦN ĐANG HIỂN THỊ) -->
+      <div
+        v-if="calculatingShipping"
+        class="fixed left-0 right-0 z-[200] bg-black/30 backdrop-blur-sm flex items-center justify-center"
+        :style="{ top: headerHeight, bottom: '0' }"
+      >
+        <OrbitSpinner :size="80" glow />
+      </div>
+
       <!-- Loading State -->
       <div v-if="loading" class="space-y-6" role="status" aria-live="polite">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1660,6 +1669,7 @@ import districts from "@/data/district_old.json";
 import wards from "@/data/ward_old.json";
 import postalData from "@/data/postalCode.json";
 import ConfirmModal from "@/components/ConfirmDialog.vue";
+import OrbitSpinner from "@/components/common/OrbitSpinner.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -1669,6 +1679,8 @@ const { balance: currentBalance } = storeToRefs(loyaltyStore);
 
 const filteredDistricts = ref([]);
 const filteredWards = ref([]);
+const calculatingShipping = ref(false);
+const headerHeight = "140px";
 
 // Check if user is authenticated
 const isGuest = computed(() => !authStore.isAuthenticated);
@@ -2337,6 +2349,9 @@ const saveAddress = async () => {
 
 const calculateShippingFee = async (address) => {
   try {
+    // bật spinner
+    calculatingShipping.value = true;
+
     if (!address || !address.line1 || !address.district || !address.city) {
       shippingFee.value = 0;
       return;
@@ -2345,12 +2360,9 @@ const calculateShippingFee = async (address) => {
     const payload = {
       line1: address.line1,
       line2: address.line2 || "",
-
-      // ⭐⭐ CONVERT CODE → NAME ⭐⭐
       ward: wards[address.ward]?.name || address.ward || "",
       district: districts[address.district]?.name || address.district,
       city: provinces[address.city]?.name || address.city,
-
       postalCode: address.postalCode || "",
     };
 
@@ -2363,6 +2375,9 @@ const calculateShippingFee = async (address) => {
   } catch (err) {
     console.error("❌ Lỗi tính phí ship:", err);
     shippingFee.value = 0;
+  } finally {
+    // tắt spinner
+    calculatingShipping.value = false;
   }
 };
 

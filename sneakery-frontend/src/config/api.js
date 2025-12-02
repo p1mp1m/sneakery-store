@@ -36,9 +36,11 @@ export const API_ENDPOINTS = {
     BASE: '/api/products',
     SEARCH: '/api/products/search',
     BY_ID: (id) => `/api/products/${id}`,
+    BY_SLUG: (slug) => `/api/products/slug/${slug}`,
     CATEGORIES: '/api/products/categories',
     CATEGORIES_GROUPS: '/api/products/categories/groups',
     BRANDS: '/api/products/brands',
+    RELATED: (id) => `/api/products/${id}/related`,
   },
   
   // Admin Products

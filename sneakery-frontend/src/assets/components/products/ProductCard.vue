@@ -1,5 +1,5 @@
 <template>
-  <router-link :to="`/home/products/${product.id}`" class="product-card-link">
+  <router-link :to="`/home/products/${product.slug}`" class="product-card-link">
     <div class="product-card group">
       <div
         class="product-image-container relative overflow-hidden"
@@ -444,7 +444,7 @@ const handleQuickAddToCart = async (event) => {
   // Nếu sản phẩm có nhiều variants, redirect đến trang chi tiết để chọn
   if (props.product.variants && props.product.variants.length > 1) {
     try {
-      await router.push(`/home/products/${props.product.id}`);
+      await router.push(`/home/products/${props.product.slug}`);
     } catch (navError) {
       logger.error("Navigation error:", navError);
       notificationService.error("Lỗi", "Không thể mở trang chi tiết sản phẩm");
@@ -465,7 +465,7 @@ const handleQuickAddToCart = async (event) => {
   } else {
     // Nếu không có variant, redirect đến trang chi tiết
     try {
-      await router.push(`/home/products/${props.product.id}`);
+      await router.push(`/home/products/${props.product.slug}`);
     } catch (navError) {
       logger.error("Navigation error:", navError);
       notificationService.error("Lỗi", "Không thể mở trang chi tiết sản phẩm");

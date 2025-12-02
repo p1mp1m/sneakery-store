@@ -38,7 +38,7 @@ const routes = [
         component: () => import("../views/common/ProductListPage.vue"),
       },
       {
-        path: "products/:id",
+        path: "products/:slug",
         name: "product-detail",
         component: () => import("../views/common/ProductDetailPage.vue").catch(() => {
           // Fallback nếu import thất bại

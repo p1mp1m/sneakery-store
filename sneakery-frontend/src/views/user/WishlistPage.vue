@@ -414,7 +414,7 @@ const addToCart = (item) => {
   }
 
   // Navigate to product detail page để user chọn size
-  router.push(`/home/products/${item.productId}`);
+  router.push(`/home/products/${item.productSlug}`);
 };
 
 const addAllToCart = () => {

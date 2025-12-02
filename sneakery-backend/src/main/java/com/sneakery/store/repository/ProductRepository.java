@@ -92,6 +92,40 @@ List<Product> findByIdInWithBrandAndCategories(@Param("ids") List<Long> ids);
      * Count products by brand ID (for validation before deleting brand)
      * Excludes soft deleted products
      */
+    Optional<Product> findBySlugAndIsActiveTrueAndDeletedAtIsNull(String slug);
+
+    // Lấy sản phẩm theo brand (trừ sản phẩm hiện tại)
+    List<Product> findTop4ByBrandIdAndIdNotAndIsActiveTrueAndDeletedAtIsNull(Long brandId, Long excludeId);
+
+    // Lấy sản phẩm theo category
+    @Query("""
+    SELECT DISTINCT p FROM Product p
+    JOIN p.categories c
+    WHERE c.id IN :categoryIds
+      AND p.id <> :excludeId
+      AND p.isActive = true
+      AND p.deletedAt IS NULL
+""")
+    List<Product> findByCategories(Long excludeId, List<Long> categoryIds);
+
+    @Query("""
+SELECT p FROM Product p
+WHERE p.isActive = true
+AND p.deletedAt IS NULL
+AND (:brand IS NULL OR LOWER(p.brand.name) = LOWER(:brand))
+AND (
+    :category IS NULL OR EXISTS (
+        SELECT c FROM p.categories c
+        WHERE LOWER(c.name) = LOWER(:category)
+    )
+)
+""")
+    Page<Product> searchAdvanced(
+            @Param("brand") String brand,
+            @Param("category") String category,
+            Pageable pageable
+    );
+
     @Query("SELECT COUNT(p) FROM Product p WHERE p.brand.id = :brandId AND p.deletedAt IS NULL")
     Long countByBrandId(@Param("brandId") Integer brandId);
 

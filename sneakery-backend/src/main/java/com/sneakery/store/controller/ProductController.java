@@ -278,4 +278,37 @@ public class ProductController {
         List<BrandDto> brands = brandService.getAllBrands();
         return ResponseEntity.ok(brands);
     }
+
+    /**
+     * Lấy thông tin sản phẩm theo slug (Public)
+     */
+    @Operation(summary = "Lấy sản phẩm theo slug", description = "Lấy thông tin chi tiết sản phẩm theo slug. Công khai, không cần đăng nhập.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lấy thông tin thành công"),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy sản phẩm")
+    })
+    @GetMapping("/slug/{slug}")
+    public ResponseEntity<AdminProductDetailDto> getProductBySlug(@PathVariable String slug) {
+        AdminProductDetailDto product = productService.getProductBySlugForPublic(slug);
+        return ResponseEntity.ok(product);
+    }
+
+    @GetMapping("/{id}/related")
+    public List<ProductCardDto> getRelated(
+            @PathVariable Long id,
+            @RequestParam Long brandId,
+            @RequestParam List<Long> categoryIds) {
+
+        return productService.getRelatedProducts(id, brandId, categoryIds, 4);
+    }
+
+    @GetMapping("/search")
+    public Page<ProductCardDto> searchProducts(
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return productService.searchProductsAdvanced(brand, category, page, size);
+    }
 }

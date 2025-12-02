@@ -818,6 +818,18 @@ const variantImages = ref([]);
 const activeImage = ref(null);
 const productImageStore = useProductImageStore();
 
+const resetState = () => {
+  product.value = null;
+  productImages.value = [];
+  selectedColor.value = "";
+  selectedSize.value = "";
+  selectedImage.value = "";
+  quantity.value = 1;
+  variantImages.value = [];
+  activeImage.value = null;
+  error.value = "";
+};
+
 // Mock reviews data (replace with real API later)
 const reviews = ref([
   {
@@ -860,7 +872,7 @@ const fetchProduct = async () => {
     }
 
     const response = await axios.get(
-      API_ENDPOINTS.PRODUCTS.BY_ID(route.params.id)
+      API_ENDPOINTS.PRODUCTS.BY_SLUG(route.params.slug)
     );
 
     product.value = response.data;
@@ -1227,9 +1239,10 @@ onMounted(() => {
 });
 
 watch(
-  () => route.params.id,
+  () => route.params.slug,
   () => {
-    if (route.params.id) {
+    if (route.params.slug) {
+      resetState();
       fetchProduct();
     }
   }

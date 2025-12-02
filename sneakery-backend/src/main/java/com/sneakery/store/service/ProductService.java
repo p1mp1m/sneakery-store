@@ -315,6 +315,7 @@ public class ProductService {
         return AdminProductDetailDto.builder()
                 .id(product.getId())
                 .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
+                .brandName(product.getBrand() != null ? product.getBrand().getName() : null)
                 .name(product.getName())
                 .slug(product.getSlug())
                 .description(product.getDescription())
@@ -355,4 +356,61 @@ public class ProductService {
         return products.map(this::convertToProductCardDto);
     }
 
+    public AdminProductDetailDto getProductBySlugForPublic(String slug) {
+        Product product = productRepository.findBySlugAndIsActiveTrueAndDeletedAtIsNull(slug)
+                .orElseThrow(() -> new ApiException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy sản phẩm"
+                ));
+
+        return convertToAdminDetailDto(product);
+    }
+
+    public List<ProductCardDto> getRelatedProducts(Long productId, Long brandId, List<Long> categoryIds, int limit) {
+        int max = limit;
+
+        // 1) Lấy theo BRAND
+        List<Product> brandProducts = productRepository
+                .findTop4ByBrandIdAndIdNotAndIsActiveTrueAndDeletedAtIsNull(brandId, productId);
+
+        List<ProductCardDto> result = brandProducts.stream()
+                .map(this::convertToProductCardDto)
+                .collect(Collectors.toList());
+
+        // Nếu đủ 4 thì return luôn
+        if (result.size() >= max) {
+            return result.subList(0, max);
+        }
+
+        // 2) Lấy theo CATEGORY, tránh trùng brand
+        List<Product> categoryProducts = productRepository.findByCategories(productId, categoryIds);
+
+        for (Product p : categoryProducts) {
+            if (result.size() >= max) break;
+
+            // Loại sản phẩm cùng brand với main brand (để ưu tiên brand trước)
+            if (!p.getBrand().getId().equals(brandId)) {
+                result.add(convertToProductCardDto(p));
+            }
+        }
+
+        return result;
+    }
+
+    public Page<ProductCardDto> searchProductsAdvanced(
+            String brand,
+            String category,
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Product> products = productRepository.searchAdvanced(
+                brand,
+                category,
+                pageable
+        );
+
+        return products.map(this::convertToProductCardDto);
+    }
 }

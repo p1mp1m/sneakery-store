@@ -12,6 +12,7 @@ import java.util.Set;
 public class AdminProductDetailDto {
     private Long id;
     private Integer brandId;
+    private String brandName;
     private String name;
     private String slug;
     private String description;
