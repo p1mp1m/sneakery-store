@@ -169,6 +169,17 @@ public class ProductService {
                             return price != null ? price : BigDecimal.ZERO;
                         })));
 
+        String imageUrl = product.getMainImageUrl();
+        if ((imageUrl == null || imageUrl.isBlank())
+                && product.getImages() != null
+                && !product.getImages().isEmpty()) {
+
+            imageUrl = product.getImages().get(0).getImageUrl();
+        }
+
+        if (imageUrl == null) {
+            imageUrl = "/placeholder-image.png";
+        }
         // Lấy ảnh đại diện (ưu tiên mainImageUrl, sau đó ProductImage primary, cuối cùng variant image)
 //        String imageUrl = Optional.ofNullable(product.getMainImageUrl())
 //                .filter(url -> !url.isEmpty())
@@ -203,7 +214,7 @@ public class ProductService {
                 .name(product.getName())
                 .slug(product.getSlug())
                 .brandName(product.getBrand() != null ? product.getBrand().getName() : "Unknown")
-//                .imageUrl(imageUrl)
+                .imageUrl(imageUrl)
 
                 // Pricing
                 .priceBase(priceBase)
@@ -332,4 +343,16 @@ public class ProductService {
                 ))
                 .collect(Collectors.toSet());
     }
+
+    public Page<ProductCardDto> getAllProductsForCard(int page, int size, String search) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Lấy danh sách Product từ repo
+        Page<Product> products = productRepository.searchProducts(search, pageable);
+
+        // CHUYỂN sang ProductCardDto để FE dùng
+        return products.map(this::convertToProductCardDto);
+    }
+
 }

@@ -718,7 +718,7 @@
       </div>
 
       <!-- Related Products -->
-      <!-- <div
+      <div
         v-if="!loadingRelatedProducts && relatedProducts.length > 0"
         class="mb-12"
       >
@@ -732,10 +732,10 @@
             :product="relatedProduct"
           />
         </div>
-      </div> -->
+      </div>
 
       <!-- Loading Related Products -->
-      <!-- <div v-if="loadingRelatedProducts" class="mb-12">
+      <div v-if="loadingRelatedProducts" class="mb-12">
         <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           Sản phẩm tương tự
         </h2>
@@ -753,7 +753,7 @@
             </div>
           </div>
         </div>
-      </div> -->
+      </div>
     </div>
 
     <!-- Zoom Modal -->
@@ -794,6 +794,7 @@ import axios from "axios";
 import FlashSaleBadge from "@/assets/components/common/FlashSaleBadge.vue";
 import productService from "@/services/productService";
 import ProductCard from "@/assets/components/products/ProductCard.vue";
+import { useProductImageStore } from "@/stores/productImages";
 
 const route = useRoute();
 const router = useRouter();
@@ -815,6 +816,7 @@ const activeTab = ref("specs");
 const showZoom = ref(false);
 const variantImages = ref([]);
 const activeImage = ref(null);
+const productImageStore = useProductImageStore();
 
 // Mock reviews data (replace with real API later)
 const reviews = ref([
@@ -1221,6 +1223,7 @@ const formatDate = (dateString) => {
 // Lifecycle
 onMounted(() => {
   fetchProduct();
+  productImageStore.loadAll();
 });
 
 watch(

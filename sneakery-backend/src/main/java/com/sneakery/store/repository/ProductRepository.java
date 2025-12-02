@@ -102,4 +102,24 @@ List<Product> findByIdInWithBrandAndCategories(@Param("ids") List<Long> ids);
 """)
     Integer findLastNumberByBrand(@Param("brandId") Integer brandId);
 
+    @Query("""
+SELECT p FROM Product p
+WHERE p.isActive = true
+  AND p.deletedAt IS NULL
+  AND (
+        :search IS NULL
+        OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
+        OR LOWER(p.brand.name) LIKE LOWER(CONCAT('%', :search, '%'))
+        OR LOWER(p.slug) LIKE LOWER(CONCAT('%', :search, '%'))
+        OR EXISTS (
+            SELECT v FROM ProductVariant v
+            WHERE v.product = p
+              AND LOWER(v.sku) LIKE LOWER(CONCAT('%', :search, '%'))
+        )
+    )
+ORDER BY p.id DESC
+""")
+    Page<Product> searchProducts(
+            @Param("search") String search,
+            Pageable pageable);
 }

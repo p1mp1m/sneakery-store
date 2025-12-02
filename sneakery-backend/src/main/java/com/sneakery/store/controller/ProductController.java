@@ -119,8 +119,10 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<Page<ProductCardDto>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size) { // Mặc định hiển thị 8 sản phẩm/trang
-        Page<ProductCardDto> products = productService.getAllProductsForCard(page, size);
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(required = false) String search) {
+
+        Page<ProductCardDto> products = productService.getAllProductsForCard(page, size, search);
         return ResponseEntity.ok(products);
     }
 
