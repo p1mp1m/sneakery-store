@@ -104,6 +104,10 @@ export const API_ENDPOINTS = {
   LOYALTY: {
     BASE: '/api/loyalty',
   },
+
+  SHIPPING: {
+    CALCULATE: "/api/shipping/calculate",
+  },
   
   // Notifications
   NOTIFICATIONS: {

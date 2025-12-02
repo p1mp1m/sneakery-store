@@ -277,12 +277,12 @@
                 v-for="addr in addresses"
                 :key="addr.id"
                 :class="[
-                  'p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md',
+                  'relative p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md',
                   selectedAddress === addr.id
                     ? 'border-purple-600 dark:border-purple-400 bg-purple-50 dark:bg-purple-900/20 shadow-md'
                     : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600',
                 ]"
-                @click="selectedAddress = addr.id"
+                @click="onSelectAddress(addr)"
               >
                 <div class="flex items-start gap-4">
                   <div
@@ -299,12 +299,14 @@
                       >check</i
                     >
                   </div>
+
                   <div class="flex-1">
                     <h4
                       class="font-semibold text-gray-900 dark:text-gray-100 mb-2"
                     >
                       {{ addr.recipientName }}
                     </h4>
+
                     <div
                       class="space-y-1.5 text-sm text-gray-600 dark:text-gray-400"
                     >
@@ -314,29 +316,53 @@
                         >
                         {{ addr.phone }}
                       </div>
+
                       <div class="flex items-center gap-2">
                         <i class="material-icons text-xs text-gray-400"
                           >place</i
                         >
                         {{ addr.line1 }}
                       </div>
+
                       <div
                         v-if="addr.line2"
                         class="flex items-center gap-2 pl-6"
                       >
                         {{ addr.line2 }}
                       </div>
+
                       <div class="flex items-center gap-2">
                         <i class="material-icons text-xs text-gray-400"
                           >location_city</i
                         >
-                        {{ addr.district }}, {{ addr.city }}
+                        {{ addr.ward }}, {{ addr.district }}, {{ addr.city }}
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
+                <!-- ======================= BUTTON XOÁ ======================= -->
+                <!-- NÚT SỬA + XOÁ -->
+                <div class="absolute top-3 right-3 flex items-center gap-2">
+                  <!-- EDIT -->
+                  <button
+                    @click.stop="openEditModal(addr)"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all shadow-sm"
+                    title="Chỉnh sửa địa chỉ"
+                  >
+                    <i class="material-icons text-base">edit</i>
+                  </button>
+
+                  <!-- DELETE -->
+                  <button
+                    @click.stop="openDeleteModal(addr.id)"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-all shadow-sm"
+                    title="Xóa địa chỉ"
+                  >
+                    <i class="material-icons text-base">delete</i>
+                  </button>
+                </div>
+              </div>
               <button
                 @click="showAddressForm = true"
                 class="w-full flex items-center justify-center gap-2 px-6 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl text-gray-600 dark:text-gray-400 hover:border-purple-400 dark:hover:border-purple-600 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all"
@@ -1228,7 +1254,7 @@
     @click.self="showAddressForm = false"
   >
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto scrollbar-hide animate-in fade-in zoom-in duration-200"
     >
       <div
         class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20"
@@ -1316,29 +1342,49 @@
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label
-              class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2"
-              >Quận/Huyện *</label
-            >
-            <input
-              v-model="newAddress.district"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="Quận 1"
-            />
-          </div>
-          <div>
-            <label
-              class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2"
+            <label class="block text-sm font-medium mb-2"
               >Tỉnh/Thành phố *</label
             >
-            <input
+            <select
               v-model="newAddress.city"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="TP. Hồ Chí Minh"
-            />
+              class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500"
+            >
+              <option value="">-- Chọn Tỉnh/Thành phố --</option>
+              <option v-for="(p, code) in provinces" :key="code" :value="code">
+                {{ p.name_with_type }}
+              </option>
+            </select>
           </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Quận/Huyện *</label>
+            <select
+              v-model="newAddress.district"
+              :disabled="!filteredDistricts.length"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500"
+            >
+              <option value="">-- Chọn Quận/Huyện --</option>
+              <option
+                v-for="d in filteredDistricts"
+                :key="d.code"
+                :value="d.code"
+              >
+                {{ d.name_with_type }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Phường/Xã *</label>
+          <select
+            v-model="newAddress.ward"
+            :disabled="!filteredWards.length"
+            class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500"
+          >
+            <option value="">-- Chọn Phường/Xã --</option>
+            <option v-for="w in filteredWards" :key="w.code" :value="w.code">
+              {{ w.name_with_type }}
+            </option>
+          </select>
         </div>
       </div>
       <div class="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
@@ -1350,6 +1396,191 @@
         </button>
         <button
           @click="showAddressForm = false"
+          class="flex-1 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+        >
+          Hủy
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Edit Address Modal -->
+  <div
+    v-if="showEditModal"
+    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+    @click.self="showEditModal = false"
+  >
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto scrollbar-hide animate-in fade-in zoom-in duration-200"
+    >
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20"
+      >
+        <h3
+          class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+        >
+          <i class="material-icons text-purple-600 dark:text-purple-400"
+            >edit_location_alt</i
+          >
+          Chỉnh sửa địa chỉ
+        </h3>
+        <button
+          @click="showEditModal = false"
+          class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Đóng"
+        >
+          <i class="material-icons">close</i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 space-y-4">
+        <!-- Full Name -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2"
+          >
+            Họ tên người nhận *
+          </label>
+          <input
+            v-model="editingAddress.recipientName"
+            type="text"
+            class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            placeholder="Nguyễn Văn A"
+          />
+        </div>
+
+        <!-- Phone -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2"
+          >
+            Số điện thoại *
+          </label>
+          <input
+            v-model="editingAddress.phone"
+            type="tel"
+            class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
+            :class="[
+              editingAddress.phone &&
+              !validateVietnamesePhone(editingAddress.phone)
+                ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
+                : 'border-gray-200 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500',
+            ]"
+            placeholder="0912345678"
+            @blur="
+              editingAddress.phone = formatPhoneNumber(editingAddress.phone)
+            "
+          />
+
+          <p
+            v-if="
+              editingAddress.phone &&
+              !validateVietnamesePhone(editingAddress.phone)
+            "
+            class="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1"
+          >
+            <i class="material-icons text-xs">error</i>
+            Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam.
+          </p>
+        </div>
+
+        <!-- Address line1 -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2"
+          >
+            Địa chỉ *
+          </label>
+          <input
+            v-model="editingAddress.line1"
+            type="text"
+            class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            placeholder="123 Đường ABC"
+          />
+        </div>
+
+        <!-- Address line2 -->
+        <div>
+          <label
+            class="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2"
+          >
+            Địa chỉ bổ sung (không bắt buộc)
+          </label>
+          <input
+            v-model="editingAddress.line2"
+            type="text"
+            class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            placeholder="Căn hộ, tòa nhà..."
+          />
+        </div>
+
+        <!-- City + District -->
+        <div class="grid grid-cols-2 gap-4">
+          <!-- City -->
+          <div>
+            <label class="block text-sm font-medium mb-2"
+              >Tỉnh/Thành phố *</label
+            >
+            <select
+              v-model="editingAddress.city"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500"
+              @change="onEditCityChange"
+            >
+              <option value="">-- Chọn Tỉnh/Thành phố --</option>
+              <option v-for="(p, code) in provinces" :key="code" :value="code">
+                {{ p.name_with_type }}
+              </option>
+            </select>
+          </div>
+
+          <!-- District -->
+          <div>
+            <label class="block text-sm font-medium mb-2">Quận/Huyện *</label>
+            <select
+              v-model="editingAddress.district"
+              :disabled="!filteredDistricts.length"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500"
+              @change="onEditDistrictChange"
+            >
+              <option value="">-- Chọn Quận/Huyện --</option>
+              <option
+                v-for="d in filteredDistricts"
+                :key="d.code"
+                :value="d.code"
+              >
+                {{ d.name_with_type }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ward -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Phường/Xã *</label>
+          <select
+            v-model="editingAddress.ward"
+            :disabled="!filteredWards.length"
+            class="w-full px-4 py-2 border rounded-lg focus:ring-purple-500"
+          >
+            <option value="">-- Chọn Phường/Xã --</option>
+            <option v-for="w in filteredWards" :key="w.code" :value="w.code">
+              {{ w.name_with_type }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+        <button
+          @click="updateAddress"
+          class="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all"
+        >
+          Lưu thay đổi
+        </button>
+        <button
+          @click="showEditModal = false"
           class="flex-1 px-6 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
         >
           Hủy
@@ -1391,6 +1622,16 @@
       </div>
     </div>
   </div>
+  <ConfirmModal
+    :visible="showDeleteConfirm"
+    title="Xóa địa chỉ"
+    message="Bạn có chắc muốn xóa địa chỉ này không?"
+    type="danger"
+    confirmButtonText="Xóa"
+    cancelButtonText="Hủy"
+    @confirm="confirmDeleteAddress"
+    @update:visible="showDeleteConfirm = $event"
+  />
 </template>
 
 <script setup>
@@ -1414,12 +1655,20 @@ import {
   validateAddress,
 } from "@/utils/validators";
 import { formatPrice } from "@/utils/formatters";
+import provinces from "@/data/province_old.json";
+import districts from "@/data/district_old.json";
+import wards from "@/data/ward_old.json";
+import postalData from "@/data/postalCode.json";
+import ConfirmModal from "@/components/ConfirmDialog.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const loyaltyStore = useLoyaltyStore();
 const couponStore = useCouponStore();
 const { balance: currentBalance } = storeToRefs(loyaltyStore);
+
+const filteredDistricts = ref([]);
+const filteredWards = ref([]);
 
 // Check if user is authenticated
 const isGuest = computed(() => !authStore.isAuthenticated);
@@ -1447,6 +1696,114 @@ const selectedCouponCode = ref("");
 const variantImageMap = ref(new Map());
 const onlineProvider = ref(""); // "vnpay" | "momo"
 
+const showDeleteConfirm = ref(false);
+const addressIdToDelete = ref(null);
+const showEditModal = ref(false);
+const editingAddress = ref(null);
+
+const openEditModal = (addr) => {
+  // Find codes based on names (reverse lookup)
+  const cityCode = Object.keys(provinces).find(
+    (c) =>
+      provinces[c].name === addr.city ||
+      provinces[c].name_with_type === addr.city
+  );
+
+  const districtCode = Object.keys(districts).find(
+    (d) =>
+      districts[d].name === addr.district ||
+      districts[d].name_with_type === addr.district
+  );
+
+  const wardCode = Object.keys(wards).find(
+    (w) => wards[w].name === addr.ward || wards[w].name_with_type === addr.ward
+  );
+
+  editingAddress.value = {
+    ...addr,
+    city: cityCode || "",
+    district: districtCode || "",
+    ward: wardCode || "",
+  };
+
+  // Load district list
+  filteredDistricts.value = Object.values(districts).filter(
+    (d) => d.parent_code == cityCode
+  );
+
+  filteredWards.value = Object.values(wards).filter(
+    (w) => w.parent_code == districtCode
+  );
+
+  showEditModal.value = true;
+};
+
+const openDeleteModal = (id) => {
+  addressIdToDelete.value = id;
+  showDeleteConfirm.value = true;
+};
+
+const confirmDeleteAddress = async () => {
+  if (!addressIdToDelete.value) return;
+
+  try {
+    await userService.deleteAddress(addressIdToDelete.value);
+
+    addresses.value = addresses.value.filter(
+      (a) => a.id !== addressIdToDelete.value
+    );
+
+    if (selectedAddress.value === addressIdToDelete.value) {
+      selectedAddress.value =
+        addresses.value.length > 0 ? addresses.value[0].id : null;
+    }
+
+    notificationService.success("Thành công", "Đã xóa địa chỉ");
+  } catch (err) {
+    logger.error("Delete address error:", err);
+    notificationService.error("Lỗi", "Không thể xóa địa chỉ");
+  } finally {
+    showDeleteConfirm.value = false;
+    addressIdToDelete.value = null;
+  }
+};
+
+const updateAddress = async () => {
+  try {
+    const payload = {
+      id: editingAddress.value.id,
+      recipientName: editingAddress.value.recipientName,
+      phone: editingAddress.value.phone,
+      line1: editingAddress.value.line1,
+      line2: editingAddress.value.line2 || "",
+
+      // 🔥 convert CODE → NAME (GIỐNG ADD)
+      city: provinces[editingAddress.value.city]?.name || "",
+      district: districts[editingAddress.value.district]?.name || "",
+      ward: wards[editingAddress.value.ward]?.name || "",
+
+      postalCode: editingAddress.value.postalCode || "",
+    };
+
+    const response = await userService.updateAddress(
+      editingAddress.value.id,
+      payload
+    );
+
+    // Cập nhật vào danh sách
+    const index = addresses.value.findIndex((a) => a.id === response.id);
+    if (index !== -1) {
+      addresses.value[index] = response;
+    }
+
+    notificationService.success("Thành công", "Đã cập nhật địa chỉ");
+    showEditModal.value = false;
+  } catch (err) {
+    logger.error("Update address error:", err);
+    notificationService.error("Lỗi", "Không thể cập nhật địa chỉ");
+  }
+};
+
 // Use coupon store state
 const couponCode = computed({
   get: () => couponStore.couponCode,
@@ -1464,25 +1821,51 @@ const newAddress = ref({
   phone: "",
   line1: "",
   line2: "",
-  district: "",
-  city: "",
-  ward: "",
+  city: "", // province code
+  district: "", // district code
+  ward: "", // ward code
   postalCode: "",
-  email: "", // For guest checkout
+  email: "",
 });
+
+watch(
+  () => newAddress.value.city,
+  (cityCode) => {
+    filteredDistricts.value = Object.values(districts).filter(
+      (d) => d.parent_code == cityCode
+    );
+    newAddress.value.district = "";
+    filteredWards.value = [];
+  }
+);
+
+watch(
+  () => newAddress.value.district,
+  (districtCode) => {
+    filteredWards.value = Object.values(wards).filter(
+      (w) => w.parent_code == districtCode
+    );
+    newAddress.value.ward = "";
+  }
+);
+
+watch(
+  () => newAddress.value.city,
+  (cityCode) => {
+    if (!cityCode) {
+      newAddress.value.postalCode = "";
+      return;
+    }
+
+    const item = postalData[cityCode]; // <-- map lookup
+    newAddress.value.postalCode = item ? item.postcode : "";
+  }
+);
 
 // Loyalty Points
 const usePoints = ref(false);
 const pointsToUse = ref(0);
-// const maxPointsUsable = computed(() => {
-//   if (!cart.value) return 0;
-//   const maxFromBalance = currentBalance.value || 0;
-//   const subTotalValue = Number(cart.value.subTotal) || 0;
-//   const maxFromOrderValue = Math.floor(
-//     (subTotalValue + Number(shippingFee.value)) / 1000
-//   ); // 1 point = 1000 VND
-//   return Math.min(maxFromBalance, maxFromOrderValue);
-// });
+
 const maxPointsUsable = computed(() => {
   if (!cart.value) return 0;
 
@@ -1613,6 +1996,7 @@ const fetchData = async () => {
         // Auto-select first address
         if (addresses.value.length > 0) {
           selectedAddress.value = addresses.value[0].id;
+          await calculateShippingFee(addresses.value[0]);
         }
       } catch (error) {
         logger.error("Error fetching addresses:", error);
@@ -1702,6 +2086,50 @@ const onCouponSelected = async () => {
     applyingCoupon.value = false;
   }
 };
+
+const onSelectAddress = async (addr) => {
+  selectedAddress.value = addr.id;
+  await calculateShippingFee(addr);
+};
+
+const deleteAddress = async (id) => {
+  try {
+    const confirmed = confirm("Bạn có chắc muốn xóa địa chỉ này?");
+    if (!confirmed) return;
+
+    await userService.deleteAddress(id);
+
+    // Xoá khỏi danh sách
+    addresses.value = addresses.value.filter((a) => a.id !== id);
+
+    // Nếu địa chỉ đang chọn bị xóa → bỏ chọn
+    if (selectedAddress.value === id) {
+      selectedAddress.value =
+        addresses.value.length > 0 ? addresses.value[0].id : null;
+    }
+
+    notificationService.success("Thành công", "Đã xóa địa chỉ thành công");
+  } catch (err) {
+    logger.error("Error deleting address:", err);
+    notificationService.error("Lỗi", "Không thể xóa địa chỉ");
+  }
+};
+
+watch(
+  () => ({
+    line1: newAddress.value.line1,
+    district: newAddress.value.district,
+    city: newAddress.value.city,
+    ward: newAddress.value.ward,
+    postalCode: newAddress.value.postalCode,
+  }),
+  async () => {
+    if (isGuest.value) {
+      await calculateShippingFee(newAddress.value);
+    }
+  },
+  { deep: true }
+);
 
 const removeCoupon = () => {
   couponStore.clearCoupon();
@@ -1851,24 +2279,37 @@ const saveAddress = async () => {
   }
 
   // Validate district and city
-  if (!validateAddress(newAddress.value.district)) {
-    notificationService.error(
-      "Lỗi",
-      "Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ"
-    );
+  if (!newAddress.value.city) {
+    notificationService.error("Lỗi", "Vui lòng chọn Tỉnh/Thành phố");
     return;
   }
 
-  if (!validateAddress(newAddress.value.city)) {
-    notificationService.error(
-      "Lỗi",
-      "Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ"
-    );
+  if (!newAddress.value.district) {
+    notificationService.error("Lỗi", "Vui lòng chọn Quận/Huyện");
+    return;
+  }
+
+  if (!newAddress.value.ward) {
+    notificationService.error("Lỗi", "Vui lòng chọn Phường/Xã");
     return;
   }
 
   try {
-    const response = await userService.createAddress(newAddress.value);
+    const payload = {
+      recipientName: newAddress.value.recipientName,
+      phone: newAddress.value.phone,
+      line1: newAddress.value.line1,
+      line2: newAddress.value.line2 || "",
+
+      // 🔥 convert CODE → NAME
+      city: provinces[newAddress.value.city]?.name || "",
+      district: districts[newAddress.value.district]?.name || "",
+      ward: wards[newAddress.value.ward]?.name || "",
+
+      postalCode: newAddress.value.postalCode,
+      email: newAddress.value.email || "",
+    };
+    const response = await userService.createAddress(payload);
 
     addresses.value.push(response);
     selectedAddress.value = response.id;
@@ -1882,12 +2323,46 @@ const saveAddress = async () => {
       line2: "",
       district: "",
       city: "",
+      ward: "",
+      postalCode: "",
+      email: "",
     };
 
     notificationService.success("Thành công", "Đã thêm địa chỉ mới");
   } catch (error) {
     logger.error("Error saving address:", error);
     notificationService.error("Lỗi", "Không thể thêm địa chỉ");
+  }
+};
+
+const calculateShippingFee = async (address) => {
+  try {
+    if (!address || !address.line1 || !address.district || !address.city) {
+      shippingFee.value = 0;
+      return;
+    }
+
+    const payload = {
+      line1: address.line1,
+      line2: address.line2 || "",
+
+      // ⭐⭐ CONVERT CODE → NAME ⭐⭐
+      ward: wards[address.ward]?.name || address.ward || "",
+      district: districts[address.district]?.name || address.district,
+      city: provinces[address.city]?.name || address.city,
+
+      postalCode: address.postalCode || "",
+    };
+
+    const { data } = await axios.post(
+      API_ENDPOINTS.SHIPPING.CALCULATE,
+      payload
+    );
+
+    shippingFee.value = data.fee || 0;
+  } catch (err) {
+    console.error("❌ Lỗi tính phí ship:", err);
+    shippingFee.value = 0;
   }
 };
 
@@ -1944,6 +2419,7 @@ const handleCheckout = async () => {
             ? onlineProvider.value
             : paymentMethod.value,
         customerNote: notes.value || null,
+        shippingFee: Number(shippingFee.value),
       };
 
       // ===============================
@@ -2010,6 +2486,7 @@ const handleCheckout = async () => {
       customerNote: notes.value || null,
       pointsUsed:
         usePoints.value && pointsToUse.value > 0 ? pointsToUse.value : null,
+      shippingFee: Number(shippingFee.value),
     };
 
     // ===============================

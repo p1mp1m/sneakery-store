@@ -336,7 +336,7 @@
               </div>
 
               <!-- Shipping Fee -->
-              <div
+              <!-- <div
                 class="flex justify-between text-sm text-gray-600 dark:text-gray-400"
               >
                 <span class="flex items-center gap-2">
@@ -355,7 +355,7 @@
                     shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)
                   }}
                 </span>
-              </div>
+              </div> -->
             </div>
 
             <div
@@ -396,7 +396,7 @@
             </router-link>
 
             <!-- Free Shipping Indicator -->
-            <div
+            <!-- <div
               v-if="cart.subTotal >= 500000"
               class="mt-4 flex items-center gap-2 px-4 py-3 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg border border-green-200 dark:border-green-800"
             >
@@ -428,7 +428,7 @@
                 >
                 để được giao hàng miễn phí
               </p>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

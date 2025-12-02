@@ -78,6 +78,7 @@ public class OrderService {
     private final LoyaltyService loyaltyService;
     private final OrderStatusHistoryRepository statusHistoryRepository;
     private final ReturnRequestRepository returnRequestRepository;
+    private final ShippingService shippingService;
 
     /**
      * Xử lý Checkout - Tạo đơn hàng từ giỏ hàng
@@ -1103,30 +1104,47 @@ public class OrderService {
      * - Vùng xa (nếu có): 80,000 VND
      */
     private BigDecimal calculateShippingFee(Address address) {
-        if (address == null || address.getCity() == null) {
-            // Default shipping fee nếu không có địa chỉ
-            return BigDecimal.valueOf(50000);
-        }
-        
-        String city = address.getCity().toLowerCase().trim();
-        
-        // Danh sách thành phố lớn (nội thành - phí ship thấp hơn)
-        String[] majorCities = {
-            "hà nội", "hanoi", "ha noi",
-            "tp. hồ chí minh", "tp hcm", "hồ chí minh", "ho chi minh", "hochiminh",
-            "đà nẵng", "da nang", "danang",
-            "cần thơ", "can tho", "cantho",
-            "hải phòng", "hai phong", "haiphong"
-        };
-        
-        // Kiểm tra xem có phải thành phố lớn không
-        for (String majorCity : majorCities) {
-            if (city.contains(majorCity) || majorCity.contains(city)) {
-                return BigDecimal.valueOf(30000); // Phí ship nội thành
-            }
-        }
-        
-        // Các tỉnh/thành phố khác
-        return BigDecimal.valueOf(50000); // Phí ship ngoại thành
+
+        // Ghép thành ShippingAddressRequestDto
+        ShippingAddressRequestDto dto = ShippingAddressRequestDto.builder()
+                .line1(address.getLine1())
+                .line2(address.getLine2())
+                .ward(address.getWard())
+                .district(address.getDistrict())
+                .city(address.getCity())
+                .postalCode(address.getPostalCode())
+                .build();
+
+        // Gọi BE tính phí ship chuẩn theo KM
+        double fee = shippingService.calculateShippingFee(dto);
+
+        return BigDecimal.valueOf(fee);
     }
+//    private BigDecimal calculateShippingFee(Address address) {
+//        if (address == null || address.getCity() == null) {
+//            // Default shipping fee nếu không có địa chỉ
+//            return BigDecimal.valueOf(50000);
+//        }
+//
+//        String city = address.getCity().toLowerCase().trim();
+//
+//        // Danh sách thành phố lớn (nội thành - phí ship thấp hơn)
+//        String[] majorCities = {
+//            "hà nội", "hanoi", "ha noi",
+//            "tp. hồ chí minh", "tp hcm", "hồ chí minh", "ho chi minh", "hochiminh",
+//            "đà nẵng", "da nang", "danang",
+//            "cần thơ", "can tho", "cantho",
+//            "hải phòng", "hai phong", "haiphong"
+//        };
+//
+//        // Kiểm tra xem có phải thành phố lớn không
+//        for (String majorCity : majorCities) {
+//            if (city.contains(majorCity) || majorCity.contains(city)) {
+//                return BigDecimal.valueOf(30000); // Phí ship nội thành
+//            }
+//        }
+//
+//        // Các tỉnh/thành phố khác
+//        return BigDecimal.valueOf(50000); // Phí ship ngoại thành
+//    }
 }
