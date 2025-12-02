@@ -160,7 +160,7 @@
               </div>
 
               <router-link
-                :to="`/home/products/${product.id}`"
+                :to="`/home/products/${product.slug}`"
                 class="view-full-link"
               >
                 Xem chi tiết sản phẩm →
