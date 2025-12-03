@@ -577,6 +577,10 @@ const removeItem = async (item) => {
     );
 
     await cartStore.removeItem(item.variantId);
+    // 🧹 Xóa coupon khi có thay đổi giỏ hàng
+    if (couponApplied.value) {
+      removeCoupon();
+    }
     notificationService.success("Thành công", "Đã xóa sản phẩm khỏi giỏ hàng");
   } catch (error) {
     if (error !== "cancel") {
@@ -717,6 +721,7 @@ const getCouponFullText = (coupon) => {
 
 const removeCoupon = () => {
   couponStore.clearCoupon();
+  selectedCouponCode.value = "";
   notificationService.info("Thông tin", "Đã xóa mã giảm giá");
 };
 
