@@ -358,6 +358,12 @@
               <p class="text-gray-600 dark:text-gray-400">
                 Chưa có SPCT nào. Nhấn "Thêm SPCT" để tạo SPCT đầu tiên.
               </p>
+              <span
+                v-if="formErrors.variants"
+                class="text-red-600 dark:text-red-400 text-sm block mt-2"
+              >
+                {{ formErrors.variants }}
+              </span>
             </div>
 
             <div v-else class="space-y-4">
@@ -388,12 +394,18 @@
                       SKU <span class="text-red-500">*</span>
                     </label>
                     <input
-                       v-model="variant.sku"
-                       type="text"
-                       :readonly="true"
-                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
-                       placeholder="VD: NIKE-AF1-WHT-42"
-                      />
+                      v-model="variant.sku"
+                      type="text"
+                      :readonly="true"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
+                      placeholder="VD: NIKE-AF1-WHT-42"
+                    />
+                    <span
+                      v-if="formErrorsLocal[`variant_${index}_sku`]"
+                      class="text-xs text-red-500 block"
+                    >
+                      {{ formErrorsLocal[`variant_${index}_sku`] }}
+                    </span>
                   </div>
 
                   <div class="space-y-2">
@@ -410,6 +422,12 @@
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       placeholder="VD: 42, 43, 44"
                     />
+                    <span
+                      v-if="formErrorsLocal[`variant_${index}_size`]"
+                      class="text-xs text-red-500 block"
+                    >
+                      {{ formErrorsLocal[`variant_${index}_size`] }}
+                    </span>
                   </div>
 
                   <div class="space-y-2">
@@ -426,6 +444,12 @@
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       placeholder="VD: Trắng, Đen"
                     />
+                    <span
+                      v-if="formErrorsLocal[`variant_${index}_color`]"
+                      class="text-xs text-red-500 block"
+                    >
+                      {{ formErrorsLocal[`variant_${index}_color`] }}
+                    </span>
                   </div>
                 </div>
 
@@ -443,13 +467,19 @@
                       min="0"
                       step="1000"
                     />
+                    <span
+                      v-if="formErrorsLocal[`variant_${index}_priceBase`]"
+                      class="text-xs text-red-500 block"
+                    >
+                      {{ formErrorsLocal[`variant_${index}_priceBase`] }}
+                    </span>
                   </div>
 
                   <div class="space-y-2">
                     <label
                       class="block text-xs font-medium text-gray-700 dark:text-gray-300"
                     >
-                      Giá sale (VNĐ)
+                      Giá khuyến mãi (VNĐ)
                     </label>
                     <input
                       v-model="variant.priceSale"
@@ -458,6 +488,12 @@
                       min="0"
                       step="1000"
                     />
+                    <span
+                      v-if="formErrorsLocal[`variant_${index}_priceSale`]"
+                      class="text-xs text-red-500 block"
+                    >
+                      {{ formErrorsLocal[`variant_${index}_priceSale`] }}
+                    </span>
                   </div>
 
                   <div class="space-y-2">
@@ -472,6 +508,12 @@
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       min="0"
                     />
+                    <span
+                      v-if="formErrorsLocal[`variant_${index}_stockQuantity`]"
+                      class="text-xs text-red-500 block"
+                    >
+                      {{ formErrorsLocal[`variant_${index}_stockQuantity`] }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -613,6 +655,7 @@ onUnmounted(() => {
 // Form data - sync với parent
 // const localFormData = ref({ ...props.formData });
 const localFormData = ref(JSON.parse(JSON.stringify(props.formData)));
+const formErrorsLocal = ref({});
 const showColorPopup = ref(false);
 const showSizePopup = ref(false);
 const colorTargetIndex = ref(null);
@@ -685,6 +728,14 @@ watch(
     }
   },
   { deep: true }
+);
+
+watch(
+  () => props.formErrors,
+  (newErrors) => {
+    formErrorsLocal.value = { ...newErrors };
+  },
+  { deep: true, immediate: true }
 );
 
 // ===== HANDLERS (product fields) =====
@@ -771,24 +822,112 @@ const handleSizesConfirmed = (sizes) => {
   }
 };
 
+// Regex kiểm tra SKU hợp lệ theo chuẩn: BRAND-MODEL-COLOR-SIZE
+const SKU_REGEX = /^[A-Z0-9]+-[A-Z0-9]+-[A-Z]+-[0-9A-Z]+$/;
+
 // Auto SKU cho biến thể
 const autoGenerateSku = (index) => {
   const v = localFormData.value.variants[index];
   const productName = localFormData.value.name || "";
+
   if (productName && v.color && v.size) {
     const brandPart = extractBrandCode(productName);
     const modelPart = extractModelCode(productName);
     const colorPart = shortenColor(v.color);
-    const sizePart = String(v.size).split(",")[0]?.trim() || ""; // Lấy size đầu nếu multi
+    const sizePart = String(v.size).split(",")[0]?.trim() || "";
     v.sku = `${brandPart}-${modelPart}-${colorPart}-${sizePart}`;
+
+    // 🔍 Validate SKU format & update errors
+    const updatedErrors = { ...props.formErrors };
+    if (!SKU_REGEX.test(v.sku)) {
+      updatedErrors[`variant_${index}_sku`] =
+        "SKU không hợp lệ. Vui lòng kiểm tra Size & Màu.";
+    } else {
+      delete updatedErrors[`variant_${index}_sku`];
+    }
+    formErrorsLocal.value = { ...updatedErrors };
+    emit("update:formErrors", updatedErrors);
   }
+};
+
+const validateForm = () => {
+  const errors = {};
+
+  // ===== Basic Fields =====
+  if (!localFormData.value.name?.trim()) {
+    errors.name = "Tên sản phẩm là bắt buộc";
+  }
+
+  if (!localFormData.value.slug?.trim()) {
+    errors.slug = "Slug là bắt buộc";
+  }
+
+  if (!localFormData.value.brandId) {
+    errors.brandId = "Thương hiệu là bắt buộc";
+  }
+
+  if (!localFormData.value.materialId) {
+    errors.materialId = "Chất liệu là bắt buộc";
+  }
+
+  if (!localFormData.value.shoeSoleId) {
+    errors.shoeSoleId = "Loại đế giày là bắt buộc";
+  }
+
+  if (!localFormData.value.categoryIds.length) {
+    errors.categoryIds = "Phải chọn ít nhất 1 danh mục";
+  }
+
+  // ===== Variants =====
+  if (!localFormData.value.variants.length) {
+    errors.variants = "Cần có ít nhất 1 sản phẩm chi tiết";
+  } else {
+    localFormData.value.variants.forEach((v, i) => {
+      if (!v.size) errors[`variant_${i}_size`] = "Chọn size";
+      if (!v.color) errors[`variant_${i}_color`] = "Chọn màu";
+      if (!v.sku || !SKU_REGEX.test(v.sku)) {
+        errors[`variant_${i}_sku`] = !v.sku
+          ? "SKU chưa được tạo"
+          : "SKU không hợp lệ. Vui lòng chọn Size & Màu đúng chuẩn.";
+      }
+      if (
+        v.stockQuantity == null ||
+        isNaN(Number(v.stockQuantity)) ||
+        Number(v.stockQuantity) < 0
+      ) {
+        errors[`variant_${i}_stockQuantity`] =
+          "Tồn kho phải là số nguyên lớn hơn hoặc bằng 0";
+      }
+      // ===== Validate giá =====
+      if (!v.priceBase || Number(v.priceBase) <= 0) {
+        errors[`variant_${i}_priceBase`] = "Giá gốc phải lớn hơn 0";
+      }
+
+      if (!v.priceSale || Number(v.priceSale) <= 0) {
+        errors[`variant_${i}_priceSale`] = "Giá bán phải lớn hơn 0";
+      } else if (Number(v.priceSale) >= Number(v.priceBase)) {
+        errors[`variant_${i}_priceSale`] = "Giá bán phải NHỎ HƠN giá gốc";
+      }
+    });
+  }
+
+  emit("update:formErrors", errors);
+
+  return Object.keys(errors).length === 0;
 };
 
 // Submit/Close
 const handleSubmit = () => {
+  const isValid = validateForm();
+  if (!isValid) {
+    console.warn("❌ Có lỗi! Không submit!");
+    return;
+  }
+
   emit("update:formData", { ...localFormData.value });
   emit("submit", { ...localFormData.value });
 };
+
 const handleClose = () => {
   emit("update:visible", false);
   emit("close");

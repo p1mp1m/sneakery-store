@@ -419,4 +419,12 @@ public class AdminProductVariantService {
         if (quantity <= com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD) return "low_stock";
         return "in_stock";
     }
+
+    public boolean existsBySku(String sku) {
+        return productVariantRepository.existsBySku(sku.trim().toUpperCase());
+    }
+
+    public boolean existsBySkuExceptVariant(Long variantId, String sku) {
+        return productVariantRepository.existsBySkuAndProductIdNot(sku.trim().toUpperCase(), variantId);
+    }
 }

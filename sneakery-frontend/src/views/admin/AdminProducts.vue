@@ -735,6 +735,7 @@
     <!-- Create/Edit Modal -->
     <ProductFormModal
       v-model:visible="showModal"
+      v-model:formErrors="formErrors"
       v-model:formData="formData"
       :isEditMode="isEditMode"
       :initialProduct="isEditMode ? editingProduct : null"

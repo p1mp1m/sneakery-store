@@ -149,4 +149,28 @@ public class AdminProductVariantController {
         ProductVariantStatsDto stats = adminProductVariantService.getVariantStatistics();
         return ResponseEntity.ok(stats);
     }
+
+    /**
+     * Kiểm tra SKU trùng khi thêm mới
+     */
+    @GetMapping("/check-sku")
+    public ResponseEntity<Boolean> checkSkuExists(@RequestParam String sku) {
+        boolean exists = adminProductVariantService.existsBySku(sku.trim().toUpperCase());
+        return ResponseEntity.ok(exists);
+    }
+
+    /**
+     * Kiểm tra SKU trùng khi chỉnh sửa (loại biến thể hiện tại)
+     */
+    @GetMapping("/{id}/check-sku")
+    public ResponseEntity<Boolean> checkSkuExistsExceptThis(
+            @PathVariable Long id,
+            @RequestParam String sku
+    ) {
+        boolean exists = adminProductVariantService.existsBySkuExceptVariant(
+                id,
+                sku.trim().toUpperCase()
+        );
+        return ResponseEntity.ok(exists);
+    }
 }

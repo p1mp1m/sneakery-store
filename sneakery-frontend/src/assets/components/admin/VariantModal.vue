@@ -122,7 +122,7 @@
                   isSkuFocused = false;
                   validateSku();
                 "
-                @input="validateSku"
+                @input="handleSkuInput"
               />
               <transition
                 enter-active-class="transition-all duration-200 ease-out"
@@ -140,6 +140,21 @@
                   phẩm, màu và size — bạn có thể chỉnh
                   <strong>thủ công</strong> nếu muốn.
                 </small>
+              </transition>
+              <transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-y-1"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 -translate-y-1"
+              >
+                <p
+                  v-if="errors.skuFormat"
+                  class="text-xs text-amber-500 dark:text-amber-400 mt-1"
+                >
+                  {{ errors.skuFormat }}
+                </p>
               </transition>
               <transition
                 enter-active-class="transition-all duration-200 ease-out"
@@ -657,6 +672,7 @@ const errors = reactive({
   priceSale: "",
   stockQuantity: "",
   lowStockThreshold: "",
+  skuFormat: "",
 });
 
 const formData = reactive({
@@ -782,6 +798,18 @@ const validateSku = () => {
     return false;
   }
   errors.sku = "";
+  return true;
+};
+
+const validateSkuFormat = () => {
+  const SKU_REGEX = /^[A-Z0-9]{2,10}-[A-Z0-9]{2,10}-[A-Z0-9]{2,6}-\d{1,3}$/;
+
+  if (formData.sku && !SKU_REGEX.test(formData.sku)) {
+    errors.skuFormat = "Định dạng SKU không đúng theo chuẩn hệ thống";
+    return false;
+  }
+
+  errors.skuFormat = "";
   return true;
 };
 
@@ -1007,9 +1035,13 @@ const resetForm = () => {
   resetKey.value++; // ép component con reset lại gallery
   removedImageUrls.value = [];
   sizeError.value = ""; // Reset error
+  isSkuManuallyChanged.value = false;
+  // isExistingSku.value = false;
   previousSizeValue.value = ""; // Reset previous value
   clearAllErrors(); // Clear tất cả validation errors
 };
+
+// const isExistingSku = ref(false);
 
 const populateForm = (variant) => {
   Object.assign(formData, {
@@ -1026,6 +1058,9 @@ const populateForm = (variant) => {
     imageUrl: variant.imageUrl || "",
     isActive: variant.isActive !== false,
   });
+  isSkuManuallyChanged.value = false;
+  // isExistingSku.value = true;
+  validateSkuFormat();
 };
 
 // ===== MODAL LIFECYCLE =====
@@ -1105,6 +1140,7 @@ watch(
     if (props.variant) {
       // Edit mode: nạp form
       populateForm(props.variant);
+      validateSkuFormat();
 
       try {
         // Lấy ảnh của product (không thay primary ở đây)
@@ -1134,32 +1170,64 @@ watch(
 );
 
 // ====== AUTO GENERATE SKU ======
-// --- Watch sinh SKU ---
+const isSkuManuallyChanged = ref(false);
+
+const autoGenerateSku = () => {
+  if (!formData.productId || !formData.color || !formData.size) return;
+
+  const product = products.value.find((p) => p.id === formData.productId);
+  if (!product) return;
+
+  const brandPart = extractBrandCode(product.name);
+  const modelPart = extractModelCode(product.name);
+  const colorPart = shortenColor(formData.color);
+  const sizePart = String(formData.size).trim();
+
+  formData.sku = `${brandPart}-${modelPart}-${colorPart}-${sizePart}`;
+  validateSkuFormat();
+};
+
+// Watch SKU để phát hiện chỉnh tay
 watch(
   [() => formData.productId, () => formData.color, () => formData.size],
-  ([pid, color, size]) => {
-    if (!pid || !color || !size) return;
-    const product = products.value.find((p) => p.id === pid);
-    if (!product?.name) return;
+  ([newPid, newColor, newSize], [oldPid, oldColor, oldSize]) => {
+    // Nếu user đã gõ tay vào ô SKU thì không auto nữa
+    if (isSkuManuallyChanged.value) return;
 
-    const brandPart = extractBrandCode(product.name); // ADIDA / NIKE / CONVE ...
-    const modelPart = extractModelCode(product.name); // ULTRA22 / REACT55 ...
-    const colorPart = shortenColor(color); // WHI / RED / BLK ...
-    const sizePart = String(size).trim(); // OK // 42
+    // Edit mode: lần đầu populate từ DB ("" → value) thì KHÔNG generate,
+    // để giữ đúng SKU đang có trong DB
+    if (isEdit.value && oldPid === "" && oldColor === "" && oldSize === "") {
+      return;
+    }
 
-    formData.sku = `${brandPart}-${modelPart}-${colorPart}-${sizePart}`;
-  }
+    // Thiếu dữ liệu thì khỏi làm
+    if (!newPid || !newColor || !newSize) return;
+
+    autoGenerateSku();
+    validateSkuFormat();
+  },
+  { immediate: false }
 );
+
+const handleSkuInput = () => {
+  isSkuManuallyChanged.value = true;
+  validateSku();
+  validateSkuFormat();
+};
 
 // ===== SUBMIT =====
 const handleSubmit = async () => {
   try {
     // ==== Validate tất cả fields trước khi submit ====
     if (!validateAll()) {
-      ElMessage.warning({
+      notificationService.warning({
         message: "Vui lòng kiểm tra và sửa các lỗi trong form",
         duration: 3000,
       });
+      return;
+    }
+
+    if (!validateSkuFormat()) {
       return;
     }
 
