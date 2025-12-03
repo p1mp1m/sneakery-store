@@ -244,6 +244,27 @@
               >
             </div>
           </div>
+          <!-- ⭐ UI cảnh báo điểm không đủ -->
+          <div
+            v-if="
+              getNormalizedStatusValue(order.status) === 'Processing' &&
+              getNextStep(order.status) === 'Packed' &&
+              isInsufficientPoints
+            "
+            class="w-full mt-3 flex items-start gap-2 p-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-600 text-amber-700 dark:text-amber-300 text-sm"
+          >
+            <i class="material-icons text-base">warning</i>
+            <div>
+              <p class="font-semibold">Không thể chuyển trạng thái</p>
+              <p>
+                Khách đã dùng
+                <strong>{{ order.pointsUsed }}</strong> điểm nhưng chỉ còn
+                <strong>{{ order.customerPointBalance }}</strong> điểm.
+                <br />
+                Không thể chuyển sang bước <strong>Đã đóng gói</strong>.
+              </p>
+            </div>
+          </div>
         </div>
         <!-- Return Status Flow -->
         <div
@@ -1193,6 +1214,21 @@ const confirmStatusChange = (order, targetStatus) => {
 
     const currentNormalizedStatus = getNormalizedStatusValue(order.status);
 
+    // ⭐ RULE: Không cho Processing → Packed nếu điểm sử dụng vượt quá điểm còn lại
+    if (currentNormalizedStatus === "Processing" && targetStatus === "Packed") {
+      const used = Number(order.pointsUsed || 0);
+      const balance = Number(order.customerPointBalance || 0);
+
+      if (used > balance) {
+        notificationService.warning(
+          "Không thể chuyển trạng thái",
+          `Khách đã dùng ${used} điểm nhưng chỉ còn ${balance} điểm.\n` +
+            "Không thể chuyển sang bước Đã đóng gói."
+        );
+        return; // ❌ STOP, không mở dialog confirm
+      }
+    }
+
     // Kiểm tra xem có thể chuyển đổi không
     if (!canChangeToStatus(currentNormalizedStatus, targetStatus)) {
       notificationService.warning(
@@ -1438,6 +1474,14 @@ const returnStepIndex = computed(() => {
 
 const isReturnRejected = computed(() => {
   return order.value?.returnRequest?.status?.toLowerCase() === "rejected";
+});
+
+const isInsufficientPoints = computed(() => {
+  if (!order.value) return false;
+  const used = Number(order.value.pointsUsed || 0);
+  const balance = Number(order.value.customerPointBalance || 0);
+
+  return used > balance;
 });
 
 const canMarkDeliveryFailed = (status) => {

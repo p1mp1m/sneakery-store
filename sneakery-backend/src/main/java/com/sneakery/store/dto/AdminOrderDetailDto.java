@@ -21,6 +21,8 @@ public class AdminOrderDetailDto {
     private BigDecimal shippingFee;
     private BigDecimal taxAmount;
     private Integer pointsUsed;
+    @Schema(description = "Điểm thưởng hiện tại còn lại của khách hàng")
+    private Integer customerPointBalance;
     private BigDecimal pointsDiscount;
     private BigDecimal totalAmount;
 

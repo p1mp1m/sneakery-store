@@ -189,9 +189,15 @@ public class LoyaltyService {
         if (amount == null) {
             return 0;
         }
-        
-        // 1 point = 1,000 VND
-        return amount.divide(BigDecimal.valueOf(VND_PER_POINT), 0, java.math.RoundingMode.DOWN).intValue();
+
+        // ⭐ Công thức mới: tổng tiền / 10,000 và làm tròn
+        return amount
+                .divide(BigDecimal.valueOf(10000), 0, java.math.RoundingMode.HALF_UP)
+                .intValue();
+    }
+
+    public Integer getUserCurrentBalance(Long userId) {
+        return loyaltyPointRepository.calculateCurrentPoints(userId, LocalDateTime.now());
     }
 
     /**

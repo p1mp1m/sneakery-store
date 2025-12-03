@@ -317,6 +317,11 @@ public class AdminOrderService {
                         .build())
                 .collect(Collectors.toList());
 
+        Integer customerPointBalance = 0;
+        if (order.getUser() != null) {
+            customerPointBalance = loyaltyService.getUserCurrentBalance(order.getUser().getId());
+        }
+
         return AdminOrderDetailDto.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
@@ -341,6 +346,7 @@ public class AdminOrderService {
                 .userId(order.getUser() != null ? order.getUser().getId() : null)
                 .customerName(order.getUser() != null ? order.getUser().getFullName() : "Guest")
                 .customerEmail(order.getUser() != null ? order.getUser().getEmail() : "N/A")
+                .customerPointBalance(customerPointBalance)
 
                 // 🏠 Address
                 .addressShipping(convertToAddressDto(order.getAddressShipping()))
