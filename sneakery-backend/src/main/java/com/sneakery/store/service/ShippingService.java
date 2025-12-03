@@ -15,7 +15,7 @@ public class ShippingService {
 
     // Địa chỉ cửa hàng mặc định
     private static final String STORE_ADDRESS =
-            "23 Đường Cầu Giấy, Dịch Vọng Hậu, Cầu Giấy, Hà Nội, 100000";
+            "Xuân Phương, Nam Từ Liêm, Hà Nội";
 
     /**
      * Tính phí ship dựa trên khoảng cách.
@@ -40,6 +40,9 @@ public class ShippingService {
         // 1. Geocode cửa hàng
         // =========================
         double[] storeCoords = geocodingService.geocode(STORE_ADDRESS);
+
+        log.info("🏬 Toạ độ cửa hàng: lat={}, lon={}",
+                storeCoords[0], storeCoords[1]);
 
         // =========================
         // 2. Geocode khách với fallback nhiều cấp

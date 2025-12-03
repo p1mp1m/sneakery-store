@@ -428,10 +428,10 @@ public class AdminOrderService {
         );
 
         posAddress.setLine1("Cửa hàng Sneakery");
-        posAddress.setLine2("Bán tại quầy POS");
+        posAddress.setLine2("Bán tại quầy POS - 13 Trịnh Văn Bô");
         posAddress.setCity("Hà Nội");
-        posAddress.setDistrict("Quận Hoàn Kiếm");
-        posAddress.setWard("Phường Tràng Tiền");
+        posAddress.setDistrict("Quận Nam Từ Liêm");
+        posAddress.setWard("Phường Xuân Phương");
         posAddress.setPostalCode("100000");
 
         Address savedAddress = addressRepository.save(posAddress);
