@@ -39,24 +39,12 @@ public class LoyaltyService {
      */
     @Transactional(readOnly = true)
     public int getUserPointsBalance(Long userId) {
-        log.info("Fetching points balance for user ID: {}", userId);
-        
-        LocalDateTime now = LocalDateTime.now();
-        List<LoyaltyPoint> points = loyaltyPointRepository.findByUserIdAndExpiresAtAfter(userId, now);
-        
-        int balance = points.stream()
-                .mapToInt(lp -> {
-                    if ("earn".equals(lp.getTransactionType())) {
-                        return lp.getPoints();
-                    } else if ("redeem".equals(lp.getTransactionType())) {
-                        return -lp.getPoints();
-                    }
-                    return 0;
-                })
-                .sum();
-        
-        log.info("User {} has {} points", userId, balance);
-        return Math.max(balance, 0); // Không cho âm
+        log.info("Fetching balance for user {}", userId);
+
+        Integer balance = loyaltyPointRepository.calculateCurrentPoints(userId, LocalDateTime.now());
+        int safeBalance = balance != null ? balance : 0;
+
+        return Math.max(safeBalance, 0); // Không cho âm
     }
 
     /**
@@ -73,31 +61,41 @@ public class LoyaltyService {
      */
     @Transactional
     public void earnPointsFromOrder(Order order) {
-        log.info("💎 Earning points for order ID: {}", order.getId());
-        
-        // Tính points: 1 point = 1,000 VND
-        int points = calculatePointsFromAmount(order.getTotalAmount());
-        
+        log.info("🎯 Earn points for order {}", order.getId());
+
+        BigDecimal subtotal = order.getSubtotal() != null ? order.getSubtotal() : BigDecimal.ZERO;
+        BigDecimal discountAmount = order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO;
+
+        BigDecimal pointsDiscount = BigDecimal.ZERO;
+        if (order.getPointsUsed() != null && order.getPointsUsed() > 0) {
+            pointsDiscount = BigDecimal.valueOf(order.getPointsUsed() * (long) VND_PER_POINT);
+        }
+
+        BigDecimal taxable = subtotal.subtract(discountAmount).subtract(pointsDiscount);
+        if (taxable.compareTo(BigDecimal.ZERO) < 0) taxable = BigDecimal.ZERO;
+
+        int points = taxable
+                .divide(BigDecimal.valueOf(10000), 0, java.math.RoundingMode.HALF_UP)
+                .intValue();
+
         if (points <= 0) {
-            log.info("Order amount too low to earn points");
+            log.info("⛔ Taxable too low → no points");
             return;
         }
-        
-        LoyaltyPoint loyaltyPoint = new LoyaltyPoint();
-        loyaltyPoint.setUser(order.getUser());
-        loyaltyPoint.setPoints(points);
-        loyaltyPoint.setTransactionType("earn");
-        loyaltyPoint.setEarnedFromOrder(order);
-        loyaltyPoint.setDescription(String.format("Tích điểm từ đơn hàng %s", order.getOrderNumber()));
-        loyaltyPoint.setExpiresAt(LocalDateTime.now().plusYears(1)); // Hết hạn sau 1 năm
-        
-        loyaltyPointRepository.save(loyaltyPoint);
-        
-        // Update order
+
+        LoyaltyPoint lp = new LoyaltyPoint();
+        lp.setUser(order.getUser());
+        lp.setPoints(points);
+        lp.setTransactionType("earn");
+        lp.setEarnedFromOrder(order);
+        lp.setDescription("Tích điểm từ đơn hàng " + order.getOrderNumber());
+        lp.setExpiresAt(LocalDateTime.now().plusYears(1));
+
+        loyaltyPointRepository.save(lp);
         order.setPointsEarned(points);
-        
-        log.info("✅ User {} earned {} points from order {}", 
-            order.getUser().getId(), points, order.getId());
+
+        log.info("🏆 User {} earned {} points on taxable {}",
+                order.getUser().getId(), points, taxable);
     }
 
     /**
@@ -196,9 +194,9 @@ public class LoyaltyService {
                 .intValue();
     }
 
-    public Integer getUserCurrentBalance(Long userId) {
-        return loyaltyPointRepository.calculateCurrentPoints(userId, LocalDateTime.now());
-    }
+//    public Integer getUserCurrentBalance(Long userId) {
+//        return loyaltyPointRepository.calculateCurrentPoints(userId, LocalDateTime.now());
+//    }
 
     /**
      * Calculate VND from points

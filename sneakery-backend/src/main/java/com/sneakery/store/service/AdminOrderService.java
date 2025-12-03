@@ -87,6 +87,22 @@ public class AdminOrderService {
         // Kiểm tra xem có phải POS order không (orderNumber bắt đầu bằng "POS-")
         boolean isPOSOrder = order.getOrderNumber() != null && order.getOrderNumber().startsWith("POS-");
 
+        // ⭐ Redeem Loyalty Points khi Admin duyệt đơn (Processing)
+        if (!isPOSOrder
+                && "processing".equalsIgnoreCase(normalizedStatus)
+                && !"processing".equalsIgnoreCase(oldStatus)) {
+
+            Integer pointsUsed = order.getPointsUsed() != null ? order.getPointsUsed() : 0;
+            if (pointsUsed > 0 && order.getUser() != null) {
+                try {
+                    log.info("🎯 Redeeming {} points for online order #{}", pointsUsed, orderId);
+                    loyaltyService.redeemPointsInNewTx(order.getUser().getId(), pointsUsed, order);
+                } catch (Exception e) {
+                    log.error("❌ Redeem points failed for order #{}: {}", orderId, e.getMessage(), e);
+                }
+            }
+        }
+
         // Đối với online/offline orders: trừ kho khi status = "completed" (delivered)
         // POS orders đã được trừ kho khi tạo, không cần trừ lại
         if (!isPOSOrder && "delivered".equalsIgnoreCase(normalizedStatus) && !"delivered".equalsIgnoreCase(oldStatus)) {
@@ -319,7 +335,7 @@ public class AdminOrderService {
 
         Integer customerPointBalance = 0;
         if (order.getUser() != null) {
-            customerPointBalance = loyaltyService.getUserCurrentBalance(order.getUser().getId());
+            customerPointBalance = loyaltyService.getUserPointsBalance(order.getUser().getId());
         }
 
         return AdminOrderDetailDto.builder()

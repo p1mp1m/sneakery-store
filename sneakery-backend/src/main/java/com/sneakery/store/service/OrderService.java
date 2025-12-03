@@ -338,16 +338,16 @@ public class OrderService {
         Order savedOrder = orderRepository.saveAndFlush(order);
 
         // 17. Redeem loyalty points sau khi order được lưu (có ID)
-        if (pointsUsed > 0) {
-            try {
-                loyaltyService.redeemPointsInNewTx(userId, pointsUsed, savedOrder);
-                log.info("✅ Redeemed {} points for order {}", pointsUsed, savedOrder.getId());
-            } catch (Exception e) {
-                log.error("Failed to redeem points for order {}: {}", savedOrder.getId(), e.getMessage(), e);
-                // Không throw error vì order đã được tạo, chỉ log
-            }
-        }
-        
+//        if (pointsUsed > 0) {
+//            try {
+//                loyaltyService.redeemPointsInNewTx(userId, pointsUsed, savedOrder);
+//                log.info("✅ Redeemed {} points for order {}", pointsUsed, savedOrder.getId());
+//            } catch (Exception e) {
+//                log.error("Failed to redeem points for order {}: {}", savedOrder.getId(), e.getMessage(), e);
+//                // Không throw error vì order đã được tạo, chỉ log
+//            }
+//        }
+//
         // Note: Inventory logs được tạo tự động bởi database trigger khi stock_quantity thay đổi
         // Trigger sẽ tự động log mọi thay đổi inventory
         

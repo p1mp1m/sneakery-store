@@ -470,10 +470,19 @@
               >
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   Sẽ tích thêm:
-                  <span class="font-bold text-green-600 dark:text-green-400"
-                    >{{ Math.floor(totalAmount / 1000) }} điểm</span
-                  >
-                  <span class="text-gray-500">(1 điểm = 1,000₫)</span>
+                  <span class="font-bold text-green-600 dark:text-green-400">
+                    {{
+                      Math.round(
+                        Math.max(
+                          (subtotal - discountAmount - loyaltyDiscountAmount) /
+                            10000,
+                          0
+                        )
+                      )
+                    }}
+                    điểm
+                  </span>
+                  <!-- <span class="text-gray-500">(1 điểm = 10,000₫)</span> -->
                 </p>
               </div>
             </div>
@@ -1905,20 +1914,6 @@ const totalCartQuantity = computed(() => {
   return cartItems.value.reduce((sum, item) => sum + (item.quantity || 0), 0);
 });
 
-// Computed để lấy sản phẩm hiển thị (giới hạn số lượng)
-// const displayedProducts = computed(() => {
-//   if (
-//     showingAll.value ||
-//     searchQuery.value.trim() ||
-//     filterBrand.value ||
-//     filterCategory.value
-//   ) {
-//     // Khi search/filter hoặc đã click "Xem thêm", hiển thị tất cả
-//     return products.value;
-//   }
-//   // Chỉ hiển thị một số sản phẩm gợi ý
-//   return products.value.slice(0, displayLimit.value);
-// });
 const displayedProducts = computed(() => products.value);
 
 const loadPage = async (pageIndex = 0, filters = {}) => {
@@ -1950,33 +1945,6 @@ const loadPage = async (pageIndex = 0, filters = {}) => {
 
 const hasMoreProducts = computed(() => !noMoreProducts.value);
 
-// const hasMoreProducts = computed(() => {
-//   return (
-//     !showingAll.value &&
-//     !searchQuery.value.trim() &&
-//     !filterBrand.value &&
-//     !filterCategory.value &&
-//     products.value.length > displayLimit.value
-//   );
-// });
-
-// const VAT_RATE = 0.1;
-
-// const cartVat = computed(() => {
-//   return Math.round(subtotal.value * VAT_RATE);
-// });
-
-// // const cartGrandTotal = computed(() => {
-// //   return subtotal.value - discountAmount.value + cartVat.value;
-// // });
-// const cartGrandTotal = computed(() => {
-//   return (
-//     subtotal.value -
-//     discountAmount.value -
-//     loyaltyDiscountAmount.value +
-//     cartVat.value
-//   );
-// });
 const VAT_RATE = 0.1;
 
 // Số tiền chịu thuế sau khi trừ mã giảm giá + điểm thưởng
@@ -2246,32 +2214,7 @@ const confirmAndCreateOrder = async () => {
     // === 5. TỔNG THANH TOÁN ===
     const grandTotal = taxable + vatAmount;
 
-    // === 6. Build order data gửi backend ===
-    // const orderData = {
-    //   items: cartItems.value.map((item) => ({
-    //     productId: item.id,
-    //     variantId: item.variantId,
-    //     quantity: item.quantity,
-    //     unitPrice: item.unitPrice,
-    //     sku: item.sku,
-    //   })),
-
-    //   customerId: selectedCustomer.value?.id || null,
-
-    //   discountCode: discountCode.value || null,
-    //   discountAmount: couponDiscount,
-
-    //   pointsUsed: loyaltyPointsToUse.value || 0,
-    //   pointsDiscount: loyaltyDiscountAmount.value || 0,
-
-    //   subtotal,
-    //   taxableAmount: taxable,
-    //   taxAmount: vatAmount,
-    //   totalAmount: grandTotal,
-
-    //   paymentMethod: paymentMethod.value,
-    //   notes: "Bán tại quầy POS",
-    // };
+    // === 6. Build data gửi lên backend ===
     const orderData = {
       items: cartItems.value.map((item) => ({
         productId: item.id,
@@ -2647,82 +2590,6 @@ const handleBarcodeSearch = async () => {
     loading.value = false;
   }
 };
-
-// const processOrder = async () => {
-//   if (cartItems.value.length === 0) {
-//     notificationService.warning("Cảnh báo", "Giỏ hàng trống");
-//     return;
-//   }
-
-//   try {
-//     processing.value = true;
-
-//     const orderData = {
-//       items: cartItems.value.map((item) => ({
-//         productId: item.id,
-//         variantId: item.variantId,
-//         quantity: item.quantity,
-//         unitPrice: item.unitPrice,
-//       })),
-//       customerId: selectedCustomer.value?.id || null,
-//       discountCode: discountCode.value || null,
-//       discountAmount: discountAmount.value,
-//       paymentMethod: paymentMethod.value,
-//       totalAmount: cartGrandTotal.value,
-//       notes: "",
-//     };
-
-//     const result = await adminStore.createPOSOrder(orderData);
-
-//     // Show receipt
-//     currentReceipt.value = result;
-//     showReceipt.value = true;
-
-//     // Clear cart
-//     cartItems.value = [];
-//     discountCode.value = "";
-//     discountAmount.value = 0;
-//     // Xóa localStorage sau khi thanh toán thành công
-//     localStorage.removeItem("pos_cart");
-
-//     notificationService.success(
-//       "Thành công",
-//       "Đơn hàng đã được tạo thành công"
-//     );
-//   } catch (error) {
-//     logger.error("Error processing order:", error);
-
-//     // Extract error message from different error formats
-//     let errorMessage = "Không thể tạo đơn hàng";
-
-//     if (error?.message) {
-//       // Error from handleError() returns { message, status, data }
-//       errorMessage = error.message;
-//     } else if (error?.response?.data?.message) {
-//       // Direct axios error response
-//       errorMessage = error.response.data.message;
-//     } else if (error?.response?.data?.validationErrors) {
-//       // Validation errors
-//       const validationErrors = error.response.data.validationErrors;
-//       const errorList = Object.entries(validationErrors)
-//         .map(
-//           ([field, messages]) =>
-//             `${field}: ${
-//               Array.isArray(messages) ? messages.join(", ") : messages
-//             }`
-//         )
-//         .join("\n");
-//       errorMessage = `Dữ liệu không hợp lệ:\n${errorList}`;
-//     } else if (typeof error === "string") {
-//       errorMessage = error;
-//     }
-
-//     // Show detailed error message
-//     notificationService.apiError(error, "Không thể tạo đơn hàng");
-//   } finally {
-//     processing.value = false;
-//   }
-// };
 
 const resetCart = () => {
   cartItems.value = [];
@@ -3114,36 +2981,6 @@ const updateQuantity = (index, quantity) => {
   }
 };
 
-// const calculateVat = (amount) => {
-//   if (!amount || isNaN(amount)) return 0;
-//   return Math.round(amount * 0.1); // VAT 10%
-// };
-
-// const getReceiptSubtotal = () => {
-//   if (!currentReceipt?.value) return 0;
-
-//   return (
-//     currentReceipt.value.subtotal ||
-//     currentReceipt.value.totalAmount +
-//       (currentReceipt.value.discountAmount || 0)
-//   );
-// };
-
-// const getReceiptVat = () => {
-//   return calculateVat(getReceiptSubtotal());
-// };
-
-// const getReceiptGrandTotal = () => {
-//   const subtotal = getReceiptSubtotal();
-//   const discount = currentReceipt?.value?.discountAmount || 0;
-//   const vat = getReceiptVat();
-
-//   return subtotal - discount + vat;
-// };
-
-// ===== VAT FOR RECEIPT =====
-// const RECEIPT_VAT_RATE = 0.1
-
 const getReceiptSubTotal = () => {
   if (!currentReceipt?.value) return 0;
 
@@ -3235,138 +3072,6 @@ const applyDiscount = async () => {
   }
 };
 
-// const printReceipt = () => {
-//   if (!currentReceipt.value) return;
-
-//   // Chuẩn bị dữ liệu cho PDF generator
-//   const receiptData = {
-//     id: currentReceipt.value.id,
-//     orderNumber:
-//       currentReceipt.value.orderNumber || `POS-${currentReceipt.value.id}`,
-//     createdAt: currentReceipt.value.createdAt,
-//     status: currentReceipt.value.status || "Completed",
-//     customerName:
-//       currentReceipt.value.customerName ||
-//       selectedCustomer.value?.fullName ||
-//       "Khách vãng lai",
-//     customerEmail:
-//       currentReceipt.value.customerEmail || selectedCustomer.value?.email || "",
-//     customerPhone: selectedCustomer.value?.phoneNumber || "",
-//     shippingAddress: "Bán tại quầy - Không vận chuyển",
-//     paymentMethod:
-//       currentReceipt.value.paymentMethod ||
-//       currentReceipt.value.payment?.paymentMethod ||
-//       paymentMethod.value,
-//     subtotal:
-//       currentReceipt.value.subtotal ||
-//       currentReceipt.value.totalAmount +
-//         (currentReceipt.value.discountAmount || 0),
-//     discountAmount: currentReceipt.value.discountAmount || 0,
-//     totalAmount: currentReceipt.value.totalAmount,
-//     items: (
-//       currentReceipt.value.orderDetails ||
-//       currentReceipt.value.items ||
-//       []
-//     ).map((item) => ({
-//       id: item.id || item.variantId,
-//       productName: item.productName || item.name,
-//       variantName:
-//         item.size || item.color
-//           ? `${item.size || ""} ${item.color || ""}`.trim()
-//           : null,
-//       quantity: item.quantity,
-//       price: item.unitPrice || item.price || 0,
-//     })),
-//   };
-
-//   // Sử dụng PDF generator để in
-//   try {
-//     printInvoice(receiptData);
-//   } catch (error) {
-//     logger.error("Error printing receipt:", error);
-//     // Fallback: window.print() nếu có lỗi
-//     window.print();
-//   }
-// };
-// const printReceipt = () => {
-//   if (!currentReceipt.value) return;
-
-//   // ==== TÍNH SUBTOTAL AN TOÀN ====
-//   const safeSubtotal =
-//     currentReceipt.value.subtotal ??
-//     (currentReceipt.value.totalAmount || 0) +
-//       (currentReceipt.value.discountAmount || 0);
-
-//   // ==== LẤY SOURCE ITEMS (từ orderDetails hoặc items) ====
-//   const rawItems =
-//     currentReceipt.value.orderDetails || currentReceipt.value.items || [];
-
-//   // ==== MAP ITEMS + SKU ====
-//   const mappedItems = rawItems.map((item) => {
-//     const variantName =
-//       item.size || item.color
-//         ? `${item.size || ""} ${item.color || ""}`.trim()
-//         : null;
-
-//     return {
-//       id: item.id || item.variantId,
-
-//       // ✅ SKU: ưu tiên theo thứ tự
-//       sku:
-//         item.sku || // từ backend POS (CartItemDto)
-//         item.variantSku || // nếu dùng field variantSku
-//         (item.variant && item.variant.sku) || // nếu backend trả nested variant
-//         null,
-
-//       productName: item.productName || item.name || "Sản phẩm",
-
-//       variantName,
-
-//       quantity: item.quantity || 0,
-//       price: item.unitPrice || item.price || 0,
-//     };
-//   });
-
-//   // ==== CHUẨN BỊ DỮ LIỆU GỬI CHO PDF GENERATOR ====
-//   const receiptData = {
-//     id: currentReceipt.value.id,
-//     orderNumber:
-//       currentReceipt.value.orderNumber || `POS-${currentReceipt.value.id}`,
-//     createdAt: currentReceipt.value.createdAt,
-//     status: currentReceipt.value.status || "Completed",
-//     customerName:
-//       currentReceipt.value.customerName ||
-//       selectedCustomer.value?.fullName ||
-//       "Khách vãng lai",
-//     customerEmail:
-//       currentReceipt.value.customerEmail || selectedCustomer.value?.email || "",
-//     customerPhone: selectedCustomer.value?.phoneNumber || "",
-//     shippingAddress: "Bán tại quầy - Không vận chuyển",
-//     paymentMethod:
-//       currentReceipt.value.paymentMethod ||
-//       currentReceipt.value.payment?.paymentMethod ||
-//       paymentMethod.value,
-
-//     // ✅ SUBTOTAL: ưu tiên trường subtotal, fallback từ total + discount
-//     subtotal: safeSubtotal,
-
-//     discountAmount: currentReceipt.value.discountAmount || 0,
-//     totalAmount: currentReceipt.value.totalAmount || safeSubtotal,
-
-//     // ✅ ITEMS ĐÃ MAP (có SKU)
-//     items: mappedItems,
-//   };
-
-//   // Debug nếu cần
-//   // console.log("🧾 Receipt data for PDF:", receiptData);
-
-//   try {
-//     printInvoice(receiptData);
-//   } catch (error) {
-//     logger.error("Error printing receipt:", error);
-//     window.print();
-//   }
-// };
 const printReceipt = () => {
   if (!currentReceipt.value) {
     notificationService.warning("Cảnh báo", "Không có hóa đơn để in");
@@ -3583,13 +3288,6 @@ const handleKeydown = (event) => {
     }
   }
 
-  // Ctrl + Enter: Process order
-  // if (event.ctrlKey && event.key === "Enter") {
-  //   event.preventDefault();
-  //   if (cartItems.value.length > 0) {
-  //     processOrder();
-  //   }
-  // }
   if (event.ctrlKey && event.key === "Enter") {
     event.preventDefault();
 
