@@ -128,4 +128,16 @@ public class User implements UserDetails { // Implement UserDetails để tích 
     public boolean isEnabled() {
         return this.isActive;
     }
+
+    public boolean isGoogleAccount() {
+        return this.googleId != null && !this.googleId.isBlank();
+    }
+
+    public boolean isFacebookAccount() {
+        return this.facebookId != null && !this.facebookId.isBlank();
+    }
+
+    public boolean isLocalAccount() {
+        return this.googleId == null && this.facebookId == null;
+    }
 }

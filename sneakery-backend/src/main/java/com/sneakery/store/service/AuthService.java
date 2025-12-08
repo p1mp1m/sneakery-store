@@ -69,8 +69,7 @@ public class AuthService {
         final String raw = loginDto.getPassword();
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, raw)
-        );
+                new UsernamePasswordAuthenticationToken(email, raw));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtTokenProvider.generateToken(authentication);
@@ -85,15 +84,24 @@ public class AuthService {
     }
 
     // -------------------- FORGOT PASSWORD --------------------
-    @Transactional
     public void forgotPassword(String email) {
         var userOpt = userRepository.findByEmailIgnoreCase(email);
-        if (userOpt.isEmpty()) return;
+        if (userOpt.isEmpty())
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Email không tồn tại trong hệ thống.");
 
         var user = userOpt.get();
-        if (Boolean.FALSE.equals(user.getIsActive())) return;
 
-        // Xoá token cũ (nếu có)
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Tài khoản này đã bị vô hiệu hoá.");
+        }
+
+        // ❌ Nếu tài khoản không có password → là Google hoặc Facebook OAuth
+        if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Không tìm thấy Tài khoản Google của bạn");
+        }
+
+        // Xoá token cũ
         tokenRepository.deleteByUser(user);
 
         // Tạo token mới
@@ -103,7 +111,7 @@ public class AuthService {
         token.setExpiryDate(LocalDateTime.now().plusMinutes(expireMinutes));
         tokenRepository.save(token);
 
-        // Gửi email
+        // Gửi email reset
         emailService.sendResetPasswordEmail(user, token.getToken());
     }
 

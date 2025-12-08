@@ -28,7 +28,7 @@ public class EmailService {
     @Value("${spring.mail.enabled:false}")
     private boolean emailEnabled;
 
-    @Value("${spring.mail.from:noreply@sneakery.com}")
+    @Value("${spring.mail.from:storesneakery@gmail.com}")
     private String fromEmail;
 
     @Value("${app.web.reset-base-url:http://localhost:5173/reset-password}")
@@ -211,6 +211,7 @@ public class EmailService {
         try {
             MimeMessage msg = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, "UTF-8");
+            helper.setFrom(Objects.requireNonNull(fromEmail));
             helper.setTo(Objects.requireNonNull(user.getEmail()));
             helper.setSubject(Objects.requireNonNull(subject));
             helper.setText(Objects.requireNonNull(html), true);
