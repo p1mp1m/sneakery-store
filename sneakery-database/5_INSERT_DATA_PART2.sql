@@ -1043,6 +1043,3 @@ PRINT '=====================================================';
 PRINT N'HOAN THANH DONG BO ANH SAN PHAM!';
 PRINT '=====================================================';
 PRINT '';
-SELECT subject, body 
-FROM Email_Templates 
-WHERE template_name = 'password_reset';
