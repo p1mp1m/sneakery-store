@@ -1,166 +1,255 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <!-- LEFT SIDE: Reset Password Form -->
-      <div class="login-card">
-        <div class="login-header">
-          <img src="@/assets/images/logo.png" alt="Sneakery Store" class="logo-image" />
+  <div
+    class="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4"
+  >
+    <div
+      class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center"
+    >
+      <!-- LEFT: CARD -->
+      <div
+        class="bg-white/5 backdrop-blur-xl dark:bg-gray-800/60 rounded-2xl shadow-2xl p-8 md:p-12"
+      >
+        <!-- Logo -->
+        <div class="flex justify-center mb-6">
+          <img
+            src="@/assets/images/logo.png"
+            class="h-16"
+            alt="Sneakery Store"
+          />
         </div>
 
-        <form class="login-form" @submit.prevent="handleReset">
-          <h2 class="login-title">Đặt lại mật khẩu</h2>
-          <p class="login-subtitle">Nhập mật khẩu mới của bạn bên dưới.</p>
 
-          <div class="mb-4">
+        <!-- Title -->
+        <h2 class="text-2xl font-bold text-gray-100 text-center mb-2">
+          Đặt lại mật khẩu
+        </h2>
+        <p class="text-sm text-gray-300 text-center mb-8">
+          Nhập mật khẩu mới và xác nhận bên dưới.
+        </p>
+
+
+        <!-- Error -->
+        <div
+          v-if="serverError"
+          class="mb-6 p-4 bg-red-500/10 border border-red-500 text-red-300 rounded-lg flex gap-3 text-sm"
+        >
+          <i class="material-icons mt-0.5">error</i>
+          {{ serverError }}
+        </div>
+
+
+        <!-- FORM -->
+        <form @submit.prevent="handleReset" class="space-y-5">
+          <!-- Password -->
+          <div>
+            <label class="block text-sm text-gray-300 mb-1">Mật khẩu mới</label>
             <div class="relative">
-              <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">lock</i>
+              <i
+                class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base"
+                >lock</i
+              >
               <input
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
-                placeholder="Mật khẩu mới"
-                class="w-full pl-11 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all"
-                required
+                placeholder="Nhập mật khẩu mới"
+                class="w-full pl-11 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800/50 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <button
                 type="button"
                 @click="showPassword = !showPassword"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
               >
-                <i class="material-icons text-xl">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
+                <i class="material-icons">{{
+                  showPassword ? "visibility_off" : "visibility"
+                }}</i>
               </button>
             </div>
-            <p v-if="errors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.password }}</p>
+            <p v-if="errors.password" class="text-xs text-red-400 mt-1">
+              {{ errors.password }}
+            </p>
           </div>
 
-          <div class="mb-4">
+
+          <!-- Confirm -->
+          <div>
+            <label class="block text-sm text-gray-300 mb-1"
+              >Nhập lại mật khẩu</label
+            >
             <div class="relative">
-              <i class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">lock</i>
+              <i
+                class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base"
+                >lock</i
+              >
               <input
                 v-model="form.confirmPassword"
                 :type="showConfirmPassword ? 'text' : 'password'"
                 placeholder="Nhập lại mật khẩu"
-                class="w-full pl-11 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all"
-                required
+                class="w-full pl-11 pr-12 py-3 border border-gray-600 rounded-lg bg-gray-800/50 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
               <button
                 type="button"
                 @click="showConfirmPassword = !showConfirmPassword"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
               >
-                <i class="material-icons text-xl">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</i>
+                <i class="material-icons">{{
+                  showConfirmPassword ? "visibility_off" : "visibility"
+                }}</i>
               </button>
             </div>
-            <p v-if="errors.confirmPassword" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.confirmPassword }}</p>
+            <p v-if="errors.confirmPassword" class="text-xs text-red-400 mt-1">
+              {{ errors.confirmPassword }}
+            </p>
           </div>
 
+
+          <!-- Submit -->
           <button
             type="submit"
             :disabled="loading"
-            class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            class="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 focus:ring-2 focus:ring-purple-500 disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
           >
             <i v-if="loading" class="material-icons animate-spin">refresh</i>
-            <span>{{ loading ? 'Đang xử lý...' : 'Cập nhật mật khẩu' }}</span>
+            <span>{{ loading ? "Đang xử lý..." : "Cập nhật mật khẩu" }}</span>
           </button>
 
-          <div style="text-align:center; margin-top:16px;">
-            <a href="#" class="forgot-password" @click.prevent="router.push('/login')">
+
+          <!-- Back -->
+          <div class="text-center pt-2">
+            <a
+              class="text-xs text-gray-300 hover:text-purple-400 cursor-pointer"
+              @click.prevent="router.push('/login')"
+            >
               ← Quay lại đăng nhập
             </a>
           </div>
         </form>
       </div>
 
-      <!-- RIGHT SIDE -->
-      <div class="welcome-section">
-        <div class="welcome-content">
-          <h2 class="welcome-title">Chào mừng đến với Sneakery Store</h2>
-          <p class="welcome-subtitle">
-            Cập nhật mật khẩu của bạn để bảo vệ tài khoản an toàn.
+
+      <!-- RIGHT: WELCOME SECTION giống login 100% -->
+      <div class="hidden lg:block text-white">
+        <div class="space-y-6">
+          <h2 class="text-4xl font-bold">Chào mừng trở lại Sneakery Store</h2>
+
+
+          <p class="text-lg text-white/90">
+            Mật khẩu mới của bạn sẽ giúp tài khoản được bảo mật tốt hơn.
           </p>
+
+
+          <!-- Features -->
+          <div class="space-y-4 mt-8">
+            <div
+              v-for="(text, i) in features"
+              :key="i"
+              class="flex items-center gap-3"
+            >
+              <div
+                class="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+
+
+              <span class="text-lg">{{ text }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
 
+
 <script setup>
-import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import axios from 'axios'
-import notificationService from '@/utils/notificationService'
-import { API_ENDPOINTS, buildApiUrl } from '@/config/api'
-import logger from '@/utils/logger'
+import { ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
+import notificationService from "@/utils/notificationService";
+import { API_ENDPOINTS, buildApiUrl } from "@/config/api";
 
-const router = useRouter()
-const route = useRoute()
-const token = route.query.token // ✅ Lấy token từ URL query (?token=xxx)
 
-// Nếu không có token, quay về forgot password
-if (!token) {
-  notificationService.error('Lỗi','Liên kết không hợp lệ hoặc đã hết hạn.')
-  router.push('/forgot-password')
-}
+const router = useRouter();
+const route = useRoute();
 
-const loading = ref(false)
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
-const errors = ref({})
+
+const token = route.query.token;
+if (!token) router.push("/forgot-password");
+
+
+const loading = ref(false);
+const serverError = ref("");
+const errors = ref({});
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+
+
 const form = ref({
-  password: '',
-  confirmPassword: '',
-})
+  password: "",
+  confirmPassword: "",
+});
 
-// Validation
-const validateForm = () => {
-  errors.value = {}
-  
+
+const features = [
+  "Sản phẩm chính hãng 100%",
+  "Giao hàng nhanh chóng",
+  "Hỗ trợ 24/7",
+];
+
+
+const validate = () => {
+  errors.value = {};
   if (!form.value.password) {
-    errors.value.password = 'Vui lòng nhập mật khẩu'
-    return false
+    errors.value.password = "Vui lòng nhập mật khẩu";
+    return false;
   }
-  
   if (form.value.password.length < 6) {
-    errors.value.password = 'Tối thiểu 6 ký tự'
-    return false
+    errors.value.password = "Mật khẩu phải từ 6 ký tự";
+    return false;
   }
-  
-  if (!form.value.confirmPassword) {
-    errors.value.confirmPassword = 'Vui lòng nhập lại mật khẩu'
-    return false
-  }
-  
   if (form.value.password !== form.value.confirmPassword) {
-    errors.value.confirmPassword = 'Mật khẩu không khớp'
-    return false
+    errors.value.confirmPassword = "Mật khẩu không khớp";
+    return false;
   }
-  
-  return true
-}
+  return true;
+};
+
 
 const handleReset = async () => {
-  if (!validateForm()) return
-  
-  loading.value = true
-  errors.value = {}
+  if (!validate()) return;
+  loading.value = true;
+
 
   try {
-    // ✅ gửi đúng field BE mong đợi: "newPassword"
     await axios.post(buildApiUrl(API_ENDPOINTS.AUTH.RESET_PASSWORD), {
       token,
       newPassword: form.value.password,
-    })
-    notificationService.success('Thành công', 'Đặt lại mật khẩu thành công!')
-    router.push('/login')
+    });
+
+
+    notificationService.success("Thành công", "Mật khẩu đã được cập nhật!");
+    router.push("/login");
   } catch (err) {
-    logger.error('Error resetting password:', err)
-    notificationService.error('Lỗi',
-      err.response?.data?.message ||
-        'Liên kết đã hết hạn hoặc không hợp lệ'
-    )
+    serverError.value = err.response?.data?.message || "Có lỗi xảy ra";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
+
 
 

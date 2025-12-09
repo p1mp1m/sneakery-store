@@ -28,7 +28,7 @@ public class EmailService {
     @Value("${spring.mail.enabled:false}")
     private boolean emailEnabled;
 
-    @Value("${spring.mail.from:noreply@sneakery.com}")
+    @Value("${spring.mail.from:storesneakery@gmail.com}")
     private String fromEmail;
 
     @Value("${app.web.reset-base-url:http://localhost:5173/reset-password}")

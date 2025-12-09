@@ -800,10 +800,87 @@ BEGIN
     ('order_cancelled', N'Đơn hàng #{order_number} đã bị hủy', N'<h1>Đơn hàng đã bị hủy</h1><p>Đơn hàng của bạn đã bị hủy.</p>', '{order_number},{reason}', 1, GETDATE(), GETDATE());
 END;
 IF NOT EXISTS (SELECT 1 FROM Email_Templates WHERE template_name = 'password_reset')
-BEGIN
-    INSERT INTO Email_Templates (template_name, subject, body, variables, is_active, created_at, updated_at) VALUES
-    ('password_reset', N'Đặt lại mật khẩu', N'<h1>Đặt lại mật khẩu</h1><p>Nhấn vào link để đặt lại mật khẩu: {reset_link}</p>', '{reset_link},{expiry_time}', 1, GETDATE(), GETDATE());
-END;
+
+INSERT INTO Email_Templates (template_name, subject, body, variables, is_active)
+VALUES (
+    'password_reset',
+    N'Đặt lại mật khẩu',
+    N'<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đặt lại mật khẩu</title>
+</head>
+
+<body style="margin:0; padding:0; background:#f5f5f5; font-family:Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5; padding:32px 0;">
+        <tr>
+            <td align="center">
+                <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; padding:32px;">
+
+                    <tr>
+                        <td align="center" style="padding-bottom:20px;">
+                            <img src="https://i.postimg.cc/HLZMTJhQ/logo.png" width="120" alt="Sneakery Store" />
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-size:22px; font-weight:700; text-align:center; color:#222;">
+                            Đặt lại mật khẩu
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-size:15px; color:#555; line-height:1.6; padding-top:16px;">
+                            Xin chào <strong>{{full_name}}</strong>,<br><br>
+                            Bạn vừa yêu cầu đặt lại mật khẩu cho tài khoản Sneakery Store.<br>
+                            Nhấn vào nút bên dưới để tạo mật khẩu mới.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding:24px 0;">
+                            <a href="{{reset_link}}"
+                                style="
+                                    background:#4A00E0;
+                                    background:linear-gradient(135deg, #4A00E0, #8E2DE2);
+                                    color:#ffffff;
+                                    padding:14px 28px;
+                                    border-radius:8px;
+                                    text-decoration:none;
+                                    font-size:16px;
+                                    font-weight:600;
+                                    display:inline-block;
+                                ">
+                                Đặt lại mật khẩu
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-size:14px; color:#777; padding-top:10px; line-height:1.5;">
+                            Liên kết sẽ hết hạn sau <strong>{{expire_minutes}} phút</strong>.
+                            <br>Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="font-size:13px; color:#aaa; text-align:center; padding-top:32px;">
+                            © 2025 Sneakery Store — Hệ thống bán giày uy tín hàng đầu.
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>',
+    '{full_name},{reset_link},{expire_minutes}',
+    1
+);
+
 IF NOT EXISTS (SELECT 1 FROM Email_Templates WHERE template_name = 'welcome')
 BEGIN
     INSERT INTO Email_Templates (template_name, subject, body, variables, is_active, created_at, updated_at) VALUES
