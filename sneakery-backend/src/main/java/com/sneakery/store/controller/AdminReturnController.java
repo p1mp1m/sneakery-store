@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.AdminReturnDto;
 import com.sneakery.store.dto.AdminReturnListDto;
+import com.sneakery.store.dto.ConfirmReturnConditionRequest;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.service.AdminReturnService;
 import lombok.RequiredArgsConstructor;
@@ -113,5 +114,27 @@ public class AdminReturnController {
     public static class UpdateReturnStatusRequest {
         private String status;
         private String adminNote;
+    }
+
+    /**
+     * PUT /api/admin/returns/{id}/confirm-conditions
+     * Xác nhận số lượng sản phẩm tốt / hỏng & cập nhật tồn kho
+     */
+    @PutMapping("/{id}/confirm-conditions")
+    public ResponseEntity<AdminReturnDto> confirmReturnConditions(
+            @PathVariable Long id,
+            @RequestBody ConfirmReturnConditionRequest request,
+            Authentication authentication
+    ) {
+        log.info("📍 PUT /api/admin/returns/{}/confirm-conditions", id);
+
+        // Lấy admin ID từ Authentication principal
+        User admin = (User) authentication.getPrincipal();
+        Long adminId = admin.getId();
+
+        request.setReturnRequestId(id); // đảm bảo BE xử lý đúng ID
+
+        AdminReturnDto updated = adminReturnService.confirmReturnItemConditions(request, adminId);
+        return ResponseEntity.ok(updated);
     }
 }

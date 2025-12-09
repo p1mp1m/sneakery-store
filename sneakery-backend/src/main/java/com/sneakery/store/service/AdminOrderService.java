@@ -35,6 +35,7 @@ public class AdminOrderService {
     private final AddressRepository addressRepository;
     private static final BigDecimal VAT_RATE = BigDecimal.valueOf(0.1); // 10%
     private final ReturnRequestRepository returnRequestRepository;
+    private final LoyaltyPointRepository loyaltyPointRepository;
 
     @Transactional(readOnly = true)
     public Page<AdminOrderListDto> getAllOrders(Pageable pageable) {
@@ -87,10 +88,10 @@ public class AdminOrderService {
         // Kiểm tra xem có phải POS order không (orderNumber bắt đầu bằng "POS-")
         boolean isPOSOrder = order.getOrderNumber() != null && order.getOrderNumber().startsWith("POS-");
 
-        // ⭐ Redeem Loyalty Points khi Admin duyệt đơn (Processing)
+        // ⭐ Redeem Loyalty Points khi Admin xác nhận (Confirmed)
         if (!isPOSOrder
-                && "processing".equalsIgnoreCase(normalizedStatus)
-                && !"processing".equalsIgnoreCase(oldStatus)) {
+                && "confirmed".equalsIgnoreCase(normalizedStatus)
+                && !"confirmed".equalsIgnoreCase(oldStatus)) {
 
             Integer pointsUsed = order.getPointsUsed() != null ? order.getPointsUsed() : 0;
             if (pointsUsed > 0 && order.getUser() != null) {
@@ -101,6 +102,30 @@ public class AdminOrderService {
                     log.error("❌ Redeem points failed for order #{}: {}", orderId, e.getMessage(), e);
                 }
             }
+        }
+        // ====== LOYALTY POINT REFUND FOR CANCELLED ORDER ======
+        Integer pointsUsed = Optional.ofNullable(order.getPointsUsed()).orElse(0);
+        User customer = order.getUser();
+
+// Chỉ hoàn điểm nếu: không phải POS + có dùng điểm + bị hủy trước khi giao
+        if (!isPOSOrder
+                && "cancelled".equalsIgnoreCase(normalizedStatus)
+                && !"cancelled".equalsIgnoreCase(oldStatus)
+                && !"delivered".equalsIgnoreCase(oldStatus)
+                && pointsUsed > 0
+                && customer != null) {
+
+            LoyaltyPoint refund = new LoyaltyPoint();
+            refund.setUser(customer);
+            refund.setPoints(pointsUsed);
+            refund.setTransactionType("earn");
+            refund.setDescription("Hoàn điểm do đơn hàng bị hủy: " + order.getOrderNumber());
+            refund.setExpiresAt(LocalDateTime.now().plusYears(1));
+
+            loyaltyPointRepository.save(refund);
+
+            log.info("🟢 Refunded {} points for cancelled order #{} to user {}",
+                    pointsUsed, orderId, customer.getId());
         }
 
         // Đối với online/offline orders: trừ kho khi status = "completed" (delivered)
@@ -199,6 +224,22 @@ public class AdminOrderService {
     }
 
     private AdminOrderListDto convertToOrderListDto(Order order) {
+        ReturnRequestSummaryDto returnRequestSummary = null;
+        Optional<ReturnRequest> opt = returnRequestRepository.findByOrderIdWithDetails(order.getId());
+        if (opt.isPresent()) {
+            ReturnRequest rr = opt.get();
+            returnRequestSummary = ReturnRequestSummaryDto.builder()
+                    .id(rr.getId())
+                    .status(rr.getStatus())
+                    .createdAt(rr.getCreatedAt())
+                    .reason(rr.getReason() != null && rr.getReason().length() > 50
+                            ? rr.getReason().substring(0, 50) + "..."
+                            : rr.getReason())
+                    // ⬇️ Thêm returnMethod để biết yêu cầu là Refund
+                    .returnMethod(rr.getReturnMethod())
+                    .build();
+        }
+
         return AdminOrderListDto.builder()
                 .id(order.getId())
                 .customerName(order.getUser() != null ? order.getUser().getFullName() : "Guest")
@@ -206,6 +247,7 @@ public class AdminOrderService {
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
+                .returnRequest(returnRequestSummary)
                 .build();
     }
 
@@ -232,6 +274,12 @@ public class AdminOrderService {
 
                         // Images JSON → List<String>
                         .images(decodeImagesJson(returnRequest.getImagesJson()))
+
+                        // 🚀 Thông tin hoàn tiền (bổ sung)
+                        .returnMethod(returnRequest.getReturnMethod())
+                        .bankName(returnRequest.getBankName())
+                        .bankAccountNumber(returnRequest.getBankAccountNumber())
+                        .bankAccountHolder(returnRequest.getBankAccountHolder())
 
                         .adminNote(returnRequest.getAdminNote())
 

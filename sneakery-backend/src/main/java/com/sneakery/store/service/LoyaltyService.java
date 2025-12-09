@@ -175,11 +175,6 @@ public class LoyaltyService {
         redeemPoints(userId, pointsToUse, order);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void earnPointsInNewTx(Order order) {
-        earnPointsFromOrder(order);
-    }
-
     /**
      * Calculate points from order amount
      */
@@ -193,10 +188,6 @@ public class LoyaltyService {
                 .divide(BigDecimal.valueOf(10000), 0, java.math.RoundingMode.HALF_UP)
                 .intValue();
     }
-
-//    public Integer getUserCurrentBalance(Long userId) {
-//        return loyaltyPointRepository.calculateCurrentPoints(userId, LocalDateTime.now());
-//    }
 
     /**
      * Calculate VND from points

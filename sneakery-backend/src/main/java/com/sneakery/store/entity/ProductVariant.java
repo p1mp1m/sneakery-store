@@ -63,6 +63,9 @@ public class ProductVariant {
     @Column(name = "stock_quantity")
     private Integer stockQuantity;
 
+    @Column(name = "damaged_quantity", nullable = false)
+    private int damagedQuantity = 0;
+
     @Column(name = "low_stock_threshold")
     private Integer lowStockThreshold;
 

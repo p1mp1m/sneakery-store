@@ -1296,6 +1296,21 @@ const deleteSole = async (id) => {
     }
   }
 
+  // ===== RETURN CONDITIONS (Sản phẩm tốt / hỏng) =====
+  const confirmReturnConditions = async (payload) => {
+    try {
+      loading.value = true
+
+      const result = await AdminService.confirmReturnConditions(payload)
+      return result
+    } catch (error) {
+      console.error("❌ Error confirmReturnConditions:", error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   // ===== WARRANTY =====
   const fetchWarranties = async (page = 0, size = 10, filters = {}) => {
     try {
@@ -1549,6 +1564,7 @@ const deleteSole = async (id) => {
     fetchReturns,
     updateReturnStatus,
     processRefund,
+    confirmReturnConditions,
     
     // New Actions - Warranty
     fetchWarranties,

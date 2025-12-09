@@ -26,5 +26,15 @@ public class CreateReturnRequestDto {
     private String note; // Ghi chú của user (không bắt buộc)
     
     private List<String> images; // Danh sách URL hình ảnh (không bắt buộc)
+
+    // 🔥 Thông tin ngân hàng — required cho hoàn tiền
+    @NotBlank(message = "Tên ngân hàng không được để trống")
+    private String bankName;
+
+    @NotBlank(message = "Số tài khoản không được để trống")
+    private String bankAccountNumber;
+
+    @NotBlank(message = "Tên chủ tài khoản không được để trống")
+    private String bankAccountHolder;
 }
 

@@ -63,7 +63,7 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
            CAST(rr.id AS string) LIKE %:search% OR
            CAST(o.id AS string) LIKE %:search% OR
            LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))
-      AND (:reason IS NULL OR :reason = '' OR rr.reason = :reason)
+      AND (:reason IS NULL OR :reason = '' OR rr.reason LIKE CONCAT(:reason, '%'))
 """,
             countQuery = """
     SELECT count(rr) FROM ReturnRequest rr
@@ -74,7 +74,7 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
            CAST(rr.id AS string) LIKE %:search% OR
            CAST(o.id AS string) LIKE %:search% OR
            LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))
-      AND (:reason IS NULL OR :reason = '' OR rr.reason = :reason)
+      AND (:reason IS NULL OR :reason = '' OR rr.reason LIKE CONCAT(:reason, '%'))
 """)
     Page<ReturnRequest> findAllWithFilters(
             @Param("status") String status,

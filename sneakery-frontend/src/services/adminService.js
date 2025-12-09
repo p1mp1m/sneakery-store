@@ -803,18 +803,37 @@ async rejectReturn(id, adminNote = '') {
   }
 }
 
-/**
+  /**
  * Đánh dấu đã xử lý xong đổi / trả hàng
  */
-async completeReturn(id, adminNote = '') {
+  async completeReturn(id, adminNote = '') {
+    try {
+      const response = await adminApi.put(`/returns/${id}/status`, {
+        status: 'completed',
+        adminNote
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  
+  async confirmReturnConditions(payload) {
   try {
-    const response = await adminApi.put(`/returns/${id}/status`, {
-      status: 'completed',
-      adminNote
-    });
-    return response.data;
+    const response = await adminApi.put(
+      `/returns/${payload.returnRequestId}/confirm-conditions`,
+      {
+        returnRequestId: payload.returnRequestId,
+        items: payload.items.map(it => ({
+          variantId: it.variantId,
+          damagedQuantity: it.damagedQuantity,
+          goodQuantity: it.goodQuantity
+        }))
+      }
+    )
+    return response.data
   } catch (error) {
-    throw this.handleError(error);
+    throw this.handleError(error)
   }
 }
 

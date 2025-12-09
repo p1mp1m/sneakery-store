@@ -14,5 +14,6 @@ public class ReturnRequestSummaryDto {
     private String status; // pending, approved, processing, packed, refunded, rejected
     private LocalDateTime createdAt;
     private String reason; // Lý do hoàn trả (có thể truncate để hiển thị ngắn)
+    private String returnMethod;
 }
 

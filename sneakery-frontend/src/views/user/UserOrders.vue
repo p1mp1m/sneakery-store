@@ -634,6 +634,70 @@
                   </div>
                 </div>
               </div>
+              <!-- Phương thức hoàn trả + Thông tin ngân hàng -->
+              <div
+                v-if="selectedOrder.returnRequest.returnMethod === 'refund'"
+                class="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3"
+              >
+                <!-- Phương thức hoàn trả -->
+                <div class="flex justify-between items-center">
+                  <span
+                    class="text-sm font-semibold text-gray-700 dark:text-gray-300"
+                  >
+                    Phương thức hoàn tiền:
+                  </span>
+                  <span class="font-medium text-gray-900 dark:text-gray-100">
+                    {{
+                      getReturnMethodText(
+                        selectedOrder.returnRequest.returnMethod
+                      )
+                    }}
+                  </span>
+                </div>
+
+                <!-- Tên ngân hàng -->
+                <div
+                  v-if="selectedOrder.returnRequest.bankName"
+                  class="flex justify-between items-center"
+                >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">
+                    Ngân hàng:
+                  </span>
+                  <span class="font-medium text-gray-900 dark:text-gray-100">
+                    {{ selectedOrder.returnRequest.bankName }}
+                  </span>
+                </div>
+
+                <!-- Số tài khoản -->
+                <div
+                  v-if="selectedOrder.returnRequest.bankAccountNumber"
+                  class="flex justify-between items-center"
+                >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">
+                    Số tài khoản:
+                  </span>
+                  <span
+                    class="font-medium text-gray-900 dark:text-gray-100 tracking-wide"
+                  >
+                    {{ selectedOrder.returnRequest.bankAccountNumber }}
+                  </span>
+                </div>
+
+                <!-- Chủ tài khoản -->
+                <div
+                  v-if="selectedOrder.returnRequest.bankAccountHolder"
+                  class="flex justify-between items-center"
+                >
+                  <span class="text-sm text-gray-600 dark:text-gray-400">
+                    Chủ tài khoản:
+                  </span>
+                  <span
+                    class="font-medium text-gray-900 dark:text-gray-100 uppercase"
+                  >
+                    {{ selectedOrder.returnRequest.bankAccountHolder }}
+                  </span>
+                </div>
+              </div>
               <div
                 v-if="selectedOrder.returnRequest.adminNote"
                 class="pt-4 border-t border-gray-200 dark:border-gray-700"
@@ -711,7 +775,7 @@
       @click.self="showReturnModal = false"
     >
       <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide animate-in fade-in zoom-in duration-200"
         @click.stop
       >
         <div
@@ -752,11 +816,14 @@
                 required
               >
                 <option value="">-- Chọn lý do --</option>
-                <option value="defective">Lỗi sản phẩm</option>
+                <option value="defective">Hàng lỗi</option>
+                <option value="not_as_described">Không đúng mô tả</option>
                 <option value="wrong_item">Giao sai hàng</option>
+                <option value="wrong_size">Sai kích cỡ</option>
                 <option value="size_issue">Không vừa size</option>
-                <option value="changed_mind">Đổi ý</option>
-                <option value="other">Khác</option>
+                <option value="change_of_mind">Đổi ý</option>
+                <option value="damaged">Hư hỏng khi vận chuyển</option>
+                <option value="other">Lý do khác</option>
               </select>
               <p
                 v-if="returnFormErrors.reason"
@@ -827,6 +894,98 @@
                 </div>
               </div>
             </div>
+            <!-- Refund Method (disabled) -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2"
+              >
+                Phương thức hoàn tiền
+              </label>
+              <input
+                type="text"
+                disabled
+                :value="getReturnMethodText(returnForm.returnMethod)"
+                class="w-full px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
+              />
+            </div>
+
+            <!-- Bank Name -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2"
+              >
+                Ngân hàng <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                v-model="returnForm.bankName"
+                placeholder="Tên ngân hàng..."
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500"
+                :class="{
+                  'border-red-500 dark:border-red-500':
+                    returnFormErrors.bankName,
+                }"
+                required
+              />
+              <p
+                v-if="returnFormErrors.bankName"
+                class="text-sm text-red-600 mt-1"
+              >
+                {{ returnFormErrors.bankName }}
+              </p>
+            </div>
+
+            <!-- Bank Account Number -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2"
+              >
+                Số tài khoản <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                v-model="returnForm.bankAccountNumber"
+                placeholder="Ví dụ: 0123456789"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500"
+                :class="{
+                  'border-red-500 dark:border-red-500':
+                    returnFormErrors.bankAccountNumber,
+                }"
+                required
+              />
+              <p
+                v-if="returnFormErrors.bankAccountNumber"
+                class="text-sm text-red-600 mt-1"
+              >
+                {{ returnFormErrors.bankAccountNumber }}
+              </p>
+            </div>
+
+            <!-- Bank Account Holder -->
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2"
+              >
+                Chủ tài khoản <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                v-model="returnForm.bankAccountHolder"
+                placeholder="Tên chủ tài khoản..."
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500"
+                :class="{
+                  'border-red-500 dark:border-red-500':
+                    returnFormErrors.bankAccountHolder,
+                }"
+                required
+              />
+              <p
+                v-if="returnFormErrors.bankAccountHolder"
+                class="text-sm text-red-600 mt-1"
+              >
+                {{ returnFormErrors.bankAccountHolder }}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -885,7 +1044,20 @@ const returnForm = ref({
   reason: "",
   note: "",
   images: [], // Array of image URLs (base64 or file URLs)
+  bankName: "",
+  bankAccountNumber: "",
+  bankAccountHolder: "",
+  returnMethod: "refund",
 });
+
+const getReturnMethodText = (method) => {
+  if (!method) return "Chuyển khoản ngân hàng"; // fallback
+  const map = {
+    refund: "Chuyển khoản ngân hàng",
+  };
+  return map[method.toLowerCase()] || method;
+};
+
 const returnFormErrors = ref({});
 const imageInput = ref(null);
 
@@ -1311,11 +1483,14 @@ const getReturnReasonText = (reason, includeNote = true) => {
 
   // Map reason code to Vietnamese text
   const reasonMap = {
-    defective: "Lỗi sản phẩm",
-    wrong_item: "Giao sai hàng",
+    defective: "Hàng lỗi",
+    not_as_described: "Không đúng mô tả",
+    wrong_item: "Giao sai sản phẩm",
+    wrong_size: "Sai kích cỡ",
     size_issue: "Không vừa size",
-    changed_mind: "Đổi ý",
-    other: "Khác",
+    change_of_mind: "Đổi ý",
+    damaged: "Hư hỏng khi vận chuyển",
+    other: "Lý do khác",
   };
 
   const vietnameseReason = reasonMap[reasonCode] || reasonCode;
@@ -1541,10 +1716,30 @@ const removeImage = (index) => {
 
 const validateReturnForm = () => {
   returnFormErrors.value = {};
+  let valid = true;
 
   if (!returnForm.value.reason || !returnForm.value.reason.trim()) {
     returnFormErrors.value.reason = "Vui lòng chọn lý do hoàn trả";
     return false;
+  }
+
+  if (!returnForm.value.bankName.trim()) {
+    returnFormErrors.value.bankName = "Vui lòng nhập tên ngân hàng";
+    valid = false;
+  }
+
+  if (!returnForm.value.bankAccountNumber.trim()) {
+    returnFormErrors.value.bankAccountNumber = "Vui lòng nhập số tài khoản";
+    valid = false;
+  } else if (!/^\d{6,20}$/.test(returnForm.value.bankAccountNumber)) {
+    returnFormErrors.value.bankAccountNumber = "Số tài khoản không hợp lệ";
+    valid = false;
+  }
+
+  if (!returnForm.value.bankAccountHolder.trim()) {
+    returnFormErrors.value.bankAccountHolder =
+      "Vui lòng nhập tên chủ tài khoản";
+    valid = false;
   }
 
   return true;
@@ -1573,6 +1768,10 @@ const submitReturnRequest = async () => {
       note: returnForm.value.note || null,
       images:
         returnForm.value.images.length > 0 ? returnForm.value.images : null,
+      returnMethod: returnForm.value.returnMethod,
+      bankName: returnForm.value.bankName,
+      bankAccountNumber: returnForm.value.bankAccountNumber,
+      bankAccountHolder: returnForm.value.bankAccountHolder,
     };
 
     // Call API to create return request

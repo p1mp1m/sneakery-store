@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.cloudinary.utils.StringUtils.isBlank;
+
 /**
  * Service xử lý đơn hàng cho User
  * 
@@ -843,7 +845,7 @@ public class OrderService {
             throw new ApiException(HttpStatus.BAD_REQUEST, 
                 "Đơn hàng này đã có yêu cầu đổi trả. Vui lòng kiểm tra lại.");
         }
-        
+
         // 4. Lấy user
         @SuppressWarnings("null")
         User user = userRepository.findById(userId)
@@ -855,6 +857,13 @@ public class OrderService {
         if (requestDto.getNote() != null && !requestDto.getNote().trim().isEmpty()) {
             reason = reason + "\n\nGhi chú: " + requestDto.getNote();
         }
+
+        if (isBlank(requestDto.getBankName()) ||
+                isBlank(requestDto.getBankAccountNumber()) ||
+                isBlank(requestDto.getBankAccountHolder())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Vui lòng cung cấp đầy đủ thông tin tài khoản để hoàn tiền");
+        }
         
         ReturnRequest returnRequest = ReturnRequest.builder()
                 .order(order)
@@ -864,6 +873,10 @@ public class OrderService {
                 .imagesJson(requestDto.getImages() != null && !requestDto.getImages().isEmpty() 
                     ? JsonUtil.stringListToJson(requestDto.getImages()) 
                     : null) // Convert images list to JSON, or null if empty
+                .returnMethod("refund")
+                .bankName(requestDto.getBankName())
+                .bankAccountNumber(requestDto.getBankAccountNumber())
+                .bankAccountHolder(requestDto.getBankAccountHolder())
                 .adminNote(null) // Admin note sẽ được set sau khi admin duyệt
                 .build();
         // 🔥 6. CẬP NHẬT ORDER STATUS
@@ -901,6 +914,10 @@ public class OrderService {
                 .reason(returnRequest.getReason())
                 .status(returnRequest.getStatus())
                 .images(images)
+                .returnMethod(returnRequest.getReturnMethod())
+                .bankName(returnRequest.getBankName())
+                .bankAccountNumber(returnRequest.getBankAccountNumber())
+                .bankAccountHolder(returnRequest.getBankAccountHolder())
                 .adminNote(returnRequest.getAdminNote())
                 .approvedByName(returnRequest.getApprovedBy() != null ? returnRequest.getApprovedBy().getFullName() : null)
                 .approvedAt(returnRequest.getApprovedAt())

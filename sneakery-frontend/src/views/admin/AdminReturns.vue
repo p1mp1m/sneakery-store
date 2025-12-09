@@ -148,10 +148,10 @@
               class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               <option value="">Tất cả</option>
-              <option value="pending">Chờ duyệt</option>
+              <option value="pending">Chờ xử lý</option>
               <option value="approved">Đã duyệt</option>
-              <option value="in_transit">Đang vận chuyển</option>
-              <option value="received">Đã nhận hàng</option>
+              <!-- <option value="in_transit">Đang vận chuyển</option> -->
+              <!-- <option value="received">Đã nhận hàng</option> -->
               <option value="completed">Hoàn thành</option>
               <option value="rejected">Từ chối</option>
             </select>
@@ -170,11 +170,14 @@
               class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               <option value="">Tất cả</option>
-              <option value="Lỗi sản phẩm">Lỗi sản phẩm</option>
-              <option value="Giao sai hàng">Giao sai hàng</option>
-              <option value="Không vừa size">Không vừa size</option>
-              <option value="Đổi ý">Đổi ý</option>
-              <option value="other">Khác</option>
+              <option value="defective">Sản phẩm lỗi</option>
+              <option value="not_as_described">Không đúng mô tả</option>
+              <option value="wrong_item">Giao sai sản phẩm</option>
+              <option value="wrong_size">Sai kích cỡ</option>
+              <option value="size_issue">Không vừa size</option>
+              <option value="change_of_mind">Đổi ý</option>
+              <option value="damaged">Hư hỏng khi vận chuyển</option>
+              <option value="other">Lý do khác</option>
             </select>
           </div>
 
@@ -283,10 +286,16 @@
               class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors"
             >
               <td class="px-4 py-4 whitespace-nowrap">
-                <strong
-                  class="text-sm font-semibold text-gray-900 dark:text-gray-100"
-                  >#{{ item.orderNumber }}</strong
-                >
+                <div class="flex flex-col">
+                  <strong
+                    class="text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  >
+                    {{ item.orderNumber }}
+                  </strong>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    #{{ item.orderId }}
+                  </span>
+                </div>
               </td>
               <td class="px-4 py-4">
                 <div class="flex flex-col">
@@ -300,26 +309,43 @@
                 </div>
               </td>
               <td class="px-4 py-4">
-                <div class="flex items-center gap-3">
-                  <img
-                    :src="item.productImage"
-                    :alt="item.productName"
-                    class="w-12 h-12 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div>
-                    <strong
-                      class="text-sm font-medium text-gray-900 dark:text-gray-100 block"
-                      >{{ item.productName }}</strong
-                    >
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                      {{ item.variant }}
-                    </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                      SL: {{ item.quantity }}
-                    </p>
+                <div
+                  v-if="item.items && item.items.length > 0"
+                  class="space-y-1"
+                >
+                  <div
+                    v-for="(it, idx) in item.items.slice(0, 1)"
+                    :key="idx"
+                    class="flex items-center gap-3"
+                  >
+                    <img
+                      :src="it.productImage"
+                      :alt="it.productName"
+                      class="w-10 h-10 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                    />
+                    <div>
+                      <strong
+                        class="text-sm text-gray-900 dark:text-gray-100"
+                        >{{ it.productName }}</strong
+                      >
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ it.variant }}
+                      </p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        SL: {{ it.quantity }}
+                      </p>
+                    </div>
                   </div>
+
+                  <!-- Nếu có nhiều hơn 2 sản phẩm -->
+                  <p v-if="item.items.length > 1" class="text-xs text-gray-400">
+                    +{{ item.items.length - 1 }} sản phẩm khác
+                  </p>
+                </div>
+
+                <!-- Fallback nếu bị null -->
+                <div v-else class="text-xs text-gray-400">
+                  Không có sản phẩm
                 </div>
               </td>
               <td class="px-4 py-4">
@@ -353,27 +379,6 @@
                   >
                     {{ getReturnStatusText(item.status) }}
                   </span>
-                  <!-- Nút chuyển tiếp (nếu có) -->
-                  <!-- <template v-if="getReturnNextSteps(item.status) && getReturnNextSteps(item.status).length > 0">
-                    <button
-                      v-for="nextStep in getReturnNextSteps(item.status)"
-                      :key="nextStep"
-                      @click="confirmStatusChange(item, nextStep)"
-                      class="p-1 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                      :title="`Chuyển sang: ${getReturnStatusText(nextStep)}`"
-                    >
-                      <i class="material-icons text-sm">arrow_forward</i>
-                    </button>
-                  </template> -->
-                  <!-- Nút quay lại (nếu có) -->
-                  <!-- <button
-                    v-if="getReturnPreviousStep(item.status)"
-                    @click="confirmStatusChange(item, getReturnPreviousStep(item.status))"
-                    class="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded transition-colors"
-                    :title="`Quay lại: ${getReturnStatusText(getReturnPreviousStep(item.status))}`"
-                  >
-                    <i class="material-icons text-sm">arrow_back</i>
-                  </button> -->
                 </div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
@@ -385,14 +390,6 @@
                   >
                     <i class="material-icons text-base">visibility</i>
                   </button>
-                  <!-- <button
-                    v-if="item.status === 'pending'"
-                    @click="rejectReturn(item)"
-                    class="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Từ chối"
-                  >
-                    <i class="material-icons text-base">cancel</i>
-                  </button> -->
                 </div>
               </td>
             </tr>
@@ -451,23 +448,74 @@
               <h4
                 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3"
               >
-                Thông tin sản phẩm
+                Sản phẩm trong yêu cầu trả hàng
               </h4>
-              <div class="space-y-2 text-sm">
-                <p class="text-gray-700 dark:text-gray-300">
-                  <strong>Sản phẩm:</strong> {{ selectedReturn.productName }}
-                </p>
-                <p class="text-gray-700 dark:text-gray-300">
-                  <strong>Biến thể:</strong> {{ selectedReturn.variant }}
-                </p>
-                <p class="text-gray-700 dark:text-gray-300">
-                  <strong>Số lượng:</strong> {{ selectedReturn.quantity }}
-                </p>
-                <p class="text-gray-700 dark:text-gray-300">
-                  <strong>Giá:</strong>
-                  {{ formatPrice(selectedReturn.unitPrice) }}
-                </p>
-              </div>
+
+              <table class="w-full text-sm">
+                <thead
+                  class="text-gray-600 dark:text-gray-300 border-b dark:border-gray-700"
+                >
+                  <tr>
+                    <th class="py-2 text-left">Sản phẩm</th>
+                    <th class="py-2 text-left">Biến thể</th>
+                    <th class="py-2 text-center">SL</th>
+                    <th class="py-2 text-center">SL Hỏng</th>
+                    <th class="py-2 text-right">Giá</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(it, idx) in selectedReturn.items"
+                    :key="idx"
+                    class="border-b dark:border-gray-700"
+                  >
+                    <td class="py-2 dark:text-white">
+                      <div class="flex items-center gap-2 dark:text-white">
+                        <img
+                          :src="it.productImage"
+                          class="w-10 h-10 rounded-lg border dark:border-gray-700"
+                        />
+                        {{ it.productName }}
+                      </div>
+                    </td>
+                    <td class="py-2 dark:text-white">{{ it.variant }}</td>
+                    <td class="py-2 text-center dark:text-white">
+                      {{ it.quantity }}
+                    </td>
+                    <!-- INPUT SL Hỏng -->
+                    <td class="py-2 text-center">
+                      <!-- Nếu trạng thái chưa hoàn thì cho nhập -->
+                      <template v-if="selectedReturn.status !== 'completed'">
+                        <input
+                          type="number"
+                          v-model.number="it.damagedQuantity"
+                          min="0"
+                          :max="it.quantity"
+                          @input="validateDamaged(it)"
+                          class="w-16 px-2 py-1 text-xs rounded border border-gray-300 dark:text-white dark:border-gray-600 bg-white dark:bg-gray-700 text-center"
+                        />
+                      </template>
+
+                      <!-- Nếu completed: chỉ hiển thị -->
+                      <template v-else>
+                        <span
+                          :class="[
+                            'px-2 py-1 text-xs font-semibold rounded',
+                            it.damagedQuantity > 0
+                              ? 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-300'
+                              : 'text-gray-600 dark:text-gray-300',
+                          ]"
+                        >
+                          {{ it.damagedQuantity }}
+                        </span>
+                      </template>
+                    </td>
+                    <td class="py-2 text-right dark:text-white">
+                      {{ formatPrice(it.unitPrice) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
             <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
               <h4
@@ -478,11 +526,11 @@
               <div class="space-y-2 text-sm">
                 <p class="text-gray-700 dark:text-gray-300">
                   <strong>Lý do:</strong>
-                  {{ getReasonText(selectedReturn.reason) }}
+                  {{ getReasonText(selectedReturn.reason, false) }}
                 </p>
                 <p class="text-gray-700 dark:text-gray-300">
                   <strong>Ghi chú:</strong>
-                  {{ selectedReturn.note || "Không có" }}
+                  {{ extractNote(selectedReturn.reason) || "Không có" }}
                 </p>
               </div>
             </div>
@@ -513,14 +561,49 @@
               >
                 Thông tin hoàn tiền
               </h4>
+
               <div class="space-y-2 text-sm">
+                <!-- Số tiền hoàn -->
                 <p class="text-gray-700 dark:text-gray-300">
                   <strong>Số tiền:</strong>
                   {{ formatPrice(selectedReturn.refundAmount) }}
                 </p>
+
+                <!-- Phương thức hoàn tiền -->
                 <p class="text-gray-700 dark:text-gray-300">
                   <strong>Phương thức:</strong>
-                  {{ selectedReturn.refundMethod || "Chưa xác định" }}
+                  {{ getReturnMethodText(selectedReturn.returnMethod) }}
+                </p>
+
+                <!-- Ngân hàng -->
+                <p
+                  v-if="selectedReturn.bankName"
+                  class="text-gray-700 dark:text-gray-300"
+                >
+                  <strong>Ngân hàng:</strong>
+                  {{ selectedReturn.bankName }}
+                </p>
+
+                <!-- Số tài khoản -->
+                <p
+                  v-if="selectedReturn.bankAccountNumber"
+                  class="text-gray-700 dark:text-gray-300"
+                >
+                  <strong>Số tài khoản:</strong>
+                  <span class="font-mono tracking-wide">
+                    {{ selectedReturn.bankAccountNumber }}
+                  </span>
+                </p>
+
+                <!-- Chủ tài khoản -->
+                <p
+                  v-if="selectedReturn.bankAccountHolder"
+                  class="text-gray-700 dark:text-gray-300"
+                >
+                  <strong>Chủ tài khoản:</strong>
+                  <span class="uppercase">
+                    {{ selectedReturn.bankAccountHolder }}
+                  </span>
                 </p>
               </div>
             </div>
@@ -534,6 +617,19 @@
             class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             Đóng
+          </button>
+          <button
+            @click="submitReturnItems"
+            :disabled="['completed', 'pending'].includes(selectedReturn.status)"
+            :title="
+              ['completed', 'pending'].includes(selectedReturn.status)
+                ? 'Yêu cầu đang xử lý hoặc đã hoàn tất — không thể chỉnh sửa'
+                : ''
+            "
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 dark:bg-purple-700 rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors"
+          >
+            <i class="material-icons text-base">check_circle</i>
+            Xác nhận
           </button>
         </div>
       </div>
@@ -641,14 +737,15 @@ const fetchReturns = async () => {
   try {
     loading.value = true;
 
-    // Prepare filters for API
     const apiFilters = {
       search: filters.search || undefined,
       status: filters.status || undefined,
       reason: filters.reason || undefined,
     };
 
+    // 👇 chỉ gọi adminStore, đúng yêu cầu của bạn
     const result = await adminStore.fetchReturns(0, 50, apiFilters);
+
     returns.value = result.content || [];
     updateStats();
   } catch (error) {
@@ -834,11 +931,14 @@ const getReasonText = (reason, includeNote = true) => {
 
   // Map reason code to Vietnamese text
   const reasons = {
-    defective: "Lỗi sản phẩm",
-    wrong_item: "Giao sai hàng",
+    defective: "Sản phẩm lỗi",
+    not_as_described: "Không đúng mô tả",
+    wrong_item: "Giao sai sản phẩm",
+    wrong_size: "Sai kích cỡ",
     size_issue: "Không vừa size",
-    changed_mind: "Đổi ý",
-    other: "Khác",
+    change_of_mind: "Đổi ý",
+    damaged: "Hư hỏng khi vận chuyển",
+    other: "Lý do khác",
   };
 
   const vietnameseReason = reasons[reasonCode] || reasonCode;
@@ -850,6 +950,70 @@ const getReasonText = (reason, includeNote = true) => {
   }
 
   return vietnameseReason;
+};
+
+// const canEditReturnItems = (status) => {
+//   return status === "approved" || status === "processing";
+// };
+
+const validateDamaged = (it) => {
+  if (!it.damagedQuantity || it.damagedQuantity < 0) {
+    it.damagedQuantity = 0;
+  }
+  if (it.damagedQuantity > it.quantity) {
+    it.damagedQuantity = it.quantity;
+  }
+};
+
+const submitReturnItems = async () => {
+  const payload = {
+    returnRequestId: selectedReturn.value.id,
+    items: selectedReturn.value.items.map((it) => {
+      const damaged = it.damagedQuantity || 0;
+      const good = Math.max(it.quantity - damaged, 0); // tránh số âm
+
+      return {
+        variantId: it.variantId,
+        damagedQuantity: damaged,
+        goodQuantity: good,
+      };
+    }),
+  };
+
+  try {
+    await adminStore.confirmReturnConditions(payload);
+    notificationService.success(
+      "Xác nhận thành công",
+      "Đã cập nhật tình trạng sản phẩm trả về!"
+    );
+    showDetailDialog.value = false;
+    fetchReturns();
+  } catch (error) {
+    notificationService.apiError(
+      error,
+      "Có lỗi khi xác nhận tình trạng sản phẩm"
+    );
+  }
+};
+
+const getReturnMethodText = (method) => {
+  if (!method) return "Chưa xác định";
+
+  const map = {
+    refund: "Hoàn tiền tài khoản ngân hàng",
+    exchange: "Đổi sản phẩm",
+  };
+
+  return map[method] || "Không xác định";
+};
+
+const extractNote = (reason) => {
+  if (!reason) return null;
+  const parts = reason.split("\n\nGhi chú:");
+  if (parts.length > 1) {
+    return parts[1].trim();
+  }
+  return null;
 };
 
 const getReturnStatusBadgeClass = (status) => {

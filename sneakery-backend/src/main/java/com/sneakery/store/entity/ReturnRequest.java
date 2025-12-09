@@ -43,8 +43,38 @@ public class ReturnRequest {
     @Column(name = "images_json", columnDefinition = "NVARCHAR(MAX)")
     private String imagesJson; // JSON array of image URLs: ["url1", "url2"]
 
+    // ==== Refund Bank Info ====
+
+    @Column(name = "return_method")
+    private String returnMethod; // Luôn là "refund"
+
+    @Column(name = "bank_name")
+    private String bankName; // Tên ngân hàng
+
+    @Column(name = "bank_account_number")
+    private String bankAccountNumber; // STK
+
+    @Column(name = "bank_account_holder")
+    private String bankAccountHolder; // Chủ tài khoản
+
     @Column(name = "admin_note", columnDefinition = "NVARCHAR(MAX)")
     private String adminNote;
+
+    @Lob
+    @Column(name = "item_conditions_json", columnDefinition = "NVARCHAR(MAX)")
+    private String itemConditionsJson;
+
+    // getter/setter
+    public String getItemConditionsJson() {
+        return itemConditionsJson;
+    }
+
+    public void setItemConditionsJson(String itemConditionsJson) {
+        this.itemConditionsJson = itemConditionsJson;
+    }
+
+    @Column(name = "assets_refunded")
+    private Boolean assetsRefunded = false;
 
     // Admin user duyệt request
     @ManyToOne(fetch = FetchType.LAZY)

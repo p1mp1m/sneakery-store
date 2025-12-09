@@ -741,7 +741,7 @@
           <i class="material-icons text-purple-600 dark:text-purple-400">
             undo
           </i>
-          Yêu cầu đổi / trả hàng
+          Yêu cầu hoàn tiền / trả hàng
         </h3>
 
         <!-- Info Grid -->
@@ -797,11 +797,28 @@
           <!-- Right -->
           <div>
             <span class="text-sm text-gray-600 dark:text-gray-400">Lý do:</span>
+
+            <!-- Lý do -->
             <p
-              class="text-base whitespace-pre-line font-medium text-gray-900 dark:text-gray-100 mt-1 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-md"
+              class="text-base font-medium text-gray-900 dark:text-gray-100 mt-1 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md"
             >
-              {{ order.returnRequest.reason }}
+              {{ getReturnReason(order.returnRequest.reason) }}
             </p>
+
+            <!-- Ghi chú khách hàng -->
+            <div
+              v-if="getReturnCustomerNote(order.returnRequest.reason)"
+              class="mt-2"
+            >
+              <span class="text-xs text-gray-500 dark:text-gray-400"
+                >Ghi chú của khách:</span
+              >
+              <p
+                class="text-sm font-medium text-gray-900 dark:text-gray-100 mt-1 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-md border border-amber-200 dark:border-amber-700"
+              >
+                {{ getReturnCustomerNote(order.returnRequest.reason) }}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -830,6 +847,62 @@
           <p v-else class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Không có hình ảnh
           </p>
+        </div>
+        <!-- Bank Refund Info -->
+        <div
+          v-if="order.returnRequest.returnMethod === 'refund'"
+          class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-700"
+        >
+          <span
+            class="block text-sm font-semibold text-blue-700 dark:text-blue-300 mb-3"
+          >
+            Thông tin hoàn tiền qua ngân hàng
+          </span>
+
+          <!-- Phương thức -->
+          <div class="flex justify-between text-sm py-1">
+            <span class="text-gray-600 dark:text-gray-400">Phương thức:</span>
+            <span class="font-medium text-gray-900 dark:text-gray-100">
+              {{ getReturnMethodText(order.returnRequest.returnMethod) }}
+            </span>
+          </div>
+
+          <!-- Ngân hàng -->
+          <div
+            v-if="order.returnRequest.bankName"
+            class="flex justify-between text-sm py-1"
+          >
+            <span class="text-gray-600 dark:text-gray-400">Ngân hàng:</span>
+            <span class="font-medium text-gray-900 dark:text-gray-100">
+              {{ order.returnRequest.bankName }}
+            </span>
+          </div>
+
+          <!-- Số tài khoản -->
+          <div
+            v-if="order.returnRequest.bankAccountNumber"
+            class="flex justify-between text-sm py-1"
+          >
+            <span class="text-gray-600 dark:text-gray-400">Số tài khoản:</span>
+            <span
+              class="font-semibold text-gray-900 dark:text-gray-100 tracking-wide"
+            >
+              {{ order.returnRequest.bankAccountNumber }}
+            </span>
+          </div>
+
+          <!-- Chủ tài khoản -->
+          <div
+            v-if="order.returnRequest.bankAccountHolder"
+            class="flex justify-between text-sm py-1"
+          >
+            <span class="text-gray-600 dark:text-gray-400">Chủ tài khoản:</span>
+            <span
+              class="font-semibold text-gray-900 dark:text-gray-100 uppercase"
+            >
+              {{ order.returnRequest.bankAccountHolder }}
+            </span>
+          </div>
         </div>
 
         <!-- Admin Note -->
@@ -866,7 +939,7 @@
 
           <button
             v-if="order.returnRequest.status === 'approved'"
-            @click="markReturnCompleted(order.returnRequest.id)"
+            @click="openReturnModal(order.returnRequest.id)"
             class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2"
           >
             <i class="material-icons text-base">check</i>
@@ -933,6 +1006,132 @@
       </div>
     </div>
 
+    <!-- Return Complete Custom Modal -->
+    <div
+      v-if="showReturnModal"
+      class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl w-full max-w-3xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+      >
+        <!-- Header -->
+        <div
+          class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700"
+        >
+          <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+            Xác nhận hoàn tất xử lý đổi trả
+          </h2>
+          <button
+            class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+            @click="closeReturnModal"
+            :disabled="isSubmitting"
+          >
+            <i class="material-icons">close</i>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-4 overflow-y-auto max-h-[65vh]">
+          <h4
+            class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3"
+          >
+            Sản phẩm trong yêu cầu trả hàng
+          </h4>
+
+          <!-- Loading -->
+          <div v-if="isReturnLoading" class="py-10 text-center text-gray-400">
+            Đang tải dữ liệu...
+          </div>
+
+          <!-- Table -->
+          <table v-else class="w-full text-sm">
+            <thead
+              class="text-gray-600 dark:text-gray-300 border-b dark:border-gray-700"
+            >
+              <tr>
+                <th class="py-2 text-left">Sản phẩm</th>
+                <th class="py-2 text-center">SL</th>
+                <th class="py-2 text-center">SL Hỏng</th>
+                <th class="py-2 text-right">Giá</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr
+                v-for="(it, idx) in selectedReturn.items"
+                :key="idx"
+                class="border-b dark:border-gray-700"
+              >
+                <!-- PRODUCT -->
+                <td class="py-2">
+                  <div class="flex items-center gap-2 dark:text-gray-100">
+                    <img
+                      :src="it.productImage"
+                      class="w-10 h-10 rounded-lg border dark:border-gray-700"
+                    />
+                    <div class="flex flex-col">
+                      <span>{{ it.productName }}</span>
+                      <span class="text-xs text-gray-500">
+                        {{ it.variant }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- QUANTITY -->
+                <td class="py-2 text-center dark:text-white">
+                  {{ it.quantity }}
+                </td>
+
+                <!-- DAMAGED INPUT -->
+                <td class="py-2 text-center">
+                  <input
+                    type="number"
+                    v-model.number="it.damagedQuantity"
+                    :disabled="
+                      isSubmitting || selectedReturn.status === 'completed'
+                    "
+                    min="0"
+                    :max="it.quantity"
+                    @input="validateDamaged(it)"
+                    class="w-16 px-2 py-1 text-xs text-center rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </td>
+
+                <!-- PRICE -->
+                <td class="py-2 text-right dark:text-white">
+                  {{ formatPrice(it.unitPrice) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div
+          class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3"
+        >
+          <button
+            class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+            @click="closeReturnModal"
+            :disabled="isSubmitting"
+          >
+            Hủy
+          </button>
+
+          <button
+            class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 disabled:opacity-60"
+            @click="confirmReturnCompletion"
+            :disabled="isSubmitting || isReturnLoading"
+          >
+            <i class="material-icons text-base">check</i>
+            <span v-if="isSubmitting">Đang xử lý...</span>
+            <span v-else>Xác nhận</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Status Change Confirmation Dialog -->
     <ConfirmDialog
       v-model="showStatusConfirm"
@@ -994,6 +1193,20 @@ const oldStatus = ref("");
 const newStatus = ref("");
 const updating = ref(false);
 
+// const order = ref(null);
+// const loading = ref(false);
+// const error = ref(null);
+
+// Return modal state
+const showReturnModal = ref(false);
+const selectedReturn = ref({
+  id: null,
+  items: [],
+  status: null,
+});
+const isReturnLoading = ref(false);
+const isSubmitting = ref(false);
+
 // Định nghĩa flow steps theo thứ tự
 const ORDER_STATUS_STEPS = [
   "Pending", // 0: Chờ xử lý
@@ -1054,15 +1267,15 @@ const rejectReturn = async (returnId) => {
   }
 };
 
-const markReturnCompleted = async (returnId) => {
-  try {
-    const res = await AdminService.completeReturn(returnId);
-    notificationService.success("Đã hoàn tất xử lý đổi trả");
-    fetchOrderDetail();
-  } catch (err) {
-    notificationService.apiError(err, "Không thể hoàn tất xử lý");
-  }
-};
+// const markReturnCompleted = async (returnId) => {
+//   try {
+//     const res = await AdminService.completeReturn(returnId);
+//     notificationService.success("Đã hoàn tất xử lý đổi trả");
+//     fetchOrderDetail();
+//   } catch (err) {
+//     notificationService.apiError(err, "Không thể hoàn tất xử lý");
+//   }
+// };
 
 const getNormalizedStatusValue = (status) => {
   if (!status) return "Pending";
@@ -1133,6 +1346,13 @@ const getPreviousStep = (currentStatus) => {
 
   return ORDER_STATUS_STEPS[currentIndex - 1];
 };
+
+// const showReturnModal = ref(false);
+// const selectedReturn = ref({
+//   id: null,
+//   items: [],
+//   status: null,
+// });
 
 // Kiểm tra xem có thể chuyển đến status mới không
 // const canChangeToStatus = (currentStatus, targetStatus) => {
@@ -1206,6 +1426,79 @@ const canChangeToStatus = (currentStatus, targetStatus) => {
   return false;
 };
 
+const openReturnModal = async (returnId) => {
+  try {
+    showReturnModal.value = true;
+    isReturnLoading.value = true;
+
+    const res = await AdminService.getReturnById(returnId);
+
+    // Chuẩn hóa dữ liệu items: nếu backend chưa có damagedQuantity thì set 0
+    selectedReturn.value = {
+      id: res.id,
+      status: res.status,
+      items: (res.items || []).map((it) => ({
+        ...it,
+        damagedQuantity:
+          typeof it.damagedQuantity === "number" ? it.damagedQuantity : 0,
+      })),
+    };
+  } catch (err) {
+    notificationService.apiError(err, "Không thể tải dữ liệu yêu cầu trả hàng");
+    showReturnModal.value = false;
+  } finally {
+    isReturnLoading.value = false;
+  }
+};
+
+const closeReturnModal = () => {
+  if (isSubmitting.value) return;
+  showReturnModal.value = false;
+};
+
+const validateDamaged = (item) => {
+  if (item.damagedQuantity < 0 || isNaN(item.damagedQuantity)) {
+    item.damagedQuantity = 0;
+  }
+  if (item.damagedQuantity > item.quantity) {
+    item.damagedQuantity = item.quantity;
+  }
+};
+
+const confirmReturnCompletion = async () => {
+  if (!selectedReturn.value?.id) return;
+
+  try {
+    isSubmitting.value = true;
+
+    const payload = {
+      returnRequestId: selectedReturn.value.id,
+      items: selectedReturn.value.items.map((it) => ({
+        variantId: it.variantId,
+        damagedQuantity: it.damagedQuantity || 0,
+        goodQuantity: Math.max(it.quantity - (it.damagedQuantity || 0), 0),
+      })),
+    };
+
+    await adminStore.confirmReturnConditions(payload);
+
+    notificationService.success(
+      "Xác nhận thành công",
+      "Đã cập nhật tình trạng sản phẩm trả về!"
+    );
+
+    showReturnModal.value = false;
+    await fetchOrderDetail();
+  } catch (error) {
+    notificationService.apiError(
+      error,
+      "Có lỗi khi xác nhận tình trạng sản phẩm"
+    );
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
 const confirmStatusChange = (order, targetStatus) => {
   try {
     if (!targetStatus) {
@@ -1215,7 +1508,7 @@ const confirmStatusChange = (order, targetStatus) => {
     const currentNormalizedStatus = getNormalizedStatusValue(order.status);
 
     // ⭐ RULE: Không cho Processing → Packed nếu điểm sử dụng vượt quá điểm còn lại
-    if (currentNormalizedStatus === "Processing" && targetStatus === "Packed") {
+    if (currentNormalizedStatus === "Pending" && targetStatus === "Confirmed") {
       const used = Number(order.pointsUsed || 0);
       const balance = Number(order.customerPointBalance || 0);
 
@@ -1366,6 +1659,15 @@ const getStatusLabel = (status) => {
   return labels[normalized] || normalized || status;
 };
 
+const getReturnMethodText = (method) => {
+  if (!method) return "Hoàn tiền";
+  return (
+    {
+      refund: "Hoàn tiền",
+    }[method.toLowerCase()] || method
+  );
+};
+
 const getStatusBadgeClass = (status) => {
   const normalized = normalizeStatusForDisplay(status);
   const classMap = {
@@ -1401,6 +1703,34 @@ const getStatusBadgeClass = (status) => {
     classMap[normalized] ||
     "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
   );
+};
+
+const getReturnReason = (reason) => {
+  if (!reason) return "Không xác định";
+
+  const code = reason.split("\n")[0].trim().toLowerCase();
+
+  const map = {
+    defective: "Hàng lỗi",
+    not_as_described: "Không đúng mô tả",
+    wrong_item: "Giao sai sản phẩm",
+    wrong_size: "Sai kích cỡ",
+    size_issue: "Không vừa size",
+    change_of_mind: "Đổi ý",
+    damaged: "Hư hỏng khi vận chuyển",
+    other: "Lý do khác",
+  };
+
+  return map[code] || "Lý do khác";
+};
+
+const getReturnCustomerNote = (reason) => {
+  if (!reason) return null;
+  const parts = reason.split("\n\n");
+  if (parts.length > 1) {
+    return parts[1].replace(/^Ghi chú:\s*/i, "").trim();
+  }
+  return null;
 };
 
 const getPaymentMethodLabel = (method) => {
@@ -1528,16 +1858,6 @@ const isFailed = computed(() => {
   return getNormalizedStatusValue(order.value.status) === "Failed";
 });
 
-// const currentStepIndex = computed(() => {
-//   if (!order.value?.status) return -1;
-
-//   // Nếu Failed thì ép index = bước cuối (Completed)
-//   if (getNormalizedStatusValue(order.value.status) === "Failed") {
-//     return ORDER_STATUS_STEPS.length - 1;
-//   }
-
-//   return getStatusStepIndex(order.value.status);
-// });
 const currentStepIndex = computed(() => {
   if (!order.value?.status) return -1;
 
