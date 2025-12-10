@@ -128,6 +128,29 @@ public class AdminOrderService {
                     pointsUsed, orderId, customer.getId());
         }
 
+        // ====== RELEASE RESERVED STOCK WHEN CANCELLED ======
+        if (!isPOSOrder
+                && "cancelled".equalsIgnoreCase(normalizedStatus)
+                && !"cancelled".equalsIgnoreCase(oldStatus)
+                && !"delivered".equalsIgnoreCase(oldStatus)) {
+
+            log.info("🔓 Releasing reserved stock for cancelled order #{}", orderId);
+
+            for (OrderDetail detail : order.getOrderDetails()) {
+                ProductVariant variant = detail.getVariant();
+                if (variant != null) {
+                    int releaseQty = detail.getQuantity();
+                    variant.setReservedQuantity(
+                            Math.max(0, variant.getReservedQuantity() - releaseQty)
+                    );
+                    variantRepository.save(variant);
+
+                    log.info("🟢 Released {} reserved units for variant {} -> reserved now {}",
+                            releaseQty, variant.getId(), variant.getReservedQuantity());
+                }
+            }
+        }
+
         // Đối với online/offline orders: trừ kho khi status = "completed" (delivered)
         // POS orders đã được trừ kho khi tạo, không cần trừ lại
         if (!isPOSOrder && "delivered".equalsIgnoreCase(normalizedStatus) && !"delivered".equalsIgnoreCase(oldStatus)) {
@@ -158,7 +181,15 @@ public class AdminOrderService {
                 }
 
                 // Trừ kho
+//                variant.setStockQuantity(currentStock - quantityToDeduct);
+                // 🔥 Deduct actual stock
                 variant.setStockQuantity(currentStock - quantityToDeduct);
+
+                // 🔓 Release reserved stock
+                variant.setReservedQuantity(
+                        variant.getReservedQuantity() - quantityToDeduct
+                );
+
                 variantRepository.save(variant);
                 log.info("✅ Deducted {} units from variant {} (new stock: {})",
                         quantityToDeduct, variant.getId(), variant.getStockQuantity());
@@ -318,7 +349,7 @@ public class AdminOrderService {
                 return CartItemDto.builder()
                         .variantId(null)
                         .productName(detail.getProductName() != null ? detail.getProductName() : "N/A")
-                        .sku(sku) 
+                        .sku(sku)
                         .brandName("N/A")
                         .size(detail.getSize() != null ? detail.getSize() : "")
                         .color(detail.getColor() != null ? detail.getColor() : "")
@@ -351,7 +382,7 @@ public class AdminOrderService {
 
             return CartItemDto.builder()
                     .variantId(v.getId())
-                    .sku(sku) 
+                    .sku(sku)
                     .productName(productName)
                     .brandName(brandName)
                     .size(v.getSize() != null ? v.getSize() : detail.getSize() != null ? detail.getSize() : "")
@@ -366,12 +397,12 @@ public class AdminOrderService {
         Payment p = order.getPayments().stream().findFirst().orElse(null);
         PaymentDto paymentDto = (p == null) ? null
                 : PaymentDto.builder()
-                        .id(p.getId())
-                        .paymentMethod(p.getPaymentMethod())
-                        .status(p.getStatus())
-                        .amount(p.getAmount())
-                        .paidAt(p.getPaidAt())
-                        .build();
+                .id(p.getId())
+                .paymentMethod(p.getPaymentMethod())
+                .status(p.getStatus())
+                .amount(p.getAmount())
+                .paidAt(p.getPaidAt())
+                .build();
 
         List<OrderStatusHistoryDto> historyDtos = order.getStatusHistories().stream()
                 .map(h -> OrderStatusHistoryDto.builder()

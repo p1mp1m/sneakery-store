@@ -201,11 +201,22 @@ public class ProductService {
         BigDecimal price = priceSale != null ? priceSale : priceBase;
 
         // Tính tổng stock
+//        Integer totalStock = Optional.ofNullable(product.getVariants())
+//                .filter(variants -> !variants.isEmpty())
+//                .map(variants -> variants.stream()
+//                        .filter(v -> v != null)
+//                        .mapToInt(v -> v.getStockQuantity() != null ? v.getStockQuantity() : 0)
+//                        .sum())
+//                .orElse(0);
         Integer totalStock = Optional.ofNullable(product.getVariants())
                 .filter(variants -> !variants.isEmpty())
                 .map(variants -> variants.stream()
                         .filter(v -> v != null)
-                        .mapToInt(v -> v.getStockQuantity() != null ? v.getStockQuantity() : 0)
+                        .mapToInt(v -> {
+                            int stock = Optional.ofNullable(v.getStockQuantity()).orElse(0);
+                            int reserved = Optional.ofNullable(v.getReservedQuantity()).orElse(0);
+                            return Math.max(0, stock - reserved);
+                        })
                         .sum())
                 .orElse(0);
 
@@ -308,6 +319,12 @@ public class ProductService {
                     dto.setPriceBase(v.getPriceBase());
                     dto.setPriceSale(v.getPriceSale());
                     dto.setStockQuantity(v.getStockQuantity());
+                    dto.setReservedQuantity(
+                            v.getReservedQuantity() != null ? v.getReservedQuantity() : 0
+                    );
+                    dto.setAvailableStock(
+                            Math.max(0, v.getStockQuantity() - dto.getReservedQuantity())
+                    );
 //                dto.setImageUrl(v.getImageUrl());
                     return dto;
                 }).collect(Collectors.toList());

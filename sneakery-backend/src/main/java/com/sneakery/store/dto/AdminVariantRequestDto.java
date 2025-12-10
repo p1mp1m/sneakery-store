@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 
 @Data
 public class AdminVariantRequestDto {
-    
+
     // ID dùng để cập nhật (sẽ là null khi tạo mới)
-    private Long id; 
+    private Long id;
 
     @NotBlank(message = "SKU không được để trống")
     private String sku;
@@ -31,6 +31,12 @@ public class AdminVariantRequestDto {
     @NotNull(message = "Số lượng tồn kho không được để trống")
     @PositiveOrZero(message = "Số lượng phải lớn hơn hoặc bằng 0")
     private Integer stockQuantity;
+
+    @PositiveOrZero(message = "ReservedQuantity phải >= 0")
+    private Integer reservedQuantity;
+
+    @PositiveOrZero(message = "AvailableStock phải >= 0")
+    private Integer availableStock;
 
     private String imageUrl;
 }

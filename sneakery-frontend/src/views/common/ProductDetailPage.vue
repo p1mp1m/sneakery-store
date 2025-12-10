@@ -223,7 +223,7 @@
           <!-- Stock Status -->
           <div class="mb-6">
             <span
-              v-if="selectedVariant && selectedVariant.stockQuantity > 0"
+              v-if="selectedVariant && selectedVariant.availableStock > 0"
               class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg"
             >
               <svg
@@ -237,7 +237,7 @@
               >
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              Còn hàng ({{ selectedVariant.stockQuantity }} sản phẩm)
+              Còn hàng ({{ selectedVariant.availableStock }} sản phẩm)
             </span>
             <span
               v-else-if="selectedVariant"
@@ -935,7 +935,7 @@ const sizeStatus = computed(() => {
 
     if (!variant) {
       result[size] = "invalid"; // ❌ Size không tồn tại theo màu
-    } else if (variant.stockQuantity <= 0) {
+    } else if (variant.availableStock <= 0) {
       result[size] = "out"; // ❌ Hết hàng
     } else {
       result[size] = "ok"; // ✔ Valid
@@ -993,17 +993,17 @@ const originalPrice = computed(() => {
 });
 
 const maxQuantity = computed(() => {
-  return selectedVariant.value?.stockQuantity || 1;
+  return selectedVariant.value?.availableStock || 1;
 });
 
 const canAddToCart = computed(() => {
-  return selectedVariant.value && selectedVariant.value.stockQuantity > 0;
+  return selectedVariant.value && selectedVariant.value.availableStock > 0;
 });
 
 const cartButtonText = computed(() => {
   if (!selectedColor.value || !selectedSize.value) return "Chọn màu và size";
   if (!selectedVariant.value) return "Không có sẵn";
-  if (selectedVariant.value.stockQuantity <= 0) return "Hết hàng";
+  if (selectedVariant.value.availableStock <= 0) return "Hết hàng";
   return "Thêm vào giỏ hàng";
 });
 
@@ -1106,7 +1106,7 @@ const selectColor = (color) => {
 
   // lấy các size thuộc màu này
   const sizes = product.value.variants
-    .filter((v) => v.color === color && v.stockQuantity > 0)
+    .filter((v) => v.color === color && v.availableStock > 0)
     .map((v) => v.size);
 
   if (sizes.length > 0) selectedSize.value = sizes[0];
