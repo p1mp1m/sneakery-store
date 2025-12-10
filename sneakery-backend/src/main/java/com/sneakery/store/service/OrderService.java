@@ -700,21 +700,6 @@ public class OrderService {
             variantRepository.save(variant);
         }
 
-        // Hoàn trả tồn kho cho các sản phẩm trong đơn hàng
-//        if (order.getOrderDetails() != null) {
-//            for (OrderDetail detail : order.getOrderDetails()) {
-//                ProductVariant variant = detail.getVariant();
-//                if (variant != null) {
-//                    int currentStock = variant.getStockQuantity();
-//                    int quantityToRestore = detail.getQuantity();
-//                    variant.setStockQuantity(currentStock + quantityToRestore);
-//                    variantRepository.save(variant);
-//                    log.info("✅ Restored stock for variant #{}: {} -> {}",
-//                        variant.getId(), currentStock, currentStock + quantityToRestore);
-//                }
-//            }
-//        }
-
         // Cập nhật trạng thái đơn hàng thành "cancelled"
         order.setStatus("cancelled");
 
@@ -800,6 +785,12 @@ public class OrderService {
                     }
 
                     variant.setStockQuantity(currentStock - quantityToReduce);
+                    variant.setReservedQuantity(
+                            variant.getReservedQuantity() - quantityToReduce
+                    );
+                    if (variant.getReservedQuantity() < 0) {
+                        variant.setReservedQuantity(0); // Safety guard
+                    }
                     variantRepository.save(variant);
 
                     log.info("📦 Reduced stock for variant #{}: {} -> {}",
@@ -1169,31 +1160,4 @@ public class OrderService {
 
         return BigDecimal.valueOf(fee);
     }
-//    private BigDecimal calculateShippingFee(Address address) {
-//        if (address == null || address.getCity() == null) {
-//            // Default shipping fee nếu không có địa chỉ
-//            return BigDecimal.valueOf(50000);
-//        }
-//
-//        String city = address.getCity().toLowerCase().trim();
-//
-//        // Danh sách thành phố lớn (nội thành - phí ship thấp hơn)
-//        String[] majorCities = {
-//            "hà nội", "hanoi", "ha noi",
-//            "tp. hồ chí minh", "tp hcm", "hồ chí minh", "ho chi minh", "hochiminh",
-//            "đà nẵng", "da nang", "danang",
-//            "cần thơ", "can tho", "cantho",
-//            "hải phòng", "hai phong", "haiphong"
-//        };
-//
-//        // Kiểm tra xem có phải thành phố lớn không
-//        for (String majorCity : majorCities) {
-//            if (city.contains(majorCity) || majorCity.contains(city)) {
-//                return BigDecimal.valueOf(30000); // Phí ship nội thành
-//            }
-//        }
-//
-//        // Các tỉnh/thành phố khác
-//        return BigDecimal.valueOf(50000); // Phí ship ngoại thành
-//    }
 }
