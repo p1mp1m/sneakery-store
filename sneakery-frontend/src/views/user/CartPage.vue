@@ -206,6 +206,7 @@
               <div class="flex gap-2 mb-2">
                 <select
                   v-model="selectedCouponCode"
+                  @focus="onCouponDropdownOpen"
                   @change="onCouponSelected"
                   class="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all max-w-full text-sm truncate"
                   :disabled="couponApplied || loadingActiveCoupons"
@@ -257,7 +258,7 @@
                 {{ couponError }}
               </div>
               <div
-                v-if="couponApplied && appliedCoupon"
+                v-if="couponApplied && appliedCoupon && !couponError"
                 class="flex items-center justify-between gap-2 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mt-2 border border-green-200 dark:border-green-800"
               >
                 <div class="flex items-center gap-2">
@@ -454,7 +455,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
 const couponStore = useCouponStore();
-
+const lastCouponFetchAt = ref(0)
 // Local state
 const applyingCoupon = ref(false);
 const activeCoupons = ref([]);
@@ -611,6 +612,27 @@ const fetchActiveCoupons = async () => {
   }
 };
 
+const onCouponDropdownOpen = async () => {
+  const now = Date.now()
+
+  // tránh gọi API liên tục (cache 10s)
+  if (now - lastCouponFetchAt.value < 10_000) return
+
+  try {
+    loadingActiveCoupons.value = true
+    couponError.value = ''
+
+    await fetchActiveCoupons() // API lấy coupon mới nhất
+
+    lastCouponFetchAt.value = now
+  } catch (err) {
+    couponError.value =
+      'Không thể tải danh sách mã giảm giá mới nhất. Vui lòng thử lại.'
+  } finally {
+    loadingActiveCoupons.value = false
+  }
+};
+
 const onCouponSelected = async () => {
   if (!selectedCouponCode.value) {
     // Nếu chọn "-- Chọn mã giảm giá --", xóa coupon
@@ -725,13 +747,45 @@ const removeCoupon = () => {
 };
 
 const proceedToCheckout = async () => {
+  // Không có coupon → đi thẳng
+  if (!couponApplied.value || !appliedCoupon.value) {
+    router.push("/checkout");
+    return;
+  }
+
   try {
+    const latestCoupon = await couponService.validateCoupon(
+      appliedCoupon.value.code,
+      cart.value.subTotal
+    );
+
+    const isChanged =
+      latestCoupon.value !== appliedCoupon.value.value ||
+      latestCoupon.discountType !== appliedCoupon.value.discountType ||
+      latestCoupon.maxDiscountAmount !== appliedCoupon.value.maxDiscountAmount;
+
+    if (isChanged) {
+      //  KHÔNG clear coupon
+      //  KHÔNG tắt couponApplied
+
+      couponStore.setError(
+        "Mã giảm giá đã được cập nhật. Vui lòng kiểm tra và chọn lại mã giảm giá."
+      );
+
+      return; // chặn sang checkout
+    }
+
+    // OK → cho sang checkout
     await router.push("/checkout");
+
   } catch (error) {
-    logger.error("Navigation error to checkout:", error);
+    //  LỖI THẬT → clear coupon
+    couponStore.clearCoupon();
+
     notificationService.error(
-      "Lỗi",
-      "Không thể mở trang thanh toán. Vui lòng thử lại sau."
+      "Mã giảm giá không hợp lệ",
+      error?.response?.data?.message ||
+        "Mã giảm giá không còn hợp lệ. Vui lòng chọn lại."
     );
   }
 };
