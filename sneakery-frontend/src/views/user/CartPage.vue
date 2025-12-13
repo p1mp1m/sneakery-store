@@ -206,7 +206,7 @@
               <div class="flex gap-2 mb-2">
                 <select
                   v-model="selectedCouponCode"
-                  @focus="onCouponDropdownOpen"
+                  @mousedown.stop="onCouponDropdownOpen"
                   @change="onCouponSelected"
                   class="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all max-w-full text-sm truncate"
                   :disabled="couponApplied || loadingActiveCoupons"

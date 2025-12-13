@@ -1430,6 +1430,26 @@ const deleteSole = async (id) => {
     }
   }
 
+  const fetchActiveCoupons = async () => {
+  try {
+    loading.value = true
+
+    // Gọi lại API có sẵn
+    const result = await AdminService.getCoupons(
+      0,          // page
+      100,        // size: đủ lớn cho dropdown
+      { isActive: true }
+    )
+
+    return result
+  } catch (error) {
+    console.error('Error fetching active coupons:', error)
+    throw error
+  } finally {
+    loading.value = false
+  }
+}
+
   const clearError = () => {
     error.value = null
   }
@@ -1578,6 +1598,7 @@ const deleteSole = async (id) => {
     deleteCoupon,
     toggleCouponStatus,
     validateCoupon,
+    fetchActiveCoupons,
     
     clearError,
     reset

@@ -600,7 +600,83 @@
           </div>
 
           <!-- Discount Section with Premium Design -->
-          <div
+          <!-- Discount (POS - Dropdown giống Online) -->
+          <div class="py-2 border-t border-gray-200 dark:border-gray-700">
+            <label
+              class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5"
+            >
+              Mã giảm giá
+            </label>
+
+            <div class="flex gap-2 mb-2">
+              <select
+                v-model="selectedCouponCode"
+                @focus="loadActiveCoupons"
+                @change="applyCouponFromDropdown"
+                class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg text-xs text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all truncate"
+              >
+                <option value="">-- Chọn mã giảm giá --</option>
+
+                <option
+                  v-for="coupon in activeCoupons"
+                  :key="coupon.id"
+                  :value="coupon.code"
+                  :disabled="
+                    coupon.minOrderAmount && subtotal < coupon.minOrderAmount
+                  "
+                  style="
+                      background-color: #2b2f36;
+                      color: #ffffff;"
+                  >
+                  {{ coupon.code }}
+                  <template v-if="coupon.discountType === 'percent'">
+                    - {{ coupon.value }}%
+                  </template>
+                  <template v-else>
+                    - {{ formatCurrency(coupon.value) }}
+                  </template>
+                </option>
+              </select>
+
+              <button
+                v-if="couponApplied"
+                @click="removeCoupon"
+                class="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-all flex items-center gap-1"
+              >
+                <i class="material-icons text-sm">close</i>
+                Xóa
+              </button>
+            </div>
+
+            <!-- Loading -->
+            <div
+              v-if="loadingActiveCoupons"
+              class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+            >
+              <div
+                class="animate-spin h-4 w-4 border-2 border-purple-500 border-t-transparent rounded-full"
+              ></div>
+              Đang tải mã giảm giá...
+            </div>
+
+            <!-- Error -->
+            <div
+              v-if="couponError"
+              class="mt-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded-lg"
+            >
+              {{ couponError }}
+            </div>
+
+            <!-- Applied -->
+            <div
+              v-if="couponApplied && appliedCoupon && !couponError"
+              class="mt-2 flex items-center justify-between text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800"
+            >
+              <span> Đã áp dụng "{{ appliedCoupon.code }}" </span>
+              <span> -{{ formatCurrency(discountAmount) }} </span>
+            </div>
+          </div>
+          <!-- <div
             class="py-2 border-t border-gray-200 dark:border-gray-700 flex-shrink-0"
           >
             <label
@@ -626,7 +702,7 @@
                 <i class="material-icons text-base">check</i>
               </button>
             </div>
-          </div>
+          </div> -->
           <!-- Loyalty Points Section -->
           <div
             v-if="selectedCustomer && selectedCustomerLoyaltyPoints !== null"
@@ -692,16 +768,16 @@
             </div>
 
             <!-- COUPON DISCOUNT -->
-            <div
-              v-if="discountAmount > 0"
-              class="flex items-center justify-between text-xs"
+           <div
+             v-if="appliedCoupon && discountAmount > 0"
+            class="flex items-center justify-between text-xs"
             >
-              <span class="text-gray-600 dark:text-gray-400 font-medium"
-                >Giảm giá:</span
-              >
-              <span class="text-red-600 dark:text-red-400 font-semibold">
-                -{{ formatCurrency(discountAmount) }}
-              </span>
+             <span class="text-gray-600 dark:text-gray-400 font-medium">
+               Giảm giá:
+             </span>
+             <span class="text-red-600 dark:text-red-400 font-semibold">
+               -{{ formatCurrency(discountAmount) }}
+             </span>
             </div>
 
             <!-- LOYALTY POINT DISCOUNT -->
@@ -1886,7 +1962,14 @@ const newCustomer = ref({
   isActive: true, // Mặc định là true
 });
 const customerFormErrors = ref({});
+// Discount 
+const activeCoupons = ref([])
+const loadingActiveCoupons = ref(false)
 
+const selectedCouponCode = ref('')
+const appliedCoupon = ref(null)
+const couponApplied = computed(() => !!appliedCoupon.value)
+const couponError = ref('')
 // Shortcuts data
 const shortcuts = [
   { keys: ["Ctrl", "K"], description: "Mở/đóng thanh tìm kiếm" },
@@ -1968,9 +2051,13 @@ const hasMoreProducts = computed(() => !noMoreProducts.value);
 //   return taxableAmount.value + cartVat.value;
 // });
 const cartGrandTotal = computed(() => {
+  const couponDiscount = appliedCoupon.value
+    ? (discountAmount.value || 0)
+    : 0;
+
   const total =
     subtotal.value -
-    (discountAmount.value || 0) -
+    couponDiscount -
     (loyaltyDiscountAmount.value || 0);
 
   return total > 0 ? total : 0;
@@ -2190,36 +2277,141 @@ const applyLoyaltyPoints = () => {
 
   loyaltyDiscountAmount.value = discount;
 };
+// Discount 
+const loadActiveCoupons = async () => {
+  if (activeCoupons.value.length > 0) return
 
-const openPreviewReceipt = () => {
-  if (cartItems.value.length === 0) return;
+  try {
+    loadingActiveCoupons.value = true
+    couponError.value = ''
 
-  // === 1. Subtotal ===
+    const result = await adminStore.fetchActiveCoupons()
+
+    activeCoupons.value =
+      result?.content ||
+      result?.data?.content ||
+      result?.data ||
+      result ||
+      []
+  } catch (err) {
+    console.error(err)
+    couponError.value =
+      err?.response?.data?.message ||
+      err?.message ||
+      'Không thể tải danh sách mã giảm giá'
+  } finally {
+    loadingActiveCoupons.value = false
+  }
+};
+
+const handleInvalidAppliedCoupon = (message) => {
+  const oldCode = appliedCoupon.value?.code
+
+  appliedCoupon.value = null
+  selectedCouponCode.value = ''
+  discountAmount.value = 0
+
+  couponError.value =
+    message ||
+    `Mã giảm giá "${oldCode}" không còn hợp lệ. Vui lòng chọn lại.`
+};
+
+const applyCouponFromDropdown = () => {
+  // ❌ Chưa có sản phẩm → không cho chọn
+  if (cartItems.value.length === 0) {
+    couponError.value = 'Vui lòng thêm sản phẩm trước khi chọn mã giảm giá'
+    selectedCouponCode.value = ''
+    return
+  }
+
+  const coupon = activeCoupons.value.find(
+    c => c.code === selectedCouponCode.value
+  )
+
+  if (!coupon) return
+
+  couponError.value = ''
+
+  if (coupon.minOrderAmount && subtotal.value < coupon.minOrderAmount) {
+    couponError.value = `Đơn tối thiểu ${formatCurrency(coupon.minOrderAmount)}`
+    selectedCouponCode.value = ''
+    return
+  }
+
+  let discount = 0
+
+  if (coupon.discountType === 'percent') {
+    discount = subtotal.value * (coupon.value / 100)
+    if (coupon.maxDiscountAmount) {
+      discount = Math.min(discount, coupon.maxDiscountAmount)
+    }
+  } else {
+    discount = Math.min(coupon.value, subtotal.value)
+  }
+
+  appliedCoupon.value = coupon
+  discountAmount.value = discount
+};
+
+const removeCoupon = () => {
+  selectedCouponCode.value = ''
+  appliedCoupon.value = null
+  discountAmount.value = 0
+  couponError.value = ''
+};
+
+const verifyCouponBeforeCheckout = async () => {
+  if (!appliedCoupon.value) return true
+
+  try {
+    const latestCoupon = await adminStore.validateCoupon(
+      appliedCoupon.value.code
+    )
+
+    if (!latestCoupon || !latestCoupon.isActive) {
+      throw new Error('INVALID')
+    }
+
+    const changed =
+      latestCoupon.discountType !== appliedCoupon.value.discountType ||
+      latestCoupon.value !== appliedCoupon.value.value ||
+      latestCoupon.maxDiscountAmount !== appliedCoupon.value.maxDiscountAmount ||
+      latestCoupon.minOrderAmount !== appliedCoupon.value.minOrderAmount
+
+    if (changed) {
+      throw new Error('CHANGED')
+    }
+
+    return true
+  } catch (err) {
+    handleInvalidAppliedCoupon(
+      `Mã giảm giá "${appliedCoupon.value.code}" đã được cập nhật hoặc không còn hợp lệ.
+Vui lòng chọn lại mã giảm giá cho khách.`
+    )
+    return false
+  }
+};
+
+const openPreviewReceipt = async () => {
+  if (cartItems.value.length === 0) return
+
+  const isCouponValid = await verifyCouponBeforeCheckout()
+  if (!isCouponValid) return
+
   const previewSubtotal = cartItems.value.reduce(
     (sum, item) => sum + item.unitPrice * item.quantity,
     0
-  );
+  )
 
-  // === 2. Giảm giá (coupon + loyalty) ===
-  const couponDiscount = discountAmount.value || 0;
-  const loyaltyDiscount = loyaltyDiscountAmount.value || 0;
+  const couponDiscount = discountAmount.value || 0
+  const loyaltyDiscount = loyaltyDiscountAmount.value || 0
 
-  // === 3. Tiền chịu VAT ===
-  // let taxable = previewSubtotal - couponDiscount - loyaltyDiscount;
-  // if (taxable < 0) taxable = 0;
+  let finalTotal = previewSubtotal - couponDiscount - loyaltyDiscount
+  if (finalTotal < 0) finalTotal = 0
 
-  // // === 4. VAT 10% ===
-  // const previewVat = Math.round(taxable * VAT_RATE);
-
-  // // === 5. Tổng cuối ===
-  // const previewGrandTotal = taxable + previewVat;
-  let finalTotal = previewSubtotal - couponDiscount - loyaltyDiscount;
-  if (finalTotal < 0) finalTotal = 0;
-
-  // === 6. Build dữ liệu hóa đơn ===
   currentReceipt.value = {
-    id: "PREVIEW",
-    orderNumber: "PREVIEW",
+    id: 'PREVIEW',
+    orderNumber: 'PREVIEW',
     createdAt: new Date(),
 
     customerId: selectedCustomer.value?.id || null,
@@ -2231,7 +2423,7 @@ const openPreviewReceipt = () => {
 
     paymentMethod: paymentMethod.value.toUpperCase(),
 
-    items: cartItems.value.map((item) => ({
+    items: cartItems.value.map(item => ({
       productName: item.name,
       size: item.size,
       color: item.color,
@@ -2243,13 +2435,11 @@ const openPreviewReceipt = () => {
 
     subtotal: previewSubtotal,
     discountAmount: couponDiscount,
-    loyaltyDiscountAmount: loyaltyDiscount,
-    // vatAmount: previewVat,
-    couponCode: discountCode.value || null,
+    couponCode: appliedCoupon.value?.code || null,
     totalAmount: finalTotal,
-  };
+  }
 
-  showReceipt.value = true;
+  showReceipt.value = true
 };
 
 const confirmAndCreateOrder = async () => {
@@ -3499,7 +3689,14 @@ watch(
   },
   { deep: true }
 );
-
+// Lưu mã
+watch(
+  appliedCoupon,
+  (coupon) => {
+    selectedCouponCode.value = coupon?.code || ''
+  },
+  { immediate: true }
+)
 // Load data on mount
 onMounted(async () => {
   console.log("🔥 POS Mounted!");
