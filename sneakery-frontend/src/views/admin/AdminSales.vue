@@ -1981,83 +1981,38 @@ const loadData = async () => {
   try {
     loading.value = true;
 
-    // ⭐ Đảm bảo pageIndex tồn tại (tránh ReferenceError)
-    if (typeof pageIndex === "undefined") {
-      console.error("❌ pageIndex chưa được khai báo!");
-    }
-
-    pageIndex.value = 0; // reset về trang đầu
+    pageIndex.value = 0;
     noMoreProducts.value = false;
     totalPages.value = 1;
 
-    // Load products, brands, categories song song — GIỮ NGUYÊN
     const [productsResult, brandsResult, categoriesResult] = await Promise.all([
       adminStore.fetchProducts(pageIndex.value, pageSize, { isActive: true }),
       adminStore.fetchBrands(),
       adminStore.fetchCategories(),
     ]);
 
-    console.log("🔥 FETCH PRODUCTS RESULT:", productsResult);
-
-    // ⭐ Lưu lại total pages (thêm biến nếu chưa có)
     totalPages.value = productsResult.totalPages ?? 1;
 
     let productsList = productsResult.content || [];
 
-    // ⭐ GIỮ NGUYÊN LOGIC enrich
-    const productsNeedingDetails = productsList.filter(
-      (p) =>
-        !p.price &&
-        !p.priceBase &&
-        !p.priceSale &&
-        (!p.variants || p.variants.length === 0)
-    );
+    // 1️⃣ Enrich product detail
+    productsList = await enrichProductsWithDetails(productsList);
 
-    if (
-      productsNeedingDetails.length > 0 &&
-      productsNeedingDetails.length <= 20
-    ) {
-      try {
-        const detailPromises = productsNeedingDetails.map((p) =>
-          adminStore.getProductById(p.id).catch(() => null)
-        );
+    // 2️⃣ Dedupe variants (FIX BUG CHÍNH)
+    productsList = productsList.map((product) => ({
+      ...product,
+      variants: dedupeVariants(product.variants),
+    }));
 
-        const details = await Promise.all(detailPromises);
+    // 3️⃣ Dedupe product list (phòng thủ thêm)
+    productsList = dedupeProducts(productsList);
 
-        productsList = productsList.map((product) => {
-          const detail = details.find((d) => d && d.id === product.id);
-          if (detail) {
-            return {
-              ...product,
-              variants: detail.variants || product.variants,
-              priceBase: detail.priceBase || product.priceBase,
-              priceSale: detail.priceSale || product.priceSale,
-              imageUrl:
-                product.imageUrl ||
-                detail.variants?.[0]?.imageUrl ||
-                detail.imageUrl,
-            };
-          }
-          return product;
-        });
-      } catch (error) {
-        logger.warn("Could not fetch product details:", error);
-      }
-    }
-
-    // ⭐ Cập nhật products
     products.value = productsList;
-
-    // ⭐ Giữ nguyên logic set brands/cats
     brands.value = brandsResult.content || brandsResult || [];
     categories.value = categoriesResult.content || categoriesResult || [];
 
-    // ⭐ GIỮ NGUYÊN — nhưng showingAll phải tồn tại trước
-    if (typeof showingAll !== "undefined") {
-      showingAll.value = false;
-    }
+    showingAll.value = false;
 
-    // ⭐ Tự động đánh dấu đã hết trang nếu < pageSize
     if (productsList.length < pageSize) {
       noMoreProducts.value = true;
     }
@@ -2067,6 +2022,108 @@ const loadData = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const enrichProductsWithDetails = async (products) => {
+  const needDetails = products.filter(
+    (p) =>
+      !p.price &&
+      !p.priceBase &&
+      !p.priceSale &&
+      (!p.variants || p.variants.length === 0)
+  );
+
+  if (needDetails.length === 0 || needDetails.length > 20) {
+    return products;
+  }
+
+  try {
+    const details = await Promise.all(
+      needDetails.map((p) => adminStore.getProductById(p.id).catch(() => null))
+    );
+
+    return products.map((product) => {
+      const detail = details.find((d) => d && d.id === product.id);
+      if (!detail) return product;
+
+      return {
+        ...product,
+        variants: detail.variants || product.variants,
+        priceBase: detail.priceBase ?? product.priceBase,
+        priceSale: detail.priceSale ?? product.priceSale,
+        imageUrl:
+          product.imageUrl || detail.variants?.[0]?.imageUrl || detail.imageUrl,
+      };
+    });
+  } catch (err) {
+    logger.warn("Could not enrich product details:", err);
+    return products;
+  }
+};
+
+const dedupeVariants = (variants = []) => {
+  const result = [];
+  const seen = [];
+
+  for (let i = 0; i < variants.length; i++) {
+    const v = variants[i];
+
+    const sku = v?.sku || "";
+    const size = v?.size || "";
+    const color = v?.color || "";
+
+    const key = `${sku}__${size}__${color}`;
+
+    let duplicated = false;
+    for (let j = 0; j < seen.length; j++) {
+      if (seen[j] === key) {
+        duplicated = true;
+        break;
+      }
+    }
+
+    if (!duplicated) {
+      seen.push(key);
+      result.push(v);
+    }
+  }
+
+  return result;
+};
+
+const dedupeProducts = (products) => {
+  const result = [];
+  const seen = [];
+
+  for (let i = 0; i < products.length; i++) {
+    const p = products[i];
+
+    const sku = p?.sku || p?.variants?.[0]?.sku || "";
+    const size = p?.size || p?.variants?.[0]?.size || "";
+    const color = p?.color || p?.variants?.[0]?.color || "";
+
+    if (!sku) {
+      result.push(p);
+      continue;
+    }
+
+    const key = `${sku}__${size}__${color}`;
+
+    let duplicated = false;
+    for (let j = 0; j < seen.length; j++) {
+      if (seen[j] === key) {
+        duplicated = true;
+        break;
+      }
+    }
+
+    if (!duplicated) {
+      seen.push(key);
+      result.push(p);
+    }
+  }
+
+  return result;
 };
 
 const loadMore = async () => {
