@@ -404,7 +404,7 @@
                 />
                 <small class="text-xs text-gray-500 dark:text-gray-400">Tổng số lần mã có thể được sử dụng</small>
               </div>
-              <div class="flex flex-col gap-2">
+              <!-- <div class="flex flex-col gap-2">
                 <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Số lần dùng/người</label>
                 <input 
                   v-model.number="formData.maxUsesPerUser"
@@ -414,7 +414,7 @@
                   placeholder="1"
                 />
                 <small class="text-xs text-gray-500 dark:text-gray-400">Mỗi khách hàng có thể dùng tối đa bao nhiêu lần</small>
-              </div>
+              </div> -->
             </div>
 
             <div class="flex items-center gap-2">
