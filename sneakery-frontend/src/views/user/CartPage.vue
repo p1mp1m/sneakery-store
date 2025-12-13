@@ -19,7 +19,6 @@
           </p>
         </div>
       </div>
-
       <!-- Loading State -->
       <div v-if="loading" class="flex items-center justify-center py-20">
         <div class="text-center">
