@@ -309,9 +309,8 @@ public class OrderService {
         BigDecimal amountAfterDiscounts = amountAfterCoupon.subtract(pointsDiscount);
 
 // 12. VAT 10%
-        BigDecimal taxAmount = amountAfterDiscounts
-                .multiply(BigDecimal.valueOf(0.10))
-                .setScale(2, RoundingMode.HALF_UP);
+        // 12. VAT (TẠM THỜI = 0, giữ field để mở rộng sau)
+        BigDecimal taxAmount = BigDecimal.ZERO;
         order.setTaxAmount(taxAmount);
 
 // 13. Shipping fee
@@ -540,8 +539,8 @@ public class OrderService {
         BigDecimal amountAfterDiscounts = amountAfterCoupon;
 
 // 12. TAX 10%
-        BigDecimal taxAmount = amountAfterDiscounts.multiply(BigDecimal.valueOf(0.10))
-                .setScale(2, RoundingMode.HALF_UP);
+        // 12. VAT (TẠM THỜI = 0)
+        BigDecimal taxAmount = BigDecimal.ZERO;
         order.setTaxAmount(taxAmount);
 
 // 13. Shipping fee

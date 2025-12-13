@@ -718,12 +718,12 @@
             </div>
 
             <!-- VAT -->
-            <div class="flex items-center justify-between text-sm">
+            <!-- <div class="flex items-center justify-between text-sm">
               <span class="text-gray-600 dark:text-gray-400">VAT (10%):</span>
               <span class="font-semibold text-blue-600 dark:text-blue-400">
                 {{ formatCurrency(cartVat) }}
               </span>
-            </div>
+            </div> -->
 
             <!-- GRAND TOTAL -->
             <div
@@ -1034,12 +1034,12 @@
               </div>
 
               <!-- VAT -->
-              <div class="flex items-center justify-between text-sm">
+              <!-- <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600 dark:text-gray-400">VAT (10%):</span>
                 <span class="font-semibold text-blue-600 dark:text-blue-400">
                   {{ formatCurrency(currentReceipt?.vatAmount || 0) }}
                 </span>
-              </div>
+              </div> -->
 
               <!-- Payment method -->
               <div class="flex items-center justify-between text-sm">
@@ -1945,27 +1945,35 @@ const loadPage = async (pageIndex = 0, filters = {}) => {
 
 const hasMoreProducts = computed(() => !noMoreProducts.value);
 
-const VAT_RATE = 0.1;
+// const VAT_RATE = 0.1;
 
 // Số tiền chịu thuế sau khi trừ mã giảm giá + điểm thưởng
-const taxableAmount = computed(() => {
-  const base =
+// const taxableAmount = computed(() => {
+//   const base =
+//     subtotal.value -
+//     (discountAmount.value || 0) -
+//     (loyaltyDiscountAmount.value || 0);
+
+//   // Không để âm
+//   return base > 0 ? base : 0;
+// });
+
+// VAT = 10% của phần tiền chịu thuế
+// const cartVat = computed(() => {
+//   return Math.round(taxableAmount.value * VAT_RATE);
+// });
+
+// Tổng cộng = tiền chịu thuế + VAT
+// const cartGrandTotal = computed(() => {
+//   return taxableAmount.value + cartVat.value;
+// });
+const cartGrandTotal = computed(() => {
+  const total =
     subtotal.value -
     (discountAmount.value || 0) -
     (loyaltyDiscountAmount.value || 0);
 
-  // Không để âm
-  return base > 0 ? base : 0;
-});
-
-// VAT = 10% của phần tiền chịu thuế
-const cartVat = computed(() => {
-  return Math.round(taxableAmount.value * VAT_RATE);
-});
-
-// Tổng cộng = tiền chịu thuế + VAT
-const cartGrandTotal = computed(() => {
-  return taxableAmount.value + cartVat.value;
+  return total > 0 ? total : 0;
 });
 
 // Methods
@@ -2140,14 +2148,16 @@ const openPreviewReceipt = () => {
   const loyaltyDiscount = loyaltyDiscountAmount.value || 0;
 
   // === 3. Tiền chịu VAT ===
-  let taxable = previewSubtotal - couponDiscount - loyaltyDiscount;
-  if (taxable < 0) taxable = 0;
+  // let taxable = previewSubtotal - couponDiscount - loyaltyDiscount;
+  // if (taxable < 0) taxable = 0;
 
-  // === 4. VAT 10% ===
-  const previewVat = Math.round(taxable * VAT_RATE);
+  // // === 4. VAT 10% ===
+  // const previewVat = Math.round(taxable * VAT_RATE);
 
-  // === 5. Tổng cuối ===
-  const previewGrandTotal = taxable + previewVat;
+  // // === 5. Tổng cuối ===
+  // const previewGrandTotal = taxable + previewVat;
+  let finalTotal = previewSubtotal - couponDiscount - loyaltyDiscount;
+  if (finalTotal < 0) finalTotal = 0;
 
   // === 6. Build dữ liệu hóa đơn ===
   currentReceipt.value = {
@@ -2177,9 +2187,9 @@ const openPreviewReceipt = () => {
     subtotal: previewSubtotal,
     discountAmount: couponDiscount,
     loyaltyDiscountAmount: loyaltyDiscount,
-    vatAmount: previewVat,
+    // vatAmount: previewVat,
     couponCode: discountCode.value || null,
-    totalAmount: previewGrandTotal,
+    totalAmount: finalTotal,
   };
 
   showReceipt.value = true;
@@ -2209,10 +2219,13 @@ const confirmAndCreateOrder = async () => {
     if (taxable < 0) taxable = 0;
 
     // === 4. VAT ===
-    const vatAmount = Math.round(taxable * VAT_RATE);
+    // const vatAmount = Math.round(taxable * VAT_RATE);
 
-    // === 5. TỔNG THANH TOÁN ===
-    const grandTotal = taxable + vatAmount;
+    // // === 5. TỔNG THANH TOÁN ===
+    // const grandTotal = taxable + vatAmount;
+
+    let finalTotal = subtotal - couponDiscount - loyaltyDiscount;
+    if (finalTotal < 0) finalTotal = 0;
 
     // === 6. Build data gửi lên backend ===
     const orderData = {
@@ -2251,7 +2264,7 @@ const confirmAndCreateOrder = async () => {
       subtotal: result.subtotal,
       discountAmount: result.discountAmount || 0,
       loyaltyDiscountAmount: result.pointsDiscount || 0,
-      vatAmount: result.taxAmount || 0,
+      // vatAmount: result.taxAmount || 0,
       totalAmount: result.totalAmount,
 
       // CUSTOMER
@@ -2993,17 +3006,17 @@ const getReceiptSubTotal = () => {
   );
 };
 
-const getReceiptVat = () => {
-  return Math.round(getReceiptSubTotal() * VAT_RATE);
-};
+// const getReceiptVat = () => {
+//   return Math.round(getReceiptSubTotal() * VAT_RATE);
+// };
 
-const getReceiptGrandTotal = () => {
-  const subtotal = getReceiptSubTotal();
-  const discount = currentReceipt?.value?.discountAmount || 0;
-  const vat = getReceiptVat();
+// const getReceiptGrandTotal = () => {
+//   const subtotal = getReceiptSubTotal();
+//   const discount = currentReceipt?.value?.discountAmount || 0;
+//   const vat = getReceiptVat();
 
-  return subtotal - discount + vat;
-};
+//   return subtotal - discount + vat;
+// };
 
 const applyDiscount = async () => {
   if (!discountCode.value || !discountCode.value.trim()) {

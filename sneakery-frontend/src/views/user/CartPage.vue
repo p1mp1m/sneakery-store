@@ -319,7 +319,7 @@
               </div>
 
               <!-- VAT (10%) -->
-              <div
+              <!-- <div
                 class="flex justify-between text-sm text-gray-600 dark:text-gray-400"
               >
                 <span class="flex items-center gap-2">
@@ -333,7 +333,7 @@
                     )
                   }}
                 </span>
-              </div>
+              </div> -->
 
               <!-- Shipping Fee -->
               <!-- <div
@@ -500,20 +500,19 @@ const discountAmount = computed(() => {
 });
 
 // Calculate VAT (10% on amount after discount)
-const taxAmount = computed(() => {
-  if (!cart.value) return 0;
-  const amountAfterDiscount = cart.value.subTotal - discountAmount.value;
-  return Math.max(0, amountAfterDiscount * 0.1);
-});
+// const taxAmount = computed(() => {
+//   if (!cart.value) return 0;
+//   const amountAfterDiscount = cart.value.subTotal - discountAmount.value;
+//   return Math.max(0, amountAfterDiscount * 0.1);
+// });
 
 const totalAmount = computed(() => {
   if (!cart.value) return 0;
   // Backend logic:
   // 1. subtotal - discount = amountAfterDiscount
-  // 2. VAT = amountAfterDiscount * 0.10
-  // 3. total = amountAfterDiscount + shippingFee + VAT
+  // 2. total = amountAfterDiscount + shippingFee
   const amountAfterDiscount = cart.value.subTotal - discountAmount.value;
-  return amountAfterDiscount + shippingFee.value + taxAmount.value;
+  return amountAfterDiscount + shippingFee.value;
 });
 
 const loadVariantImagesForCart = async () => {

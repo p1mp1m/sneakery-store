@@ -688,10 +688,10 @@ public class AdminOrderService {
 
         if (taxableAmount.compareTo(BigDecimal.ZERO) < 0) taxableAmount = BigDecimal.ZERO;
 
-        BigDecimal taxAmount = taxableAmount.multiply(VAT_RATE);
+        BigDecimal taxAmount = BigDecimal.ZERO;
         order.setTaxAmount(taxAmount);
 
-        BigDecimal totalAmount = taxableAmount.add(taxAmount);
+        BigDecimal totalAmount = taxableAmount;
         order.setTotalAmount(totalAmount);
 
         // =============================
