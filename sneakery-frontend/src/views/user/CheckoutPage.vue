@@ -1162,7 +1162,7 @@
               </div>
 
               <!-- VAT (10%) -->
-              <div
+              <!-- <div
                 class="flex justify-between text-sm text-gray-600 dark:text-gray-400"
               >
                 <span class="flex items-center gap-2">
@@ -1172,7 +1172,7 @@
                 <span class="text-gray-900 dark:text-gray-100 font-semibold">{{
                   formatPrice(taxAmount)
                 }}</span>
-              </div>
+              </div> -->
 
               <!-- Shipping Fee -->
               <div
@@ -1913,16 +1913,16 @@ const couponDiscountAmount = computed(() => {
 });
 
 // Calculate VAT (10% on amount after discount)
-const taxAmount = computed(() => {
-  if (!cart.value) return 0;
-  const subTotalValue = Number(cart.value.subTotal) || 0;
-  const amountAfterDiscount =
-    subTotalValue -
-    Number(couponDiscountAmount.value) -
-    Number(loyaltyDiscount.value);
-  // VAT 10% on amount after discount
-  return Math.max(0, amountAfterDiscount * 0.1);
-});
+// const taxAmount = computed(() => {
+//   if (!cart.value) return 0;
+//   const subTotalValue = Number(cart.value.subTotal) || 0;
+//   const amountAfterDiscount =
+//     subTotalValue -
+//     Number(couponDiscountAmount.value) -
+//     Number(loyaltyDiscount.value);
+//   // VAT 10% on amount after discount
+//   return Math.max(0, amountAfterDiscount * 0.1);
+// });
 
 const totalAmount = computed(() => {
   if (!cart.value) return 0;
@@ -1932,15 +1932,13 @@ const totalAmount = computed(() => {
   // Backend logic:
   // 1. subtotal (giá sản phẩm)
   // 2. amountAfterDiscount = subtotal - couponDiscount - loyaltyDiscount
-  // 3. taxAmount = amountAfterDiscount * 0.10 (VAT 10%)
-  // 4. total = amountAfterDiscount + shippingFee + taxAmount
+  // 3. total = amountAfterDiscount + shippingFee + taxAmount
 
   const amountAfterDiscount =
     subTotalValue -
     Number(couponDiscountAmount.value) -
     Number(loyaltyDiscount.value);
-  const total =
-    amountAfterDiscount + Number(shippingFee.value) + Number(taxAmount.value);
+  const total = amountAfterDiscount + Number(shippingFee.value);
 
   return Math.max(total, 0);
 });
