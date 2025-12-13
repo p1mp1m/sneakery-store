@@ -1,0 +1,62 @@
+@charset "UTF-8";
+
+/* Import Design Tokens */
+@import './_design-tokens.css';
+
+/* Import User Common Styles */
+@import './_user-common.css';
+
+/* Import Admin Common Styles */
+@import './_admin-common.css';
+
+/* Import Accessibility Styles */
+@import './_accessibility.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Animation utilities */
+  .animate-in {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+  
+  .zoom-in {
+    animation: zoomIn 0.2s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
