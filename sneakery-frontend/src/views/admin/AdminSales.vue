@@ -2297,6 +2297,8 @@ const confirmAndCreateOrder = async () => {
 
     localStorage.removeItem("pos_cart");
 
+    await loadData();
+
     await loadSalesHistory();
 
     notificationService.success("Thành công", "Thanh toán thành công 🎉");
@@ -2375,8 +2377,8 @@ const searchProducts = async () => {
                   product.imageUrl ||
                   detail.variants?.[0]?.imageUrl ||
                   detail.imageUrl,
-                stockQuantity: detail.stockQuantity || product.stockQuantity,
-                totalStock: detail.totalStock || product.totalStock,
+                stockQuantity: detail.stockQuantity ?? product.stockQuantity,
+                totalStock: detail.totalStock ?? product.totalStock,
               };
             }
             return product;
@@ -2500,8 +2502,8 @@ const filterProducts = async () => {
                 product.imageUrl ||
                 detail.variants?.[0]?.imageUrl ||
                 detail.imageUrl,
-              stockQuantity: detail.stockQuantity || product.stockQuantity,
-              totalStock: detail.totalStock || product.totalStock,
+              stockQuantity: detail.stockQuantity ?? product.stockQuantity,
+              totalStock: detail.totalStock ?? product.totalStock,
             };
           }
           return product;
