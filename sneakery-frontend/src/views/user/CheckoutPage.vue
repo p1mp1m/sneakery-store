@@ -870,6 +870,7 @@
                 <div class="flex gap-2 mb-2">
                   <select
                     v-model="selectedCouponCode"
+                    @focus="onCouponDropdownOpen"
                     @change="onCouponSelected"
                     class="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all max-w-full text-sm truncate"
                     :disabled="couponApplied || loadingActiveCoupons"
@@ -921,7 +922,7 @@
                   {{ couponError }}
                 </div>
                 <div
-                  v-if="appliedCoupon && couponDiscountAmount > 0"
+                  v-if="appliedCoupon && couponDiscountAmount > 0 && !couponError "
                   class="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-1 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg"
                 >
                   <i class="material-icons text-base">check_circle</i>
@@ -1712,6 +1713,7 @@ const showDeleteConfirm = ref(false);
 const addressIdToDelete = ref(null);
 const showEditModal = ref(false);
 const editingAddress = ref(null);
+const lastCouponFetchAt = ref(0)
 
 const openEditModal = (addr) => {
   // Find codes based on names (reverse lookup)
@@ -2099,6 +2101,28 @@ const onCouponSelected = async () => {
   }
 };
 
+const onCouponDropdownOpen = async () => {
+  const now = Date.now()
+
+  // tránh gọi API liên tục (cache 10s)
+  if (now - lastCouponFetchAt.value < 10_000) return
+
+  try {
+    loadingActiveCoupons.value = true
+    couponError.value = ''
+
+    await fetchActiveCoupons() // API lấy coupon mới nhất
+
+    lastCouponFetchAt.value = now
+  } catch (err) {
+    couponError.value =
+      'Không thể tải danh sách mã giảm giá mới nhất. Vui lòng thử lại.'
+  } finally {
+    loadingActiveCoupons.value = false
+  }
+};
+;
+
 const onSelectAddress = async (addr) => {
   selectedAddress.value = addr.id;
   await calculateShippingFee(addr);
@@ -2393,10 +2417,52 @@ const confirmCheckout = () => {
   handleCheckout();
 };
 
+const validateCouponBeforeCheckout = async () => {
+  if (!couponApplied.value || !appliedCoupon.value) return true;
+
+  try {
+    const latestCoupon = await couponService.validateCoupon(
+      appliedCoupon.value.code
+    );
+
+    const isChanged =
+      latestCoupon.value !== appliedCoupon.value.value ||
+      latestCoupon.discountType !== appliedCoupon.value.discountType ||
+      latestCoupon.maxDiscountAmount !== appliedCoupon.value.maxDiscountAmount;
+
+    if (isChanged) {
+      // KHÔNG clear coupon
+      // GIỮ couponApplied = true
+
+      couponStore.setError(
+        "Mã giảm giá đã được cập nhật. Vui lòng kiểm tra và chọn lại mã giảm giá."
+      );
+
+      return false; // chỉ chặn checkout
+    }
+
+    return true;
+  } catch (err) {
+    // TRƯỜNG HỢP NÀY MỚI LÀ INVALID THẬT
+    couponStore.clearCoupon();
+
+    notificationService.warning(
+      "Mã giảm giá không hợp lệ",
+      err?.response?.data?.message ||
+        "Mã giảm giá không còn hợp lệ."
+    );
+
+    return false;
+  }
+};
+
 const handleCheckout = async () => {
   try {
     processing.value = true;
-
+    const isCouponValid = await validateCouponBeforeCheckout();
+    if (!isCouponValid) {
+      return; //  DỪNG TOÀN BỘ FLOW CHECKOUT
+    }
     // ===============================
     // GUEST CHECKOUT
     // ===============================
