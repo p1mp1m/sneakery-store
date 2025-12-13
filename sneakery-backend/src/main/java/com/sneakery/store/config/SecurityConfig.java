@@ -2,8 +2,6 @@ package com.sneakery.store.config;
 
 import com.sneakery.store.security.CustomUserDetailsService;
 import com.sneakery.store.security.JwtAuthenticationFilter;
-// Rate limiting filter - tạm thời comment để tránh lỗi compile với Bucket4j
-// import com.sneakery.store.security.RateLimitingFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,36 +32,20 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CustomUserDetailsService userDetailsService;
-    // Rate limiting filter - tạm thời comment để tránh lỗi compile với Bucket4j
-    // private final RateLimitingFilter rateLimitingFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF protection disabled for REST APIs with JWT
-                // JWT tokens provide CSRF protection inherently
-                // For state-changing operations, JWT validation is sufficient
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Cho phép OPTIONS requests (CORS preflight) - không cần authentication
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        
-                        // 2. Các API Public (Không cần đăng nhập)
+                        // 1. Các API Public (Không cần đăng nhập)
                         .requestMatchers("/api/auth/**").permitAll() // API Đăng nhập/Đăng ký/Reset Password
-                        // TestController chỉ hoạt động trong dev profile (đã có @Profile("dev"))
-                        // Cho phép test endpoints trong dev (sẽ tự động disable trong production nhờ @Profile)
-                        .requestMatchers("/api/test/**").permitAll() // Test endpoints (chỉ hoạt động trong dev profile)
+                        .requestMatchers("/api/test/**").permitAll() // TEST API - CHỈ DÙNG CHO DEBUG, XÓA KHI PRODUCTION!
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll() // Swagger
 
                         // ✅ Cho phép GET public cho Product
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-
-                        // ✅ Cho phép GET public cho Flash Sales
-                        .requestMatchers(HttpMethod.GET, "/api/flash-sales/**").permitAll()
-
-                        // ✅ Cho phép GET public cho Reviews (approved testimonials)
-                        .requestMatchers(HttpMethod.GET, "/api/reviews/approved").permitAll()
 
                         // ✅ Cho phép Guest APIs (không cần authentication)
                         .requestMatchers("/api/guest/**").permitAll()
@@ -78,8 +60,6 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
-                // Rate limiting filter - tạm thời comment để tránh lỗi compile với Bucket4j                // 
-                // .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

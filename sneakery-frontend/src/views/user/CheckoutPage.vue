@@ -2558,11 +2558,8 @@ const handleCheckout = async () => {
     const checkoutData = {
       addressShippingId: selectedAddress.value,
       addressBillingId: selectedAddress.value,
-      paymentMethod:
-        paymentMethod.value === "online"
-          ? onlineProvider.value
-          : paymentMethod.value,
-
+      paymentMethod: paymentMethod.value, // 'cod' hoặc 'online'
+      paymentProvider: paymentMethod.value === "online" ? onlineProvider.value : null, // 'vnpay', 'momo', etc.
       couponCode: couponCode.value || null,
       customerNote: notes.value || null,
       pointsUsed:

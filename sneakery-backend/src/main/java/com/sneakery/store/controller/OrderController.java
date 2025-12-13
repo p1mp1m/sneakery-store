@@ -9,6 +9,7 @@ import com.sneakery.store.dto.ReturnRequestDto;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.service.CouponService;
 import com.sneakery.store.service.OrderService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -128,11 +129,37 @@ public class OrderController {
     @PostMapping("/checkout")
     public ResponseEntity<OrderDto> checkout(
             @AuthenticationPrincipal User userPrincipal,
-            @Valid @RequestBody CheckoutRequestDto requestDto
+            @Valid @RequestBody CheckoutRequestDto requestDto,
+            HttpServletRequest request
     ) {
         log.info("📍 POST /api/orders/checkout - User: {}", userPrincipal.getId());
-        OrderDto order = orderService.createOrderFromCart(userPrincipal.getId(), requestDto);
+        
+        // Lấy IP address của khách hàng
+        String ipAddress = getClientIp(request);
+        
+        OrderDto order = orderService.createOrderFromCart(userPrincipal.getId(), requestDto, ipAddress);
         return ResponseEntity.ok(order);
+    }
+    
+    /**
+     * Helper method để lấy IP address thực của client
+     */
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // Nếu có nhiều IP (qua nhiều proxy), lấy IP đầu tiên
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
     }
 
     /**
@@ -253,8 +280,10 @@ public class OrderController {
             @Valid @RequestBody CreateReturnRequestDto requestDto
     ) {
         log.info("📍 POST /api/orders/{}/return - User: {}", orderId, userPrincipal.getId());
-        ReturnRequestDto returnRequest = orderService.createReturnRequest(orderId, userPrincipal.getId(), requestDto);
-        return ResponseEntity.ok(returnRequest);
+        // TODO: Implement createReturnRequest method in OrderService
+        throw new RuntimeException("Feature not implemented yet");
+        // ReturnRequestDto returnRequest = orderService.createReturnRequest(orderId, userPrincipal.getId(), requestDto);
+        // return ResponseEntity.ok(returnRequest);
     }
 
     /**
@@ -293,8 +322,10 @@ public class OrderController {
             @PathVariable Long orderId
     ) {
         log.info("📍 PUT /api/orders/{}/cancel - User: {}", orderId, userPrincipal.getId());
-        OrderDto order = orderService.cancelOrder(orderId, userPrincipal.getId());
-        return ResponseEntity.ok(order);
+        // TODO: Implement cancelOrder method in OrderService
+        throw new RuntimeException("Feature not implemented yet");
+        // OrderDto order = orderService.cancelOrder(orderId, userPrincipal.getId());
+        // return ResponseEntity.ok(order);
     }
 
     /**
@@ -397,14 +428,16 @@ public class OrderController {
     ) {
         log.info("📍 PUT /api/orders/{}/confirm-received - User: {}", orderId, userPrincipal.getId());
 
-        orderService.confirmOrderReceived(orderId, userPrincipal.getId());
+        // TODO: Implement confirmOrderReceived method in OrderService
+        throw new RuntimeException("Feature not implemented yet");
+        // orderService.confirmOrderReceived(orderId, userPrincipal.getId());
 
-        return ResponseEntity.ok().body(
-                java.util.Map.of(
-                        "message", "Đã xác nhận nhận hàng và cập nhật thanh toán thành công",
-                        "orderId", orderId
-                )
-        );
+        // return ResponseEntity.ok().body(
+        //         java.util.Map.of(
+        //                 "message", "Đã xác nhận nhận hàng và cập nhật thanh toán thành công",
+        //                 "orderId", orderId
+        //         )
+        // );
     }
 
 }

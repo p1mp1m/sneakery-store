@@ -30,11 +30,6 @@ public class AdminReturnDto {
     private String userPhone;
     
     private String reason;
-    private String returnMethod;
-    private String bankName;
-    private String bankAccountNumber;
-    private String bankAccountHolder;
-
     private String status; // pending, approved, rejected, completed
     
     private List<String> images;
@@ -45,6 +40,5 @@ public class AdminReturnDto {
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<AdminReturnItemDto> items;
 }
 

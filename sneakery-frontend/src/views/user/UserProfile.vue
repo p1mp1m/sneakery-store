@@ -119,23 +119,9 @@
               <input 
                 v-model="profile.phoneNumber" 
                 type="tel" 
-                class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
-                :class="[
-                  profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)
-                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
-                    : 'border-gray-200 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500'
-                ]"
-                placeholder="Nhập số điện thoại (VD: 0901234567)"
-                @blur="profile.phoneNumber = formatPhoneNumber(profile.phoneNumber)"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+                placeholder="Nhập số điện thoại"
               />
-              <p v-if="profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)" class="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
-                <i class="material-icons text-xs">error</i>
-                Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)
-              </p>
-              <small v-else-if="profile.phoneNumber" class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                <i class="material-icons text-xs">check_circle</i>
-                Số điện thoại hợp lệ
-              </small>
             </div>
 
             <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -290,75 +276,11 @@
               <input 
                 v-model="passwordForm.newPassword" 
                 type="password" 
-                class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
-                :class="[
-                  passwordForm.newPassword && passwordStrength && !passwordStrength.valid
-                    ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
-                    : passwordForm.newPassword && passwordStrength && passwordStrength.valid
-                    ? 'border-green-300 dark:border-green-600 focus:ring-green-500 focus:border-green-500'
-                    : 'border-gray-200 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500'
-                ]"
-                placeholder="Nhập mật khẩu mới"
+                class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+                placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
                 required 
               />
-              
-              <!-- Password Strength Indicator -->
-              <div v-if="passwordForm.newPassword" class="mt-2 space-y-2">
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div 
-                      class="h-full transition-all duration-300"
-                      :class="[
-                        passwordStrength?.strength === 'strong' ? 'bg-green-500 w-full' :
-                        passwordStrength?.strength === 'medium' ? 'bg-yellow-500 w-2/3' :
-                        'bg-red-500 w-1/3'
-                      ]"
-                    ></div>
-                  </div>
-                  <span 
-                    class="text-xs font-semibold"
-                    :class="[
-                      passwordStrength?.strength === 'strong' ? 'text-green-600 dark:text-green-400' :
-                      passwordStrength?.strength === 'medium' ? 'text-yellow-600 dark:text-yellow-400' :
-                      'text-red-600 dark:text-red-400'
-                    ]"
-                  >
-                    {{ passwordStrength?.strength === 'strong' ? 'Mạnh' : passwordStrength?.strength === 'medium' ? 'Trung bình' : 'Yếu' }}
-                  </span>
-                </div>
-                
-                <!-- Password Requirements -->
-                <div class="space-y-1">
-                  <p class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Yêu cầu mật khẩu:</p>
-                  <ul class="text-xs space-y-1">
-                    <li class="flex items-center gap-2" :class="passwordForm.newPassword.length >= 8 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">
-                      <i class="material-icons text-xs">{{ passwordForm.newPassword.length >= 8 ? 'check_circle' : 'radio_button_unchecked' }}</i>
-                      Ít nhất 8 ký tự
-                    </li>
-                    <li class="flex items-center gap-2" :class="/[A-Z]/.test(passwordForm.newPassword) ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">
-                      <i class="material-icons text-xs">{{ /[A-Z]/.test(passwordForm.newPassword) ? 'check_circle' : 'radio_button_unchecked' }}</i>
-                      Ít nhất 1 chữ hoa
-                    </li>
-                    <li class="flex items-center gap-2" :class="/[a-z]/.test(passwordForm.newPassword) ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">
-                      <i class="material-icons text-xs">{{ /[a-z]/.test(passwordForm.newPassword) ? 'check_circle' : 'radio_button_unchecked' }}</i>
-                      Ít nhất 1 chữ thường
-                    </li>
-                    <li class="flex items-center gap-2" :class="/[0-9]/.test(passwordForm.newPassword) ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'">
-                      <i class="material-icons text-xs">{{ /[0-9]/.test(passwordForm.newPassword) ? 'check_circle' : 'radio_button_unchecked' }}</i>
-                      Ít nhất 1 số
-                    </li>
-                  </ul>
-                </div>
-                
-                <!-- Error Messages -->
-                <div v-if="passwordStrength && passwordStrength.errors.length > 0" class="space-y-1">
-                  <p v-for="error in passwordStrength.errors" :key="error" class="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-                    <i class="material-icons text-xs">error</i>
-                    {{ error }}
-                  </p>
-                </div>
-              </div>
-              <small v-else class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+              <small class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                 <i class="material-icons text-xs">info</i>
                 Mật khẩu phải có ít nhất 6 ký tự
               </small>
@@ -383,7 +305,7 @@
               <button 
                 type="submit" 
                 class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2" 
-                :disabled="changingPassword || (passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword) || (passwordStrength && !passwordStrength.valid)"
+                :disabled="changingPassword || (passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword)"
               >
                 <i v-if="!changingPassword" class="material-icons text-lg">lock</i>
                 <span v-if="changingPassword" class="flex items-center gap-2">
@@ -614,19 +536,9 @@
             <input 
               v-model="addressForm.phone" 
               type="tel" 
-              class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
-              :class="[
-                addressForm.phone && !validateVietnamesePhone(addressForm.phone)
-                  ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
-                  : 'border-gray-200 dark:border-gray-600 focus:ring-purple-500 focus:border-purple-500'
-              ]"
-              placeholder="Nhập số điện thoại (VD: 0901234567)"
-              @blur="addressForm.phone = formatPhoneNumber(addressForm.phone)"
+              class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
+              placeholder="Nhập số điện thoại"
             />
-            <p v-if="addressForm.phone && !validateVietnamesePhone(addressForm.phone)" class="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
-              <i class="material-icons text-xs">error</i>
-              Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)
-            </p>
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Địa chỉ *</label>
@@ -692,12 +604,11 @@ import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
 import { useTheme } from '@/composables/useTheme';
 import { storeToRefs } from 'pinia';
-import notificationService from '@/utils/notificationService';
+import toastService from '@/utils/toastService';
 import confirmDialogService from '@/utils/confirmDialogService';
 import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
 import userService from '@/services/userService';
-import { formatCurrency } from '@/utils/formatters';
 
 const authStore = useAuthStore();
 const loyaltyStore = useLoyaltyStore();
@@ -751,39 +662,15 @@ const updateProfile = async () => {
   try {
     updating.value = true;
     
-    // Validate required fields
-    if (!profile.fullName || !profile.fullName.trim()) {
-      notificationService.error('Lỗi', 'Họ và tên không được để trống');
-      return;
-    }
+    // Note: Backend needs to support profile update endpoint
+    // await axios.put(API_ENDPOINTS.AUTH.PROFILE, profile, {
+    //   headers: { Authorization: `Bearer ${authStore.token}` },
+    // });
 
-    // Validate phone number if provided
-    if (profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)) {
-      notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
-      return;
-    }
-
-    // Call API to update profile
-    const updatedUser = await userService.updateProfile({
-      fullName: profile.fullName.trim(),
-      phoneNumber: profile.phoneNumber?.trim() || null,
-    });
-
-    // Update auth store with new user data
-    if (updatedUser) {
-      // Merge updated user data with existing user data
-      const currentUser = authStore.currentUser;
-      const mergedUser = { ...currentUser, ...updatedUser };
-      authStore.user = mergedUser;
-      localStorage.setItem('user', JSON.stringify(mergedUser));
-    }
-
-    notificationService.success('Thành công', 'Cập nhật thông tin thành công');
-    logger.log('Profile updated successfully');
+    toastService.success('Thành công','Cập nhật thông tin thành công');
   } catch (error) {
     logger.error('Error updating profile:', error);
-    const errorMessage = error.response?.data?.message || error.message || 'Không thể cập nhật thông tin';
-    notificationService.error('Lỗi', errorMessage);
+    toastService.error('Lỗi','Không thể cập nhật thông tin');
   } finally {
     updating.value = false;
   }
@@ -791,28 +678,27 @@ const updateProfile = async () => {
 
 const changePassword = async () => {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    notificationService.error('Lỗi','Mật khẩu xác nhận không khớp');
+    toastService.error('Lỗi','Mật khẩu xác nhận không khớp');
     return;
   }
 
-  // Validate password strength
-  const strength = validatePasswordStrength(passwordForm.newPassword);
-  if (!strength.valid) {
-    notificationService.error('Lỗi', strength.errors[0] || 'Mật khẩu không hợp lệ');
+  if (passwordForm.newPassword.length < 6) {
+    toastService.error('Lỗi','Mật khẩu phải có ít nhất 6 ký tự');
     return;
   }
 
   try {
     changingPassword.value = true;
 
-    // Call API to change password
-    await userService.changePassword({
-      currentPassword: passwordForm.currentPassword,
-      newPassword: passwordForm.newPassword,
-    });
+    // Note: Backend needs to support password change endpoint
+    // await axios.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
+    //   currentPassword: passwordForm.currentPassword,
+    //   newPassword: passwordForm.newPassword,
+    // }, {
+    //   headers: { Authorization: `Bearer ${authStore.token}` },
+    // });
 
-    notificationService.success('Thành công', 'Đổi mật khẩu thành công');
-    logger.log('Password changed successfully');
+    toastService.success('Thành công','Đổi mật khẩu thành công');
         
     // Reset form
     passwordForm.currentPassword = '';
@@ -820,8 +706,7 @@ const changePassword = async () => {
     passwordForm.confirmPassword = '';
   } catch (error) {
     logger.error('Error changing password:', error);
-    const errorMessage = error.response?.data?.message || error.message || 'Không thể đổi mật khẩu';
-    notificationService.error('Lỗi', errorMessage);
+    toastService.error('Lỗi','Không thể đổi mật khẩu');
   } finally {
     changingPassword.value = false;
   }
@@ -833,7 +718,7 @@ const loadAddresses = async () => {
     addresses.value = await userService.getMyAddresses();
   } catch (error) {
     logger.error('Error loading addresses:', error);
-    notificationService.error('Lỗi',error.message || 'Không thể tải danh sách địa chỉ');
+    toastService.error('Lỗi',error.message || 'Không thể tải danh sách địa chỉ');
   } finally {
     loadingAddresses.value = false;
   }
@@ -852,30 +737,7 @@ const editAddress = (addr) => {
 
 const saveAddress = async () => {
   if (!addressForm.recipientName || !addressForm.phone || !addressForm.line1 || !addressForm.city) {
-    notificationService.warning('Cảnh báo','Vui lòng điền đầy đủ thông tin bắt buộc');
-    return;
-  }
-
-  // Validate phone number
-  if (!validateVietnamesePhone(addressForm.phone)) {
-    notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
-    return;
-  }
-
-  // Validate address format
-  if (!validateAddress(addressForm.line1)) {
-    notificationService.error('Lỗi', 'Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)');
-    return;
-  }
-
-  // Validate district and city
-  if (!validateLocation(addressForm.district)) {
-    notificationService.error('Lỗi', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
-    return;
-  }
-
-  if (!validateLocation(addressForm.city)) {
-    notificationService.error('Lỗi', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
+    toastService.warning('Cảnh báo','Vui lòng điền đầy đủ thông tin bắt buộc');
     return;
   }
 
@@ -887,18 +749,18 @@ const saveAddress = async () => {
       if (index !== -1) {
         addresses.value[index] = updatedAddress;
       }
-      notificationService.success('Thành công','Cập nhật địa chỉ thành công');
+      toastService.success('Thành công','Cập nhật địa chỉ thành công');
     } else {
       // Create new address
       const newAddress = await userService.createAddress(addressForm);
       addresses.value.push(newAddress);
-      notificationService.success('Thành công','Thêm địa chỉ thành công');
+      toastService.success('Thành công','Thêm địa chỉ thành công');
     }
 
     closeAddressForm();
   } catch (error) {
     logger.error('Error saving address:', error);
-    notificationService.error('Lỗi',error.message || 'Không thể lưu địa chỉ');
+    toastService.error('Lỗi',error.message || 'Không thể lưu địa chỉ');
   }
 };
 
@@ -916,11 +778,11 @@ const deleteAddress = async (id) => {
     
     await userService.deleteAddress(id);
     addresses.value = addresses.value.filter(a => a.id !== id);
-    notificationService.success('Thành công','Đã xóa địa chỉ');
+    toastService.success('Thành công','Đã xóa địa chỉ');
   } catch (error) {
     if (error !== 'cancel') {
       logger.error('Error deleting address:', error);
-      notificationService.error('Lỗi','Không thể xóa địa chỉ');
+      toastService.error('Lỗi','Không thể xóa địa chỉ');
     }
   }
 };
@@ -944,7 +806,13 @@ const loadLoyaltyData = async () => {
   ]);
 };
 
-// Helper methods - formatCurrency đã được import từ @/utils/formatters
+// Helper methods
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(value);
+};
 
 const formatDate = (timestamp) => {
   if (!timestamp) return '';
@@ -972,7 +840,7 @@ const handleThemeChange = (newTheme) => {
 
 const saveThemeSettings = () => {
   // Theme is already saved when changed via handleThemeChange
-  notificationService.success('Thành công','Đã lưu cài đặt giao diện thành công!');
+  toastService.success('Thành công','Đã lưu cài đặt giao diện thành công!');
 };
 
 onMounted(() => {

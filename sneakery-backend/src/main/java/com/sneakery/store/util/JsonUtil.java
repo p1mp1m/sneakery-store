@@ -64,36 +64,5 @@ public class JsonUtil {
     public static ObjectMapper getObjectMapper() {
         return objectMapper;
     }
-
-    /**
-     * Convert any object to JSON string
-     */
-    public static String toJson(Object value) {
-        try {
-            return objectMapper.writeValueAsString(value);
-        } catch (Exception e) {
-            log.error("Failed to serialize object to JSON", e);
-            return "[]"; // tránh null gây lỗi parse
-        }
-    }
-
-    /**
-     * Parse JSON to List<T> (generic)
-     */
-    public static <T> List<T> parseJsonToList(String json, Class<T> clazz) {
-        if (json == null || json.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        try {
-            return objectMapper.readValue(
-                    json,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, clazz)
-            );
-        } catch (Exception e) {
-            log.error("Failed to parse JSON to List<{}>: {}", clazz.getSimpleName(), json, e);
-            return Collections.emptyList();
-        }
-    }
 }
 

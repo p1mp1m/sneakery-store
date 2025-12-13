@@ -3,7 +3,6 @@ package com.sneakery.store.controller;
 import com.sneakery.store.dto.ProductImageDto;
 import com.sneakery.store.service.ProductImageService;
 import com.sneakery.store.util.FileValidationUtil;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +38,7 @@ public class ProductImageController {
     // ==========================================================
     @PostMapping(consumes = "application/json")
     public ResponseEntity<ProductImageDto> addProductImage(@PathVariable Long productId,
-                                                           @Valid @RequestBody ProductImageDto dto) {
+                                                           @RequestBody ProductImageDto dto) {
         return ResponseEntity.ok(productImageService.addProductImage(productId, dto));
     }
 
@@ -63,7 +62,7 @@ public class ProductImageController {
     // ==========================================================
     @DeleteMapping
     public ResponseEntity<Void> deleteByUrl(@PathVariable Long productId,
-                                            @Valid @RequestBody ProductImageDto dto) {
+                                            @RequestBody ProductImageDto dto) {
         productImageService.deleteByUrl(productId, dto.getImageUrl());
         return ResponseEntity.noContent().build();
     }
@@ -85,50 +84,5 @@ public class ProductImageController {
     public ResponseEntity<ProductImageDto> setPrimaryImage(@PathVariable Long productId,
                                                            @PathVariable Long imageId) {
         return ResponseEntity.ok(productImageService.setPrimaryImage(imageId));
-    }
-}
-
-/**
- * Controller: ProductImageSyncController
- * --------------------------------------
- * Controller riêng cho các endpoint sync ảnh (không cần productId)
- */
-@Slf4j
-@RestController
-@RequestMapping("/api/admin/products")
-@RequiredArgsConstructor
-class ProductImageSyncController {
-
-    private final ProductImageService productImageService;
-
-    // ==========================================================
-    // [POST] SYNC ẢNH CHO TẤT CẢ SẢN PHẨM
-    // ==========================================================
-    /**
-     * Đồng bộ Product.mainImageUrl cho tất cả sản phẩm
-     * Endpoint này sẽ:
-     * 1. Set isPrimary=true cho ảnh đầu tiên nếu sản phẩm chưa có ảnh primary
-     * 2. Update Product.mainImageUrl từ ProductImage có isPrimary=true
-     * 
-     * @return Số lượng sản phẩm đã được sync
-     */
-    @PostMapping("/sync-images")
-    public ResponseEntity<Object> syncAllProductsImages() {
-        log.info("🔄 Admin trigger sync ảnh cho tất cả sản phẩm");
-        try {
-            int syncedCount = productImageService.syncAllProductsMainImageUrl();
-            return ResponseEntity.ok(java.util.Map.of(
-                    "success", true,
-                    "message", "Đã đồng bộ ảnh cho " + syncedCount + " sản phẩm",
-                    "syncedCount", syncedCount
-            ));
-        } catch (Exception e) {
-            log.error("❌ Lỗi khi sync ảnh cho tất cả sản phẩm: {}", e.getMessage(), e);
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(java.util.Map.of(
-                            "success", false,
-                            "message", "Lỗi khi đồng bộ ảnh: " + e.getMessage()
-                    ));
-        }
     }
 }

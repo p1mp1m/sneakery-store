@@ -180,14 +180,8 @@
       </div>
 
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="space-y-4" role="status" aria-live="polite">
-          <LoadingSkeleton
-            v-for="n in 5"
-            :key="n"
-            type="list"
-          />
-          <span class="sr-only">Đang tải dữ liệu</span>
-        </div>
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
       </div>
 
       <div v-else-if="filteredTemplates.length === 0" class="flex flex-col items-center justify-center p-12">
@@ -663,11 +657,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import AdminService from '@/services/adminService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
-import logger from '@/utils/logger'
-import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
-import { formatDate } from '@/utils/formatters'
 
 // Store
 const adminStore = useAdminStore()
@@ -847,10 +838,10 @@ const fetchTemplates = async () => {
     const statsResult = await AdminService.getEmailTemplateStats()
     if (statsResult) {
       emailTemplateStats.value = statsResult
-      logger.log('✅ Email template stats loaded:', emailTemplateStats.value)
+      console.log('✅ Email template stats loaded:', emailTemplateStats.value)
     }
   } catch (error) {
-    logger.warn('Email template stats API error:', error)
+    console.warn('Email template stats API error:', error)
   }
   
   loading.value = true
@@ -858,7 +849,7 @@ const fetchTemplates = async () => {
     const result = await adminStore.fetchEmailTemplates(currentPage.value, pageSize.value, {})
     templates.value = result.content || []
   } catch (error) {
-    notificationService.apiError(error, 'Không thể tải danh sách templates')
+    toastService.error('Lỗi','Không thể tải danh sách templates')
   } finally {
     loading.value = false
   }
@@ -930,7 +921,7 @@ const duplicateTemplate = async (template) => {
     }
     
     templates.value.unshift(newTemplate)
-    notificationService.success('Thành công','Đã sao chép template thành công')
+    toastService.success('Thành công','Đã sao chép template thành công')
   } catch {
     // User cancelled
   }
@@ -949,7 +940,7 @@ const deleteTemplate = async (template) => {
     )
     
     templates.value = templates.value.filter(t => t.id !== template.id)
-    notificationService.success('Thành công','Đã xóa template thành công')
+    toastService.success('Thành công','Đã xóa template thành công')
   } catch {
     // User cancelled
   }
@@ -986,17 +977,17 @@ const insertVariable = (variable) => {
 
 const saveTemplate = async () => {
   if (!templateForm.value.name.trim()) {
-    notificationService.error('Lỗi','Vui lòng nhập tên template')
+    toastService.error('Lỗi','Vui lòng nhập tên template')
     return
   }
   
   if (!templateForm.value.subject.trim()) {
-    notificationService.error('Lỗi','Vui lòng nhập chủ đề email')
+    toastService.error('Lỗi','Vui lòng nhập chủ đề email')
     return
   }
   
   if (!templateForm.value.body.trim()) {
-    notificationService.error('Lỗi','Vui lòng nhập nội dung email')
+    toastService.error('Lỗi','Vui lòng nhập nội dung email')
     return
   }
 
@@ -1010,7 +1001,7 @@ const saveTemplate = async () => {
           updatedAt: new Date().toISOString()
         }
       }
-      notificationService.success('Thành công','Đã cập nhật template thành công')
+      toastService.success('Thành công','Đã cập nhật template thành công')
     } else {
       // Create new template
       const newTemplate = {
@@ -1022,12 +1013,12 @@ const saveTemplate = async () => {
         updatedAt: new Date().toISOString()
       }
       templates.value.unshift(newTemplate)
-      notificationService.success('Thành công','Đã tạo template thành công')
+      toastService.success('Thành công','Đã tạo template thành công')
     }
     
     closeEditorModal()
   } catch (error) {
-    notificationService.apiError(error, 'Có lỗi xảy ra khi lưu template')
+    toastService.error('Lỗi','Có lỗi xảy ra khi lưu template')
   }
 }
 
@@ -1035,7 +1026,7 @@ const exportTemplates = (format) => {
   try {
     const dataToExport = filteredTemplates.value || []
     if (dataToExport.length === 0) {
-      notificationService.warning('Cảnh báo','Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -1054,14 +1045,14 @@ const exportTemplates = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'email-templates.csv')
-      notificationService.success('Thành công','Xuất CSV thành công!')
+      toastService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('email-templates', exportData)
-      notificationService.success('Thành công','Xuất JSON thành công!')
+      toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
-    logger.error('Export error:', error)
-    notificationService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
+    console.error('Export error:', error)
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 
@@ -1092,7 +1083,9 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('vi-VN').format(num)
 }
 
-// formatDate đã được import từ @/utils/formatters
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('vi-VN')
+}
 
 // Lifecycle
 onMounted(() => {

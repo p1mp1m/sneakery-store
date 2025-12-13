@@ -30,17 +30,14 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/api/auth/forgot-password',
     RESET_PASSWORD: '/api/auth/reset-password',
   },
-
+  
   // Products
   PRODUCTS: {
     BASE: '/api/products',
     SEARCH: '/api/products/search',
     BY_ID: (id) => `/api/products/${id}`,
-    BY_SLUG: (slug) => `/api/products/slug/${slug}`,
     CATEGORIES: '/api/products/categories',
-    CATEGORIES_GROUPS: '/api/products/categories/groups',
     BRANDS: '/api/products/brands',
-    RELATED: (id) => `/api/products/${id}/related`,
   },
   
   // Admin Products
@@ -70,24 +67,22 @@ export const API_ENDPOINTS = {
   ORDERS: {
     BASE: '/api/orders',
     BY_ID: (id) => `/api/orders/${id}`,
-    CHECKOUT: '/api/orders/checkout',
-    VALIDATE_COUPON: (code) => `/api/orders/coupons/validate/${code}`,
+    USER: '/api/orders',
     ACTIVE_COUPONS: '/api/orders/coupons/active',
-    CANCEL: (id) => `/api/orders/${id}/cancel`,
   },
-
-  //Payments
+  
+  // Shipping
+  SHIPPING: {
+    CALCULATE: '/api/shipping/calculate',
+  },
+  
+  // Payment
   PAYMENT: {
     USER: {
-      VNPAY: "/api/payment/vnpay/create",
-      MOMO: "/api/payment/momo/create"
+      VNPAY: '/api/orders/checkout',
+      COD: '/api/orders/checkout',
     },
-
-    GUEST: {
-      VNPAY: "/api/guest/payment/vnpay/create",
-      MOMO: "/api/guest/payment/momo/create"
-    }
-    },
+  },
   
   // Flash Sales
   FLASH_SALES: {
@@ -105,10 +100,6 @@ export const API_ENDPOINTS = {
   // Loyalty
   LOYALTY: {
     BASE: '/api/loyalty',
-  },
-
-  SHIPPING: {
-    CALCULATE: "/api/shipping/calculate",
   },
   
   // Notifications
@@ -131,6 +122,12 @@ export const API_ENDPOINTS = {
   NEWSLETTER: {
     SUBSCRIBE: '/api/newsletter/subscribe',
     UNSUBSCRIBE: '/api/newsletter/unsubscribe',
+  },
+  
+  // Chatbot (OpenRouter)
+  CHATBOT: {
+    OPENROUTER_URL: 'https://openrouter.ai/api/v1/chat/completions',
+    MODEL: 'mistralai/mistral-7b-instruct:free',
   },
 };
 

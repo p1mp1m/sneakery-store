@@ -184,4 +184,46 @@ public class CartController {
         cartService.clearCart(userPrincipal.getId());
         return ResponseEntity.ok(Map.of("message", "Đã xóa toàn bộ giỏ hàng"));
     }
+
+    // =================================================================
+    // ADMIN POS ENDPOINTS - Giảm tồn kho ngay lập tức
+    // =================================================================
+
+    /**
+     * ADMIN: Thêm sản phẩm vào giỏ hàng (POS)
+     * Giảm tồn kho NGAY LẬP TỨC khi thêm vào giỏ hàng
+     * 
+     * @param userPrincipal Admin user
+     * @param requestDto DTO chứa variantId và quantity
+     * @return ResponseEntity chứa CartDto (HTTP 200 OK)
+     */
+    @PostMapping("/admin/item")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CartDto> addItemToCartForAdmin(
+            @AuthenticationPrincipal User userPrincipal,
+            @Valid @RequestBody AddToCartRequestDto requestDto
+    ) {
+        log.info("🏪 POST /api/cart/admin/item - Admin: {}, VariantId: {}", userPrincipal.getId(), requestDto.getVariantId());
+        CartDto cart = cartService.addItemToCartForAdmin(userPrincipal.getId(), requestDto);
+        return ResponseEntity.ok(cart);
+    }
+
+    /**
+     * ADMIN: Xóa sản phẩm khỏi giỏ hàng (POS)
+     * Hoàn trả tồn kho NGAY LẬP TỨC khi xóa
+     * 
+     * @param userPrincipal Admin user
+     * @param variantId ID của variant cần xóa
+     * @return ResponseEntity chứa CartDto (HTTP 200 OK)
+     */
+    @DeleteMapping("/admin/item/{variantId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CartDto> removeItemFromCartForAdmin(
+            @AuthenticationPrincipal User userPrincipal,
+            @PathVariable Long variantId
+    ) {
+        log.info("🏪 DELETE /api/cart/admin/item/{} - Admin: {}", variantId, userPrincipal.getId());
+        CartDto cart = cartService.removeItemFromCartForAdmin(userPrincipal.getId(), variantId);
+        return ResponseEntity.ok(cart);
+    }
 }

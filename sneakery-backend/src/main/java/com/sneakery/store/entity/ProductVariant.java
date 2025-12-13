@@ -14,17 +14,17 @@ import java.util.List;
 @Table(name = "Product_Variants")
 @Data
 @NamedEntityGraph(
-        name = "ProductVariant.withProductAndBrand",
-        attributeNodes = {
-                @NamedAttributeNode("product"),
-                @NamedAttributeNode(value = "product", subgraph = "product.brand")
-        },
-        subgraphs = {
-                @NamedSubgraph(
-                        name = "product.brand",
-                        attributeNodes = @NamedAttributeNode("brand")
-                )
-        }
+    name = "ProductVariant.withProductAndBrand",
+    attributeNodes = {
+        @NamedAttributeNode("product"),
+        @NamedAttributeNode(value = "product", subgraph = "product.brand")
+    },
+    subgraphs = {
+        @NamedSubgraph(
+            name = "product.brand",
+            attributeNodes = @NamedAttributeNode("brand")
+        )
+    }
 )
 public class ProductVariant {
 
@@ -62,12 +62,6 @@ public class ProductVariant {
 
     @Column(name = "stock_quantity")
     private Integer stockQuantity;
-
-    @Column(name = "reserved_quantity", nullable = false)
-    private Integer reservedQuantity = 0;
-
-    @Column(name = "damaged_quantity", nullable = false)
-    private int damagedQuantity = 0;
 
     @Column(name = "low_stock_threshold")
     private Integer lowStockThreshold;

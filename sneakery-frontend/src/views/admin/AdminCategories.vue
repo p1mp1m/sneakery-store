@@ -340,11 +340,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import { highlightSearchSafely } from '@/utils/sanitize'
-import logger from '@/utils/logger'
 
 const adminStore = useAdminStore()
 
@@ -468,8 +466,11 @@ const fetchCategories = async () => {
     const result = await adminStore.fetchCategories()
     categories.value = result.content || result || []
   } catch (error) {
-    logger.error('Lỗi khi tải danh sách danh mục:', error)
-    notificationService.apiError(error, 'Không thể tải danh sách danh mục')
+    console.error('Lỗi khi tải danh sách danh mục:', error)
+    toastService.error('Lỗi',{
+      message: 'Không thể tải danh sách danh mục. Vui lòng thử lại!',
+      duration: 5000
+    })
   } finally {
     loading.value = false
   }
@@ -551,7 +552,10 @@ const validateForm = () => {
 
 const handleSubmit = async () => {
   if (!validateForm()) {
-    notificationService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin form!', { duration: 3000 })
+    toastService.warning('Cảnh báo',{
+      message: 'Vui lòng kiểm tra lại thông tin form!',
+      duration: 3000
+    })
     return
   }
 
@@ -560,16 +564,22 @@ const handleSubmit = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateCategory(formData.value.id, formData.value)
-      notificationService.success('Thành công', `Đã cập nhật danh mục "${formData.value.name}" thành công!`, { duration: 3000 })
+      toastService.success('Thành công',{
+        message: `Đã cập nhật danh mục "${formData.value.name}" thành công!`,
+        duration: 3000
+      })
     } else {
       await adminStore.createCategory(formData.value)
-      notificationService.success('Thành công', `Đã thêm danh mục "${formData.value.name}" thành công!`, { duration: 3000 })
+      toastService.success('Thành công',{
+        message: `Đã thêm danh mục "${formData.value.name}" thành công!`,
+        duration: 3000
+      })
     }
     
     await fetchCategories()
     closeModal()
   } catch (error) {
-    logger.error('Lỗi khi lưu danh mục:', error)
+    console.error('Lỗi khi lưu danh mục:', error)
     
     // Handle specific error messages from server
     let errorMessage = 'Có lỗi xảy ra! Vui lòng thử lại.'
@@ -596,7 +606,10 @@ const handleSubmit = async () => {
       errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!'
     }
     
-    notificationService.apiError(error, errorMessage || 'Không thể lưu danh mục')
+    toastService.error('Lỗi',{
+      message: errorMessage,
+      duration: 5000
+    })
   } finally {
     submitting.value = false
   }
@@ -611,13 +624,13 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteCategory(categoryToDelete.value.id)
-    notificationService.success('Thành công',`Đã xóa danh mục "${categoryToDelete.value.name}" thành công!`)
+    toastService.success('Thành công',`Đã xóa danh mục "${categoryToDelete.value.name}" thành công!`)
     await fetchCategories()
     showDeleteModal.value = false
     categoryToDelete.value = null
   } catch (error) {
-    logger.error('Lỗi khi xóa danh mục:', error)
-    notificationService.apiError(error, 'Không thể xóa danh mục này')
+    console.error('Lỗi khi xóa danh mục:', error)
+    toastService.error('Lỗi','Không thể xóa danh mục này. Vui lòng thử lại!')
   } finally {
     deleting.value = false
   }
@@ -635,22 +648,20 @@ const handleExport = (format) => {
   
   if (format === 'csv') {
     downloadCsv(data, `categories_${Date.now()}.csv`)
-    notificationService.success('Thành công','Đã xuất file CSV thành công!')
+    toastService.success('Thành công','Đã xuất file CSV thành công!')
   } else if (format === 'json') {
     downloadJson(data, `categories_${Date.now()}.json`)
-    notificationService.success('Thành công','Đã xuất file JSON thành công!')
+    toastService.success('Thành công','Đã xuất file JSON thành công!')
   }
 }
 
-// Search highlighting (with XSS protection)
+// Search highlighting
 const highlightSearch = (text) => {
-  if (!text) return ''
-  if (!searchQuery.value || !searchQuery.value.trim()) {
-    // Still escape the text even if no search query
-    return highlightSearchSafely(text, '')
-  }
+  if (!searchQuery.value.trim() || !text) return text
   
-  return highlightSearchSafely(text, searchQuery.value)
+  const query = searchQuery.value.trim()
+  const regex = new RegExp(`(${query})`, 'gi')
+  return text.replace(regex, '<mark class="search-highlight">$1</mark>')
 }
 
 // Expand/Collapse all
@@ -677,12 +688,12 @@ const handleBulkDelete = async () => {
       await adminStore.deleteCategory(categoryId)
     }
     
-    notificationService.success('Thành công',`Đã xóa ${selectedCategories.value.length} danh mục thành công!`)
+    toastService.success('Thành công',`Đã xóa ${selectedCategories.value.length} danh mục thành công!`)
     selectedCategories.value = []
     await fetchCategories()
   } catch (error) {
-    logger.error('Lỗi khi xóa danh mục:', error)
-    notificationService.apiError(error, 'Có lỗi xảy ra khi xóa danh mục')
+    console.error('Lỗi khi xóa danh mục:', error)
+    toastService.error('Lỗi','Có lỗi xảy ra khi xóa danh mục. Vui lòng thử lại!')
   } finally {
     deleting.value = false
   }

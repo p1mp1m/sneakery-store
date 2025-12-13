@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Service xử lý logic cho Coupon
@@ -188,44 +189,24 @@ public class CouponService {
     }
 
     /**
-     * Lấy danh sách coupons đang hoạt động (cho user chọn)
+     * Lấy danh sách coupon đang hoạt động (active)
+     * Dùng cho user khi xem danh sách coupon có thể áp dụng
      */
     @Transactional(readOnly = true)
     public List<CouponDto> getActiveCoupons() {
         LocalDateTime now = LocalDateTime.now();
         
-        Specification<Coupon> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            
-            // Chỉ lấy coupons đang active
-            predicates.add(cb.equal(root.get("isActive"), true));
-            
-            // Đã bắt đầu (startAt <= now)
-            predicates.add(cb.lessThanOrEqualTo(root.get("startAt"), now));
-            
-            // Chưa hết hạn (endAt >= now)
-            predicates.add(cb.greaterThanOrEqualTo(root.get("endAt"), now));
-            
-            // Chưa hết lượt dùng (maxUses IS NULL OR usesCount < maxUses)
-            Predicate maxUsesNull = cb.isNull(root.get("maxUses"));
-            Predicate usesCountLessThanMax = cb.and(
-                cb.isNotNull(root.get("maxUses")),
-                cb.lessThan(root.get("usesCount"), root.get("maxUses"))
-            );
-            predicates.add(cb.or(maxUsesNull, usesCountLessThanMax));
-            
-            // Sắp xếp theo endAt ASC (sắp hết hạn trước)
-            if (query != null) {
-                query.orderBy(cb.asc(root.get("endAt")));
-            }
-            
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
+        // Lấy tất cả coupon active, còn hạn, và còn lượt sử dụng
+        List<Coupon> coupons = couponRepository.findAll().stream()
+                .filter(coupon -> coupon.getIsActive() != null && coupon.getIsActive())
+                .filter(coupon -> !now.isBefore(coupon.getStartAt()))
+                .filter(coupon -> !now.isAfter(coupon.getEndAt()))
+                .filter(coupon -> coupon.getMaxUses() == null || coupon.getUsesCount() < coupon.getMaxUses())
+                .collect(Collectors.toList());
         
-        List<Coupon> coupons = couponRepository.findAll(spec);
         return coupons.stream()
                 .map(this::convertToDto)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     /**

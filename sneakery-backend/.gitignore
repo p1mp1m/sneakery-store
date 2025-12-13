@@ -38,6 +38,12 @@ hs_err_pid*
 replay_pid*
 
 # =====================================================
+# Configuration files (contains API keys)
+# =====================================================
+src/main/resources/application.properties
+!src/main/resources/application.properties.example
+
+# =====================================================
 # IDE - IntelliJ IDEA
 # =====================================================
 .idea/

@@ -31,49 +31,20 @@ class ProductService {
         }
     }
 
-    // Tìm kiếm sản phẩm theo brand/category/page/size
-    async searchProducts(filters = {}) {
-    try {
-        const response = await axios.get(API_ENDPOINTS.PRODUCTS.SEARCH, {
-        params: {
-            brand: filters.brand || undefined,
-            category: filters.category || undefined,
-            page: filters.page ?? 0,
-            size: filters.size ?? 20,
-        },
-        });
-
-        return response.data;
-    } catch (error) {
-        logger.error("Error searching products:", error);
-        throw error;
-    }
-    }
-
-    // Lấy sản phẩm tương tự (ưu tiên brand → category)
-    async getRelatedProducts(id, brandId = null, categoryIds = [], limit = 4) {
-    try {
-        const response = await axios.get(
-        API_ENDPOINTS.PRODUCTS.RELATED(id),
-        {
-            params: {
-            brandId,
-            categoryIds,  // backend sẽ tự map thành categoryIds=1&categoryIds=2...
-            limit
-            }
+    // Tìm kiếm sản phẩm với filters
+    async searchProducts(keyword = '', filters = {}) {
+        try {
+            const response = await axios.get(API_ENDPOINTS.PRODUCTS.SEARCH, {
+                params: {
+                    keyword: keyword,
+                    ...filters
+                }
+            });
+            return response.data;
+        } catch (error) {
+            logger.error('Error searching products:', error);
+            throw error;
         }
-        );
-
-        return response.data;
-    } catch (error) {
-        logger.error("Error fetching related products:", error);
-        return [];
-    }
-    }
-
-    // Lấy tất cả hình ảnh sản phẩm (dùng cho admin)
-    async getAllProductImages() {
-        return axios.get('/api/products/images');
     }
 }
 

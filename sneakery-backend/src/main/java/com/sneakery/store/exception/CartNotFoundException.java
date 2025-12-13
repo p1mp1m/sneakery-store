@@ -12,14 +12,12 @@ public class CartNotFoundException extends ApiException {
     
     public CartNotFoundException(Long userId) {
         super(HttpStatus.NOT_FOUND, 
-              String.format("Không tìm thấy giỏ hàng cho user ID: %d", userId),
-              "CART_NOT_FOUND");
+              String.format("Không tìm thấy giỏ hàng cho user ID: %d", userId));
     }
     
     public CartNotFoundException() {
         super(HttpStatus.NOT_FOUND, 
-              "Không tìm thấy giỏ hàng",
-              "CART_NOT_FOUND");
+              "Không tìm thấy giỏ hàng");
     }
 }
 

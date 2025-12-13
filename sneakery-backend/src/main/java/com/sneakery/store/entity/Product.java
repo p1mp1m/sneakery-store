@@ -22,7 +22,7 @@ public class Product {
     @Column(name = "product_code", unique = true, length = 50)
     private String code; 
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
@@ -82,9 +82,6 @@ public class Product {
 
     @Column(name = "main_image_url", length = 500)
     private String mainImageUrl;
-
-    @Column(name = "price_range", length = 500)
-    private String priceRange; // Lưu dạng JSON: {"from": 1000000, "to": 5000000}
 
     @Column(name = "published_at")
     private LocalDateTime publishedAt;

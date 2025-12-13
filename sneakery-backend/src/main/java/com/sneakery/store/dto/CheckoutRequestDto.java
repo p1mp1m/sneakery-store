@@ -17,6 +17,8 @@ public class CheckoutRequestDto {
     @NotBlank(message = "Phương thức thanh toán không được để trống")
     private String paymentMethod; // Phải là 'cod' hoặc 'online'
     
+    private String paymentProvider; // Nhà cung cấp thanh toán online: 'vnpay', 'momo', etc.
+    
     private String couponCode; // Tùy chọn
     
     private String customerNote; // Tùy chọn - ghi chú của khách hàng

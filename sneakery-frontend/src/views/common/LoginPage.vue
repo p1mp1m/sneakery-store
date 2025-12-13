@@ -82,23 +82,23 @@
         </form>
 
         <!-- Divider -->
-        <!-- <div class="relative my-6">
+        <div class="relative my-6">
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
           </div>
           <div class="relative flex justify-center text-sm">
             <span class="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Hoặc</span>
           </div>
-        </div> -->
+        </div>
 
         <!-- Social Login -->
-        <!-- <div class="mb-6">
+        <div class="mb-6">
           <GoogleButton 
             text="Đăng nhập với Google"
             :loading="false"
             @click="handleGoogleLogin"
           />
-        </div> -->
+        </div>
 
         <!-- Register Link -->
         <div class="text-center">
@@ -153,7 +153,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import notificationService from '@/utils/notificationService';
+import toastService from '@/utils/toastService';
 import GoogleButton from '@/assets/components/common/GoogleButton.vue';
 
 const router = useRouter();
@@ -175,19 +175,17 @@ const loginForm = ref({
 const validateForm = () => {
   errors.value = {};
   
-  // Email validation
-  if (!loginForm.value.email?.trim()) {
+  if (!loginForm.value.email) {
     errors.value.email = 'Vui lòng nhập email';
     return false;
   }
   
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(loginForm.value.email.trim())) {
+  if (!emailRegex.test(loginForm.value.email)) {
     errors.value.email = 'Email không hợp lệ';
     return false;
   }
   
-  // Password validation
   if (!loginForm.value.password) {
     errors.value.password = 'Vui lòng nhập mật khẩu';
     return false;
@@ -216,15 +214,15 @@ const handleLogin = async () => {
     const user = authStore.currentUser;
     
     if (user.role === 'ADMIN' || user.role === 'MODERATOR') {
-      notificationService.success('Thành công', `Chào mừng Admin ${user.fullName}!`);
+      toastService.success('Thành công', `Chào mừng Admin ${user.fullName}!`);
       router.push('/admin/dashboard');
     } else {
-      notificationService.success('Thành công', `Chào mừng ${user.fullName}!`);
+      toastService.success('Thành công', `Chào mừng ${user.fullName}!`);
       router.push('/user/dashboard');
     }
   } catch (error) {
     serverError.value = error.response?.data?.message || 'Email hoặc mật khẩu không chính xác.';
-    notificationService.error('Lỗi', serverError.value);
+    toastService.error('Lỗi', serverError.value);
   } finally {
     loading.value = false;
   }
@@ -235,6 +233,6 @@ const handleForgotPassword = () => {
 };
 
 const handleGoogleLogin = () => {
-  notificationService.info('Thông tin','Tính năng đăng nhập Google sẽ được cập nhật sớm!');
+  toastService.info('Thông tin','Tính năng đăng nhập Google sẽ được cập nhật sớm!');
 };
 </script>

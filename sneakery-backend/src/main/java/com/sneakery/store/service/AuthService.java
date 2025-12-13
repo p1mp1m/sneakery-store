@@ -69,7 +69,8 @@ public class AuthService {
         final String raw = loginDto.getPassword();
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, raw));
+                new UsernamePasswordAuthenticationToken(email, raw)
+        );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtTokenProvider.generateToken(authentication);
@@ -87,14 +88,10 @@ public class AuthService {
     @Transactional
     public void forgotPassword(String email) {
         var userOpt = userRepository.findByEmailIgnoreCase(email);
-        if (userOpt.isEmpty())
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Email không tồn tại trong hệ thống.");
+        if (userOpt.isEmpty()) return;
 
         var user = userOpt.get();
-        
-        if (Boolean.FALSE.equals(user.getIsActive())) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Tài khoản này đã bị vô hiệu hoá.");
-        }
+        if (Boolean.FALSE.equals(user.getIsActive())) return;
 
         // Xoá token cũ (nếu có)
         tokenRepository.deleteByUser(user);

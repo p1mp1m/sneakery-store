@@ -66,23 +66,9 @@
             <input
               v-model="profile.phoneNumber"
               type="tel"
-              class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
-              :class="[
-                profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)
-                  ? 'border-red-300 dark:border-red-600 focus:ring-red-500 focus:border-red-500'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-purple-500 focus:border-transparent'
-              ]"
-              placeholder="Nhập số điện thoại (VD: 0901234567)"
-              @blur="profile.phoneNumber = formatPhoneNumber(profile.phoneNumber)"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              placeholder="Nhập số điện thoại"
             />
-            <p v-if="profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)" class="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
-              <i class="material-icons text-xs">error</i>
-              Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)
-            </p>
-            <small v-else-if="profile.phoneNumber" class="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
-              <i class="material-icons text-xs">check_circle</i>
-              Số điện thoại hợp lệ
-            </small>
           </div>
 
           <div>
@@ -126,11 +112,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import axios from 'axios'
-import { API_ENDPOINTS, buildApiUrl } from '@/config/api'
-import logger from '@/utils/logger'
-import { validateVietnamesePhone, formatPhoneNumber } from '@/utils/validators'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -163,7 +146,7 @@ const loadProfile = async () => {
 
     // Lấy thông tin mới nhất từ API
     const response = await axios.get(
-      buildApiUrl(API_ENDPOINTS.AUTH.PROFILE),
+      `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/auth/profile`,
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`
@@ -184,7 +167,7 @@ const loadProfile = async () => {
     originalProfile.phoneNumber = profile.phoneNumber
     originalProfile.role = profile.role
   } catch (error) {
-    logger.error('Error loading profile:', error)
+    console.error('Error loading profile:', error)
     // Nếu lỗi, vẫn dùng thông tin từ authStore
   }
 }
@@ -193,15 +176,8 @@ const updateProfile = async () => {
   try {
     updating.value = true
 
-    // Validate phone number if provided
-    if (profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)) {
-      notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)')
-      updating.value = false
-      return
-    }
-
     const response = await axios.put(
-      buildApiUrl(API_ENDPOINTS.AUTH.PROFILE),
+      `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/auth/profile`,
       {
         fullName: profile.fullName,
         phoneNumber: profile.phoneNumber
@@ -220,14 +196,14 @@ const updateProfile = async () => {
       localStorage.setItem('user', JSON.stringify(authStore.currentUser))
     }
 
-    notificationService.success('Thành công','Cập nhật thông tin thành công')
+    toastService.success('Thành công','Cập nhật thông tin thành công')
     
     // Cập nhật original profile
     originalProfile.fullName = profile.fullName
     originalProfile.phoneNumber = profile.phoneNumber
   } catch (error) {
-    logger.error('Error updating profile:', error)
-    notificationService.apiError(error, 'Không thể cập nhật thông tin')
+    console.error('Error updating profile:', error)
+    toastService.error('Lỗi',error.response?.data?.message || 'Không thể cập nhật thông tin')
   } finally {
     updating.value = false
   }

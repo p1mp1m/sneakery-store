@@ -110,7 +110,6 @@ public class AdminUserService {
                 .passwordHash(passwordEncoder.encode(requestDto.getPassword()))
                 .fullName(requestDto.getFullName())
                 .phoneNumber(requestDto.getPhoneNumber())
-                .address(requestDto.getAddress()) // Thêm địa chỉ
                 .role(role)
                 .isActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true)
                 .createdAt(LocalDateTime.now())

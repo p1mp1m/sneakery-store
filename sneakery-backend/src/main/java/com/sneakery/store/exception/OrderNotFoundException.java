@@ -12,14 +12,12 @@ public class OrderNotFoundException extends ApiException {
     
     public OrderNotFoundException(Long orderId) {
         super(HttpStatus.NOT_FOUND, 
-              String.format("Không tìm thấy đơn hàng với ID: %d", orderId),
-              "ORDER_NOT_FOUND");
+              String.format("Không tìm thấy đơn hàng với ID: %d", orderId));
     }
     
     public OrderNotFoundException(String orderNumber) {
         super(HttpStatus.NOT_FOUND, 
-              String.format("Không tìm thấy đơn hàng với mã: %s", orderNumber),
-              "ORDER_NOT_FOUND");
+              String.format("Không tìm thấy đơn hàng với mã: %s", orderNumber));
     }
 }
 

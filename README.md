@@ -71,13 +71,34 @@ Copy-Item sneakery-backend\src\main\resources\application.properties.example sne
 
 2. **Mở file:** `sneakery-backend/src/main/resources/application.properties`
 
-3. **Sửa 2 dòng sau:**
+3. **Cập nhật các thông tin sau:**
+
+**🔐 Database (BẮT BUỘC):**
 ```properties
-spring.datasource.password=YOUR_PASSWORD_HERE
+spring.datasource.password=YOUR_SQL_SERVER_PASSWORD
+```
+
+**🔑 JWT Secret (BẮT BUỘC):**
+```properties
 app.jwt.secret=YOUR_JWT_SECRET_KEY_HERE
 ```
-- Thay `YOUR_PASSWORD_HERE` bằng mật khẩu SQL Server của bạn
-- Tạo JWT secret mới (dùng UUID generator online)
+- Tạo JWT secret mới tại: https://www.uuidgenerator.net/
+
+**💳 VNPay Payment (TÙY CHỌN - cho thanh toán online):**
+```properties
+payment.vnpay.tmn-code=YOUR_VNPAY_TMN_CODE
+payment.vnpay.hash-secret=YOUR_VNPAY_HASH_SECRET
+```
+- Đăng ký tài khoản sandbox tại: https://sandbox.vnpayment.vn
+- Nếu không cần thanh toán online, có thể bỏ qua
+
+**☁️ Cloudinary (TÙY CHỌN - cho upload ảnh):**
+```properties
+cloudinary.cloud-name=YOUR_CLOUD_NAME
+cloudinary.api-key=YOUR_API_KEY
+cloudinary.api-secret=YOUR_API_SECRET
+```
+- Đăng ký miễn phí tại: https://cloudinary.com
 
 4. **Cài đặt dependencies:**
 ```bash
@@ -91,14 +112,30 @@ mvn clean install
 
 ### 🎨 **Bước 4: Cài đặt Frontend**
 
-1. **Copy file cấu hình (tùy chọn):**
+1. **Copy file cấu hình:**
 ```bash
 # Windows (PowerShell)
 Copy-Item sneakery-frontend\.env.example sneakery-frontend\.env
 ```
-> **💡 Lưu ý:** Trong development mode, Vite proxy tự động xử lý `/api` requests, nên không cần cấu hình `.env`. Chỉ cần khi deploy production.
 
-2. **Cài đặt dependencies:**
+2. **Mở file:** `sneakery-frontend/.env`
+
+3. **Cập nhật thông tin:**
+
+**🤖 OpenRouter AI Chatbot (TÙY CHỌN):**
+```env
+VITE_OPENROUTER_API_KEY=your-openrouter-api-key-here
+```
+- Đăng ký miễn phí tại: https://openrouter.ai/keys
+- Chatbot sẽ dùng fallback responses nếu không có API key
+
+**🌐 Backend URL (chỉ khi production):**
+```env
+VITE_API_URL=http://localhost:8080
+```
+> **💡 Lưu ý:** Trong development mode, Vite proxy tự động xử lý `/api` requests. Chỉ cần set khi deploy production.
+
+4. **Cài đặt dependencies:**
 ```bash
 cd sneakery-frontend
 npm install

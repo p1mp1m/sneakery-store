@@ -14,5 +14,4 @@ public class AdminOrderListDto {
     private BigDecimal totalAmount;
     private String status;
     private LocalDateTime createdAt;
-    private ReturnRequestSummaryDto returnRequest;
 }

@@ -7,14 +7,13 @@ import com.sneakery.store.dto.UpdateCartItemRequestDto;
 import com.sneakery.store.entity.Cart;
 import com.sneakery.store.entity.CartItem;
 import com.sneakery.store.entity.ProductVariant;
-import com.sneakery.store.entity.ProductImage;
 import com.sneakery.store.entity.User;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.CartRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
-import com.sneakery.store.repository.ProductImageRepository;
 import com.sneakery.store.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +66,7 @@ import java.util.stream.Collectors;
  * @author Sneakery Store Team
  * @since 1.0
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CartService {
@@ -74,7 +74,6 @@ public class CartService {
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final ProductVariantRepository variantRepository;
-    private final ProductImageRepository productImageRepository;
 
     /**
      * Lấy giỏ hàng của user
@@ -154,47 +153,76 @@ public class CartService {
     @Transactional
     public CartDto addItemToCart(Long userId, AddToCartRequestDto requestDto) {
         Cart cart = getOrCreateCart(userId);
+        
+        // Tìm biến thể sản phẩm
+        ProductVariant variant = variantRepository.findById(Objects.requireNonNull(requestDto.getVariantId()))
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
 
-        ProductVariant variant = variantRepository.findById(
-                        Objects.requireNonNull(requestDto.getVariantId()))
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
-
-        int addQuantity = requestDto.getQuantity();
-        if (addQuantity <= 0) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
+        // Kiểm tra số lượng tồn kho
+        if (variant.getStockQuantity() < requestDto.getQuantity()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
         }
 
-        // Tìm item đã có trong giỏ
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getVariant().getId().equals(requestDto.getVariantId()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
+            // Nếu đã có -> Cập nhật số lượng
             CartItem item = existingItem.get();
-
-            int newQty = item.getQuantity() + addQuantity; // 🔥 CỘNG DỒN
-
-            if (newQty > variant.getStockQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
-            }
-
-            item.setQuantity(newQty);
+            item.setQuantity(requestDto.getQuantity());
         } else {
-            if (addQuantity > variant.getStockQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
-            }
-
+            // Nếu chưa có -> Thêm mới
             CartItem newItem = new CartItem();
             newItem.setVariant(variant);
-            newItem.setQuantity(addQuantity);
-            cart.addItem(newItem);
+            newItem.setQuantity(requestDto.getQuantity());
+            cart.addItem(newItem); // Dùng helper method
         }
 
         cartRepository.save(cart);
-
+        // Tải lại chi tiết để trả về
         return getCartByUserId(userId);
     }
 
+    /**
+     * API 2.5: Cập nhật số lượng sản phẩm trong giỏ hàng (SET, KHÔNG CỘNG DỒN)
+     * 
+     * <p>Phương thức này dùng cho nút +/- trong giỏ hàng.
+     * Số lượng được SET trực tiếp, KHÔNG cộng thêm.
+     * 
+     * @param userId ID của user
+     * @param requestDto DTO chứa variantId và số lượng mới
+     * @return CartDto giỏ hàng sau khi cập nhật
+     */
+    @Transactional
+    public CartDto updateItemQuantity(Long userId, UpdateCartItemRequestDto requestDto) {
+        Cart cart = getOrCreateCart(userId);
+        
+        // Tìm biến thể sản phẩm
+        ProductVariant variant = variantRepository.findById(Objects.requireNonNull(requestDto.getVariantId()))
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
+
+        // Kiểm tra số lượng tồn kho
+        if (variant.getStockQuantity() < requestDto.getQuantity()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                String.format("Không đủ hàng tồn kho. Tồn kho: %d, Yêu cầu: %d", 
+                    variant.getStockQuantity(), requestDto.getQuantity()));
+        }
+
+        // Tìm item trong giỏ hàng
+        CartItem item = cart.getItems().stream()
+                .filter(i -> i.getVariant().getId().equals(requestDto.getVariantId()))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không có trong giỏ hàng"));
+
+        // SET số lượng mới (không cộng dồn)
+        item.setQuantity(requestDto.getQuantity());
+
+        cartRepository.save(cart);
+        // Tải lại chi tiết để trả về
+        return getCartByUserId(userId);
+    }
 
     /**
      * API 3: Xóa sản phẩm khỏi giỏ
@@ -208,6 +236,120 @@ public class CartService {
                 .filter(item -> item.getVariant().getId().equals(variantId))
                 .findFirst()
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không có trong giỏ hàng"));
+
+        cart.removeItem(itemToRemove); // Dùng helper method
+
+        cartRepository.save(cart);
+        return convertToCartDto(cart);
+    }
+
+    // =================================================================
+    // ADMIN POS CART APIs - GIẢM TỒN KHO NGAY LẬP TỨC
+    // =================================================================
+
+    /**
+     * Thêm sản phẩm vào giỏ hàng cho ADMIN (POS)
+     * ADMIN: Giảm tồn kho NGAY LẬP TỨC khi thêm vào giỏ hàng (không đợi checkout)
+     * 
+     * @param userId ID của admin user
+     * @param requestDto DTO chứa variantId và quantity
+     * @return CartDto sau khi thêm
+     */
+    @Transactional
+    public CartDto addItemToCartForAdmin(Long userId, AddToCartRequestDto requestDto) {
+        Cart cart = getOrCreateCart(userId);
+        
+        // Tìm biến thể sản phẩm
+        ProductVariant variant = variantRepository.findById(Objects.requireNonNull(requestDto.getVariantId()))
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
+
+        // Kiểm tra số lượng tồn kho
+        if (variant.getStockQuantity() < requestDto.getQuantity()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, 
+                String.format("Không đủ hàng tồn kho. Tồn kho: %d, Yêu cầu: %d", 
+                    variant.getStockQuantity(), requestDto.getQuantity()));
+        }
+
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        Optional<CartItem> existingItem = cart.getItems().stream()
+                .filter(item -> item.getVariant().getId().equals(requestDto.getVariantId()))
+                .findFirst();
+
+        int oldQuantity = 0;
+        
+        if (existingItem.isPresent()) {
+            // Nếu đã có -> Cập nhật số lượng
+            CartItem item = existingItem.get();
+            oldQuantity = item.getQuantity();
+            
+            // Tính số lượng thay đổi
+            int quantityDiff = requestDto.getQuantity() - oldQuantity;
+            
+            // Kiểm tra tồn kho cho số lượng tăng thêm
+            if (quantityDiff > 0 && variant.getStockQuantity() < quantityDiff) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, 
+                    String.format("Không đủ hàng tồn kho. Cần thêm: %d, Tồn kho: %d", 
+                        quantityDiff, variant.getStockQuantity()));
+            }
+            
+            // ✅ ADMIN: Giảm/Tăng tồn kho NGAY theo sự thay đổi
+            if (quantityDiff != 0) {
+                int newStock = variant.getStockQuantity() - quantityDiff;
+                variant.setStockQuantity(newStock);
+                variantRepository.save(variant);
+                
+                log.info("🏪 ADMIN POS - Updated stock for variant {}: {} -> {} (change: {})", 
+                    variant.getId(), variant.getStockQuantity() + quantityDiff, newStock, quantityDiff);
+            }
+            
+            item.setQuantity(requestDto.getQuantity());
+        } else {
+            // Nếu chưa có -> Thêm mới
+            // ✅ ADMIN: Giảm tồn kho NGAY khi thêm mới
+            int newStock = variant.getStockQuantity() - requestDto.getQuantity();
+            variant.setStockQuantity(newStock);
+            variantRepository.save(variant);
+            
+            log.info("🏪 ADMIN POS - Reduced stock for variant {}: {} -> {}", 
+                variant.getId(), variant.getStockQuantity() + requestDto.getQuantity(), newStock);
+            
+            CartItem newItem = new CartItem();
+            newItem.setVariant(variant);
+            newItem.setQuantity(requestDto.getQuantity());
+            cart.addItem(newItem); // Dùng helper method
+        }
+
+        cartRepository.save(cart);
+        // Tải lại chi tiết để trả về
+        return getCartByUserId(userId);
+    }
+
+    /**
+     * Xóa sản phẩm khỏi giỏ hàng ADMIN (POS)
+     * ADMIN: Hoàn trả tồn kho NGAY khi xóa khỏi giỏ hàng
+     * 
+     * @param userId ID của admin user
+     * @param variantId ID của variant cần xóa
+     * @return CartDto sau khi xóa
+     */
+    @Transactional
+    public CartDto removeItemFromCartForAdmin(Long userId, Long variantId) {
+        Cart cart = getOrCreateCart(userId);
+
+        // Tìm item trong giỏ
+        CartItem itemToRemove = cart.getItems().stream()
+                .filter(item -> item.getVariant().getId().equals(variantId))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không có trong giỏ hàng"));
+
+        // ✅ ADMIN: Hoàn trả tồn kho NGAY khi xóa
+        ProductVariant variant = itemToRemove.getVariant();
+        int restoredStock = variant.getStockQuantity() + itemToRemove.getQuantity();
+        variant.setStockQuantity(restoredStock);
+        variantRepository.save(variant);
+        
+        log.info("🏪 ADMIN POS - Restored stock for variant {}: {} -> {}", 
+            variant.getId(), variant.getStockQuantity() - itemToRemove.getQuantity(), restoredStock);
 
         cart.removeItem(itemToRemove); // Dùng helper method
 
@@ -250,46 +392,37 @@ public class CartService {
     @Transactional
     public CartDto addItemToGuestCart(String sessionId, AddToCartRequestDto requestDto) {
         Cart cart = getOrCreateGuestCart(sessionId);
+        
+        // Tìm biến thể sản phẩm
+        ProductVariant variant = variantRepository.findById(Objects.requireNonNull(requestDto.getVariantId()))
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
 
-        ProductVariant variant = variantRepository.findById(
-                        Objects.requireNonNull(requestDto.getVariantId()))
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm (variant)"));
-
-        int addQuantity = requestDto.getQuantity();
-        if (addQuantity <= 0) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
+        // Kiểm tra số lượng tồn kho
+        if (variant.getStockQuantity() < requestDto.getQuantity()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
         }
 
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getVariant().getId().equals(requestDto.getVariantId()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
+            // Nếu đã có -> Cập nhật số lượng
             CartItem item = existingItem.get();
-
-            int newQty = item.getQuantity() + addQuantity; // 🔥 CỘNG DỒN
-
-            if (newQty > variant.getStockQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
-            }
-
-            item.setQuantity(newQty);
+            item.setQuantity(requestDto.getQuantity());
         } else {
-            if (addQuantity > variant.getStockQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
-            }
-
+            // Nếu chưa có -> Thêm mới
             CartItem newItem = new CartItem();
             newItem.setVariant(variant);
-            newItem.setQuantity(addQuantity);
+            newItem.setQuantity(requestDto.getQuantity());
             cart.addItem(newItem);
         }
 
         cartRepository.save(cart);
-
+        // Tải lại chi tiết để trả về
         return getCartBySessionId(sessionId);
     }
-
 
     /**
      * API 6: Xóa sản phẩm khỏi guest cart
@@ -376,16 +509,6 @@ public class CartService {
         ProductVariant variant = item.getVariant();
         BigDecimal unitPrice = getEffectivePrice(variant);
         
-        // Lấy imageUrl từ variant, nếu null hoặc rỗng thì lấy ảnh primary từ Product_Images
-//        String imageUrl = variant.getImageUrl();
-//        if ((imageUrl == null || imageUrl.isBlank()) && variant.getProduct() != null) {
-//            Long productId = variant.getProduct().getId();
-//            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
-//            if (coverImage.isPresent()) {
-//                imageUrl = coverImage.get().getImageUrl();
-//            }
-//        }
-        
         return CartItemDto.builder()
                 .cartItemId(item.getId())
                 .variantId(variant.getId())
@@ -393,7 +516,7 @@ public class CartService {
                 .brandName(variant.getProduct().getBrand().getName())
                 .size(variant.getSize())
                 .color(variant.getColor())
-//                .imageUrl(imageUrl)
+                .imageUrl(variant.getImageUrl())
                 .quantity(item.getQuantity())
                 .unitPrice(unitPrice)
                 .totalPrice(unitPrice.multiply(BigDecimal.valueOf(item.getQuantity())))
@@ -408,35 +531,4 @@ public class CartService {
                 ? variant.getPriceSale()
                 : variant.getPriceBase();
     }
-
-    @Transactional
-    public CartDto updateItemQuantity(Long userId, UpdateCartItemRequestDto requestDto) {
-        Cart cart = getOrCreateCart(userId);
-
-        ProductVariant variant = variantRepository.findById(
-                        Objects.requireNonNull(requestDto.getVariantId()))
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy biến thể sản phẩm"));
-
-        int newQuantity = requestDto.getQuantity();
-
-        if (newQuantity <= 0)
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
-
-        if (newQuantity > variant.getStockQuantity())
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
-
-        CartItem item = cart.getItems().stream()
-                .filter(i -> i.getVariant().getId().equals(requestDto.getVariantId()))
-                .findFirst()
-                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Sản phẩm không có trong giỏ"));
-
-        // ✅ SET – KHÔNG CỘNG
-        item.setQuantity(newQuantity);
-
-        cartRepository.save(cart);
-
-        // Load lại bằng query tối ưu
-        return getCartByUserId(userId);
-    }
-
 }

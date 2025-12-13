@@ -280,12 +280,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import AdminService from '@/services/adminService'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import LineChart from '@/assets/components/charts/LineChart.vue'
 import BarChart from '@/assets/components/charts/BarChart.vue'
 import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue'
-import logger from '@/utils/logger'
-import { formatPrice, formatCurrency } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -514,10 +512,10 @@ const loadAnalytics = async () => {
       const statsResult = await adminStore.fetchDashboardStats();
       if (statsResult) {
         dashboardStats.value = statsResult;
-        logger.log('✅ Dashboard stats loaded:', dashboardStats.value);
+        console.log('✅ Dashboard stats loaded:', dashboardStats.value);
       }
     } catch (error) {
-      logger.warn('Dashboard stats API error:', error);
+      console.warn('Dashboard stats API error:', error);
     }
     
     // Load stats compare để tính trends (so sánh với kỳ trước)
@@ -530,13 +528,13 @@ const loadAnalytics = async () => {
           customers: compareResult.trends.customers || 0,
           avgOrderValue: compareResult.trends.avgOrderValue || 0
         };
-        logger.log('✅ Stats trends loaded:', analyticsTrends.value);
+        console.log('✅ Stats trends loaded:', analyticsTrends.value);
       } else {
-        logger.warn('Stats compare API không trả về trends');
+        console.warn('Stats compare API không trả về trends');
         analyticsTrends.value = { revenue: 0, orders: 0, customers: 0, avgOrderValue: 0 };
       }
     } catch (error) {
-      logger.warn('Stats compare API error:', error);
+      console.warn('Stats compare API error:', error);
       analyticsTrends.value = { revenue: 0, orders: 0, customers: 0, avgOrderValue: 0 };
     }
     
@@ -546,13 +544,13 @@ const loadAnalytics = async () => {
       const revenueResult = await adminStore.fetchRevenueAnalytics(selectedPeriod.value)
       if (revenueResult && revenueResult.data) {
         revenueData.value = revenueResult.data
-        logger.log('✅ Revenue analytics loaded:', revenueData.value.length, 'days');
+        console.log('✅ Revenue analytics loaded:', revenueData.value.length, 'days');
       } else {
-        logger.warn('Revenue analytics API chưa sẵn sàng')
+        console.warn('Revenue analytics API chưa sẵn sàng')
         revenueData.value = []
       }
     } catch (error) {
-      logger.warn('Revenue analytics API error:', error)
+      console.warn('Revenue analytics API error:', error)
       revenueData.value = []
     }
     
@@ -562,11 +560,11 @@ const loadAnalytics = async () => {
       if (orderResult && orderResult.data) {
         orderData.value = orderResult.data
       } else {
-        logger.warn('Order analytics API chưa sẵn sàng')
+        console.warn('Order analytics API chưa sẵn sàng')
         orderData.value = []
       }
     } catch (error) {
-      logger.warn('Order analytics API error:', error)
+      console.warn('Order analytics API error:', error)
       orderData.value = []
     }
     
@@ -588,12 +586,12 @@ const loadAnalytics = async () => {
           topProductsTable.value = []
         }
       } else {
-        logger.warn('Product analytics API chưa sẵn sàng')
+        console.warn('Product analytics API chưa sẵn sàng')
         productData.value = []
         topProductsTable.value = []
       }
     } catch (error) {
-      logger.warn('Product analytics API error:', error)
+      console.warn('Product analytics API error:', error)
       productData.value = []
       topProductsTable.value = []
     }
@@ -604,11 +602,11 @@ const loadAnalytics = async () => {
       if (customerResult && customerResult.data) {
         customerData.value = customerResult.data
       } else {
-        logger.warn('Customer analytics API chưa sẵn sàng')
+        console.warn('Customer analytics API chưa sẵn sàng')
         customerData.value = []
       }
     } catch (error) {
-      logger.warn('Customer analytics API error:', error)
+      console.warn('Customer analytics API error:', error)
       customerData.value = []
     }
     
@@ -637,16 +635,16 @@ const loadAnalytics = async () => {
             borderWidth: 0
           }]
         }
-        logger.log('✅ Order status data loaded:', orderStatusData.value)
+        console.log('✅ Order status data loaded:', orderStatusData.value)
       } else {
-        logger.warn('⚠️ No order status data available')
+        console.warn('⚠️ No order status data available')
         orderStatusData.value = {
           labels: [],
           datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }]
         }
       }
     } catch (error) {
-      logger.error('❌ Error loading order status data:', error)
+      console.error('❌ Error loading order status data:', error)
       orderStatusData.value = {
         labels: [],
         datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }]
@@ -658,31 +656,36 @@ const loadAnalytics = async () => {
       const conversionResult = await AdminService.getConversionRate()
       if (conversionResult && conversionResult.data && conversionResult.data.length > 0) {
         conversionRateData.value = conversionResult.data
-        logger.log('✅ Conversion rate data loaded:', conversionRateData.value)
+        console.log('✅ Conversion rate data loaded:', conversionRateData.value)
       } else {
-        logger.warn('⚠️ No conversion rate data available')
+        console.warn('⚠️ No conversion rate data available')
         conversionRateData.value = []
       }
     } catch (error) {
-      logger.error('❌ Error loading conversion rate data:', error)
+      console.error('❌ Error loading conversion rate data:', error)
       conversionRateData.value = []
     }
     
     // Nếu không có dữ liệu từ API, hiển thị empty state
     if (revenueData.value.length === 0 && orderData.value.length === 0) {
-      notificationService.warning('Cảnh báo','Chưa có dữ liệu phân tích cho kỳ này. Vui lòng thử lại sau.')
+      toastService.warning('Cảnh báo','Chưa có dữ liệu phân tích cho kỳ này. Vui lòng thử lại sau.')
     } else {
-      logger.log('✅ Analytics data loaded successfully from API')
+      console.log('✅ Analytics data loaded successfully from API')
     }
   } catch (error) {
-    logger.error('Error loading analytics:', error)
-    notificationService.apiError(error, 'Không thể tải dữ liệu phân tích')
+    console.error('Error loading analytics:', error)
+    toastService.error('Lỗi','Không thể tải dữ liệu phân tích')
   } finally {
     loading.value = false
   }
 }
 
-// formatCurrency đã được import từ @/utils/formatters
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(value)
+}
 
 const getConversionStepColor = (index) => {
   const colors = [

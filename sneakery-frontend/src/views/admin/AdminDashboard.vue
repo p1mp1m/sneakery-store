@@ -1,5 +1,46 @@
 <template>
   <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
+    <!-- Toast Notifications -->
+    <transition-group 
+      name="toast" 
+      tag="div" 
+      class="fixed top-20 right-4 z-[10000] flex flex-col gap-2 max-w-sm"
+      enter-active-class="transition-all duration-300 ease-out"
+      leave-active-class="transition-all duration-300 ease-in"
+      enter-from-class="opacity-0 translate-x-20"
+      enter-to-class="opacity-100 translate-x-0"
+      leave-from-class="opacity-100 translate-x-0"
+      leave-to-class="opacity-0 -translate-x-20"
+    >
+      <div 
+        v-for="notification in notifications" 
+        :key="notification.id"
+        class="flex items-start gap-3 p-3 rounded-xl shadow-lg backdrop-blur-sm border-l-4 min-w-[280px]"
+        :class="{
+          'bg-white dark:bg-gray-800 border-green-500': notification.type === 'success',
+          'bg-white dark:bg-gray-800 border-red-500': notification.type === 'error',
+          'bg-white dark:bg-gray-800 border-yellow-500': notification.type === 'warning',
+          'bg-white dark:bg-gray-800 border-blue-500': notification.type === 'info'
+        }"
+      >
+        <i class="material-icons text-xl flex-shrink-0" 
+          :class="{
+            'text-green-500': notification.type === 'success',
+            'text-red-500': notification.type === 'error',
+            'text-yellow-500': notification.type === 'warning',
+            'text-blue-500': notification.type === 'info'
+          }"
+        >{{ getNotificationIcon(notification.type) }}</i>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm mb-1 text-gray-900 dark:text-gray-100">{{ notification.title }}</p>
+          <p class="text-xs text-gray-600 dark:text-gray-400">{{ notification.message }}</p>
+        </div>
+        <button class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0 transition-colors" @click="removeNotification(notification.id)">
+          <i class="material-icons text-lg">close</i>
+        </button>
+      </div>
+    </transition-group>
+
     <!-- Header -->
     <div class="p-3 sm:p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
@@ -72,12 +113,7 @@
 
       <!-- Refresh Controls -->
       <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-        <button 
-          @click="manualRefresh" 
-          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" 
-          title="Làm mới dữ liệu"
-          aria-label="Làm mới dữ liệu dashboard"
-        >
+        <button @click="manualRefresh" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" title="Làm mới dữ liệu">
           <i class="material-icons text-sm">refresh</i>
           <span>Làm mới</span>
         </button>
@@ -87,24 +123,11 @@
           :class="autoRefreshEnabled 
             ? 'text-white bg-purple-600 hover:bg-purple-700' 
             : 'text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'"
-          :title="autoRefreshEnabled ? `Tắt tự động làm mới (hiện tại: ${autoRefreshIntervalSeconds}s)` : 'Bật tự động làm mới'"
-          :aria-label="autoRefreshEnabled ? 'Tắt tự động làm mới dữ liệu' : 'Bật tự động làm mới dữ liệu'"
+          :title="autoRefreshEnabled ? 'Tắt tự động làm mới' : 'Bật tự động làm mới'"
         >
           <i class="material-icons text-sm" :class="{ 'animate-spin': autoRefreshEnabled }">{{ autoRefreshEnabled ? 'sync' : 'sync_disabled' }}</i>
-          <span>{{ autoRefreshEnabled ? `Tự động: ${autoRefreshIntervalSeconds}s` : 'Tự động: Tắt' }}</span>
+          <span>{{ autoRefreshEnabled ? 'Tự động: Bật' : 'Tự động: Tắt' }}</span>
         </button>
-        <select 
-          v-if="autoRefreshEnabled"
-          v-model="autoRefreshIntervalSeconds"
-          @change="startAutoRefresh"
-          class="px-2 py-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          title="Chọn khoảng thời gian tự động làm mới"
-        >
-          <option :value="60">60 giây</option>
-          <option :value="120">120 giây</option>
-          <option :value="300">5 phút</option>
-          <option :value="600">10 phút</option>
-        </select>
         <span v-if="lastRefreshTime" class="text-xs text-gray-500 dark:text-gray-400 ml-auto">
           Cập nhật: {{ formatRelativeTime(lastRefreshTime) }}
         </span>
@@ -283,74 +306,44 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <!-- Revenue Chart -->
-        <div 
-          ref="revenueChartRef"
-          class="lg:col-span-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
-        >
+        <div class="lg:col-span-2 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Doanh thu {{ selectedPeriod === '7d' ? '7 ngày' : selectedPeriod === '30d' ? '30 ngày' : '90 ngày' }} gần đây</h3>
             <span class="text-[10px] text-gray-500 dark:text-gray-400">Đơn vị: VNĐ</span>
           </div>
           <div class="h-48">
             <LineChart 
-              v-if="chartsVisible.revenue"
               :labels="revenueChart.labels"
               :datasets="revenueChart.datasets"
             />
-            <div v-else class="flex items-center justify-center h-full text-gray-400">
-              <div class="text-center">
-                <i class="material-icons text-4xl mb-2">insights</i>
-                <p class="text-sm">Đang tải biểu đồ...</p>
-              </div>
-            </div>
           </div>
         </div>
 
         <!-- Order Status Chart -->
-        <div 
-          ref="orderStatusChartRef"
-          class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
-        >
+        <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Trạng thái đơn hàng</h3>
             <span class="text-[10px] text-gray-500 dark:text-gray-400">Phân bổ theo trạng thái</span>
           </div>
           <div class="h-48">
             <DoughnutChart 
-              v-if="chartsVisible.orderStatus"
               :labels="orderStatusChart.labels"
               :datasets="orderStatusChart.datasets"
             />
-            <div v-else class="flex items-center justify-center h-full text-gray-400">
-              <div class="text-center">
-                <i class="material-icons text-4xl mb-2">pie_chart</i>
-                <p class="text-sm">Đang tải biểu đồ...</p>
-              </div>
-            </div>
           </div>
         </div>
 
         <!-- Top Products Chart -->
-        <div 
-          ref="topProductsChartRef"
-          class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
-        >
+        <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div class="mb-2 pb-2 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Top 5 sản phẩm bán chạy</h3>
             <span class="text-[10px] text-gray-500 dark:text-gray-400">Số lượng đã bán</span>
           </div>
           <div class="h-48">
             <BarChart 
-              v-if="chartsVisible.topProducts"
               :labels="topProductsChart.labels"
               :datasets="topProductsChart.datasets"
             />
-            <div v-else class="flex items-center justify-center h-full text-gray-400">
-              <div class="text-center">
-                <i class="material-icons text-4xl mb-2">bar_chart</i>
-                <p class="text-sm">Đang tải biểu đồ...</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -363,7 +356,7 @@
           <i class="material-icons text-purple-600 dark:text-purple-400 text-lg">history</i>
           Hoạt động gần đây
         </h2>
-        <button class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all duration-200" @click="notificationService.info('Xem tất cả', 'Chức năng đang được phát triển')">
+        <button class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all duration-200" @click="showNotification('info', 'Xem tất cả', 'Chức năng đang được phát triển')">
           <span>Xem tất cả</span>
           <i class="material-icons text-sm">arrow_forward</i>
         </button>
@@ -378,7 +371,7 @@
             </div>
           </div>
         </div>
-        <div v-else-if="recentActivities.length <= 10" class="flex flex-col gap-2">
+        <div v-else class="flex flex-col gap-2">
           <div 
             v-for="activity in recentActivities" 
             :key="activity.id" 
@@ -406,51 +399,11 @@
               <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">{{ activity.text }}</p>
               <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatRelativeTime(activity.timestamp) }}</span>
             </div>
-            <button class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100" @click="notificationService.info('Chi tiết', activity.text)">
+            <button class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100" @click="showNotification('info', 'Chi tiết', activity.text)">
               <i class="material-icons text-sm">visibility</i>
             </button>
           </div>
         </div>
-        <!-- Virtual List for long activity lists -->
-        <VirtualList
-          v-else
-          :items="recentActivities"
-          :item-height="60"
-          :container-height="400"
-          class="mt-2"
-        >
-          <template #default="{ item: activity, index }">
-            <div 
-              class="flex items-start gap-2 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group"
-            >
-              <div class="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
-                :class="{
-                  'bg-purple-100 dark:bg-purple-900/30': activity.type === 'order',
-                  'bg-blue-100 dark:bg-blue-900/30': activity.type === 'user',
-                  'bg-pink-100 dark:bg-pink-900/30': activity.type === 'product'
-                }"
-              >
-                <svg v-if="activity.type === 'order'" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M16 11V7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7V11M5 9H19L18 21H6L5 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg v-else-if="activity.type === 'user'" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="3" width="7" height="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm text-gray-900 dark:text-gray-100 mb-1">{{ activity.text }}</p>
-                <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatRelativeTime(activity.timestamp) }}</span>
-              </div>
-              <button class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors opacity-0 group-hover:opacity-100" @click="notificationService.info('Chi tiết', activity.text)">
-                <i class="material-icons text-sm">visibility</i>
-              </button>
-            </div>
-          </template>
-        </VirtualList>
       </div>
     </div>
   </div>
@@ -466,16 +419,10 @@ import LineChart from '@/assets/components/charts/LineChart.vue';
 import BarChart from '@/assets/components/charts/BarChart.vue';
 import DoughnutChart from '@/assets/components/charts/DoughnutChart.vue';
 import DateRangePicker from '@/assets/components/admin/DateRangePicker.vue';
-import VirtualList from '@/components/admin/VirtualList.vue';
-import { useLocalStorageCache } from '@/composables/useLocalStorageCache';
-import logger from '@/utils/logger';
-import { formatPrice, formatCurrency, formatRelativeTime } from '@/utils/formatters';
-import notificationService from '@/utils/notificationService';
 
 const router = useRouter();
 const adminStore = useAdminStore();
 const authStore = useAuthStore();
-const { getCache, setCache } = useLocalStorageCache();
 
 const adminUser = computed(() => adminStore.adminUser);
 
@@ -483,17 +430,13 @@ const loading = ref(false);
 const selectedPeriod = ref('7d');
 const currentTime = ref('');
 const currentDate = ref('');
+const notifications = ref([]);
 const showProfileMenu = ref(false);
 const autoRefreshEnabled = ref(true);
-const autoRefreshIntervalSeconds = ref(120); // OPTIMIZED: Tăng từ 60s lên 120s để giảm server load
+const autoRefreshIntervalSeconds = ref(60); // OPTIMIZED: Tăng từ 30s lên 60s để giảm server load
 const lastRefreshTime = ref(null);
-const chartsVisible = ref({
-  revenue: false,
-  orderStatus: false,
-  topProducts: false
-});
+let notificationIdCounter = 0;
 let autoRefreshInterval = null;
-let chartObservers = [];
 
 const stats = ref({
   totalRevenue: 0,
@@ -598,7 +541,38 @@ const topProductsChart = ref({
 
 const recentActivities = ref([]);
 
-// formatCurrency và formatRelativeTime đã được import từ @/utils/formatters
+const showNotification = (type, title, message) => {
+  const id = ++notificationIdCounter;
+  notifications.value.push({ id, type, title, message });
+  setTimeout(() => removeNotification(id), 5000);
+};
+
+const removeNotification = (id) => {
+  const index = notifications.value.findIndex(n => n.id === id);
+  if (index > -1) notifications.value.splice(index, 1);
+};
+
+const getNotificationIcon = (type) => {
+  const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
+  return icons[type] || 'info';
+};
+
+const formatCurrency = (value) => {
+  if (value === null || value === undefined) return '0 ₫';
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+};
+
+const formatRelativeTime = (timestamp) => {
+  const now = new Date();
+  const diff = now - new Date(timestamp);
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  if (minutes < 1) return 'Vừa xong';
+  if (minutes < 60) return `${minutes} phút trước`;
+  if (hours < 24) return `${hours} giờ trước`;
+  return `${days} ngày trước`;
+};
 
 const updateDateTime = () => {
   const now = new Date();
@@ -609,54 +583,40 @@ const updateDateTime = () => {
 const loadDashboardData = async (silent = false) => {
   if (!silent) loading.value = true;
   try {
-    // Check cache first
-    const cacheKey = 'dashboard_stats';
-    const cachedStats = getCache(cacheKey);
+    // Load stats
+    const response = await adminStore.fetchDashboardStats();
+    const previousStats = { ...stats.value };
+    stats.value = response || { totalRevenue: 0, totalOrders: 0, totalProducts: 0, totalUsers: 0 };
     
-    if (cachedStats && silent) {
-      // Use cached data for silent refresh
-      stats.value = cachedStats;
-    } else {
-      // Load stats from API
-      const response = await adminStore.fetchDashboardStats();
-      const previousStats = { ...stats.value };
-      stats.value = response || { totalRevenue: 0, totalOrders: 0, totalProducts: 0, totalUsers: 0 };
-      
-      // Cache the stats (TTL: 5 minutes)
-      setCache(cacheKey, stats.value, 5 * 60 * 1000);
-      
-      // Calculate trends (so sánh với kỳ trước - ước tính từ 30 ngày trước)
-      // Tạm thời tính trend đơn giản: nếu có data mới thì tính % tăng
-      if (previousStats.totalRevenue > 0) {
-        statsTrends.value.revenue = ((stats.value.totalRevenue - previousStats.totalRevenue) / previousStats.totalRevenue) * 100;
-      }
-      if (previousStats.totalOrders > 0) {
-        statsTrends.value.orders = ((stats.value.totalOrders - previousStats.totalOrders) / previousStats.totalOrders) * 100;
-      }
-      if (previousStats.totalProducts > 0) {
-        statsTrends.value.products = ((stats.value.totalProducts - previousStats.totalProducts) / previousStats.totalProducts) * 100;
-      }
-      if (previousStats.totalUsers > 0) {
-        statsTrends.value.users = ((stats.value.totalUsers - previousStats.totalUsers) / previousStats.totalUsers) * 100;
-      }
+    // Calculate trends (so sánh với kỳ trước - ước tính từ 30 ngày trước)
+    // Tạm thời tính trend đơn giản: nếu có data mới thì tính % tăng
+    if (previousStats.totalRevenue > 0) {
+      statsTrends.value.revenue = ((stats.value.totalRevenue - previousStats.totalRevenue) / previousStats.totalRevenue) * 100;
+    }
+    if (previousStats.totalOrders > 0) {
+      statsTrends.value.orders = ((stats.value.totalOrders - previousStats.totalOrders) / previousStats.totalOrders) * 100;
+    }
+    if (previousStats.totalProducts > 0) {
+      statsTrends.value.products = ((stats.value.totalProducts - previousStats.totalProducts) / previousStats.totalProducts) * 100;
+    }
+    if (previousStats.totalUsers > 0) {
+      statsTrends.value.users = ((stats.value.totalUsers - previousStats.totalUsers) / previousStats.totalUsers) * 100;
     }
     
     // Load badges
     await loadBadges();
     
-    // Load charts data only if charts are visible
-    if (chartsVisible.value.revenue || chartsVisible.value.orderStatus || chartsVisible.value.topProducts) {
-      await loadChartsData();
-    }
+    // Load charts data
+    await loadChartsData();
     
     // Load recent activities
     await loadRecentActivities();
     
     lastRefreshTime.value = new Date();
-    if (!silent) notificationService.success('Thành công', 'Đã tải dữ liệu dashboard');
+    if (!silent) showNotification('success', 'Thành công', 'Đã tải dữ liệu dashboard');
   } catch (error) {
-    logger.error('Error loading dashboard data:', error);
-    if (!silent) notificationService.apiError(error, 'Không thể tải dữ liệu dashboard');
+    console.error('Error loading dashboard data:', error);
+    if (!silent) showNotification('error', 'Lỗi', 'Không thể tải dữ liệu dashboard');
   } finally {
     if (!silent) loading.value = false;
   }
@@ -664,23 +624,23 @@ const loadDashboardData = async (silent = false) => {
 
 const loadBadges = async () => {
   try {
-    logger.log('🔄 Loading badges...');
+    console.log('🔄 Loading badges...');
     const badgesData = await AdminService.getDashboardBadges();
-    logger.log('📊 Badges data:', badgesData);
+    console.log('📊 Badges data:', badgesData);
     badges.value = badgesData || {};
   } catch (error) {
-    logger.error('❌ Error loading badges:', error);
+    console.error('❌ Error loading badges:', error);
     badges.value = {};
   }
 };
 
 const loadChartsData = async () => {
   try {
-    logger.log('🔄 Loading charts data for period:', selectedPeriod.value);
+    console.log('🔄 Loading charts data for period:', selectedPeriod.value);
     
     // Load revenue chart
     const revenueData = await AdminService.getRevenueAnalytics(selectedPeriod.value);
-    logger.log('📊 Revenue data:', revenueData);
+    console.log('📊 Revenue data:', revenueData);
     if (revenueData && revenueData.data && revenueData.data.length > 0) {
       const labels = revenueData.data.map(item => {
         const date = new Date(item.date);
@@ -699,9 +659,9 @@ const loadChartsData = async () => {
           tension: 0.4
         }]
       };
-      logger.log('✅ Revenue chart loaded:', revenueChart.value);
+      console.log('✅ Revenue chart loaded:', revenueChart.value);
     } else {
-      logger.warn('⚠️ No revenue data available');
+      console.warn('⚠️ No revenue data available');
       // Set empty data
       revenueChart.value = {
         labels: [],
@@ -718,7 +678,7 @@ const loadChartsData = async () => {
     
     // Load order status chart
     const orderStatusData = await AdminService.getOrderStatusAnalytics();
-    logger.log('📊 Order status data:', orderStatusData);
+    console.log('📊 Order status data:', orderStatusData);
     if (orderStatusData && orderStatusData.data && orderStatusData.data.length > 0) {
       const labels = orderStatusData.data.map(item => item.label || item.status);
       const data = orderStatusData.data.map(item => item.count || 0);
@@ -742,9 +702,9 @@ const loadChartsData = async () => {
           borderWidth: 2
         }]
       };
-      logger.log('✅ Order status chart loaded:', orderStatusChart.value);
+      console.log('✅ Order status chart loaded:', orderStatusChart.value);
     } else {
-      logger.warn('⚠️ No order status data available');
+      console.warn('⚠️ No order status data available');
       orderStatusChart.value = {
         labels: [],
         datasets: [{
@@ -758,7 +718,7 @@ const loadChartsData = async () => {
     
     // Load top products chart
     const topProductsData = await AdminService.getTopProducts(selectedPeriod.value);
-    logger.log('📊 Top products data:', topProductsData);
+    console.log('📊 Top products data:', topProductsData);
     if (topProductsData && topProductsData.topProducts && topProductsData.topProducts.length > 0) {
       const labels = topProductsData.topProducts.map(p => p.name || 'Unknown').slice(0, 5);
       const data = topProductsData.topProducts.map(p => p.totalSold || 0).slice(0, 5);
@@ -773,9 +733,9 @@ const loadChartsData = async () => {
           borderWidth: 1
         }]
       };
-      logger.log('✅ Top products chart loaded:', topProductsChart.value);
+      console.log('✅ Top products chart loaded:', topProductsChart.value);
     } else {
-      logger.warn('⚠️ No top products data available');
+      console.warn('⚠️ No top products data available');
       topProductsChart.value = {
         labels: [],
         datasets: [{
@@ -788,7 +748,7 @@ const loadChartsData = async () => {
       };
     }
   } catch (error) {
-    logger.error('❌ Error loading charts data:', error);
+    console.error('❌ Error loading charts data:', error);
     // Set empty data on error
     revenueChart.value = {
       labels: [],
@@ -825,9 +785,9 @@ const loadChartsData = async () => {
 
 const loadRecentActivities = async () => {
   try {
-    logger.log('🔄 Loading recent activities...');
+    console.log('🔄 Loading recent activities...');
     const activitiesData = await AdminService.getRecentActivities(10);
-    logger.log('📊 Activities data:', activitiesData);
+    console.log('📊 Activities data:', activitiesData);
     if (activitiesData && activitiesData.activities && activitiesData.activities.length > 0) {
       recentActivities.value = activitiesData.activities.map(activity => ({
         id: activity.id,
@@ -835,13 +795,13 @@ const loadRecentActivities = async () => {
         text: activity.text || 'Hoạt động mới',
         timestamp: activity.timestamp ? new Date(activity.timestamp) : new Date()
       }));
-      logger.log('✅ Recent activities loaded:', recentActivities.value);
+      console.log('✅ Recent activities loaded:', recentActivities.value);
     } else {
-      logger.warn('⚠️ No activities data available');
+      console.warn('⚠️ No activities data available');
       recentActivities.value = [];
     }
   } catch (error) {
-    logger.error('❌ Error loading recent activities:', error);
+    console.error('❌ Error loading recent activities:', error);
     recentActivities.value = [];
   }
 };
@@ -866,16 +826,16 @@ const toggleAutoRefresh = () => {
   autoRefreshEnabled.value = !autoRefreshEnabled.value;
   if (autoRefreshEnabled.value) {
     startAutoRefresh();
-    notificationService.success('Tự động làm mới', `Đã bật tự động làm mới mỗi ${autoRefreshIntervalSeconds.value} giây`);
+    showNotification('success', 'Tự động làm mới', `Đã bật tự động làm mới mỗi ${autoRefreshIntervalSeconds.value} giây`);
   } else {
     stopAutoRefresh();
-    notificationService.info('Tự động làm mới', 'Đã tắt tự động làm mới');
+    showNotification('info', 'Tự động làm mới', 'Đã tắt tự động làm mới');
   }
 };
 
 const manualRefresh = () => {
   loadDashboardData();
-  notificationService.info('Làm mới', 'Đang tải lại dữ liệu...');
+  showNotification('info', 'Làm mới', 'Đang tải lại dữ liệu...');
 };
 
 const changePeriod = async (period) => {
@@ -883,10 +843,10 @@ const changePeriod = async (period) => {
   loading.value = true;
   try {
     await loadChartsData();
-    notificationService.info('Thay đổi chu kỳ', `Đang hiển thị dữ liệu ${period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày'}`);
+    showNotification('info', 'Thay đổi chu kỳ', `Đang hiển thị dữ liệu ${period === '7d' ? '7 ngày' : period === '30d' ? '30 ngày' : '90 ngày'}`);
   } catch (error) {
-    logger.error('Error changing period:', error);
-    notificationService.apiError(error, 'Không thể tải dữ liệu cho chu kỳ này');
+    console.error('Error changing period:', error);
+    showNotification('error', 'Lỗi', 'Không thể tải dữ liệu cho chu kỳ này');
   } finally {
     loading.value = false;
   }
@@ -898,7 +858,7 @@ const toggleProfileMenu = () => {
 
 const handleProfileEdit = () => {
   showProfileMenu.value = false;
-  notificationService.info('Hồ sơ', 'Chức năng đang được phát triển');
+  showNotification('info', 'Hồ sơ', 'Chức năng đang được phát triển');
 };
 
 const handleSettings = () => {
@@ -908,12 +868,12 @@ const handleSettings = () => {
 
 const handleChangePassword = () => {
   showProfileMenu.value = false;
-  notificationService.info('Đổi mật khẩu', 'Chức năng đang được phát triển');
+  showNotification('info', 'Đổi mật khẩu', 'Chức năng đang được phát triển');
 };
 
 const handleLogout = () => {
   showProfileMenu.value = false;
-  notificationService.success('Đăng xuất', 'Đang đăng xuất...');
+  showNotification('success', 'Đăng xuất', 'Đang đăng xuất...');
   setTimeout(() => {
     authStore.logout();
     adminStore.reset();
@@ -933,7 +893,7 @@ const applyCustomDateRange = (range) => {
   selectedPeriod.value = 'custom';
   if (range && range.start && range.end) {
     customDateRange.value = range;
-    notificationService.info('Thay đổi khoảng thời gian', `Đang hiển thị dữ liệu từ ${new Date(range.start).toLocaleDateString('vi-VN')} đến ${new Date(range.end).toLocaleDateString('vi-VN')}`);
+    showNotification('info', 'Thay đổi khoảng thời gian', `Đang hiển thị dữ liệu từ ${new Date(range.start).toLocaleDateString('vi-VN')} đến ${new Date(range.end).toLocaleDateString('vi-VN')}`);
     // Reload data with custom date range
     loadDashboardData();
   }
@@ -941,7 +901,7 @@ const applyCustomDateRange = (range) => {
 
 const exportReports = async () => {
   try {
-    notificationService.info('Xuất báo cáo', 'Đang tạo báo cáo...');
+    showNotification('info', 'Xuất báo cáo', 'Đang tạo báo cáo...');
     
     // Create CSV content
     const csvContent = [
@@ -969,78 +929,22 @@ const exportReports = async () => {
     link.click();
     document.body.removeChild(link);
     
-    notificationService.success('Xuất báo cáo', 'Đã xuất báo cáo thành công!');
+    showNotification('success', 'Xuất báo cáo', 'Đã xuất báo cáo thành công!');
   } catch (error) {
-    logger.error('Error exporting reports:', error);
-    notificationService.apiError(error, 'Không thể xuất báo cáo');
+    console.error('Error exporting reports:', error);
+    showNotification('error', 'Lỗi', 'Không thể xuất báo cáo');
   }
 };
 
 let timeInterval;
 let handleClickOutside;
-const revenueChartRef = ref(null);
-const orderStatusChartRef = ref(null);
-const topProductsChartRef = ref(null);
-
-// Setup Intersection Observer for lazy loading charts
-const setupChartObservers = () => {
-  if (!window.IntersectionObserver) {
-    // Fallback: load all charts immediately if IntersectionObserver is not supported
-    chartsVisible.value = { revenue: true, orderStatus: true, topProducts: true };
-    loadChartsData();
-    return;
-  }
-
-  const observerOptions = {
-    root: null,
-    rootMargin: '50px',
-    threshold: 0.1
-  };
-
-  const observerCallback = (entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const chartType = entry.target.dataset.chartType;
-        if (chartType && !chartsVisible.value[chartType]) {
-          chartsVisible.value[chartType] = true;
-          loadChartsData();
-        }
-      }
-    });
-  };
-
-  const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-  // Observe chart containers
-  if (revenueChartRef.value) {
-    revenueChartRef.value.dataset.chartType = 'revenue';
-    observer.observe(revenueChartRef.value);
-    chartObservers.push({ observer, element: revenueChartRef.value });
-  }
-  if (orderStatusChartRef.value) {
-    orderStatusChartRef.value.dataset.chartType = 'orderStatus';
-    observer.observe(orderStatusChartRef.value);
-    chartObservers.push({ observer, element: orderStatusChartRef.value });
-  }
-  if (topProductsChartRef.value) {
-    topProductsChartRef.value.dataset.chartType = 'topProducts';
-    observer.observe(topProductsChartRef.value);
-    chartObservers.push({ observer, element: topProductsChartRef.value });
-  }
-};
 
 onMounted(() => {
   loadDashboardData();
   updateDateTime();
   timeInterval = setInterval(updateDateTime, 1000);
   startAutoRefresh();
-  
-  // Setup chart observers after DOM is ready
-  setTimeout(() => {
-    setupChartObservers();
-  }, 100);
-  
-  setTimeout(() => notificationService.info('Chào mừng!', 'Chào mừng bạn quay trở lại Admin Dashboard'), 500);
+  setTimeout(() => showNotification('info', 'Chào mừng!', 'Chào mừng bạn quay trở lại Admin Dashboard'), 500);
   handleClickOutside = (e) => {
     if (!e.target.closest('.relative')) showProfileMenu.value = false;
   };
@@ -1051,13 +955,6 @@ onUnmounted(() => {
   if (timeInterval) clearInterval(timeInterval);
   if (handleClickOutside) document.removeEventListener('click', handleClickOutside);
   stopAutoRefresh();
-  
-  // Cleanup chart observers
-  chartObservers.forEach(({ observer, element }) => {
-    observer.unobserve(element);
-    observer.disconnect();
-  });
-  chartObservers = [];
 });
 </script>
 

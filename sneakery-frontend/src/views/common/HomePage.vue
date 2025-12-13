@@ -688,6 +688,9 @@
       </div>
     </section>
   </div>
+  
+  <!-- Chatbot Component -->
+  <Chatbot />
 </template>
 
 <script setup>
@@ -697,6 +700,7 @@ import newsletterService from "@/services/newsletterService";
 import { useFlashSaleStore } from "@/stores/flashSale";
 import ProductCard from "@/assets/components/products/ProductCard.vue";
 import TestimonialsSection from "@/assets/components/common/TestimonialsSection.vue";
+import Chatbot from '@/components/Chatbot.vue';
 import logger from "@/utils/logger";
 import notificationService from "@/utils/notificationService";
 import { API_ENDPOINTS } from "@/config/api";

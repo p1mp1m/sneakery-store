@@ -3,55 +3,43 @@ package com.sneakery.store.util;
 import org.springframework.stereotype.Component;
 
 import java.text.DecimalFormat;
-import java.text.Normalizer;
-import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Bộ sinh mã tự động có thể tái sử dụng.
+ * Hỗ trợ tiền tố (prefix), padding, và đồng bộ luồng.
+ */
 @Component
 public class CodeGenerator {
 
+    // Tăng tự động trong runtime (hoặc lấy từ DB)
+    private final AtomicLong counter = new AtomicLong(0);
+
     /**
-     * Tạo mã sản phẩm theo brand, ví dụ:
-     * NIKE → NIKE-001
-     * ADIDAS → ADIDAS-015
+     * Sinh mã sản phẩm mới theo dạng "SP00001", "SP00002", ...
      *
-     * @param brandName tên thương hiệu (ví dụ: "Nike")
-     * @param lastNumber số thứ tự cuối cùng đã tồn tại trong DB (null nếu chưa có)
+     * @param lastId giá trị id cuối cùng (lấy từ DB)
+     * @return mã sản phẩm mới
      */
-    public String generateProductCodeByBrand(String brandName, Integer lastNumber) {
-        String brandCode = toBrandCode(brandName);
-        int next = (lastNumber != null ? lastNumber + 1 : 1);
-        return brandCode + "-" + formatNumber(next);
+    public String generateProductCode(Long lastId) {
+        long next = (lastId != null ? lastId + 1 : counter.incrementAndGet());
+        return formatCode("SP", next);
     }
 
     /**
-     * Chuyển brand name thành code:
-     * Nike → NIKE
-     * New Balance → NEWBALANCE
-     * Jordan → JORDAN
+     * Sinh mã đơn hàng "ORD00001", "ORD00002", ...
      */
-    private String toBrandCode(String name) {
-        if (name == null) return "UNKNOWN";
-
-        // Xóa dấu tiếng Việt nếu có
-        String normalized = Normalizer.normalize(name, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "");
-
-        // Xóa khoảng trắng
-        normalized = normalized.replaceAll("\\s+", "");
-
-        // Giới hạn tối đa 6 ký tự
-        if (normalized.length() > 6) {
-            normalized = normalized.substring(0, 6);
-        }
-
-        return normalized.toUpperCase(Locale.ROOT);
+    public String generateOrderCode(Long lastId) {
+        long next = (lastId != null ? lastId + 1 : counter.incrementAndGet());
+        return formatCode("ORD", next);
     }
 
-
     /**
-     * Padding 3 số (001, 002, ... 999)
+     * Hàm định dạng chung: prefix + số có padding 5 chữ số
      */
-    private String formatNumber(int number) {
-        return new DecimalFormat("000").format(number);
+    private String formatCode(String prefix, long number) {
+        DecimalFormat df = new DecimalFormat("00000");
+        return prefix + df.format(number);
     }
 }
+

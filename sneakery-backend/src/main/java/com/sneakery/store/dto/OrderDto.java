@@ -29,6 +29,7 @@ public class OrderDto {
     private List<CartItemDto> orderDetails; // Dùng lại CartItemDto cho tiện
     private List<OrderStatusHistoryDto> statusHistories; // Lịch sử thay đổi trạng thái
     private ReturnRequestDto returnRequest; // Thông tin return request (nếu có)
+    
     @Schema(description = "Tên khách POS (chỉ dùng cho đơn POS, không persist DB)")
     private String posCustomerName;
 
@@ -37,4 +38,6 @@ public class OrderDto {
 
     @Schema(description = "Số điện thoại khách POS (chỉ dùng cho đơn POS, không persist DB)")
     private String posCustomerPhone;
+    
+    private String paymentUrl; // URL thanh toán cho VNPay/MoMo (nếu là online payment)
 }

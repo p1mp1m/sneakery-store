@@ -161,14 +161,8 @@
 
       <!-- Loading State -->
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="space-y-4" role="status" aria-live="polite">
-          <LoadingSkeleton
-            v-for="n in 6"
-            :key="n"
-            type="list"
-          />
-          <span class="sr-only">Đang tải dữ liệu</span>
-        </div>
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
       </div>
 
       <!-- Empty State -->
@@ -201,13 +195,7 @@
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                    <OptimizedImage
-                      v-if="product.image"
-                      :src="product.image"
-                      :alt="product.name"
-                      :image-class="'w-full h-full object-cover'"
-                      loading="lazy"
-                    />
+                    <img v-if="product.image" :src="product.image" :alt="product.name" class="w-full h-full object-cover">
                     <i v-else class="material-icons text-gray-400 dark:text-gray-500">image</i>
                   </div>
                   <div>
@@ -251,28 +239,13 @@
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">
-                  <button 
-                    @click="viewInventoryHistory(product)" 
-                    class="p-1.5 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors" 
-                    title="Lịch sử"
-                    aria-label="Xem lịch sử tồn kho của sản phẩm"
-                  >
+                  <button @click="viewInventoryHistory(product)" class="p-1.5 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors" title="Lịch sử">
                     <i class="material-icons text-base">history</i>
                   </button>
-                  <button 
-                    @click="adjustStock(product)" 
-                    class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" 
-                    title="Điều chỉnh"
-                    aria-label="Điều chỉnh tồn kho sản phẩm"
-                  >
+                  <button @click="adjustStock(product)" class="p-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Điều chỉnh">
                     <i class="material-icons text-base">edit</i>
                   </button>
-                  <button 
-                    @click="restockProduct(product)" 
-                    class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" 
-                    title="Nhập hàng"
-                    aria-label="Nhập hàng cho sản phẩm"
-                  >
+                  <button @click="restockProduct(product)" class="p-1.5 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors" title="Nhập hàng">
                     <i class="material-icons text-base">add_shopping_cart</i>
                   </button>
                 </div>
@@ -398,14 +371,8 @@
             </div>
             
             <div v-if="loadingHistory" class="flex flex-col items-center justify-center p-12">
-              <div class="space-y-2" role="status" aria-live="polite">
-                <LoadingSkeleton
-                  v-for="n in 3"
-                  :key="n"
-                  type="list"
-                />
-                <span class="sr-only">Đang tải lịch sử</span>
-              </div>
+              <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải lịch sử...</p>
             </div>
             
             <div v-else-if="inventoryHistory.length === 0" class="flex flex-col items-center justify-center p-12">
@@ -451,13 +418,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
-import logger from '@/utils/logger'
-import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
-import { formatPrice, formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
-import OptimizedImage from '@/components/common/OptimizedImage.vue'
 
 // Stores
 const adminStore = useAdminStore()
@@ -541,15 +504,15 @@ const paginatedProducts = computed(() => {
 const fetchProducts = async () => {
   loading.value = true
   try {
-    logger.log('🔍 Fetching inventory variants...')
+    console.log('🔍 Fetching inventory variants...')
     
     // Fetch inventory variants using product-variants endpoint which returns DTOs
     // Use a large size to get all variants, or handle pagination
     const result = await adminStore.fetchProductVariants(0, 10000, {})
     
-    logger.log('📦 Inventory API response:', result)
-    logger.log('Response type:', typeof result)
-    logger.log('Response keys:', result ? Object.keys(result) : 'null')
+    console.log('📦 Inventory API response:', result)
+    console.log('Response type:', typeof result)
+    console.log('Response keys:', result ? Object.keys(result) : 'null')
     
     // Handle different response formats
     let variants = []
@@ -566,11 +529,11 @@ const fetchProducts = async () => {
       variants = result.content
     }
     
-    logger.log(`✅ Found ${variants.length} variants`)
-    logger.log('First variant sample:', variants[0])
+    console.log(`✅ Found ${variants.length} variants`)
+    console.log('First variant sample:', variants[0])
     
     if (variants.length === 0) {
-      logger.warn('⚠️ No variants found in response')
+      console.warn('⚠️ No variants found in response')
       products.value = []
       return
     }
@@ -593,16 +556,16 @@ const fetchProducts = async () => {
       return transformed
     })
     
-    logger.log(`✅ Transformed ${products.value.length} products for display`)
-    logger.log('First transformed product:', products.value[0])
+    console.log(`✅ Transformed ${products.value.length} products for display`)
+    console.log('First transformed product:', products.value[0])
   } catch (error) {
-    logger.error('❌ Error fetching inventory:', error)
-    logger.error('Error stack:', error.stack)
+    console.error('❌ Error fetching inventory:', error)
+    console.error('Error stack:', error.stack)
     if (error.response) {
-      logger.error('Error response status:', error.response.status)
-      logger.error('Error response data:', error.response.data)
+      console.error('Error response status:', error.response.status)
+      console.error('Error response data:', error.response.data)
     }
-    notificationService.apiError(error, 'Không thể tải danh sách tồn kho')
+    toastService.error('Lỗi', `Không thể tải danh sách tồn kho: ${error.message || 'Unknown error'}`)
     products.value = []
   } finally {
     loading.value = false
@@ -615,7 +578,7 @@ const fetchInventoryLogs = async () => {
     const result = await adminStore.fetchInventoryLogs(0, 50, {})
     inventoryHistory.value = result.content || []
   } catch (error) {
-    logger.error('Error loading inventory logs:', error)
+    console.error('Error loading inventory logs:', error)
   } finally {
     loadingHistory.value = false
   }
@@ -676,12 +639,12 @@ const calculateNewStock = () => {
 
 const confirmAdjustment = async () => {
   if (!adjustmentQuantity.value || adjustmentQuantity.value <= 0) {
-    notificationService.error('Lỗi','Vui lòng nhập số lượng hợp lệ')
+    toastService.error('Lỗi','Vui lòng nhập số lượng hợp lệ')
     return
   }
 
   if (!adjustmentReason.value.trim()) {
-    notificationService.error('Lỗi','Vui lòng nhập lý do điều chỉnh')
+    toastService.error('Lỗi','Vui lòng nhập lý do điều chỉnh')
     return
   }
 
@@ -700,7 +663,7 @@ const confirmAdjustment = async () => {
     selectedProduct.value.stockQuantity = calculateNewStock()
     selectedProduct.value.updatedAt = new Date().toISOString()
     
-    notificationService.success('Thành công','Đã điều chỉnh tồn kho thành công')
+    toastService.success('Thành công','Đã điều chỉnh tồn kho thành công')
     closeAdjustmentModal()
   } catch {
     // User cancelled
@@ -723,7 +686,7 @@ const restockProduct = async (product) => {
     product.stockQuantity += 10
     product.updatedAt = new Date().toISOString()
     
-    notificationService.success('Thành công','Đã nhập hàng thành công')
+    toastService.success('Thành công','Đã nhập hàng thành công')
   } catch {
     // User cancelled
   }
@@ -739,7 +702,7 @@ const viewInventoryHistory = async (product) => {
     const result = await adminStore.fetchInventoryLogs(0, 50, { variantId: product.id })
     inventoryHistory.value = result.content || []
   } catch (error) {
-    logger.error('Error loading inventory history:', error)
+    console.error('Error loading inventory history:', error)
     inventoryHistory.value = []
   } finally {
     loadingHistory.value = false
@@ -756,7 +719,7 @@ const exportInventory = (format) => {
   try {
     const dataToExport = filteredProducts.value || []
     if (dataToExport.length === 0) {
-      notificationService.warning('Cảnh báo','Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -777,14 +740,14 @@ const exportInventory = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'inventory.csv')
-      notificationService.success('Thành công','Xuất CSV thành công!')
+      toastService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('inventory', exportData)
-      notificationService.success('Thành công','Xuất JSON thành công!')
+      toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
-    logger.error('Export error:', error)
-    notificationService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
+    console.error('Export error:', error)
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 
@@ -828,7 +791,27 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('vi-VN').format(Number(num))
 }
 
-// formatCurrency, formatDate, formatDateTime đã được import từ @/utils/formatters
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 ₫'
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(Number(value))
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '—'
+  return date.toLocaleDateString('vi-VN')
+}
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '—'
+  return date.toLocaleString('vi-VN')
+}
 
 // Lifecycle
 onMounted(() => {

@@ -153,8 +153,6 @@
                     :src="sale.productImage" 
                     :alt="sale.productName"
                     class="w-12 h-12 rounded-lg object-cover bg-gray-100 dark:bg-gray-700"
-                    loading="lazy"
-                    decoding="async"
                     @error="handleImageError"
                   />
                   <div class="min-w-0">
@@ -394,10 +392,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
-import logger from '@/utils/logger'
-import { formatCurrency, formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -558,10 +554,10 @@ const loadFlashSales = async () => {
       }
     })
     
-    logger.log('✅ Flash sales loaded from API', flashSales.value)
+    console.log('✅ Flash sales loaded from API', flashSales.value)
   } catch (error) {
-    logger.error('Lỗi khi tải danh sách flash sales:', error)
-    notificationService.apiError(error, 'Không thể tải danh sách flash sales')
+    console.error('Lỗi khi tải danh sách flash sales:', error)
+    toastService.error('Lỗi','Không thể tải danh sách flash sales')
   } finally {
     loading.value = false
   }
@@ -666,17 +662,17 @@ const saveFlashSale = async () => {
     
     if (isEditMode.value) {
       await adminStore.updateFlashSale(formData.value.id, flashSaleData)
-      notificationService.success('Thành công','Cập nhật Flash Sale thành công!')
+      toastService.success('Thành công','Cập nhật Flash Sale thành công!')
     } else {
       await adminStore.createFlashSale(flashSaleData)
-      notificationService.success('Thành công','Tạo Flash Sale thành công!')
+      toastService.success('Thành công','Tạo Flash Sale thành công!')
     }
     
     closeModal()
     loadFlashSales()
   } catch (error) {
-    logger.error('Error saving flash sale:', error)
-    notificationService.apiError(error, 'Lỗi khi lưu Flash Sale')
+    console.error('Error saving flash sale:', error)
+    toastService.error('Lỗi','Lỗi khi lưu Flash Sale')
   } finally {
     saving.value = false
   }
@@ -693,11 +689,11 @@ const deleteFlashSale = async () => {
     await adminStore.deleteFlashSale(saleToDelete.value.id)
     showDeleteModal.value = false
     saleToDelete.value = null
-    notificationService.success('Thành công','Xóa Flash Sale thành công!')
+    toastService.success('Thành công','Xóa Flash Sale thành công!')
     loadFlashSales()
   } catch (error) {
-    logger.error('Error deleting flash sale:', error)
-    notificationService.apiError(error, 'Lỗi khi xóa Flash Sale')
+    console.error('Error deleting flash sale:', error)
+    toastService.error('Lỗi','Lỗi khi xóa Flash Sale')
   } finally {
     deleting.value = false
   }
@@ -709,7 +705,26 @@ const resetFilters = () => {
   currentPage.value = 1
 }
 
-// formatCurrency và formatDateTime đã được import từ @/utils/formatters
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return '0 ₫'
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(Number(value))
+}
+
+const formatDateTime = (dateString) => {
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '—'
+  return date.toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
 const handleImageError = (e) => {
   e.target.src = '/placeholder-image.png'

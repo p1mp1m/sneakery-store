@@ -3,7 +3,6 @@ package com.sneakery.store.controller;
 import com.sneakery.store.dto.AdminProductDetailDto;
 import com.sneakery.store.dto.BrandDto;
 import com.sneakery.store.dto.CategoryDto;
-import com.sneakery.store.dto.CategoryGroupDto;
 import com.sneakery.store.dto.ProductCardDto;
 import com.sneakery.store.service.BrandService;
 import com.sneakery.store.service.CategoryService;
@@ -119,10 +118,8 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<Page<ProductCardDto>> getAllProducts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size,
-            @RequestParam(required = false) String search) {
-
-        Page<ProductCardDto> products = productService.getAllProductsForCard(page, size, search);
+            @RequestParam(defaultValue = "8") int size) { // Mặc định hiển thị 8 sản phẩm/trang
+        Page<ProductCardDto> products = productService.getAllProductsForCard(page, size);
         return ResponseEntity.ok(products);
     }
 
@@ -219,28 +216,6 @@ public class ProductController {
     }
 
     /**
-     * Lấy danh sách categories theo nhóm (parent categories với children)
-     * 
-     * <p>Phương thức này trả về categories được nhóm theo parent:
-     * <ul>
-     *   <li>Mỗi parent category bao gồm danh sách children</li>
-     *   <li>Chỉ trả về các parent categories có children</li>
-     *   <li>productCount sẽ được tính ở frontend dựa trên số sản phẩm của children</li>
-     * </ul>
-     * 
-     * @return ResponseEntity chứa danh sách CategoryGroupDto (HTTP 200 OK)
-     */
-    @Operation(summary = "Lấy danh sách categories theo nhóm", description = "Lấy danh sách parent categories với children của chúng. Endpoint công khai, không cần đăng nhập.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công")
-    })
-    @GetMapping("/categories/groups")
-    public ResponseEntity<List<CategoryGroupDto>> getCategoryGroups() {
-        List<CategoryGroupDto> categoryGroups = categoryService.getCategoryGroups();
-        return ResponseEntity.ok(categoryGroups);
-    }
-
-    /**
      * Lấy danh sách tất cả thương hiệu (Public)
      * 
      * <p>Phương thức này sẽ:
@@ -277,38 +252,5 @@ public class ProductController {
     public ResponseEntity<List<BrandDto>> getBrands() {
         List<BrandDto> brands = brandService.getAllBrands();
         return ResponseEntity.ok(brands);
-    }
-
-    /**
-     * Lấy thông tin sản phẩm theo slug (Public)
-     */
-    @Operation(summary = "Lấy sản phẩm theo slug", description = "Lấy thông tin chi tiết sản phẩm theo slug. Công khai, không cần đăng nhập.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lấy thông tin thành công"),
-            @ApiResponse(responseCode = "404", description = "Không tìm thấy sản phẩm")
-    })
-    @GetMapping("/slug/{slug}")
-    public ResponseEntity<AdminProductDetailDto> getProductBySlug(@PathVariable String slug) {
-        AdminProductDetailDto product = productService.getProductBySlugForPublic(slug);
-        return ResponseEntity.ok(product);
-    }
-
-    @GetMapping("/{id}/related")
-    public List<ProductCardDto> getRelated(
-            @PathVariable Long id,
-            @RequestParam Long brandId,
-            @RequestParam List<Long> categoryIds) {
-
-        return productService.getRelatedProducts(id, brandId, categoryIds, 4);
-    }
-
-    @GetMapping("/search")
-    public Page<ProductCardDto> searchProducts(
-            @RequestParam(required = false) String brand,
-            @RequestParam(required = false) String category,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
-    ) {
-        return productService.searchProductsAdvanced(brand, category, page, size);
     }
 }

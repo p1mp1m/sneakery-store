@@ -69,35 +69,6 @@ class UserService {
     }
   }
 
-  async cancelOrder(orderId) {
-    try {
-      const response = await userApi.put(`/orders/${orderId}/cancel`)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  // ===== RETURNS =====
-  async createReturnRequest(orderId, returnData) {
-    try {
-      const response = await userApi.post(`/orders/${orderId}/return`, returnData)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  // ===== CONFIRM RECEIVED & UPDATE PAYMENT =====
-  async confirmOrderReceived(orderId) {
-    try {
-      const response = await userApi.put(`/orders/${orderId}/confirm-received`)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
   // ===== CART =====
   async getMyCart() {
     try {
@@ -333,29 +304,6 @@ class UserService {
     } catch (error) {
       throw this.handleError(error)
     }
-  }
-
-  // ===== PROFILE =====
-  async updateProfile(profileData) {
-    try {
-      const response = await userApi.put('/auth/profile', profileData)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  async changePassword(passwordData) {
-    try {
-      const response = await userApi.post('/auth/change-password', passwordData)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  async getVariantImages(variantId) {
-    return axios.get(`/api/variant-images/${variantId}`).then((res) => res.data);
   }
 
   // ===== UTILITY METHODS =====
