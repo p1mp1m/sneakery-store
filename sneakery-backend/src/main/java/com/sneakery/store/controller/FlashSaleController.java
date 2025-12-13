@@ -2,7 +2,6 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.dto.FlashSaleDto;
 import com.sneakery.store.service.FlashSaleService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -202,7 +201,7 @@ public class FlashSaleController {
      */
     @PostMapping("/admin/flash-sales")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<FlashSaleDto> createFlashSale(@Valid @RequestBody FlashSaleDto dto) {
+    public ResponseEntity<FlashSaleDto> createFlashSale(@RequestBody FlashSaleDto dto) {
         log.info("📍 POST /api/admin/flash-sales");
         FlashSaleDto created = flashSaleService.createFlashSale(dto);
         return ResponseEntity.ok(created);
@@ -245,7 +244,7 @@ public class FlashSaleController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FlashSaleDto> updateFlashSale(
             @PathVariable Integer id,
-            @Valid @RequestBody FlashSaleDto dto
+            @RequestBody FlashSaleDto dto
     ) {
         log.info("📍 PUT /api/admin/flash-sales/{}", id);
         FlashSaleDto updated = flashSaleService.updateFlashSale(id, dto);

@@ -288,6 +288,7 @@ com\sneakery\store\repository\CategoryRepository.class
 com\sneakery\store\dto\AdminOrderDetailDto.class
 com\sneakery\store\dto\ProductVariantStatsDto.class
 com\sneakery\store\dto\ShoeSoleDto.class
+com\sneakery\store\dto\CategoryDto$CategoryDtoBuilder.class
 com\sneakery\store\security\CustomUserDetailsService.class
 com\sneakery\store\dto\OrderStatusHistoryDto.class
 com\sneakery\store\service\LoyaltyService.class

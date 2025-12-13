@@ -90,14 +90,8 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-      <div class="space-y-4" role="status" aria-live="polite">
-        <LoadingSkeleton
-          v-for="n in 5"
-          :key="n"
-          type="list"
-        />
-        <span class="sr-only">Đang tải dữ liệu</span>
-      </div>
+      <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
     </div>
 
     <!-- Empty State -->
@@ -302,12 +296,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import notificationService from '@/utils/notificationService';
+import toastService from "@/utils/toastService";
 import { useAdminStore } from "@/stores/admin";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
-import logger from "@/utils/logger";
-import LoadingSkeleton from "@/components/common/LoadingSkeleton.vue";
-import { formatDate } from "@/utils/formatters";
 
 const adminStore = useAdminStore();
 
@@ -376,8 +367,11 @@ const fetchMaterials = async () => {
     const result = await adminStore.fetchMaterials();
     materials.value = result.content || result || [];
   } catch (error) {
-    logger.error("Error fetching materials:", error);
-    notificationService.apiError(error, "Lỗi khi tải danh sách chất liệu")
+    console.error("Error fetching materials:", error);
+    toastService.error('Lỗi',{
+      message: "Lỗi khi tải danh sách chất liệu",
+      duration: 3000,
+    });
   } finally {
     loading.value = false;
   }
@@ -434,10 +428,18 @@ const saveMaterial = async () => {
     }
     await fetchMaterials();
     closeModal();
-    notificationService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} chất liệu thành công!`, { duration: 3000 });
+    toastService.success('Thành công',{
+      message: `${
+        isEditMode.value ? "Cập nhật" : "Thêm"
+      } chất liệu thành công!`,
+      duration: 3000,
+    });
   } catch (error) {
-    logger.error("Error saving material:", error);
-    notificationService.apiError(error, "Lỗi khi lưu chất liệu")
+    console.error("Error saving material:", error);
+    toastService.error('Lỗi',{
+      message: "Lỗi khi lưu chất liệu",
+      duration: 3000,
+    });
   } finally {
     saving.value = false;
   }
@@ -455,10 +457,16 @@ const deleteMaterial = async () => {
     await fetchMaterials();
     showDeleteModal.value = false;
     materialToDelete.value = null;
-    notificationService.success('Thành công', "Xóa chất liệu thành công!", { duration: 3000 });
+    toastService.success('Thành công',{
+      message: "Xóa chất liệu thành công!",
+      duration: 3000,
+    });
   } catch (error) {
-    logger.error("Error deleting material:", error);
-    notificationService.apiError(error, "Lỗi khi xóa chất liệu")
+    console.error("Error deleting material:", error);
+    toastService.error('Lỗi',{
+      message: "Lỗi khi xóa chất liệu",
+      duration: 3000,
+    });
   } finally {
     deleting.value = false;
   }
@@ -470,7 +478,11 @@ const resetFilters = () => {
   currentPage.value = 1;
 };
 
-// formatDate đã được import từ @/utils/formatters
+const formatDate = (dateString) => {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("vi-VN");
+};
 
 const truncateText = (text, maxLength) => {
   if (!text) return "";

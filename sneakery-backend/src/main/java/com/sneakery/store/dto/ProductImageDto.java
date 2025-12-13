@@ -34,27 +34,25 @@ public class ProductImageDto {
     private String altText;
 
     /** Ảnh chính (true = ảnh đại diện của sản phẩm) */
-//    @Schema(description = "Cờ đánh dấu ảnh chính của sản phẩm")
-//    private Boolean isPrimary;
+    @Schema(description = "Cờ đánh dấu ảnh chính của sản phẩm")
+    private Boolean isPrimary;
 
     /** Thứ tự hiển thị trong gallery (1 = đầu tiên) */
     @Builder.Default
     @Schema(description = "Thứ tự hiển thị trong gallery (1 = đầu tiên)")
     private Integer displayOrder = 1;
 
-    /** Cloudinary Public ID - dùng để xóa ảnh và tạo transformations */
-    @Schema(description = "Public ID từ Cloudinary (dùng để xóa ảnh và tạo transformations)")
     private String cloudinaryPublicId;
-
-    /** Thumbnail URL (300x300) - được generate từ imageUrl nếu là Cloudinary */
-    @Schema(description = "Thumbnail URL (300x300) - được generate tự động từ imageUrl")
+    
+    /** URL thumbnail (phiên bản nhỏ của ảnh) */
+    @Schema(description = "URL thumbnail của ảnh")
     private String thumbnailUrl;
-
-    /** Medium size URL (800x800) - được generate từ imageUrl nếu là Cloudinary */
-    @Schema(description = "Medium size URL (800x800) - được generate tự động từ imageUrl")
+    
+    /** URL medium (phiên bản trung bình của ảnh) */
+    @Schema(description = "URL medium của ảnh")
     private String mediumUrl;
-
-    /** Large size URL (1200x1200) - được generate từ imageUrl nếu là Cloudinary */
-    @Schema(description = "Large size URL (1200x1200) - được generate tự động từ imageUrl")
+    
+    /** URL large (phiên bản lớn của ảnh) */
+    @Schema(description = "URL large của ảnh")
     private String largeUrl;
 }

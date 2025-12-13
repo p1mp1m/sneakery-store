@@ -121,14 +121,8 @@
     <!-- Table -->
     <div class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="space-y-4" role="status" aria-live="polite">
-          <LoadingSkeleton
-            v-for="n in 5"
-            :key="n"
-            type="list"
-          />
-          <span class="sr-only">Đang tải dữ liệu</span>
-        </div>
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
       </div>
 
       <div v-else-if="notifications.length === 0" class="flex flex-col items-center justify-center p-12">
@@ -455,11 +449,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
-import logger from '@/utils/logger'
-import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
-import { formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -524,13 +515,13 @@ const fetchNotifications = async () => {
     updateStats()
     
     if (notifications.value.length === 0) {
-      notificationService.info('Thông tin','Chưa có thông báo nào')
+      toastService.info('Thông tin','Chưa có thông báo nào')
     } else {
-      logger.log('✅ Notifications loaded from API:', notifications.value.length, 'notifications')
+      console.log('✅ Notifications loaded from API:', notifications.value.length, 'notifications')
     }
   } catch (error) {
-    logger.error('Lỗi tải dữ liệu:', error)
-    notificationService.apiError(error, 'Không thể tải danh sách thông báo')
+    console.error('Lỗi tải dữ liệu:', error)
+    toastService.error('Lỗi','Không thể tải danh sách thông báo: ' + (error.message || 'Không thể kết nối đến server'))
     notifications.value = []
     updateStats()
   } finally {
@@ -594,17 +585,17 @@ const saveNotification = async () => {
     
     if (editingNotification.value) {
       await adminStore.updateNotification(editingNotification.value.id, notificationData)
-      notificationService.success('Thành công','Cập nhật thông báo thành công!')
+      toastService.success('Thành công','Cập nhật thông báo thành công!')
     } else {
       await adminStore.createNotification(notificationData)
-      notificationService.success('Thành công','Tạo thông báo thành công!')
+      toastService.success('Thành công','Tạo thông báo thành công!')
     }
     
     closeDialog()
     fetchNotifications()
   } catch (error) {
-    logger.error('Lỗi lưu:', error)
-    notificationService.apiError(error, 'Có lỗi xảy ra khi lưu thông báo')
+    console.error('Lỗi lưu:', error)
+    toastService.error('Lỗi','Có lỗi xảy ra khi lưu thông báo!')
   } finally {
     saving.value = false
   }
@@ -623,12 +614,12 @@ const deleteNotification = async (item) => {
     )
     
     await adminStore.deleteNotification(item.id)
-    notificationService.success('Thành công','Đã xóa thông báo!')
+    toastService.success('Thành công','Đã xóa thông báo!')
     fetchNotifications()
   } catch (error) {
     if (error !== 'cancel') {
-      logger.error('Lỗi xóa:', error)
-      notificationService.apiError(error, 'Có lỗi xảy ra khi xóa thông báo')
+      console.error('Lỗi xóa:', error)
+      toastService.error('Lỗi','Có lỗi xảy ra khi xóa thông báo!')
     }
   }
 }
@@ -727,7 +718,16 @@ const truncate = (text, length) => {
   return text.length > length ? text.substring(0, length) + '...' : text
 }
 
-// formatDateTime đã được import từ @/utils/formatters
+const formatDateTime = (dateString) => {
+  if (!dateString) return '-'
+  return new Intl.DateTimeFormat('vi-VN', { 
+    year: 'numeric', 
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(dateString))
+}
 
 // Lifecycle
 onMounted(() => {

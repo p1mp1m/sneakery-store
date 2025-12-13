@@ -6,18 +6,13 @@
       @click="handleClose"
     >
       <div
-        ref="modalRef"
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 scrollbar-hide"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700"
         @click.stop
-        role="dialog"
-        :aria-modal="true"
-        :aria-labelledby="modalTitleId"
       >
         <div
           class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10"
         >
           <h2
-            :id="modalTitleId"
             class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
           >
             <i class="material-icons text-purple-600 dark:text-purple-400">{{
@@ -246,7 +241,6 @@
             </div>
 
             <!-- Danh mục -->
-            <!-- Danh mục -->
             <div class="space-y-2">
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -259,31 +253,18 @@
                 <label
                   v-for="category in childCategories"
                   :key="category.id"
-                  :class="[
-                    'flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-pointer transition-all duration-200',
-                    localFormData.categoryIds.includes(category.id)
-                      ? 'bg-purple-100 border-purple-400 dark:bg-purple-900/40 dark:border-purple-600 shadow-sm'
-                      : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-500',
-                  ]"
+                  class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:border-purple-300 dark:hover:border-purple-600 transition-colors"
                 >
                   <input
-                    type="radio"
-                    name="singleCategory"
+                    type="checkbox"
                     :value="category.id"
                     :checked="localFormData.categoryIds.includes(category.id)"
-                    @change="(e) => handleCategoryChange(category.id, e)"
-                    class="w-4 h-4 text-purple-600 border-gray-300 focus:ring-purple-500"
+                    @change="handleCategoryChange(category.id, $event)"
+                    class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                   />
-                  <span
-                    :class="[
-                      'text-sm font-medium',
-                      localFormData.categoryIds.includes(category.id)
-                        ? 'text-purple-700 dark:text-purple-300'
-                        : 'text-gray-700 dark:text-gray-300',
-                    ]"
-                  >
-                    {{ category.name }}
-                  </span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{
+                    category.name
+                  }}</span>
                 </label>
                 <button
                   type="button"
@@ -299,9 +280,8 @@
               <span
                 v-if="formErrors.categoryIds"
                 class="text-sm text-red-600 dark:text-red-400"
+                >{{ formErrors.categoryIds }}</span
               >
-                {{ formErrors.categoryIds }}
-              </span>
             </div>
 
             <!-- Thư viện hình ảnh -->
@@ -309,7 +289,7 @@
               <label
                 class="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Thư viện ảnh bìa sản phẩm
+                Thư viện hình ảnh sản phẩm
               </label>
               <UploadGallery
                 :initialImages="initialImages"
@@ -318,7 +298,8 @@
                 @remove="handleImageRemove"
               />
               <span class="text-xs text-gray-500 dark:text-gray-400">
-                Có thể tải ảnh từ máy hoặc nhập URL.
+                Có thể tải ảnh từ máy hoặc nhập URL. Chọn ảnh "Primary" để hiển
+                thị chính.
               </span>
             </div>
           </div>
@@ -358,12 +339,6 @@
               <p class="text-gray-600 dark:text-gray-400">
                 Chưa có SPCT nào. Nhấn "Thêm SPCT" để tạo SPCT đầu tiên.
               </p>
-              <span
-                v-if="formErrors.variants"
-                class="text-red-600 dark:text-red-400 text-sm block mt-2"
-              >
-                {{ formErrors.variants }}
-              </span>
             </div>
 
             <div v-else class="space-y-4">
@@ -396,16 +371,9 @@
                     <input
                       v-model="variant.sku"
                       type="text"
-                      :readonly="true"
-                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
+                      class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       placeholder="VD: NIKE-AF1-WHT-42"
                     />
-                    <span
-                      v-if="formErrorsLocal[`variant_${index}_sku`]"
-                      class="text-xs text-red-500 block"
-                    >
-                      {{ formErrorsLocal[`variant_${index}_sku`] }}
-                    </span>
                   </div>
 
                   <div class="space-y-2">
@@ -417,17 +385,9 @@
                     <input
                       v-model="variant.size"
                       type="text"
-                      readonly
-                      @click="openSizePicker(index)"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       placeholder="VD: 42, 43, 44"
                     />
-                    <span
-                      v-if="formErrorsLocal[`variant_${index}_size`]"
-                      class="text-xs text-red-500 block"
-                    >
-                      {{ formErrorsLocal[`variant_${index}_size`] }}
-                    </span>
                   </div>
 
                   <div class="space-y-2">
@@ -439,17 +399,9 @@
                     <input
                       v-model="variant.color"
                       type="text"
-                      readonly
-                      @click="openColorPicker(index)"
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       placeholder="VD: Trắng, Đen"
                     />
-                    <span
-                      v-if="formErrorsLocal[`variant_${index}_color`]"
-                      class="text-xs text-red-500 block"
-                    >
-                      {{ formErrorsLocal[`variant_${index}_color`] }}
-                    </span>
                   </div>
                 </div>
 
@@ -467,19 +419,13 @@
                       min="0"
                       step="1000"
                     />
-                    <span
-                      v-if="formErrorsLocal[`variant_${index}_priceBase`]"
-                      class="text-xs text-red-500 block"
-                    >
-                      {{ formErrorsLocal[`variant_${index}_priceBase`] }}
-                    </span>
                   </div>
 
                   <div class="space-y-2">
                     <label
                       class="block text-xs font-medium text-gray-700 dark:text-gray-300"
                     >
-                      Giá khuyến mãi (VNĐ)
+                      Giá sale (VNĐ)
                     </label>
                     <input
                       v-model="variant.priceSale"
@@ -488,12 +434,6 @@
                       min="0"
                       step="1000"
                     />
-                    <span
-                      v-if="formErrorsLocal[`variant_${index}_priceSale`]"
-                      class="text-xs text-red-500 block"
-                    >
-                      {{ formErrorsLocal[`variant_${index}_priceSale`] }}
-                    </span>
                   </div>
 
                   <div class="space-y-2">
@@ -508,12 +448,6 @@
                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                       min="0"
                     />
-                    <span
-                      v-if="formErrorsLocal[`variant_${index}_stockQuantity`]"
-                      class="text-xs text-red-500 block"
-                    >
-                      {{ formErrorsLocal[`variant_${index}_stockQuantity`] }}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -542,50 +476,59 @@
         </div>
       </div>
     </div>
-    <!-- Popup chọn màu -->
-    <ColorPickerPopup
-      :visible="showColorPopup"
-      :initialSelected="formData.color"
-      @select="handleColorSelected"
-      @close="showColorPopup = false"
-    />
-
-    <!-- Popup chọn size -->
-    <SizePickerPopup
-      :visible="showSizePopup"
-      :initialSelected="selectedSizes"
-      @confirm="handleSizesConfirmed"
-      @close="showSizePopup = false"
-    />
   </Teleport>
 </template>
 
 <script setup>
-import { ref, computed, watch, onUnmounted, nextTick } from "vue";
+import { ref, computed, watch } from "vue";
 import { generateSlug as generateSlugUtil } from "@/utils/slugGenerator";
-import { useFocusManagement } from "@/composables/useFocusManagement";
-import {
-  generateSku,
-  extractBrandCode,
-  extractModelCode,
-  shortenColor,
-} from "@/utils/skuGenerator"; // Giữ util của bạn
 import UploadGallery from "./UploadGallery.vue";
-import ColorPickerPopup from "@/assets/components/common/ColorPickerPopup.vue";
-import SizePickerPopup from "@/assets/components/common/SizePickerPopup.vue";
 
 const props = defineProps({
-  visible: { type: Boolean, default: false },
-  isEditMode: { type: Boolean, default: false },
-  initialProduct: { type: Object, default: null },
-  brands: { type: Array, default: () => [] },
-  categories: { type: Array, default: () => [] },
-  materials: { type: Array, default: () => [] },
-  soles: { type: Array, default: () => [] },
-  initialImages: { type: Array, default: () => [] },
-  maxImages: { type: Number, default: 10 },
-  formErrors: { type: Object, default: () => ({}) },
-  submitting: { type: Boolean, default: false },
+  visible: {
+    type: Boolean,
+    default: false,
+  },
+  isEditMode: {
+    type: Boolean,
+    default: false,
+  },
+  initialProduct: {
+    type: Object,
+    default: null,
+  },
+  brands: {
+    type: Array,
+    default: () => [],
+  },
+  categories: {
+    type: Array,
+    default: () => [],
+  },
+  materials: {
+    type: Array,
+    default: () => [],
+  },
+  soles: {
+    type: Array,
+    default: () => [],
+  },
+  initialImages: {
+    type: Array,
+    default: () => [],
+  },
+  maxImages: {
+    type: Number,
+    default: 10,
+  },
+  formErrors: {
+    type: Object,
+    default: () => ({}),
+  },
+  submitting: {
+    type: Boolean,
+    default: false,
+  },
   formData: {
     type: Object,
     default: () => ({
@@ -597,8 +540,6 @@ const props = defineProps({
       categoryIds: [],
       materialId: null,
       shoeSoleId: null,
-      priceFrom: null,
-      priceTo: null,
       variants: [],
     }),
   },
@@ -614,61 +555,25 @@ const emit = defineEmits([
   "quick-add-material",
   "quick-add-sole",
   "quick-add-category",
-  "images-change",
-  "image-remove",
+  "images-change", // ✅ thêm dòng này
+  "image-remove", // ✅ thêm dòng này
 ]);
-
-// Focus management
-const modalRef = ref(null);
-const { setupModalFocus, cleanupModalFocus, saveActiveElement } =
-  useFocusManagement();
-const modalTitleId = computed(
-  () => `product-modal-title-${Math.random().toString(36).substr(2, 9)}`
-);
-
-// Setup focus when modal opens
-watch(
-  () => props.visible,
-  (isOpen) => {
-    if (isOpen) {
-      saveActiveElement();
-      nextTick(() => {
-        if (modalRef.value) {
-          setupModalFocus(modalRef.value);
-        }
-      });
-    } else {
-      if (modalRef.value) {
-        cleanupModalFocus(modalRef.value);
-      }
-    }
-  }
-);
-
-onUnmounted(() => {
-  if (modalRef.value) {
-    cleanupModalFocus(modalRef.value);
-  }
-});
 
 // Form data - sync với parent
 // Form data - sync với parent
 // const localFormData = ref({ ...props.formData });
 const localFormData = ref(JSON.parse(JSON.stringify(props.formData)));
-const formErrorsLocal = ref({});
-const showColorPopup = ref(false);
-const showSizePopup = ref(false);
-const colorTargetIndex = ref(null);
-const sizeTargetIndex = ref(null);
-const selectedSizes = ref([]);
 
-// ===== WATCHERS =====
+// Child categories (chỉ hiển thị categories có parentId)
+const childCategories = computed(() => {
+  return props.categories.filter((cat) => cat.parentId != null);
+});
+// =======================
+// 1️⃣ Khi props.initialProduct thay đổi (đặc biệt khi edit)
+// =======================
 watch(
   () => props.initialProduct,
   (product) => {
-    // Debug logs (có thể xóa sau khi test)
-    // console.log("🔄 ProductFormModal - Watch initialProduct triggered:", product);
-    // console.log("🔄 isEditMode:", props.isEditMode);
     if (props.isEditMode && product) {
       // 🧹 Reset sạch trước khi fill
       localFormData.value = {
@@ -685,20 +590,18 @@ watch(
       };
 
       // ✅ Fill dữ liệu từ product (clone object tránh mutate)
-      const clonedProduct = JSON.parse(JSON.stringify(product));
-      localFormData.value = clonedProduct;
-
-      // Debug logs (có thể xóa sau khi test)
-      // console.log("✅ ProductFormModal - Loaded edit data:", localFormData.value);
-      // console.log("✅ ProductFormModal - priceFrom:", localFormData.value.priceFrom);
-      // console.log("✅ ProductFormModal - priceTo:", localFormData.value.priceTo);
+      localFormData.value = JSON.parse(JSON.stringify(product));
 
       emit("update:formData", { ...localFormData.value });
+      console.log("✅ Loaded edit data:", localFormData.value);
     }
   },
-  { immediate: true, deep: true } // ✅ Đổi thành deep: true để detect nested changes
+  { immediate: true, deep: false } // ⚠️ không dùng deep để tránh double-trigger
 );
 
+// =======================
+// 2️⃣ Khi modal mở ra mà không có dữ liệu (tức là thêm mới)
+// =======================
 watch(
   () => props.visible,
   (isVisible) => {
@@ -720,6 +623,9 @@ watch(
   }
 );
 
+// =======================
+// 3️⃣ Emit khi người dùng nhập liệu (đủ, không cần 2 chiều)
+// =======================
 watch(
   localFormData,
   (newVal, oldVal) => {
@@ -730,55 +636,73 @@ watch(
   { deep: true }
 );
 
-watch(
-  () => props.formErrors,
-  (newErrors) => {
-    formErrorsLocal.value = { ...newErrors };
-  },
-  { deep: true, immediate: true }
-);
-
-// ===== HANDLERS (product fields) =====
+// Handlers
+// const handleNameInput = (event) => {
+//   localFormData.value.name = event.target.value;
+//   if (!props.isEditMode) {
+//     localFormData.value.slug = generateSlugUtil(event.target.value);
+//   }
+// };
 const handleNameInput = () => {
   if (!props.isEditMode) {
     localFormData.value.slug = generateSlugUtil(localFormData.value.name);
   }
 };
-const handleSlugInput = (e) => (localFormData.value.slug = e.target.value);
-const handleBrandChange = (e) =>
-  (localFormData.value.brandId = e.target.value
-    ? Number(e.target.value)
-    : null);
-const handleStatusChange = (e) =>
-  (localFormData.value.isActive = e.target.value === "true");
-const handleMaterialChange = (e) =>
-  (localFormData.value.materialId = e.target.value
-    ? Number(e.target.value)
-    : null);
-const handleSoleChange = (e) =>
-  (localFormData.value.shoeSoleId = e.target.value
-    ? Number(e.target.value)
-    : null);
-const handleDescriptionInput = (e) =>
-  (localFormData.value.description = e.target.value);
+
+const handleSlugInput = (event) => {
+  localFormData.value.slug = event.target.value;
+};
+
+const handleBrandChange = (event) => {
+  localFormData.value.brandId = event.target.value
+    ? Number(event.target.value)
+    : null;
+};
+
+const handleStatusChange = (event) => {
+  localFormData.value.isActive = event.target.value === "true";
+};
+
+const handleMaterialChange = (event) => {
+  localFormData.value.materialId = event.target.value
+    ? Number(event.target.value)
+    : null;
+};
+
+const handleSoleChange = (event) => {
+  localFormData.value.shoeSoleId = event.target.value
+    ? Number(event.target.value)
+    : null;
+};
+
+const handleDescriptionInput = (event) => {
+  localFormData.value.description = event.target.value;
+};
 
 const handleCategoryChange = (categoryId, event) => {
   if (event.target.checked) {
-    localFormData.value.categoryIds = [categoryId]; // chỉ cho phép 1 danh mục
+    if (!localFormData.value.categoryIds.includes(categoryId)) {
+      localFormData.value.categoryIds.push(categoryId);
+    }
   } else {
-    localFormData.value.categoryIds = [];
+    localFormData.value.categoryIds = localFormData.value.categoryIds.filter(
+      (id) => id !== categoryId
+    );
   }
-  emit("update:formData", { ...localFormData.value }); // ✅ cập nhật lên cha ngay
 };
 
-// ===== Images
-const handleImagesChange = (images) => emit("images-change", images);
-const handleImageRemove = (payload) => emit("image-remove", payload);
+const handleImagesChange = (images) => {
+  emit("images-change", images);
+};
 
-// ===== VARIANTS =====
+const handleImageRemove = (payload) => {
+  emit("image-remove", payload);
+};
+
 const handleAddVariant = () => {
   localFormData.value.variants.push({
-    id: props.isEditMode ? undefined : null,
+    // id: null,
+    id: props.isEditMode ? undefined : null, // ⚠️ Giữ undefined thay vì null khi edit
     sku: "",
     size: "",
     color: "",
@@ -793,144 +717,28 @@ const handleRemoveVariant = (index) => {
   localFormData.value.variants.splice(index, 1);
 };
 
-// Popup mở/đóng
-const openColorPicker = (index) => {
-  colorTargetIndex.value = index;
-  showColorPopup.value = true;
-};
-const openSizePicker = (index) => {
-  sizeTargetIndex.value = index;
-  const currentSizes = localFormData.value.variants[index].size
-    ? localFormData.value.variants[index].size.split(",").map((s) => s.trim())
-    : [];
-  selectedSizes.value = currentSizes;
-  showSizePopup.value = true;
-};
+// const handleVariantInput = (index, field, event) => {
+//   const value =
+//     field === "priceBase" || field === "priceSale" || field === "stockQuantity"
+//       ? Number(event.target.value) || 0
+//       : event.target.value;
+//   localFormData.value.variants[index][field] = value;
+// };
 
-// Xử lý chọn màu/size
-const handleColorSelected = (color) => {
-  if (colorTargetIndex.value != null) {
-    localFormData.value.variants[colorTargetIndex.value].color = color.name;
-    autoGenerateSku(colorTargetIndex.value);
-  }
-};
-const handleSizesConfirmed = (sizes) => {
-  if (sizeTargetIndex.value != null) {
-    const sizeString = sizes.join(", ");
-    localFormData.value.variants[sizeTargetIndex.value].size = sizeString;
-    autoGenerateSku(sizeTargetIndex.value);
-  }
-};
-
-// Regex kiểm tra SKU hợp lệ theo chuẩn: BRAND-MODEL-COLOR-SIZE
-const SKU_REGEX = /^[A-Z0-9]+-[A-Z0-9]+-[A-Z]+-[0-9A-Z]+$/;
-
-// Auto SKU cho biến thể
-const autoGenerateSku = (index) => {
-  const v = localFormData.value.variants[index];
-  const productName = localFormData.value.name || "";
-
-  if (productName && v.color && v.size) {
-    const brandPart = extractBrandCode(productName);
-    const modelPart = extractModelCode(productName);
-    const colorPart = shortenColor(v.color);
-    const sizePart = String(v.size).split(",")[0]?.trim() || "";
-    v.sku = `${brandPart}-${modelPart}-${colorPart}-${sizePart}`;
-
-    // 🔍 Validate SKU format & update errors
-    const updatedErrors = { ...props.formErrors };
-    if (!SKU_REGEX.test(v.sku)) {
-      updatedErrors[`variant_${index}_sku`] =
-        "SKU không hợp lệ. Vui lòng kiểm tra Size & Màu.";
-    } else {
-      delete updatedErrors[`variant_${index}_sku`];
-    }
-    formErrorsLocal.value = { ...updatedErrors };
-    emit("update:formErrors", updatedErrors);
-  }
-};
-
-const validateForm = () => {
-  const errors = {};
-
-  // ===== Basic Fields =====
-  if (!localFormData.value.name?.trim()) {
-    errors.name = "Tên sản phẩm là bắt buộc";
-  }
-
-  if (!localFormData.value.slug?.trim()) {
-    errors.slug = "Slug là bắt buộc";
-  }
-
-  if (!localFormData.value.brandId) {
-    errors.brandId = "Thương hiệu là bắt buộc";
-  }
-
-  if (!localFormData.value.materialId) {
-    errors.materialId = "Chất liệu là bắt buộc";
-  }
-
-  if (!localFormData.value.shoeSoleId) {
-    errors.shoeSoleId = "Loại đế giày là bắt buộc";
-  }
-
-  if (!localFormData.value.categoryIds.length) {
-    errors.categoryIds = "Phải chọn ít nhất 1 danh mục";
-  }
-
-  // ===== Variants =====
-  if (!localFormData.value.variants.length) {
-    errors.variants = "Cần có ít nhất 1 sản phẩm chi tiết";
-  } else {
-    localFormData.value.variants.forEach((v, i) => {
-      if (!v.size) errors[`variant_${i}_size`] = "Chọn size";
-      if (!v.color) errors[`variant_${i}_color`] = "Chọn màu";
-      if (!v.sku || !SKU_REGEX.test(v.sku)) {
-        errors[`variant_${i}_sku`] = !v.sku
-          ? "SKU chưa được tạo"
-          : "SKU không hợp lệ. Vui lòng chọn Size & Màu đúng chuẩn.";
-      }
-      if (
-        v.stockQuantity == null ||
-        isNaN(Number(v.stockQuantity)) ||
-        Number(v.stockQuantity) < 0
-      ) {
-        errors[`variant_${i}_stockQuantity`] =
-          "Tồn kho phải là số nguyên lớn hơn hoặc bằng 0";
-      }
-      // ===== Validate giá =====
-      if (!v.priceBase || Number(v.priceBase) <= 0) {
-        errors[`variant_${i}_priceBase`] = "Giá gốc phải lớn hơn 0";
-      }
-
-      if (!v.priceSale || Number(v.priceSale) <= 0) {
-        errors[`variant_${i}_priceSale`] = "Giá bán phải lớn hơn 0";
-      } else if (Number(v.priceSale) >= Number(v.priceBase)) {
-        errors[`variant_${i}_priceSale`] = "Giá bán phải NHỎ HƠN giá gốc";
-      }
-    });
-  }
-
-  emit("update:formErrors", errors);
-
-  return Object.keys(errors).length === 0;
-};
-
-// Submit/Close
+// const handleSubmit = () => {
+//   emit("submit", { ...localFormData.value });
+// };
 const handleSubmit = () => {
-  const isValid = validateForm();
-  if (!isValid) {
-    console.warn("❌ Có lỗi! Không submit!");
-    return;
-  }
-
+  // 🔄 Cập nhật dữ liệu form cha trước khi submit
   emit("update:formData", { ...localFormData.value });
+  // 🚀 Gửi form đi
   emit("submit", { ...localFormData.value });
 };
 
 const handleClose = () => {
   emit("update:visible", false);
   emit("close");
+  // 🧹 Reset form local để tránh dữ liệu cũ hoặc nhân đôi variant
   localFormData.value = {
     id: null,
     name: "",
@@ -941,14 +749,7 @@ const handleClose = () => {
     categoryIds: [],
     materialId: null,
     shoeSoleId: null,
-    priceFrom: null,
-    priceTo: null,
     variants: [],
   };
 };
-
-// Computed
-const childCategories = computed(() =>
-  props.categories.filter((cat) => cat.parentId != null)
-);
 </script>

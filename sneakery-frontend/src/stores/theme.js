@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import logger from '@/utils/logger';
 
 /**
  * Theme Store - Quản lý theme cho toàn bộ ứng dụng
@@ -25,7 +24,7 @@ export const useThemeStore = defineStore('theme', () => {
         return stored;
       }
     } catch (error) {
-      logger.warn('⚠️ Cannot access localStorage:', error);
+      console.warn('⚠️ Cannot access localStorage:', error);
     }
     return 'dark'; // Default to dark mode
   };
@@ -45,7 +44,7 @@ export const useThemeStore = defineStore('theme', () => {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       return prefersDark ? 'dark' : 'light';
     } catch (error) {
-      logger.warn('⚠️ Cannot detect system preference:', error);
+      console.warn('⚠️ Cannot detect system preference:', error);
       return 'light'; // Fallback
     }
   };
@@ -81,7 +80,7 @@ export const useThemeStore = defineStore('theme', () => {
    */
   function setTheme(newTheme) {
     if (!['light', 'dark', 'system'].includes(newTheme)) {
-      logger.error('❌ Invalid theme:', newTheme);
+      console.error('❌ Invalid theme:', newTheme);
       return;
     }
 
@@ -91,7 +90,7 @@ export const useThemeStore = defineStore('theme', () => {
     try {
       localStorage.setItem(STORAGE_KEY, newTheme);
     } catch (error) {
-      logger.warn('⚠️ Cannot save theme to localStorage:', error);
+      console.warn('⚠️ Cannot save theme to localStorage:', error);
       // Continue without persistence (in-memory only)
     }
 
@@ -169,7 +168,7 @@ export const useThemeStore = defineStore('theme', () => {
         mediaQuery.addListener(handleChange);
       }
     } catch (error) {
-      logger.warn('⚠️ Cannot watch system preference:', error);
+      console.warn('⚠️ Cannot watch system preference:', error);
     }
   }
 

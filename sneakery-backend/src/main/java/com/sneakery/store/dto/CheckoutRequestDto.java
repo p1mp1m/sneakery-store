@@ -22,4 +22,6 @@ public class CheckoutRequestDto {
     private String customerNote; // Tùy chọn - ghi chú của khách hàng
     
     private Integer pointsUsed; // Tùy chọn - số điểm thưởng sử dụng
+    
+    private Double shippingFee; // Tùy chọn - phí vận chuyển (frontend tính trước)
 }

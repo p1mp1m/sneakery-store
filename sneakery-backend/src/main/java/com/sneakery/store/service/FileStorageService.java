@@ -2,7 +2,6 @@
 package com.sneakery.store.service;
 
 import com.cloudinary.Cloudinary;
-import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
 import com.sneakery.store.constants.ProductConstants;
 import com.sneakery.store.exception.ApiException;
@@ -103,12 +102,6 @@ public class FileStorageService {
         // 5. Upload lên Cloudinary hoặc lưu local
         if (cloudinary != null) {
             try {
-                log.info("📤 Uploading to Cloudinary: productId={}, filename={}, size={} bytes", 
-                    productId, file.getOriginalFilename(), file.getSize());
-                
-                // Upload file gốc lên Cloudinary
-                // Transformations sẽ được apply khi generate URL (trong CloudinaryUtil)
-                // Upload file gốc để có thể tạo nhiều size khác nhau sau này
                 Map<?, ?> res = cloudinary.uploader().upload(
                         file.getBytes(),
                         ObjectUtils.asMap(
@@ -116,22 +109,16 @@ public class FileStorageService {
                                 "use_filename", true,
                                 "unique_filename", true,
                                 "resource_type", "image"
-                                // Không apply transformations khi upload
-                                // Transformations sẽ được thêm vào URL khi cần (thumbnail, medium, large)
                         )
                 );
-                
                 String url = res.get("secure_url").toString();
                 String publicId = res.get("public_id").toString();
-                log.info("✅ Uploaded Cloudinary successfully: url={}, publicId={}", url, publicId);
+                log.info("✅ Uploaded Cloudinary: url={}, publicId={}", url, publicId);
                 return new CloudinaryUploadResult(url, publicId);
-            } catch (Exception e) {
+            } catch (IOException e) {
                 log.error("❌ Upload Cloudinary lỗi: {}", e.getMessage(), e);
-                log.error("❌ Error details - Class: {}, Cause: {}", 
-                    e.getClass().getName(), 
-                    e.getCause() != null ? e.getCause().getMessage() : "N/A");
                 throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, 
-                    "Không thể upload file lên Cloudinary: " + e.getMessage());
+                    "Không thể upload file: " + e.getMessage());
             }
         } else {
             // Fallback: Lưu file local
@@ -236,98 +223,5 @@ public class FileStorageService {
         // Bỏ extension
         afterUpload = afterUpload.replaceFirst("\\.[^.]+$", "");
         return afterUpload;
-    }
-
-    /**
-     * Tạo signed URL (dùng cho private assets)
-     * 
-     * <p>Lưu ý: Để sử dụng signed URLs, cần cấu hình upload preset với signing mode = "signed"
-     * trong Cloudinary Dashboard. Signed URLs được tạo tự động khi upload với signed preset.
-     * 
-     * <p>Để tạo signed URL manually, cần tính toán signature từ API secret.
-     * Xem thêm: https://cloudinary.com/documentation/advanced_url_delivery_options#generating_delivery_url_signatures
-     * 
-     * @param publicId Public ID của ảnh trên Cloudinary
-     * @return Signed URL (nếu có) hoặc null
-     */
-    public String generateSignedUrl(String publicId) {
-        if (cloudinary == null || publicId == null || publicId.isBlank()) {
-            return null;
-        }
-        
-        // Note: Signed URLs thường được tạo khi upload với signed preset
-        // Hoặc có thể tính toán signature manually nếu cần
-        // Ở đây ta chỉ return null, implement sau nếu cần
-        log.debug("🔐 Signed URL generation - implement if needed for private assets");
-        return null;
-    }
-
-    /**
-     * Tạo URL với transformations (resize, crop, format, quality)
-     * 
-     * @param publicId Public ID của ảnh
-     * @param width Chiều rộng (null = không resize)
-     * @param height Chiều cao (null = không resize)
-     * @param crop Loại crop: "limit", "fill", "fit", "scale", "thumb" (null = không crop)
-     * @param quality Chất lượng: "auto", "80", "90", "best" (null = auto)
-     * @param format Định dạng: "auto", "webp", "jpg", "png" (null = auto)
-     * @return URL với transformations
-     */
-    public String generateTransformedUrl(String publicId, Integer width, Integer height, 
-                                         String crop, String quality, String format) {
-        if (cloudinary == null || publicId == null || publicId.isBlank()) {
-            return null;
-        }
-        
-        try {
-            com.cloudinary.Url url = cloudinary.url().publicId(publicId);
-            
-            // Build transformation string
-            StringBuilder transformation = new StringBuilder();
-            if (width != null) transformation.append("w_").append(width).append(",");
-            if (height != null) transformation.append("h_").append(height).append(",");
-            if (crop != null && !crop.isBlank()) transformation.append("c_").append(crop).append(",");
-            if (quality != null && !quality.isBlank()) transformation.append("q_").append(quality).append(",");
-            if (format != null && !format.isBlank()) transformation.append("f_").append(format).append(",");
-            
-            // Remove trailing comma
-            if (transformation.length() > 0 && transformation.charAt(transformation.length() - 1) == ',') {
-                transformation.setLength(transformation.length() - 1);
-            }
-            
-            if (transformation.length() > 0) {
-                @SuppressWarnings("rawtypes")
-                Transformation trans = new Transformation().rawTransformation(transformation.toString());
-                url.transformation(trans);
-            }
-            
-            String transformedUrl = url.generate();
-            log.debug("🖼️ Generated transformed URL: {}", transformedUrl);
-            return transformedUrl;
-        } catch (Exception e) {
-            log.warn("⚠️ Không thể tạo transformed URL cho {}: {}", publicId, e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Tạo thumbnail URL (300x300, auto format, auto quality)
-     */
-    public String generateThumbnailUrl(String publicId) {
-        return generateTransformedUrl(publicId, 300, 300, "limit", "auto", "auto");
-    }
-
-    /**
-     * Tạo medium size URL (800x800, auto format, auto quality)
-     */
-    public String generateMediumUrl(String publicId) {
-        return generateTransformedUrl(publicId, 800, 800, "limit", "auto", "auto");
-    }
-
-    /**
-     * Tạo large size URL (1200x1200, auto format, auto quality)
-     */
-    public String generateLargeUrl(String publicId) {
-        return generateTransformedUrl(publicId, 1200, 1200, "limit", "auto", "auto");
     }
 }

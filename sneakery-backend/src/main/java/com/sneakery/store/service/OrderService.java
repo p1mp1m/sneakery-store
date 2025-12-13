@@ -367,8 +367,14 @@ public class OrderService {
         cartRepository.delete(cart);
 
         String paymentUrl = null;
-        if ("online".equalsIgnoreCase(requestDto.getPaymentMethod())) {
-            paymentUrl = paymentGatewayService.createVNPayPaymentUrl(savedOrder.getId(), finalTotal, "Thanh toan don hang " + savedOrder.getOrderNumber());
+        String paymentMethod = requestDto.getPaymentMethod();
+        // Chấp nhận cả "online", "vnpay", "momo" như online payment
+        boolean isOnlinePayment = "online".equalsIgnoreCase(paymentMethod) 
+                || "vnpay".equalsIgnoreCase(paymentMethod)
+                || "momo".equalsIgnoreCase(paymentMethod);
+        
+        if (isOnlinePayment) {
+            paymentUrl = paymentGatewayService.createVNPayPaymentUrl(savedOrder.getId(), finalTotal, "Thanh toan don hang " + savedOrder.getOrderNumber(), "127.0.0.1");
         }
 
         try {
@@ -573,9 +579,15 @@ public class OrderService {
         cartRepository.delete(cart);
 
         String paymentUrl = null;
-        if ("online".equalsIgnoreCase(requestDto.getPaymentMethod())) {
+        String paymentMethod = requestDto.getPaymentMethod();
+        // Chấp nhận cả "online", "vnpay", "momo" như online payment
+        boolean isOnlinePayment = "online".equalsIgnoreCase(paymentMethod) 
+                || "vnpay".equalsIgnoreCase(paymentMethod)
+                || "momo".equalsIgnoreCase(paymentMethod);
+        
+        if (isOnlinePayment) {
             paymentUrl = paymentGatewayService.createVNPayPaymentUrl(savedOrder.getId(), finalTotal,
-                    "Thanh toan don hang " + savedOrder.getOrderNumber());
+                    "Thanh toan don hang " + savedOrder.getOrderNumber(), "127.0.0.1");
         }
 
         // 16. Gửi email xác nhận (nếu có email)
@@ -636,14 +648,16 @@ public class OrderService {
                 paymentUrl = paymentGatewayService.createVNPayPaymentUrl(
                         order.getId(),
                         payment.getAmount(),
-                        "Thanh toan don hang " + order.getOrderNumber()
+                        "Thanh toan don hang " + order.getOrderNumber(),
+                        "127.0.0.1"
                 );
             } else {
                 // Fallback nếu không có orderNumber
                 paymentUrl = paymentGatewayService.createVNPayPaymentUrl(
                         order.getId(),
                         payment.getAmount(),
-                        "Thanh toan don hang " + order.getId()
+                        "Thanh toan don hang " + order.getId(),
+                        "127.0.0.1"
                 );
             }
         }
@@ -1017,7 +1031,7 @@ public class OrderService {
                     .brandName(v.getProduct().getBrand().getName())
                     .size(v.getSize())
                     .color(v.getColor())
-//                    .imageUrl(imageUrl)
+                    .imageUrl(imageUrl)
                     .quantity(detail.getQuantity())
                     .unitPrice(detail.getUnitPrice())
                     .totalPrice(detail.getUnitPrice().multiply(BigDecimal.valueOf(detail.getQuantity())))
@@ -1086,6 +1100,7 @@ public class OrderService {
                 .orderDetails(detailDtos)
                 .statusHistories(statusHistories)
                 .returnRequest(returnRequestDto)
+                .paymentUrl(paymentUrl)
                 .build();
     }
 
@@ -1159,5 +1174,109 @@ public class OrderService {
         double fee = shippingService.calculateShippingFee(dto);
 
         return BigDecimal.valueOf(fee);
+    }
+
+    /**
+     * Xử lý thanh toán thành công từ payment gateway
+     * Cập nhật trạng thái order và payment, trừ tồn kho thật sự
+     */
+    @Transactional
+    public void processSuccessfulPayment(Long orderId) {
+        log.info("Processing successful payment for order: {}", orderId);
+        
+        // Lấy order với order details
+        Order order = orderRepository.findByIdWithDetails(orderId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Order not found"));
+        
+        // Cập nhật trạng thái order
+        order.setStatus("confirmed");
+        
+        // Cập nhật trạng thái payment
+        Payment payment = order.getPayments().stream()
+                .filter(p -> "pending".equals(p.getStatus()))
+                .findFirst()
+                .orElse(null);
+        
+        if (payment != null) {
+            payment.setStatus("paid");
+            payment.setPaidAt(LocalDateTime.now());
+        }
+        
+        // Trừ tồn kho thật sự và giải phóng reserved quantity
+        for (OrderDetail detail : order.getOrderDetails()) {
+            ProductVariant variant = detail.getVariant();
+            int quantity = detail.getQuantity();
+            
+            // Trừ stock quantity
+            int currentStock = variant.getStockQuantity();
+            if (currentStock < quantity) {
+                log.warn("⚠️ Stock quantity {} is less than order quantity {} for variant {}. Setting to 0.", 
+                    currentStock, quantity, variant.getId());
+                variant.setStockQuantity(0);
+            } else {
+                variant.setStockQuantity(currentStock - quantity);
+            }
+            
+            // Giải phóng reserved quantity
+            int currentReserved = variant.getReservedQuantity();
+            if (currentReserved >= quantity) {
+                variant.setReservedQuantity(currentReserved - quantity);
+            } else {
+                log.warn("⚠️ Reserved quantity {} is less than order quantity {} for variant {}. Setting to 0.", 
+                    currentReserved, quantity, variant.getId());
+                variant.setReservedQuantity(0);
+            }
+            
+            variantRepository.save(variant);
+            log.info("✅ Updated stock for variant {}: stock={}, reserved={}", 
+                variant.getId(), variant.getStockQuantity(), variant.getReservedQuantity());
+        }
+        
+        // Lưu order
+        orderRepository.save(order);
+        
+        log.info("✅ Order {} payment processed successfully and inventory updated", orderId);
+    }
+
+    /**
+     * Tạo URL thanh toán VNPay cho order
+     * 
+     * @param orderId ID của order cần thanh toán
+     * @return Payment URL
+     */
+    @Transactional(readOnly = true)
+    public String createVNPayPaymentUrl(Long orderId) {
+        log.info("Creating VNPay payment URL for order: {}", orderId);
+        
+        // Lấy order
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Order not found"));
+        
+        // Kiểm tra order status
+        if (!"pending".equals(order.getStatus())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Order status must be pending");
+        }
+        
+        // Lấy payment info
+        Payment payment = order.getPayments().stream()
+                .filter(p -> "pending".equals(p.getStatus()))
+                .findFirst()
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Payment not found"));
+        
+        if (!"online".equals(payment.getPaymentMethod())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Payment method must be online");
+        }
+        
+        // Tạo payment URL
+        String orderInfo = "Thanh toan don hang " + (order.getOrderNumber() != null ? order.getOrderNumber() : order.getId());
+        String paymentUrl = paymentGatewayService.createVNPayPaymentUrl(
+                order.getId(),
+                payment.getAmount(),
+                orderInfo,
+                "127.0.0.1" // TODO: Get real IP from request
+        );
+        
+        log.info("✅ Payment URL created for order: {}", orderId);
+        return paymentUrl;
     }
 }

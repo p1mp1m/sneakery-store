@@ -122,14 +122,8 @@ function generateInvoiceHtml(order) {
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     thead { background: #2563eb; color: white; }
     th { padding: 14px; text-align: left; font-weight: 600; font-size: 13px; }
-    th.text-right,
-    td.text-right {
-      text-align: right;
-    }
-    th.text-center,
-    td.text-center {
-      text-align: center;
-    }
+    th.text-right { text-align: right; }
+    th.text-center { text-align: center; }
     td { padding: 12px 14px; border-bottom: 1px solid #e5e7eb; }
     tbody tr:hover { background: #f9fafb; }
     .total-row { background: #f8f9fa; font-weight: bold; font-size: 16px; }
@@ -191,7 +185,6 @@ function generateInvoiceHtml(order) {
         <thead>
           <tr>
             <th>Sản phẩm</th>
-            <th class="text-center">SKU</th>
             <th class="text-center">Số lượng</th>
             <th class="text-right">Đơn giá</th>
             <th class="text-right">Thành tiền</th>
@@ -199,113 +192,48 @@ function generateInvoiceHtml(order) {
         </thead>
         <tbody>
           ${orderItems.length > 0 ? orderItems.map(item => {
-  const productName = item.productName || 'Sản phẩm'
-  const brandName = item.brandName || ''
-  const size = item.size ? `Size: ${item.size}` : ''
-  const color = item.color ? `Màu: ${item.color}` : ''
-  const variantInfo = [size, color].filter(Boolean).join(' | ')
-  const sku = item.sku || "N/A"
-  const quantity = item.quantity || 1
-  const unitPrice = item.unitPrice || 0
-  const totalPrice = item.totalPrice || (unitPrice * quantity)
-  // const vat = totalPrice * 0.1
-
-  return `
-  <tr>
-    <td>
-      <div class="product-name">${productName}</div>
-      ${brandName ? `<div class="product-brand">${brandName}</div>` : ''}
-      ${variantInfo ? `<div class="product-variant">${variantInfo}</div>` : ''}
-    </td>
-    <td class="text-center">${sku}</td>
-    <td class="text-center">${quantity}</td>
-    <td class="text-right">${formatCurrency(unitPrice)}</td>
-    <td class="text-right">${formatCurrency(totalPrice)}</td>
-  </tr>
-  `
-}).join('') : `
-<tr>
-  <td colspan="5" style="text-align:center; padding:20px; color:#666;">
-    Không có sản phẩm
-  </td>
-</tr>
-`}
-
-<!-- SUMMARY SECTION -->
-<tr>
-  <td colspan="4" style="text-align:right; padding-top:20px;">Tạm tính (Subtotal):</td>
-  <td class="text-right">${formatCurrency(order.subtotal || 0)}</td>
-</tr>
-
-${
-  order.discountAmount > 0
-    ? `
-<tr>
-  <td colspan="4" style="text-align:right; color:#dc2626;">Giảm giá Coupon:</td>
-  <td class="text-right" style="color:#dc2626;">- ${formatCurrency(order.discountAmount)}</td>
-</tr>
-`
-    : ""
-}
-
-${
-  order.pointsUsed > 0
-    ? `
-<tr>
-  <td colspan="4" style="text-align:right; color:#0ea5e9;">Điểm đã dùng (${order.pointsUsed} điểm):</td>
-  <td class="text-right" style="color:#0ea5e9;">- ${formatCurrency(order.pointsDiscount || 0)}</td>
-</tr>
-`
-    : ""
-}
-
-<tr>
-  <td colspan="4" style="text-align:right;">Phí vận chuyển:</td>
-  <td class="text-right">${formatCurrency(order.shippingFee || 0)}</td>
-</tr>
-
-<tr>
-  <td colspan="4" style="text-align:right;">Thuế VAT:</td>
-  <td class="text-right">${formatCurrency(order.taxAmount || 0)}</td>
-</tr>
-
-<tr class="total-row">
-  <td colspan="4" style="text-align:right; font-size:16px; padding-top:15px;">
-    <strong>Tổng cộng</strong>
-  </td>
-  <td style="text-align:right; font-size:18px; color:#2563eb;">
-    <strong>${formatCurrency(order.totalAmount || 0)}</strong>
-  </td>
-</tr>
+            const productName = item.productName || 'Sản phẩm'
+            const brandName = item.brandName || ''
+            const size = item.size ? `Size: ${item.size}` : ''
+            const color = item.color ? `Màu: ${item.color}` : ''
+            const variantInfo = [size, color].filter(Boolean).join(' | ')
+            const quantity = item.quantity || 1
+            const unitPrice = item.unitPrice || item.price || 0
+            const totalPrice = item.totalPrice || (unitPrice * quantity)
+            
+            return `
+            <tr>
+              <td>
+                <div class="product-name">${productName}</div>
+                ${brandName ? `<div class="product-brand">${brandName}</div>` : ''}
+                ${variantInfo ? `<div class="product-variant">${variantInfo}</div>` : ''}
+              </td>
+              <td class="text-center">${quantity}</td>
+              <td class="text-right">${formatCurrency(unitPrice)}</td>
+              <td class="text-right">${formatCurrency(totalPrice)}</td>
+            </tr>
+            `
+          }).join('') : '<tr><td colspan="4" style="text-align: center; color: #666; padding: 20px;">Không có sản phẩm</td></tr>'}
+          <tr class="total-row">
+            <td colspan="3" style="text-align: right; font-size: 16px;">Tổng cộng:</td>
+            <td style="text-align: right; color: #2563eb; font-size: 18px;">${formatCurrency(order.totalAmount || 0)}</td>
+          </tr>
         </tbody>
       </table>
     </div>
 
     ${paymentMethod ? `
-<div class="section">
-  <div class="info-block" style="margin-top: 0;">
-    <div class="info-title">💳 Thông tin thanh toán</div>
-    <div class="info-content">
-      <div><strong>Phương thức:</strong> ${getPaymentMethodLabel(paymentMethod)}</div>
-
-      <!-- SỐ TIỀN THANH TOÁN (ĐÃ THÊM) -->
-      <div style="margin-top: 8px;">
-        <strong>Số tiền thanh toán:</strong> ${formatCurrency(order.payment?.amount || order.totalAmount || 0)}
+    <div class="section">
+      <div class="info-block" style="margin-top: 0;">
+        <div class="info-title">💳 Thông tin thanh toán</div>
+        <div class="info-content">
+          <div><strong>Phương thức:</strong> ${getPaymentMethodLabel(paymentMethod)}</div>
+          ${paymentStatus ? `<div style="margin-top: 8px;"><strong>Trạng thái:</strong> ${paymentStatus}</div>` : ''}
+          ${order.payment?.paidAt ? `<div style="margin-top: 8px;"><strong>Ngày thanh toán:</strong> ${formatDate(order.payment.paidAt)}</div>` : ''}
+        </div>
       </div>
-
-      ${paymentStatus ? `
-      <div style="margin-top: 8px;">
-        <strong>Trạng thái:</strong> ${paymentStatus}
-      </div>` : ''}
-
-      ${order.payment?.paidAt ? `
-      <div style="margin-top: 8px;">
-        <strong>Ngày thanh toán:</strong> ${formatDate(order.payment.paidAt)}
-      </div>` : ''}
     </div>
-  </div>
-</div>
-` : ''}
+    ` : ''}
 
     <div class="footer">
       <p style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 8px;">Cảm ơn quý khách đã mua hàng tại Sneakery Store!</p>

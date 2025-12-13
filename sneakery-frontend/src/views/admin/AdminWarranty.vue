@@ -214,13 +214,7 @@
               </td>
               <td class="px-4 py-4">
                 <div class="flex items-center gap-3">
-                  <img 
-                    :src="item.productImage" 
-                    :alt="item.productName" 
-                    class="w-12 h-12 object-cover rounded-lg"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  <img :src="item.productImage" :alt="item.productName" class="w-12 h-12 object-cover rounded-lg" />
                   <div>
                     <strong class="text-sm font-medium text-gray-900 dark:text-gray-100 block">{{ item.productName }}</strong>
                     <p class="text-xs text-gray-500 dark:text-gray-400">{{ item.variantName }}</p>
@@ -404,14 +398,12 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
 import { useAdminStore } from '@/stores/admin'
 import FilterBar from '@/assets/components/admin/FilterBar.vue'
-import logger from '@/utils/logger'
-import { formatDate } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -480,13 +472,13 @@ const fetchWarranties = async () => {
     updateStats()
     
     if (warranties.value.length === 0) {
-      notificationService.info('Thông tin','Chưa có yêu cầu bảo hành nào')
+      toastService.info('Thông tin','Chưa có yêu cầu bảo hành nào')
     } else {
-      logger.log('✅ Warranties loaded from API:', warranties.value.length, 'warranties')
+      console.log('✅ Warranties loaded from API:', warranties.value.length, 'warranties')
     }
   } catch (error) {
-    logger.error('Lỗi tải dữ liệu:', error)
-    notificationService.apiError(error, 'Không thể tải danh sách bảo hành')
+    console.error('Lỗi tải dữ liệu:', error)
+    toastService.error('Lỗi','Không thể tải danh sách bảo hành: ' + (error.message || 'Không thể kết nối đến server'))
     warranties.value = []
     updateStats()
   } finally {
@@ -541,7 +533,7 @@ const clearSelection = () => {
 // Execute bulk action based on selected action
 const executeBulkAction = async () => {
   if (!bulkAction.value) {
-    notificationService.warning('Cảnh báo','Vui lòng chọn hành động!')
+    toastService.warning('Cảnh báo','Vui lòng chọn hành động!')
     return
   }
 
@@ -571,15 +563,15 @@ const bulkApprove = async () => {
   ).then(async () => {
     try {
       await adminStore.bulkApproveWarranties(selectedWarranties.value)
-      notificationService.success('Thành công',`Đã chấp nhận ${selectedWarranties.value.length} yêu cầu!`)
+      toastService.success('Thành công',`Đã chấp nhận ${selectedWarranties.value.length} yêu cầu!`)
       clearSelection()
       fetchWarranties()
     } catch (error) {
-      logger.error('Lỗi khi chấp nhận hàng loạt:', error)
-      notificationService.apiError(error, 'Lỗi khi chấp nhận yêu cầu bảo hành')
+      console.error('Lỗi khi chấp nhận hàng loạt:', error)
+      toastService.error('Lỗi','Lỗi khi chấp nhận yêu cầu bảo hành')
     }
   }).catch(() => {
-    notificationService.info('Thông tin','Đã hủy')
+    toastService.info('Thông tin','Đã hủy')
   })
 }
 
@@ -595,15 +587,15 @@ const bulkReject = async () => {
   ).then(async () => {
     try {
       await adminStore.bulkRejectWarranties(selectedWarranties.value)
-      notificationService.success('Thành công',`Đã từ chối ${selectedWarranties.value.length} yêu cầu!`)
+      toastService.success('Thành công',`Đã từ chối ${selectedWarranties.value.length} yêu cầu!`)
       clearSelection()
       fetchWarranties()
     } catch (error) {
-      logger.error('Lỗi khi từ chối hàng loạt:', error)
-      notificationService.apiError(error, 'Lỗi khi từ chối yêu cầu bảo hành')
+      console.error('Lỗi khi từ chối hàng loạt:', error)
+      toastService.error('Lỗi','Lỗi khi từ chối yêu cầu bảo hành')
     }
   }).catch(() => {
-    notificationService.info('Thông tin','Đã hủy')
+    toastService.info('Thông tin','Đã hủy')
   })
 }
 
@@ -626,10 +618,10 @@ const exportWarranties = (format) => {
   
   if (format === 'csv') {
     downloadCsv(data, `${filename}.csv`)
-    notificationService.success('Thành công','Đã xuất file CSV!')
+    toastService.success('Thành công','Đã xuất file CSV!')
   } else {
     downloadJson(data, `${filename}.json`)
-    notificationService.success('Thành công','Đã xuất file JSON!')
+    toastService.success('Thành công','Đã xuất file JSON!')
   }
 }
 
@@ -648,7 +640,7 @@ const handleFileUpload = (event) => {
   const files = Array.from(event.target.files)
   files.forEach(file => {
     if (file.size > 10 * 1024 * 1024) {
-      notificationService.error('Lỗi',`File ${file.name} quá lớn (> 10MB)`)
+      toastService.error('Lỗi',`File ${file.name} quá lớn (> 10MB)`)
       return
     }
     uploadedFiles.value.push(file)
@@ -661,17 +653,12 @@ const removeFile = (index) => {
 
 const saveDocuments = () => {
   if (uploadedFiles.value.length === 0) {
-    notificationService.warning('Cảnh báo','Vui lòng chọn ít nhất 1 file!')
+    toastService.warning('Cảnh báo','Vui lòng chọn ít nhất 1 file!')
     return
   }
   
-  // TODO: Upload warranty documents to server
-  // Priority: Medium
-  // Status: Pending backend API implementation
-  // Note: Currently shows success message, but files are not persisted to server
-  // Required: Backend endpoint for uploading warranty documents (POST /api/admin/warranty/{id}/documents)
-  // Timeline: To be implemented in future release
-  notificationService.success('Thành công',`Đã tải lên ${uploadedFiles.value.length} tài liệu!`)
+  // TODO: Upload to server
+  toastService.success('Thành công',`Đã tải lên ${uploadedFiles.value.length} tài liệu!`)
   showUploadModal.value = false
   uploadedFiles.value = []
 }
@@ -693,14 +680,14 @@ const approveWarranty = async (item) => {
   ).then(async () => {
     try {
       await adminStore.approveWarranty(item.id)
-      notificationService.success('Thành công','Đã chấp nhận yêu cầu!')
+      toastService.success('Thành công','Đã chấp nhận yêu cầu!')
       fetchWarranties()
     } catch (error) {
-      logger.error('Lỗi khi chấp nhận:', error)
-      notificationService.apiError(error, 'Lỗi khi chấp nhận yêu cầu bảo hành')
+      console.error('Lỗi khi chấp nhận:', error)
+      toastService.error('Lỗi','Lỗi khi chấp nhận yêu cầu bảo hành')
     }
   }).catch(() => {
-    notificationService.info('Thông tin','Đã hủy')
+    toastService.info('Thông tin','Đã hủy')
   })
 }
 
@@ -721,14 +708,14 @@ const updateStatus = async (item, newStatus) => {
   ).then(async () => {
     try {
       await adminStore.updateWarrantyStatus(item.id, newStatus)
-      notificationService.success('Thành công','Đã cập nhật trạng thái!')
+      toastService.success('Thành công','Đã cập nhật trạng thái!')
       fetchWarranties()
     } catch (error) {
-      logger.error('Lỗi khi cập nhật trạng thái:', error)
-      notificationService.apiError(error, 'Lỗi khi cập nhật trạng thái bảo hành')
+      console.error('Lỗi khi cập nhật trạng thái:', error)
+      toastService.error('Lỗi','Lỗi khi cập nhật trạng thái bảo hành')
     }
   }).catch(() => {
-    notificationService.info('Thông tin','Đã hủy')
+    toastService.info('Thông tin','Đã hủy')
   })
 }
 
@@ -790,7 +777,19 @@ const getStatusText = (status) => {
   return statuses[status] || status
 }
 
-// formatDate đã được import từ @/utils/formatters
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  try {
+    return new Intl.DateTimeFormat('vi-VN', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit'
+    }).format(new Date(dateString))
+  } catch (error) {
+    console.warn('Invalid date format:', dateString)
+    return 'N/A'
+  }
+}
 
 // Lifecycle
 onMounted(() => {

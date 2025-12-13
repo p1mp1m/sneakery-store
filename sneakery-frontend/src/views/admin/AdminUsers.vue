@@ -358,14 +358,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import { exportToExcelStyled } from '@/utils/exportHelpers'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import FilterBar from '@/assets/components/admin/FilterBar.vue'
 import LoadingState from '@/assets/components/admin/LoadingSkeleton.vue'
 import EmptyState from '@/assets/components/admin/EmptyState.vue'
 import BulkActions from '@/assets/components/admin/BulkActions.vue'
-import logger from '@/utils/logger'
 
 const adminStore = useAdminStore()
 const users = ref([])
@@ -459,7 +458,7 @@ const clearUserSelection = () => {
 
 const executeBulkAction = async () => {
   if (!bulkAction.value) {
-    notificationService.warning('Cảnh báo','Vui lòng chọn hành động!')
+    toastService.warning('Cảnh báo','Vui lòng chọn hành động!')
     return
   }
 
@@ -489,15 +488,21 @@ const executeBulkAction = async () => {
       }
     }
     
-    notificationService.success('Thành công', `Đã ${actionMap[bulkAction.value]} ${selectedUsers.value.length} người dùng thành công!`, { duration: 3000 })
+    toastService.success('Thành công',{
+      message: `Đã ${actionMap[bulkAction.value]} ${selectedUsers.value.length} người dùng thành công!`,
+      duration: 3000
+    })
     
     // Clear selection and refresh list
     selectedUsers.value = []
     bulkAction.value = ''
     await fetchUsers()
   } catch (error) {
-    logger.error('Lỗi khi thực hiện hàng loạt:', error)
-    notificationService.apiError(error, 'Có lỗi xảy ra khi thực hiện hành động')
+    console.error('Lỗi khi thực hiện hàng loạt:', error)
+    toastService.error('Lỗi',{
+      message: 'Có lỗi xảy ra khi thực hiện hành động!',
+      duration: 3000
+    })
   } finally {
     loading.value = false
   }
@@ -518,8 +523,8 @@ const fetchUsers = async () => {
     users.value = result.content || []
     totalItems.value = result.totalElements || 0
   } catch (error) {
-    logger.error('Lỗi khi tải danh sách người dùng:', error)
-    notificationService.apiError(error, 'Không thể tải danh sách người dùng')
+    console.error('Lỗi khi tải danh sách người dùng:', error)
+    toastService.error('Lỗi','Không thể tải danh sách người dùng.')
   } finally {
     loading.value = false
   }
@@ -566,16 +571,16 @@ const exportToExcel = () => {
     }))
 
     if (exportData.length === 0) {
-      notificationService.warning('Cảnh báo','Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
 
     // Export to styled Excel file
     exportToExcelStyled(exportData, 'nguoi-dung.xlsx', 'Người dùng')
-    notificationService.success('Thành công',`Đã export ${exportData.length} người dùng thành công!`)
+    toastService.success('Thành công',`Đã export ${exportData.length} người dùng thành công!`)
   } catch (error) {
-    logger.error('Lỗi khi export:', error)
-    notificationService.apiError(error, 'Không thể export dữ liệu')
+    console.error('Lỗi khi export:', error)
+    toastService.error('Lỗi','Không thể export dữ liệu. Vui lòng thử lại!')
   }
 }
 
@@ -605,13 +610,13 @@ const handleRoleUpdate = async () => {
   try {
     updating.value = true
     await adminStore.updateUserRole(userToUpdate.value.id, newRole.value)
-    notificationService.success('Thành công',`Đã cập nhật vai trò của ${userToUpdate.value.fullName} thành công!`)
+    toastService.success('Thành công',`Đã cập nhật vai trò của ${userToUpdate.value.fullName} thành công!`)
     
     userToUpdate.value._originalRole = newRole.value
     showRoleConfirm.value = false
   } catch (error) {
-    logger.error('Lỗi khi cập nhật vai trò:', error)
-    notificationService.apiError(error, 'Không thể cập nhật vai trò')
+    console.error('Lỗi khi cập nhật vai trò:', error)
+    toastService.error('Lỗi','Không thể cập nhật vai trò. Vui lòng thử lại!')
     
     userToUpdate.value.role = oldRole.value
   } finally {
@@ -647,12 +652,12 @@ const handleToggleStatus = async () => {
     await adminStore.updateUserStatus(userToToggle.value.id, newStatus)
     
     userToToggle.value.isActive = newStatus
-    notificationService.success('Thành công',`Đã ${newStatus ? 'mở khóa' : 'khóa'} tài khoản ${userToToggle.value.fullName} thành công!`)
+    toastService.success('Thành công',`Đã ${newStatus ? 'mở khóa' : 'khóa'} tài khoản ${userToToggle.value.fullName} thành công!`)
     
     showStatusConfirm.value = false
   } catch (error) {
-    logger.error('Lỗi khi cập nhật trạng thái:', error)
-    notificationService.apiError(error, 'Không thể cập nhật trạng thái')
+    console.error('Lỗi khi cập nhật trạng thái:', error)
+    toastService.error('Lỗi','Không thể cập nhật trạng thái. Vui lòng thử lại!')
   } finally {
     updating.value = false
   }
@@ -668,13 +673,14 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteUser(userToDelete.value.id)
-    notificationService.success('Thành công',`Đã xóa người dùng "${userToDelete.value.fullName}" thành công!`)
+    toastService.success('Thành công',`Đã xóa người dùng "${userToDelete.value.fullName}" thành công!`)
     showDeleteConfirm.value = false
     userToDelete.value = null
     await fetchUsers()
   } catch (error) {
-    logger.error('Lỗi khi xóa người dùng:', error)
-    notificationService.apiError(error, 'Không thể xóa người dùng')
+    console.error('Lỗi khi xóa người dùng:', error)
+    const errorMsg = error?.message || error?.response?.data?.message || 'Không thể xóa người dùng. Vui lòng thử lại!'
+    toastService.error('Lỗi',errorMsg)
   } finally {
     deleting.value = false
   }
@@ -733,19 +739,20 @@ const validateCreateUser = () => {
 
 const handleCreateUser = async () => {
   if (!validateCreateUser()) {
-    notificationService.warning('Cảnh báo','Vui lòng kiểm tra lại thông tin form!')
+    toastService.warning('Cảnh báo','Vui lòng kiểm tra lại thông tin form!')
     return
   }
 
   try {
     creating.value = true
     await adminStore.createUser(newUser.value)
-    notificationService.success('Thành công',`Đã tạo người dùng "${newUser.value.fullName}" thành công!`)
+    toastService.success('Thành công',`Đã tạo người dùng "${newUser.value.fullName}" thành công!`)
     closeCreateModal()
     await fetchUsers()
   } catch (error) {
-    logger.error('Lỗi khi tạo người dùng:', error)
-    notificationService.apiError(error, 'Không thể tạo người dùng')
+    console.error('Lỗi khi tạo người dùng:', error)
+    const errorMsg = error?.message || error?.response?.data?.message || 'Không thể tạo người dùng. Vui lòng thử lại!'
+    toastService.error('Lỗi',errorMsg)
     
     // Hiển thị lỗi cụ thể nếu có
     if (error?.response?.data?.validationErrors) {

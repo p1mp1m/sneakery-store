@@ -30,56 +30,45 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
     /**
      * Lấy return request theo ID với details (cho admin)
      */
-//    @Query("SELECT rr FROM ReturnRequest rr " +
-//           "JOIN FETCH rr.order o " +
-//           "JOIN FETCH rr.user u " +
-//           "LEFT JOIN FETCH rr.approvedBy " +
-//            "LEFT JOIN FETCH o.orderDetails d " +
-//            "LEFT JOIN FETCH d.variant v " +
-//            "LEFT JOIN FETCH v.product p " +
-//           "WHERE rr.id = :id")
-//    Optional<ReturnRequest> findByIdWithDetails(@Param("id") Long id);
-    @Query("""
-    SELECT rr FROM ReturnRequest rr
-    JOIN FETCH rr.order o
-    JOIN FETCH rr.user u
-    LEFT JOIN FETCH rr.approvedBy
-    LEFT JOIN FETCH o.orderDetails d
-    LEFT JOIN FETCH d.variant v
-    LEFT JOIN FETCH v.product p
-    WHERE rr.id = :id
-""")
+    @Query("SELECT rr FROM ReturnRequest rr " +
+           "JOIN FETCH rr.order o " +
+           "JOIN FETCH rr.user u " +
+           "LEFT JOIN FETCH rr.approvedBy " +
+           "WHERE rr.id = :id")
     Optional<ReturnRequest> findByIdWithDetails(@Param("id") Long id);
+
+    /**
+     * Lấy return request theo Order ID với details
+     */
+    @Query("SELECT rr FROM ReturnRequest rr " +
+           "JOIN FETCH rr.order o " +
+           "JOIN FETCH rr.user u " +
+           "LEFT JOIN FETCH rr.approvedBy " +
+           "WHERE rr.order.id = :orderId")
+    Optional<ReturnRequest> findByOrderIdWithDetails(@Param("orderId") Long orderId);
 
     /**
      * Lấy tất cả return requests với filter (admin)
      */
-    @Query(value = """
-    SELECT rr FROM ReturnRequest rr
-    JOIN rr.order o
-    JOIN rr.user u
-    WHERE (:status IS NULL OR :status = '' OR rr.status = :status)
-      AND (:search IS NULL OR :search = '' OR 
-           CAST(rr.id AS string) LIKE %:search% OR
-           CAST(o.id AS string) LIKE %:search% OR
-           LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))
-      AND (:reason IS NULL OR :reason = '' OR rr.reason LIKE CONCAT(:reason, '%'))
-""",
-            countQuery = """
-    SELECT count(rr) FROM ReturnRequest rr
-    JOIN rr.order o
-    JOIN rr.user u
-    WHERE (:status IS NULL OR :status = '' OR rr.status = :status)
-      AND (:search IS NULL OR :search = '' OR 
-           CAST(rr.id AS string) LIKE %:search% OR
-           CAST(o.id AS string) LIKE %:search% OR
-           LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))
-      AND (:reason IS NULL OR :reason = '' OR rr.reason LIKE CONCAT(:reason, '%'))
-""")
+    @Query(value = "SELECT DISTINCT rr FROM ReturnRequest rr " +
+           "JOIN FETCH rr.order o " +
+           "JOIN FETCH rr.user u " +
+           "WHERE (:status IS NULL OR :status = '' OR rr.status = :status) " +
+           "AND (:search IS NULL OR :search = '' OR " +
+           "CAST(rr.id AS string) LIKE %:search% OR " +
+           "CAST(o.id AS string) LIKE %:search% OR " +
+           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))",
+           countQuery = "SELECT count(DISTINCT rr) FROM ReturnRequest rr " +
+           "JOIN rr.order o " +
+           "JOIN rr.user u " +
+           "WHERE (:status IS NULL OR :status = '' OR rr.status = :status) " +
+           "AND (:search IS NULL OR :search = '' OR " +
+           "CAST(rr.id AS string) LIKE %:search% OR " +
+           "CAST(o.id AS string) LIKE %:search% OR " +
+           "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<ReturnRequest> findAllWithFilters(
             @Param("status") String status,
             @Param("search") String search,
-            @Param("reason") String reason,
             Pageable pageable
     );
 
@@ -87,16 +76,6 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
      * Kiểm tra order đã có return request chưa
      */
     boolean existsByOrderId(Long orderId);
-
-    /**
-     * Lấy return request theo orderId (cho user)
-     */
-    @Query("SELECT rr FROM ReturnRequest rr " +
-           "JOIN FETCH rr.order o " +
-           "JOIN FETCH rr.user u " +
-           "LEFT JOIN FETCH rr.approvedBy " +
-           "WHERE o.id = :orderId")
-    Optional<ReturnRequest> findByOrderIdWithDetails(@Param("orderId") Long orderId);
 
     /**
      * Đếm số return requests pending (admin dashboard)

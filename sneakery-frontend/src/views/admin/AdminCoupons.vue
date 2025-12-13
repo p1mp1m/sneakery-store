@@ -430,12 +430,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import ConfirmDialog from '@/assets/components/common/ConfirmDialog.vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
 import { debounce } from '@/utils/debounce'
-import logger from '@/utils/logger'
-import { formatCurrency, formatDate, formatDateTime } from '@/utils/formatters'
 
 const adminStore = useAdminStore()
 
@@ -496,7 +494,7 @@ const loadCoupons = async () => {
     coupons.value = response.content || []
     totalItems.value = response.totalElements || 0
   } catch (error) {
-    notificationService.apiError(error, 'Lỗi khi tải danh sách coupon')
+    toastService.error('Lỗi','Lỗi khi tải danh sách coupon')
   } finally {
     loading.value = false
   }
@@ -512,7 +510,7 @@ const loadStats = async () => {
       totalUsed: 156
     }
   } catch (error) {
-    logger.error('Error loading stats:', error)
+    console.error('Error loading stats:', error)
   }
 }
 
@@ -572,7 +570,7 @@ const editCoupon = (coupon) => {
 
 const viewCoupon = (coupon) => {
   // Implement view coupon details
-  notificationService.info('Thông tin',`Xem chi tiết coupon: ${coupon.code}`)
+  toastService.info('Thông tin',`Xem chi tiết coupon: ${coupon.code}`)
 }
 
 const saveCoupon = async () => {
@@ -580,15 +578,15 @@ const saveCoupon = async () => {
     submitting.value = true
     if (isEditMode.value) {
       await adminStore.updateCoupon(formData.value.id, formData.value)
-      notificationService.success('Thành công','Cập nhật coupon thành công')
+      toastService.success('Thành công','Cập nhật coupon thành công')
     } else {
       await adminStore.createCoupon(formData.value)
-      notificationService.success('Thành công','Tạo coupon thành công')
+      toastService.success('Thành công','Tạo coupon thành công')
     }
     closeModal()
     loadCoupons()
   } catch (error) {
-    notificationService.apiError(error, 'Lỗi khi lưu coupon')
+    toastService.error('Lỗi','Lỗi khi lưu coupon')
   } finally {
     submitting.value = false
   }
@@ -597,10 +595,10 @@ const saveCoupon = async () => {
 const toggleCouponStatus = async (coupon) => {
   try {
     await adminStore.toggleCouponStatus(coupon.id)
-    notificationService.success('Thành công',`Đã ${coupon.is_active ? 'tắt' : 'bật'} coupon`)
+    toastService.success('Thành công',`Đã ${coupon.is_active ? 'tắt' : 'bật'} coupon`)
     loadCoupons()
   } catch (error) {
-    notificationService.apiError(error, 'Lỗi khi thay đổi trạng thái coupon')
+    toastService.error('Lỗi','Lỗi khi thay đổi trạng thái coupon')
   }
 }
 
@@ -613,11 +611,11 @@ const handleDelete = async () => {
   try {
     deleting.value = true
     await adminStore.deleteCoupon(couponToDelete.value.id)
-    notificationService.success('Thành công','Xóa coupon thành công')
+    toastService.success('Thành công','Xóa coupon thành công')
     showDeleteModal.value = false
     loadCoupons()
   } catch (error) {
-    notificationService.apiError(error, 'Lỗi khi xóa coupon')
+    toastService.error('Lỗi','Lỗi khi xóa coupon')
   } finally {
     deleting.value = false
   }
@@ -630,7 +628,7 @@ const closeModal = () => {
 
 const copyCode = (code) => {
   navigator.clipboard.writeText(code)
-  notificationService.success('Thành công','Đã sao chép mã coupon')
+  toastService.success('Thành công','Đã sao chép mã coupon')
 }
 
 const exportCoupons = (format) => {
@@ -651,9 +649,9 @@ const exportCoupons = (format) => {
     } else {
       downloadJson(data, 'coupons')
     }
-    notificationService.success('Thành công',`Đã xuất danh sách coupon (${format.toUpperCase()})`)
+    toastService.success('Thành công',`Đã xuất danh sách coupon (${format.toUpperCase()})`)
   } catch (error) {
-    notificationService.apiError(error, 'Lỗi khi xuất dữ liệu')
+    toastService.error('Lỗi','Lỗi khi xuất dữ liệu')
   }
 }
 
@@ -680,7 +678,22 @@ const getStatusText = (coupon) => {
   return 'Đang hoạt động'
 }
 
-// formatCurrency và formatDate đã được import từ @/utils/formatters
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(value)
+}
+
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
 // Lifecycle
 onMounted(() => {

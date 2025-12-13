@@ -26,8 +26,6 @@ public class CreateUserRequestDto {
     
     private String phoneNumber;
     
-    private String address; // Địa chỉ khách hàng (không bắt buộc)
-    
     @NotNull(message = "Role không được để trống")
     private String role = "USER";
     

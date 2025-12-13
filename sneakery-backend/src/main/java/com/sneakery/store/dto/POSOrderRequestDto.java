@@ -20,25 +20,23 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class POSOrderRequestDto {
-
+    
     @NotEmpty(message = "Danh sách sản phẩm không được để trống")
     @Valid
     private List<POSOrderItemDto> items;
-
-    private Long customerId; // Optional - null = khách vãng lai
-
-    private String customerName;
-    private String customerEmail;
-    private String customerPhone;
-
-    private String discountCode; // Optional
-
-    private Integer pointsUsed; // Optional
-
+    
+    private Long customerId; // Optional, null = khách vãng lai
+    
+    private String discountCode; // Optional, mã giảm giá
+    
+    private BigDecimal discountAmount; // Optional, số tiền giảm giá đã tính
+    
     @NotBlank(message = "Phương thức thanh toán không được để trống")
-    private String paymentMethod; // cash | card | bank | online
-
-    private String notes; // Optional
+    private String paymentMethod; // cash, card, bank, online
+    
+    @NotNull(message = "Tổng tiền không được để trống")
+    private BigDecimal totalAmount;
+    
+    private String notes; // Optional, ghi chú cho đơn hàng
 }
-
 

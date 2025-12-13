@@ -160,14 +160,8 @@
       </div>
 
       <div v-if="loading" class="flex flex-col items-center justify-center p-12">
-        <div class="space-y-4" role="status" aria-live="polite">
-          <LoadingSkeleton
-            v-for="n in 5"
-            :key="n"
-            type="list"
-          />
-          <span class="sr-only">Đang tải dữ liệu</span>
-        </div>
+        <div class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
       </div>
 
       <div v-else-if="filteredPoints.length === 0" class="flex flex-col items-center justify-center p-12">
@@ -376,12 +370,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { downloadCsv, downloadJson } from '@/utils/exportHelpers'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { useAdminStore } from '@/stores/admin'
-import logger from '@/utils/logger'
-import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
-import { formatDate, formatDateTime } from '@/utils/formatters'
 
 // Stores
 const adminStore = useAdminStore()
@@ -484,12 +475,12 @@ const paginatedPoints = computed(() => {
 const fetchPoints = async () => {
   loading.value = true
   try {
-    logger.log('🔍 Fetching loyalty users...')
+    console.log('🔍 Fetching loyalty users...')
     const result = await adminStore.fetchLoyaltyUsers(currentPage.value, pageSize.value, {})
-    logger.log('📦 API Result:', result)
+    console.log('📦 API Result:', result)
     
     const loyaltyDtos = result?.content || []
-    logger.log('📊 Loyalty DTOs received:', loyaltyDtos.length, loyaltyDtos)
+    console.log('📊 Loyalty DTOs received:', loyaltyDtos.length, loyaltyDtos)
     
     // Map LoyaltyDto directly to points format
     points.value = loyaltyDtos.map(dto => ({
@@ -508,11 +499,11 @@ const fetchPoints = async () => {
       createdAt: dto.createdAt || new Date().toISOString()
     }))
     
-    logger.log('✅ Points mapped:', points.value.length, 'items')
-    logger.log('📊 Points sample:', points.value.slice(0, 3))
+    console.log('✅ Points mapped:', points.value.length, 'items')
+    console.log('📊 Points sample:', points.value.slice(0, 3))
   } catch (error) {
-    logger.error('❌ Error fetching loyalty:', error)
-    notificationService.apiError(error, 'Không thể tải danh sách điểm thưởng')
+    console.error('❌ Error fetching loyalty:', error)
+    toastService.error('Lỗi','Không thể tải danh sách điểm thưởng: ' + (error.message || 'Unknown error'))
   } finally {
     loading.value = false
   }
@@ -544,12 +535,12 @@ const closeSettingsModal = () => {
 }
 
 const saveSettings = () => {
-  notificationService.success('Thành công','Đã lưu cài đặt thành công')
+  toastService.success('Thành công','Đã lưu cài đặt thành công')
   closeSettingsModal()
 }
 
 const viewPointDetail = (point) => {
-  notificationService.info('Thông tin',`Xem chi tiết giao dịch #${point.id}`)
+  toastService.info('Thông tin',`Xem chi tiết giao dịch #${point.id}`)
 }
 
 const extendExpiry = async (point) => {
@@ -569,7 +560,7 @@ const extendExpiry = async (point) => {
     newExpiry.setFullYear(newExpiry.getFullYear() + 1)
     point.expiresAt = newExpiry.toISOString()
     
-    notificationService.success('Thành công','Đã gia hạn điểm thành công')
+    toastService.success('Thành công','Đã gia hạn điểm thành công')
   } catch {
     // User cancelled
   }
@@ -579,7 +570,7 @@ const exportLoyalty = (format) => {
   try {
     const dataToExport = filteredPoints.value || []
     if (dataToExport.length === 0) {
-      notificationService.warning('Cảnh báo','Không có dữ liệu để xuất')
+      toastService.warning('Cảnh báo','Không có dữ liệu để xuất')
       return
     }
     
@@ -598,14 +589,14 @@ const exportLoyalty = (format) => {
 
     if (format === 'csv') {
       downloadCsv(exportData, 'loyalty-points.csv')
-      notificationService.success('Thành công','Xuất CSV thành công!')
+      toastService.success('Thành công','Xuất CSV thành công!')
     } else if (format === 'json') {
       downloadJson('loyalty-points', exportData)
-      notificationService.success('Thành công','Xuất JSON thành công!')
+      toastService.success('Thành công','Xuất JSON thành công!')
     }
   } catch (error) {
-    logger.error('Export error:', error)
-    notificationService.apiError(error, 'Có lỗi xảy ra khi xuất dữ liệu')
+    console.error('Export error:', error)
+    toastService.error('Lỗi','Có lỗi xảy ra khi xuất dữ liệu!')
   }
 }
 
@@ -688,7 +679,13 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('vi-VN').format(num)
 }
 
-// formatDate và formatDateTime đã được import từ @/utils/formatters
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('vi-VN')
+}
+
+const formatDateTime = (dateString) => {
+  return new Date(dateString).toLocaleString('vi-VN')
+}
 
 // Lifecycle
 onMounted(() => {

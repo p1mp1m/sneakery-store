@@ -574,10 +574,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 import { useTheme } from '@/composables/useTheme'
-import notificationService from '@/utils/notificationService'
+import toastService from '@/utils/toastService'
 import confirmDialogService from '@/utils/confirmDialogService'
 import { downloadJson } from '@/utils/exportHelpers'
-import logger from '@/utils/logger'
 
 const adminStore = useAdminStore()
 const { theme, setTheme, currentTheme, isDark } = useTheme()
@@ -709,13 +708,13 @@ const loadSettings = async () => {
         }
       }
       
-      logger.log('✅ Settings loaded from API:', apiSettings)
+      console.log('✅ Settings loaded from API:', apiSettings)
     } else {
       // Nếu không có data từ API, giữ giá trị mặc định (không dùng mock data)
-      logger.log('⚠️ No settings found in database, using defaults')
+      console.log('⚠️ No settings found in database, using defaults')
     }
   } catch (error) {
-    logger.error('Error loading settings:', error)
+    console.error('Error loading settings:', error)
     // Không hiển thị error để tránh làm phiền user, chỉ log
     // Settings sẽ giữ giá trị mặc định
   }
@@ -725,45 +724,45 @@ const loadSettings = async () => {
 const saveStoreSettings = async () => {
   try {
     await adminStore.updateSettings({ store: storeSettings.value })
-    notificationService.success('Thành công','Đã lưu thông tin cửa hàng thành công!')
+    toastService.success('Thành công','Đã lưu thông tin cửa hàng thành công!')
   } catch (error) {
-    logger.error('Error saving store settings:', error)
-    notificationService.apiError(error, 'Không thể lưu thông tin cửa hàng')
+    console.error('Error saving store settings:', error)
+    toastService.error('Lỗi','Không thể lưu thông tin cửa hàng')
   }
 }
 
 const saveGeneralSettings = async () => {
   try {
     await adminStore.updateSettings({ general: generalSettings.value })
-    notificationService.success('Thành công','Đã lưu cài đặt chung thành công!')
+    toastService.success('Thành công','Đã lưu cài đặt chung thành công!')
   } catch (error) {
-    logger.error('Error saving general settings:', error)
-    notificationService.apiError(error, 'Không thể lưu cài đặt chung')
+    console.error('Error saving general settings:', error)
+    toastService.error('Lỗi','Không thể lưu cài đặt chung')
   }
 }
 
 const saveEmailSettings = async () => {
   try {
     await adminStore.updateSettings({ email: emailSettings.value })
-    notificationService.success('Thành công','Đã lưu cài đặt email thành công!')
+    toastService.success('Thành công','Đã lưu cài đặt email thành công!')
   } catch (error) {
-    logger.error('Error saving email settings:', error)
-    notificationService.apiError(error, 'Không thể lưu cài đặt email')
+    console.error('Error saving email settings:', error)
+    toastService.error('Lỗi','Không thể lưu cài đặt email')
   }
 }
 
 const savePaymentSettings = async () => {
   try {
     await adminStore.updateSettings({ payment: paymentSettings.value })
-    notificationService.success('Thành công','Đã lưu cài đặt thanh toán thành công!')
+    toastService.success('Thành công','Đã lưu cài đặt thanh toán thành công!')
   } catch (error) {
-    logger.error('Error saving payment settings:', error)
-    notificationService.apiError(error, 'Không thể lưu cài đặt thanh toán')
+    console.error('Error saving payment settings:', error)
+    toastService.error('Lỗi','Không thể lưu cài đặt thanh toán')
   }
 }
 
 const testEmail = () => {
-  notificationService.info('Thông tin','Tính năng gửi email test đang được phát triển...')
+  toastService.info('Thông tin','Tính năng gửi email test đang được phát triển...')
 }
 
 // Search functionality
@@ -790,7 +789,7 @@ const goToSetting = (result) => {
   searchQuery.value = ''
   searchResults.value = []
   showSearch.value = false
-  notificationService.success('Thành công',`Đã chuyển đến: ${result.title}`)
+  toastService.success('Thành công',`Đã chuyển đến: ${result.title}`)
 }
 
 // Export/Import Settings
@@ -805,10 +804,10 @@ const exportSettings = async () => {
     }
     
     downloadJson(allSettings, `sneakery-settings-${new Date().toISOString().split('T')[0]}.json`)
-    notificationService.success('Thành công','Đã xuất cấu hình thành công!')
+    toastService.success('Thành công','Đã xuất cấu hình thành công!')
   } catch (error) {
-    logger.error('Error exporting settings:', error)
-    notificationService.apiError(error, 'Không thể xuất cấu hình')
+    console.error('Error exporting settings:', error)
+    toastService.error('Lỗi','Không thể xuất cấu hình')
   }
 }
 
@@ -854,13 +853,13 @@ const importSettings = () => {
             payment: paymentSettings.value
           })
           
-          notificationService.success('Thành công','Đã nhập cấu hình thành công!')
+          toastService.success('Thành công','Đã nhập cấu hình thành công!')
         }).catch(() => {
-          notificationService.info('Thông tin','Đã hủy nhập cấu hình')
+          toastService.info('Thông tin','Đã hủy nhập cấu hình')
         })
       } catch (error) {
-        logger.error('Error importing settings:', error)
-        notificationService.apiError(error, 'Lỗi khi nhập cấu hình')
+        console.error('Error importing settings:', error)
+        toastService.error('Lỗi','Lỗi khi nhập cấu hình. Vui lòng kiểm tra file JSON.')
       }
     }
     reader.readAsText(file)
@@ -926,11 +925,11 @@ const resetToDefaults = async () => {
     // Save to database
     await adminStore.updateSettings(defaultSettings)
     
-    notificationService.success('Thành công','Đã khôi phục cài đặt mặc định thành công!')
+    toastService.success('Thành công','Đã khôi phục cài đặt mặc định thành công!')
   } catch (error) {
     if (error !== 'cancel') {
-      logger.error('Error resetting settings:', error)
-      notificationService.apiError(error, 'Không thể khôi phục cài đặt mặc định')
+      console.error('Error resetting settings:', error)
+      toastService.error('Lỗi','Không thể khôi phục cài đặt mặc định')
     }
   }
 }
@@ -942,7 +941,7 @@ const handleThemeChange = (newTheme) => {
 
 const saveThemeSettings = () => {
   // Theme is already saved when changed via handleThemeChange
-  notificationService.success('Thành công','Đã lưu cài đặt giao diện thành công!')
+  toastService.success('Thành công','Đã lưu cài đặt giao diện thành công!')
 }
 
 onMounted(() => {

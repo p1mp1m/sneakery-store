@@ -2580,11 +2580,14 @@ const handleCheckout = async () => {
           checkoutData
         );
 
-        if (!data?.paymentUrl) {
+        // Response structure: { status, message, data: { paymentUrl, orderId } }
+        const paymentUrl = data?.data?.paymentUrl || data?.paymentUrl;
+        
+        if (!paymentUrl) {
           throw new Error("Không nhận được link VNPay");
         }
 
-        window.location.href = data.paymentUrl;
+        window.location.href = paymentUrl;
         return;
       }
 
@@ -2594,11 +2597,14 @@ const handleCheckout = async () => {
           checkoutData
         );
 
-        if (!data?.paymentUrl) {
+        // Response structure: { status, message, data: { paymentUrl, orderId } }
+        const paymentUrl = data?.data?.paymentUrl || data?.paymentUrl;
+        
+        if (!paymentUrl) {
           throw new Error("Không nhận được link MoMo");
         }
 
-        window.location.href = data.paymentUrl;
+        window.location.href = paymentUrl;
         return;
       }
     }
