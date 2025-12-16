@@ -17,7 +17,9 @@ import java.util.List;
         name = "ProductVariant.withProductAndBrand",
         attributeNodes = {
                 @NamedAttributeNode("product"),
-                @NamedAttributeNode(value = "product", subgraph = "product.brand")
+                @NamedAttributeNode(value = "product", subgraph = "product.brand"),
+                @NamedAttributeNode("sizeEntity"),
+                @NamedAttributeNode("colorEntity")
         },
         subgraphs = {
                 @NamedSubgraph(
@@ -42,11 +44,19 @@ public class ProductVariant {
     @Column(name = "sku", nullable = false, unique = true)
     private String sku;
 
-    @Column(name = "size", nullable = false)
+    @Column(name = "size")
     private String size;
 
-    @Column(name = "color", nullable = false)
+    @Column(name = "color")
     private String color;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "size_id")
+    private Size sizeEntity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "color_id")
+    private Color colorEntity;
 
     // TÊN TRƯỜNG LÀ priceBase
     @Column(name = "price_base", nullable = false)

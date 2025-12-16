@@ -37,4 +37,10 @@ public class AdminProductDetailDto {
 
     private Set<CategoryDto> categories;
     private List<AdminVariantRequestDto> variants; // Dùng lại DTO request cho tiện
+    
+    @Schema(description = "Danh sách size có sẵn của sản phẩm")
+    private List<SizeDto> availableSizes;
+    
+    @Schema(description = "Danh sách màu có sẵn của sản phẩm")
+    private List<ColorDto> availableColors;
 }

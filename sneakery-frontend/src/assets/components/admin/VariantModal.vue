@@ -724,8 +724,9 @@ const handleEscKey = (event) => {
 };
 
 // Thêm event listener khi component mount
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener("keydown", handleEscKey);
+  await loadSizesAndColors();
 });
 
 // Remove event listener khi component unmount
@@ -733,18 +734,35 @@ onUnmounted(() => {
   document.removeEventListener("keydown", handleEscKey);
 });
 
-const availableColors = [
-  { name: "Black", hex: "#000000" },
-  { name: "White", hex: "#ffffff" },
-  { name: "Red", hex: "#ff4b4b" },
-  { name: "Blue", hex: "#3b82f6" },
-  { name: "Green", hex: "#22c55e" },
-  { name: "Yellow", hex: "#facc15" },
-  { name: "Purple", hex: "#a855f7" },
-  { name: "Pink", hex: "#ec4899" },
-];
+const availableColors = ref([]);
+const availableSizes = ref([]);
 
-const availableSizes = [35, 36, 37, 38, 39, 40, 41, 42, 43, 44];
+const loadSizesAndColors = async () => {
+  try {
+    const [sizesRes, colorsRes] = await Promise.all([
+      axios.get("/api/sizes"),
+      axios.get("/api/colors"),
+    ]);
+    availableSizes.value = sizesRes.data
+      .map((s) => parseInt(s.name))
+      .filter((n) => !isNaN(n));
+    availableColors.value = colorsRes.data.map((c) => ({
+      id: c.id,
+      name: c.name,
+      hex: c.hexCode || "#808080",
+    }));
+  } catch (err) {
+    console.error("Không thể tải danh sách size/color:", err);
+    // Fallback to hardcoded values if API fails
+    availableSizes.value = [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46];
+    availableColors.value = [
+      { name: "Đen", hex: "#000000" },
+      { name: "Trắng", hex: "#ffffff" },
+      { name: "Đỏ", hex: "#ff0000" },
+      { name: "Xanh dương", hex: "#0000ff" },
+    ];
+  }
+};
 
 // Màu vẫn chọn đơn
 const selectColor = (color) => {

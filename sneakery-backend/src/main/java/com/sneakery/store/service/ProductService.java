@@ -4,11 +4,17 @@ import com.sneakery.store.dto.AdminProductDetailDto;
 import com.sneakery.store.dto.AdminVariantRequestDto;
 import com.sneakery.store.dto.CategoryDto;
 import com.sneakery.store.dto.ProductCardDto;
+import com.sneakery.store.dto.SizeDto;
+import com.sneakery.store.dto.ColorDto;
 import com.sneakery.store.entity.Category;
 import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.ProductVariant;
+import com.sneakery.store.entity.Size;
+import com.sneakery.store.entity.Color;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.ProductRepository;
+import com.sneakery.store.repository.SizeRepository;
+import com.sneakery.store.repository.ColorRepository;
 import lombok.RequiredArgsConstructor; // SỬA ĐỔI: Thêm import
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -66,6 +72,8 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final SizeRepository sizeRepository;
+    private final ColorRepository colorRepository;
 
     /**
      * Lấy danh sách sản phẩm với phân trang (dạng card - tóm tắt)
@@ -316,6 +324,14 @@ public class ProductService {
                     dto.setSku(v.getSku());
                     dto.setSize(v.getSize());
                     dto.setColor(v.getColor());
+                    // Set size and color FK info
+                    if (v.getSizeEntity() != null) {
+                        dto.setSizeId(v.getSizeEntity().getId());
+                    }
+                    if (v.getColorEntity() != null) {
+                        dto.setColorId(v.getColorEntity().getId());
+                        dto.setColorHexCode(v.getColorEntity().getHexCode());
+                    }
                     dto.setPriceBase(v.getPriceBase());
                     dto.setPriceSale(v.getPriceSale());
                     dto.setStockQuantity(v.getStockQuantity());
@@ -325,10 +341,37 @@ public class ProductService {
                     dto.setAvailableStock(
                             Math.max(0, v.getStockQuantity() - dto.getReservedQuantity())
                     );
-//                dto.setImageUrl(v.getImageUrl());
                     return dto;
                 }).collect(Collectors.toList());
 
+        // Extract unique sizes and colors from variants for this product
+        List<SizeDto> availableSizes = product.getVariants().stream()
+                .filter(v -> v.getDeletedAt() == null && v.getSizeEntity() != null)
+                .map(v -> v.getSizeEntity())
+                .distinct()
+                .sorted(Comparator.comparing(Size::getDisplayOrder, Comparator.nullsLast(Comparator.naturalOrder())))
+                .map(s -> SizeDto.builder()
+                        .id(s.getId())
+                        .name(s.getName())
+                        .displayOrder(s.getDisplayOrder())
+                        .isActive(s.getIsActive())
+                        .build())
+                .collect(Collectors.toList());
+        
+        List<ColorDto> availableColors = product.getVariants().stream()
+                .filter(v -> v.getDeletedAt() == null && v.getColorEntity() != null)
+                .map(v -> v.getColorEntity())
+                .distinct()
+                .sorted(Comparator.comparing(Color::getDisplayOrder, Comparator.nullsLast(Comparator.naturalOrder())))
+                .map(c -> ColorDto.builder()
+                        .id(c.getId())
+                        .name(c.getName())
+                        .hexCode(c.getHexCode())
+                        .displayOrder(c.getDisplayOrder())
+                        .isActive(c.getIsActive())
+                        .build())
+                .collect(Collectors.toList());
+        
         return AdminProductDetailDto.builder()
                 .id(product.getId())
                 .brandId(product.getBrand() != null ? product.getBrand().getId() : null)
@@ -341,7 +384,8 @@ public class ProductService {
                 .shoeSoleId(product.getShoeSole() != null ? product.getShoeSole().getId() : null)
                 .categories(categoryDtos)
                 .variants(variantDtos)
-//                .mainImageUrl(product.getMainImageUrl())
+                .availableSizes(availableSizes)
+                .availableColors(availableColors)
                 .build();
     }
 

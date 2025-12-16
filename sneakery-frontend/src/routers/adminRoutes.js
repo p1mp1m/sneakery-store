@@ -1,341 +1,439 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 // Admin Layout - Preload immediately as it's always needed
-const AdminLayout = () => import('@/assets/layouts/AdminLayout.vue')
+const AdminLayout = () => import("@/assets/layouts/AdminLayout.vue");
 
 // Critical routes - Preload on admin panel access
-const AdminDashboard = () => import('@/views/admin/AdminDashboard.vue')
-const AdminOrders = () => import('@/views/admin/AdminOrders.vue')
-const AdminProducts = () => import('@/views/admin/AdminProducts.vue')
+const AdminDashboard = () => import("@/views/admin/AdminDashboard.vue");
+const AdminOrders = () => import("@/views/admin/AdminOrders.vue");
+const AdminProducts = () => import("@/views/admin/AdminProducts.vue");
 
 // Important routes - Lazy load with webpackChunkName for better code splitting
-const AdminSales = () => import(/* webpackChunkName: "admin-sales" */ '@/views/admin/AdminSales.vue')
-const AdminProductVariants = () => import(/* webpackChunkName: "admin-variants" */ '@/views/admin/AdminProductVariants.vue')
-const AdminOrderDetail = () => import(/* webpackChunkName: "admin-order-detail" */ '@/views/admin/AdminOrderDetail.vue')
-const AdminUsers = () => import(/* webpackChunkName: "admin-users" */ '@/views/admin/AdminUsers.vue')
+const AdminSales = () =>
+  import(/* webpackChunkName: "admin-sales" */ "@/views/admin/AdminSales.vue");
+const AdminProductVariants = () =>
+  import(
+    /* webpackChunkName: "admin-variants" */ "@/views/admin/AdminProductVariants.vue"
+  );
+const AdminOrderDetail = () =>
+  import(
+    /* webpackChunkName: "admin-order-detail" */ "@/views/admin/AdminOrderDetail.vue"
+  );
+const AdminUsers = () =>
+  import(/* webpackChunkName: "admin-users" */ "@/views/admin/AdminUsers.vue");
 // Secondary routes - Grouped by functionality for better code splitting
-const AdminBrands = () => import(/* webpackChunkName: "admin-catalog" */ '@/views/admin/AdminBrands.vue')
-const AdminCategories = () => import(/* webpackChunkName: "admin-catalog" */ '@/views/admin/AdminCategories.vue')
-const AdminMaterials = () => import(/* webpackChunkName: "admin-catalog" */ '@/views/admin/AdminMaterials.vue')
-const AdminShoeSoles = () => import(/* webpackChunkName: "admin-catalog" */ '@/views/admin/AdminShoeSoles.vue')
-const AdminDiscounts = () => import(/* webpackChunkName: "admin-promotions" */ '@/views/admin/AdminDiscounts.vue')
-const AdminFlashSales = () => import(/* webpackChunkName: "admin-promotions" */ '@/views/admin/AdminFlashSales.vue')
-const AdminReturns = () => import(/* webpackChunkName: "admin-operations" */ '@/views/admin/AdminReturns.vue')
-const AdminWarranty = () => import(/* webpackChunkName: "admin-operations" */ '@/views/admin/AdminWarranty.vue')
-const AdminAnalytics = () => import(/* webpackChunkName: "admin-analytics" */ '@/views/admin/AdminAnalytics.vue')
-const AdminNotifications = () => import(/* webpackChunkName: "admin-communications" */ '@/views/admin/AdminNotifications.vue')
-const AdminEmailTemplates = () => import(/* webpackChunkName: "admin-communications" */ '@/views/admin/AdminEmailTemplates.vue')
-const AdminSettings = () => import(/* webpackChunkName: "admin-settings" */ '@/views/admin/AdminSettings.vue')
-const AdminReviews = () => import(/* webpackChunkName: "admin-reviews" */ '@/views/admin/AdminReviews.vue')
-const AdminActivityLogs = () => import(/* webpackChunkName: "admin-logs" */ '@/views/admin/AdminActivityLogs.vue')
-const AdminInventory = () => import(/* webpackChunkName: "admin-inventory" */ '@/views/admin/AdminInventory.vue')
-const AdminLoyalty = () => import(/* webpackChunkName: "admin-loyalty" */ '@/views/admin/AdminLoyalty.vue')
-const AdminPayments = () => import(/* webpackChunkName: "admin-payments" */ '@/views/admin/AdminPayments.vue')
-const AdminProfile = () => import(/* webpackChunkName: "admin-profile" */ '@/views/admin/AdminProfile.vue')
-const AdminChangePassword = () => import(/* webpackChunkName: "admin-profile" */ '@/views/admin/AdminChangePassword.vue')
+const AdminBrands = () =>
+  import(
+    /* webpackChunkName: "admin-catalog" */ "@/views/admin/AdminBrands.vue"
+  );
+const AdminCategories = () =>
+  import(
+    /* webpackChunkName: "admin-catalog" */ "@/views/admin/AdminCategories.vue"
+  );
+const AdminMaterials = () =>
+  import(
+    /* webpackChunkName: "admin-catalog" */ "@/views/admin/AdminMaterials.vue"
+  );
+const AdminShoeSoles = () =>
+  import(
+    /* webpackChunkName: "admin-catalog" */ "@/views/admin/AdminShoeSoles.vue"
+  );
+const AdminSizes = () =>
+  import(
+    /* webpackChunkName: "admin-catalog" */ "@/views/admin/AdminSizes.vue"
+  );
+const AdminColors = () =>
+  import(
+    /* webpackChunkName: "admin-catalog" */ "@/views/admin/AdminColors.vue"
+  );
+const AdminDiscounts = () =>
+  import(
+    /* webpackChunkName: "admin-promotions" */ "@/views/admin/AdminDiscounts.vue"
+  );
+const AdminFlashSales = () =>
+  import(
+    /* webpackChunkName: "admin-promotions" */ "@/views/admin/AdminFlashSales.vue"
+  );
+const AdminReturns = () =>
+  import(
+    /* webpackChunkName: "admin-operations" */ "@/views/admin/AdminReturns.vue"
+  );
+const AdminWarranty = () =>
+  import(
+    /* webpackChunkName: "admin-operations" */ "@/views/admin/AdminWarranty.vue"
+  );
+const AdminAnalytics = () =>
+  import(
+    /* webpackChunkName: "admin-analytics" */ "@/views/admin/AdminAnalytics.vue"
+  );
+const AdminNotifications = () =>
+  import(
+    /* webpackChunkName: "admin-communications" */ "@/views/admin/AdminNotifications.vue"
+  );
+const AdminEmailTemplates = () =>
+  import(
+    /* webpackChunkName: "admin-communications" */ "@/views/admin/AdminEmailTemplates.vue"
+  );
+const AdminSettings = () =>
+  import(
+    /* webpackChunkName: "admin-settings" */ "@/views/admin/AdminSettings.vue"
+  );
+const AdminReviews = () =>
+  import(
+    /* webpackChunkName: "admin-reviews" */ "@/views/admin/AdminReviews.vue"
+  );
+const AdminActivityLogs = () =>
+  import(
+    /* webpackChunkName: "admin-logs" */ "@/views/admin/AdminActivityLogs.vue"
+  );
+const AdminInventory = () =>
+  import(
+    /* webpackChunkName: "admin-inventory" */ "@/views/admin/AdminInventory.vue"
+  );
+const AdminLoyalty = () =>
+  import(
+    /* webpackChunkName: "admin-loyalty" */ "@/views/admin/AdminLoyalty.vue"
+  );
+const AdminPayments = () =>
+  import(
+    /* webpackChunkName: "admin-payments" */ "@/views/admin/AdminPayments.vue"
+  );
+const AdminProfile = () =>
+  import(
+    /* webpackChunkName: "admin-profile" */ "@/views/admin/AdminProfile.vue"
+  );
+const AdminChangePassword = () =>
+  import(
+    /* webpackChunkName: "admin-profile" */ "@/views/admin/AdminChangePassword.vue"
+  );
 
 const adminRoutes = [
   {
-    path: '/admin',
+    path: "/admin",
     component: AdminLayout,
     meta: { requiresAdmin: true },
-    redirect: '/admin/dashboard',
+    redirect: "/admin/dashboard",
     children: [
       {
-        path: 'dashboard',
-        name: 'AdminDashboard',
+        path: "dashboard",
+        name: "AdminDashboard",
         component: AdminDashboard,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Dashboard',
-          icon: 'dashboard'
-        }
+          title: "Dashboard",
+          icon: "dashboard",
+        },
       },
       {
-        path: 'sales',
-        name: 'AdminSales',
+        path: "sales",
+        name: "AdminSales",
         component: AdminSales,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Bán Hàng (POS)',
-          icon: 'shopping_cart'
-        }
+          title: "Bán Hàng (POS)",
+          icon: "shopping_cart",
+        },
       },
       {
-        path: 'orders',
-        name: 'AdminOrders',
+        path: "orders",
+        name: "AdminOrders",
         component: AdminOrders,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý đơn hàng',
-          icon: 'receipt'
-        }
+          title: "Quản lý đơn hàng",
+          icon: "receipt",
+        },
       },
       {
-        path: 'orders/:id',
-        name: 'AdminOrderDetail',
+        path: "orders/:id",
+        name: "AdminOrderDetail",
         component: AdminOrderDetail,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Chi tiết đơn hàng',
-          icon: 'receipt_long'
-        }
+          title: "Chi tiết đơn hàng",
+          icon: "receipt_long",
+        },
       },
       {
-        path: 'products',
-        name: 'AdminProducts',
+        path: "products",
+        name: "AdminProducts",
         component: AdminProducts,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý sản phẩm',
-          icon: 'inventory'
-        }
+          title: "Quản lý sản phẩm",
+          icon: "inventory",
+        },
       },
       {
-        path: 'product-variants',
-        name: 'AdminProductVariants',
+        path: "product-variants",
+        name: "AdminProductVariants",
         component: AdminProductVariants,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý biến thể',
-          icon: 'style'
-        }
+          title: "Quản lý biến thể",
+          icon: "style",
+        },
       },
       {
-        path: 'users',
-        name: 'AdminUsers',
+        path: "users",
+        name: "AdminUsers",
         component: AdminUsers,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý người dùng',
-          icon: 'people'
-        }
+          title: "Quản lý người dùng",
+          icon: "people",
+        },
       },
       {
-        path: 'brands',
-        name: 'AdminBrands',
+        path: "brands",
+        name: "AdminBrands",
         component: AdminBrands,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý thương hiệu',
-          icon: 'branding_watermark'
-        }
+          title: "Quản lý thương hiệu",
+          icon: "branding_watermark",
+        },
       },
       {
-        path: 'categories',
-        name: 'AdminCategories',
+        path: "categories",
+        name: "AdminCategories",
         component: AdminCategories,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý danh mục',
-          icon: 'category'
-        }
+          title: "Quản lý danh mục",
+          icon: "category",
+        },
       },
       {
-        path: 'materials',
-        name: 'AdminMaterials',
+        path: "materials",
+        name: "AdminMaterials",
         component: AdminMaterials,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý chất liệu',
-          icon: 'layers'
-        }
+          title: "Quản lý chất liệu",
+          icon: "layers",
+        },
       },
       {
-        path: 'shoesoles',
-        name: 'AdminShoeSoles',
+        path: "shoesoles",
+        name: "AdminShoeSoles",
         component: AdminShoeSoles,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý loại đế giày',
-          icon: 'view_day'
-        }
+          title: "Quản lý loại đế giày",
+          icon: "view_day",
+        },
       },
       {
-        path: 'reviews',
-        name: 'AdminReviews',
+        path: "sizes",
+        name: "AdminSizes",
+        component: AdminSizes,
+        meta: {
+          requiresAdmin: true,
+          title: "Quản lý kích thước",
+          icon: "straighten",
+        },
+      },
+      {
+        path: "colors",
+        name: "AdminColors",
+        component: AdminColors,
+        meta: {
+          requiresAdmin: true,
+          title: "Quản lý màu sắc",
+          icon: "palette",
+        },
+      },
+      {
+        path: "reviews",
+        name: "AdminReviews",
         component: AdminReviews,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lí đánh giá',
-          icon: 'star_rate'
-        }
+          title: "Quản lí đánh giá",
+          icon: "star_rate",
+        },
       },
       {
-        path: 'flash-sales',
-        name: 'AdminFlashSales',
+        path: "flash-sales",
+        name: "AdminFlashSales",
         component: AdminFlashSales,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Flash Sale',
-          icon: 'flash_on'
-        }
+          title: "Flash Sale",
+          icon: "flash_on",
+        },
       },
       {
-        path: 'discounts',
-        name: 'AdminDiscounts',
+        path: "discounts",
+        name: "AdminDiscounts",
         component: AdminDiscounts,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý giảm giá',
-          icon: 'percent'
-        }
+          title: "Quản lý giảm giá",
+          icon: "percent",
+        },
       },
       {
-        path: 'returns',
-        name: 'AdminReturns',
+        path: "returns",
+        name: "AdminReturns",
         component: AdminReturns,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý trả hàng',
-          icon: 'assignment_return'
-        }
+          title: "Quản lý trả hàng",
+          icon: "assignment_return",
+        },
       },
       {
-        path: 'warranty',
-        name: 'AdminWarranty',
+        path: "warranty",
+        name: "AdminWarranty",
         component: AdminWarranty,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý bảo hành',
-          icon: 'verified_user'
-        }
+          title: "Quản lý bảo hành",
+          icon: "verified_user",
+        },
       },
       {
-        path: 'analytics',
-        name: 'AdminAnalytics',
+        path: "analytics",
+        name: "AdminAnalytics",
         component: AdminAnalytics,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Phân tích & Báo cáo',
-          icon: 'analytics'
-        }
+          title: "Phân tích & Báo cáo",
+          icon: "analytics",
+        },
       },
       {
-        path: 'notifications',
-        name: 'AdminNotifications',
+        path: "notifications",
+        name: "AdminNotifications",
         component: AdminNotifications,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý thông báo',
-          icon: 'notifications'
-        }
+          title: "Quản lý thông báo",
+          icon: "notifications",
+        },
       },
       {
-        path: 'settings',
-        name: 'AdminSettings',
+        path: "settings",
+        name: "AdminSettings",
         component: AdminSettings,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Cài đặt',
-          icon: 'settings'
-        }
+          title: "Cài đặt",
+          icon: "settings",
+        },
       },
       {
-        path: 'profile',
-        name: 'AdminProfile',
+        path: "profile",
+        name: "AdminProfile",
         component: AdminProfile,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Hồ sơ',
-          icon: 'person'
-        }
+          title: "Hồ sơ",
+          icon: "person",
+        },
       },
       {
-        path: 'change-password',
-        name: 'AdminChangePassword',
+        path: "change-password",
+        name: "AdminChangePassword",
         component: AdminChangePassword,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Đổi mật khẩu',
-          icon: 'lock'
-        }
+          title: "Đổi mật khẩu",
+          icon: "lock",
+        },
       },
       {
-        path: 'activity-logs',
-        name: 'AdminActivityLogs',
+        path: "activity-logs",
+        name: "AdminActivityLogs",
         component: AdminActivityLogs,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Nhật ký hoạt động',
-          icon: 'history'
-        }
+          title: "Nhật ký hoạt động",
+          icon: "history",
+        },
       },
       {
-        path: 'inventory',
-        name: 'AdminInventory',
+        path: "inventory",
+        name: "AdminInventory",
         component: AdminInventory,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Quản lý kho',
-          icon: 'inventory_2'
-        }
+          title: "Quản lý kho",
+          icon: "inventory_2",
+        },
       },
       {
-        path: 'loyalty',
-        name: 'AdminLoyalty',
+        path: "loyalty",
+        name: "AdminLoyalty",
         component: AdminLoyalty,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Điểm thưởng',
-          icon: 'stars'
-        }
+          title: "Điểm thưởng",
+          icon: "stars",
+        },
       },
       {
-        path: 'payments',
-        name: 'AdminPayments',
+        path: "payments",
+        name: "AdminPayments",
         component: AdminPayments,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Thanh toán',
-          icon: 'payment'
-        }
+          title: "Thanh toán",
+          icon: "payment",
+        },
       },
       {
-        path: 'email-templates',
-        name: 'AdminEmailTemplates',
+        path: "email-templates",
+        name: "AdminEmailTemplates",
         component: AdminEmailTemplates,
-        meta: { 
+        meta: {
           requiresAdmin: true,
-          title: 'Mẫu email',
-          icon: 'email'
-        }
-      }
-    ]
-  }
-]
+          title: "Mẫu email",
+          icon: "email",
+        },
+      },
+    ],
+  },
+];
 
 // Admin route guard - Chỉ cho phép ADMIN/MODERATOR, chặn USER thường
 export const adminGuard = async (to, from, next) => {
-  const authStore = useAuthStore()
-  
+  const authStore = useAuthStore();
+
   // Kiểm tra đăng nhập
   if (!authStore.isAuthenticated) {
     // Chưa đăng nhập → redirect về login
     next({
-      path: '/login',
-      query: { redirect: to.fullPath }
-    })
-    return
+      path: "/login",
+      query: { redirect: to.fullPath },
+    });
+    return;
   }
-  
-  // Kiểm tra role
-  const user = authStore.currentUser
-  
-  if (!user || (user.role !== 'ADMIN' && user.role !== 'MODERATOR')) {
-    // Không phải ADMIN/MODERATOR → Chặn và redirect về user panel
-    console.warn('⛔ Access Denied: User không có quyền truy cập Admin Panel')
-    next({
-      path: '/user/dashboard',
-      query: { error: 'admin_access_denied' }
-    })
-    return
-  }
-  
-  // Là ADMIN/MODERATOR → Cho phép truy cập
-  console.log('✅ Admin access granted:', user.fullName || user.userId, '- Role:', user.role)
-  next()
-}
 
-export default adminRoutes
+  // Kiểm tra role
+  const user = authStore.currentUser;
+
+  if (!user || (user.role !== "ADMIN" && user.role !== "MODERATOR")) {
+    // Không phải ADMIN/MODERATOR → Chặn và redirect về user panel
+    console.warn("⛔ Access Denied: User không có quyền truy cập Admin Panel");
+    next({
+      path: "/user/dashboard",
+      query: { error: "admin_access_denied" },
+    });
+    return;
+  }
+
+  // Là ADMIN/MODERATOR → Cho phép truy cập
+  console.log(
+    "✅ Admin access granted:",
+    user.fullName || user.userId,
+    "- Role:",
+    user.role
+  );
+  next();
+};
+
+export default adminRoutes;

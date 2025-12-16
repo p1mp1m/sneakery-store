@@ -3,13 +3,19 @@ package com.sneakery.store.service;
 import com.sneakery.store.dto.*;
 import com.sneakery.store.entity.Product;
 import com.sneakery.store.entity.ProductVariant;
-import com.sneakery.store.entity.ProductImage; // ✅ Added: import ProductImage
+import com.sneakery.store.entity.ProductImage;
+import com.sneakery.store.entity.Size;
+import com.sneakery.store.entity.Color;
 import com.sneakery.store.exception.ProductNotFoundException;
 import com.sneakery.store.exception.ProductVariantNotFoundException;
 import com.sneakery.store.exception.BusinessRuleException;
+import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.ProductRepository;
 import com.sneakery.store.repository.ProductVariantRepository;
-import com.sneakery.store.repository.ProductImageRepository; // ✅ Added: import ProductImageRepository
+import com.sneakery.store.repository.ProductImageRepository;
+import com.sneakery.store.repository.SizeRepository;
+import com.sneakery.store.repository.ColorRepository;
+import org.springframework.http.HttpStatus;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +40,9 @@ public class AdminProductVariantService {
 
     private final ProductVariantRepository productVariantRepository;
     private final ProductRepository productRepository;
-    private final ProductImageRepository productImageRepository; // ✅ Added
+    private final ProductImageRepository productImageRepository;
+    private final SizeRepository sizeRepository;
+    private final ColorRepository colorRepository;
     private final ActivityLogService activityLogService;
 
     private final EntityManager entityManager;
@@ -129,8 +137,12 @@ public class AdminProductVariantService {
         ProductVariant variant = new ProductVariant();
         variant.setProduct(product);
         variant.setSku(requestDto.getSku());
-        variant.setSize(requestDto.getSize());
-        variant.setColor(requestDto.getColor());
+        
+        // Set size - support both sizeId and size string
+        setSizeForVariant(variant, requestDto.getSizeId(), requestDto.getSize());
+        // Set color - support both colorId and color string
+        setColorForVariant(variant, requestDto.getColorId(), requestDto.getColor());
+        
         variant.setPriceBase(requestDto.getPriceBase());
         variant.setPriceSale(requestDto.getPriceSale());
         variant.setCostPrice(requestDto.getCostPrice());
@@ -139,13 +151,62 @@ public class AdminProductVariantService {
                 ? requestDto.getLowStockThreshold()
                 : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
         variant.setWeightGrams(requestDto.getWeightGrams());
-//        variant.setImageUrl(requestDto.getImageUrl());
         variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
         variant.setCreatedAt(LocalDateTime.now());
         variant.setUpdatedAt(LocalDateTime.now());
 
         ProductVariant savedVariant = productVariantRepository.save(variant);
         return convertToDto(savedVariant);
+    }
+    
+    /**
+     * Helper method to set size for variant - supports both ID and name
+     */
+    private void setSizeForVariant(ProductVariant variant, Integer sizeId, String sizeName) {
+        if (sizeId != null) {
+            Size size = sizeRepository.findById(sizeId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy size với ID: " + sizeId));
+            variant.setSizeEntity(size);
+            variant.setSize(size.getName());
+        } else if (sizeName != null && !sizeName.isBlank()) {
+            // Backward compatible: lookup by name or create
+            Size size = sizeRepository.findByName(sizeName.trim())
+                    .orElseGet(() -> {
+                        Size newSize = Size.builder()
+                                .name(sizeName.trim())
+                                .displayOrder(99)
+                                .isActive(true)
+                                .build();
+                        return sizeRepository.save(newSize);
+                    });
+            variant.setSizeEntity(size);
+            variant.setSize(size.getName());
+        }
+    }
+    
+    /**
+     * Helper method to set color for variant - supports both ID and name
+     */
+    private void setColorForVariant(ProductVariant variant, Integer colorId, String colorName) {
+        if (colorId != null) {
+            Color color = colorRepository.findById(colorId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy màu với ID: " + colorId));
+            variant.setColorEntity(color);
+            variant.setColor(color.getName());
+        } else if (colorName != null && !colorName.isBlank()) {
+            // Backward compatible: lookup by name or create
+            Color color = colorRepository.findByName(colorName.trim())
+                    .orElseGet(() -> {
+                        Color newColor = Color.builder()
+                                .name(colorName.trim())
+                                .displayOrder(99)
+                                .isActive(true)
+                                .build();
+                        return colorRepository.save(newColor);
+                    });
+            variant.setColorEntity(color);
+            variant.setColor(color.getName());
+        }
     }
 
     /**
@@ -194,8 +255,11 @@ public class AdminProductVariantService {
                 ProductVariant variant = new ProductVariant();
                 variant.setProduct(product);
                 variant.setSku(requestDto.getSku());
-                variant.setSize(requestDto.getSize());
-                variant.setColor(requestDto.getColor());
+                
+                // Set size and color with FK support
+                setSizeForVariant(variant, requestDto.getSizeId(), requestDto.getSize());
+                setColorForVariant(variant, requestDto.getColorId(), requestDto.getColor());
+                
                 variant.setPriceBase(requestDto.getPriceBase());
                 variant.setPriceSale(requestDto.getPriceSale());
                 variant.setCostPrice(requestDto.getCostPrice());
@@ -204,7 +268,6 @@ public class AdminProductVariantService {
                         ? requestDto.getLowStockThreshold()
                         : com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD);
                 variant.setWeightGrams(requestDto.getWeightGrams());
-//                variant.setImageUrl(requestDto.getImageUrl());
                 variant.setIsActive(requestDto.getIsActive() != null ? requestDto.getIsActive() : true);
                 variant.setCreatedAt(LocalDateTime.now());
                 variant.setUpdatedAt(LocalDateTime.now());
@@ -238,15 +301,17 @@ public class AdminProductVariantService {
                 .orElseThrow(() -> new ProductVariantNotFoundException(id));
 
         variant.setSku(requestDto.getSku());
-        variant.setSize(requestDto.getSize());
-        variant.setColor(requestDto.getColor());
+        
+        // Set size and color with FK support
+        setSizeForVariant(variant, requestDto.getSizeId(), requestDto.getSize());
+        setColorForVariant(variant, requestDto.getColorId(), requestDto.getColor());
+        
         variant.setPriceBase(requestDto.getPriceBase());
         variant.setPriceSale(requestDto.getPriceSale());
         variant.setCostPrice(requestDto.getCostPrice());
         variant.setStockQuantity(requestDto.getStockQuantity());
         variant.setLowStockThreshold(requestDto.getLowStockThreshold());
         variant.setWeightGrams(requestDto.getWeightGrams());
-//        variant.setImageUrl(requestDto.getImageUrl());
         variant.setIsActive(requestDto.getIsActive());
         variant.setUpdatedAt(LocalDateTime.now());
 
@@ -388,18 +453,25 @@ public class AdminProductVariantService {
 //            }
 //        }
 
+        // Get size and color info from FK entities
+        Integer sizeId = variant.getSizeEntity() != null ? variant.getSizeEntity().getId() : null;
+        Integer colorId = variant.getColorEntity() != null ? variant.getColorEntity().getId() : null;
+        String colorHexCode = variant.getColorEntity() != null ? variant.getColorEntity().getHexCode() : null;
+        
         return AdminProductVariantDto.builder()
                 .id(variant.getId())
                 .sku(variant.getSku())
                 .size(variant.getSize())
                 .color(variant.getColor())
+                .sizeId(sizeId)
+                .colorId(colorId)
+                .colorHexCode(colorHexCode)
                 .priceBase(variant.getPriceBase())
                 .priceSale(variant.getPriceSale())
                 .costPrice(variant.getCostPrice())
                 .stockQuantity(variant.getStockQuantity())
                 .lowStockThreshold(variant.getLowStockThreshold())
                 .weightGrams(variant.getWeightGrams())
-//                .imageUrl(imageUrl)
                 .isActive(variant.getIsActive())
                 .createdAt(variant.getCreatedAt())
                 .updatedAt(variant.getUpdatedAt())

@@ -43,6 +43,15 @@ public class AdminProductVariantDto {
 
     @Schema(description = "Màu sắc của biến thể", example = "Black")
     private String color;
+    
+    @Schema(description = "ID của size")
+    private Integer sizeId;
+    
+    @Schema(description = "ID của màu")
+    private Integer colorId;
+    
+    @Schema(description = "Mã màu hex", example = "#000000")
+    private String colorHexCode;
 
     // ====== Pricing ======
     @Schema(description = "Giá gốc", example = "42185000")

@@ -5,13 +5,17 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -124,7 +128,28 @@ public class JwtTokenProvider {
      * Lấy Key bí mật từ chuỗi Base64
      */
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET);
+        byte[] keyBytes;
+
+        // Try BASE64, then BASE64URL, then treat as plain text
+        try {
+            keyBytes = Decoders.BASE64.decode(JWT_SECRET);
+        } catch (DecodingException | IllegalArgumentException ex) {
+            try {
+                keyBytes = Decoders.BASE64URL.decode(JWT_SECRET);
+            } catch (DecodingException | IllegalArgumentException ex2) {
+                keyBytes = JWT_SECRET.getBytes(StandardCharsets.UTF_8);
+            }
+        }
+
+        // HS256 requires a key with at least 256 bits (32 bytes)
+        if (keyBytes.length < 32) {
+            try {
+                keyBytes = MessageDigest.getInstance("SHA-256").digest(keyBytes);
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("SHA-256 algorithm is not available", e);
+            }
+        }
+
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

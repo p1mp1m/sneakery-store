@@ -737,10 +737,17 @@ public class AdminProductService {
                     dto.setSku(v.getSku());
                     dto.setSize(v.getSize());
                     dto.setColor(v.getColor());
+                    // Set size and color FK info
+                    if (v.getSizeEntity() != null) {
+                        dto.setSizeId(v.getSizeEntity().getId());
+                    }
+                    if (v.getColorEntity() != null) {
+                        dto.setColorId(v.getColorEntity().getId());
+                        dto.setColorHexCode(v.getColorEntity().getHexCode());
+                    }
                     dto.setPriceBase(v.getPriceBase());
                     dto.setPriceSale(v.getPriceSale());
                     dto.setStockQuantity(v.getStockQuantity());
-//                dto.setImageUrl(v.getImageUrl());
                     return dto;
                 }).collect(Collectors.toList());
 

@@ -534,6 +534,16 @@ const adminRoutes = [
         meta: { title: "Quản lý loại đế giày", icon: "view_day" },
       },
       {
+        path: "/admin/sizes",
+        name: "AdminSizes",
+        meta: { title: "Quản lý kích thước", icon: "straighten" },
+      },
+      {
+        path: "/admin/colors",
+        name: "AdminColors",
+        meta: { title: "Quản lý màu sắc", icon: "palette" },
+      },
+      {
         path: "/admin/reviews",
         name: "AdminReviews",
         meta: { title: "Quản lí đánh giá", icon: "star_rate" },

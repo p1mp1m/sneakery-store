@@ -15,11 +15,15 @@ public class AdminVariantRequestDto {
     @NotBlank(message = "SKU không được để trống")
     private String sku;
 
-    @NotBlank(message = "Size không được để trống")
     private String size;
 
-    @NotBlank(message = "Màu không được để trống")
     private String color;
+    
+    private Integer sizeId;
+    
+    private Integer colorId;
+    
+    private String colorHexCode;
 
     @NotNull(message = "Giá gốc không được để trống")
     @PositiveOrZero(message = "Giá gốc phải lớn hơn hoặc bằng 0")
