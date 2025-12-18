@@ -32,7 +32,7 @@
       <!-- Body -->
       <div class="p-6 grid grid-cols-4 gap-4 place-items-center">
         <div
-          v-for="(c, idx) in colors"
+          v-for="(c, idx) in colorsToUse"
           :key="idx"
           class="w-12 h-12 rounded-full cursor-pointer border-2 transition-all"
           :style="{ backgroundColor: c.hex }"
@@ -70,9 +70,9 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
+import axios from "axios";
 import notificationService from "@/utils/notificationService";
-// import notificationService from '@/utils/notificationService';
 
 /**
  * Ánh xạ tên màu tiếng Việt ↔ tiếng Anh
@@ -96,20 +96,49 @@ const props = defineProps({
   initialSelected: [String, Object],
   colors: {
     type: Array,
-    default: () => [
-      { name: "Black", hex: "#000000" },
-      { name: "White", hex: "#ffffff" },
-      { name: "Red", hex: "#ef4444" },
-      { name: "Blue", hex: "#3b82f6" },
-      { name: "Green", hex: "#22c55e" },
-      { name: "Yellow", hex: "#facc15" },
-      { name: "Purple", hex: "#a855f7" },
-      { name: "Pink", hex: "#ec4899" },
-      { name: "Orange", hex: "#fb923c" },
-      { name: "Gray", hex: "#9ca3af" },
-    ],
+    default: null, // Will fetch from API if not provided
   },
 });
+
+// Dynamic colors from API
+const dynamicColors = ref([]);
+const colorsToUse = ref([]);
+
+// Load colors from API
+const loadColors = async () => {
+  try {
+    const res = await axios.get("/api/colors");
+    dynamicColors.value = (res.data || []).map((c) => ({
+      name: c.name,
+      hex: c.hexCode || "#808080",
+    }));
+  } catch (err) {
+    console.error("Error loading colors:", err);
+    // Fallback to default colors
+    dynamicColors.value = [
+      { name: "Đen", hex: "#000000" },
+      { name: "Trắng", hex: "#ffffff" },
+      { name: "Đỏ", hex: "#ef4444" },
+      { name: "Xanh dương", hex: "#3b82f6" },
+      { name: "Xanh lá", hex: "#22c55e" },
+    ];
+  }
+};
+
+onMounted(async () => {
+  if (!props.colors) {
+    await loadColors();
+  }
+});
+
+// Watch for colors prop or use dynamic
+watch(
+  [() => props.colors, dynamicColors],
+  () => {
+    colorsToUse.value = props.colors || dynamicColors.value;
+  },
+  { immediate: true }
+);
 
 const emit = defineEmits(["close", "select"]);
 
@@ -144,7 +173,7 @@ watch(
 
       // Nếu không ánh xạ được thì giữ nguyên
       selected.value =
-        props.colors.find((c) =>
+        colorsToUse.value.find((c) =>
           [c.name.toLowerCase(), normalized.toLowerCase()].includes(
             inputName.toLowerCase()
           )
@@ -167,7 +196,7 @@ const confirm = () => {
     notificationService.warning("Cảnh báo", "Vui lòng chọn một màu sắc");
     return;
   }
-  const colorObj = props.colors.find((c) => c.name === selected.value);
+  const colorObj = colorsToUse.value.find((c) => c.name === selected.value);
   emit("select", colorObj || { name: selected.value });
   close();
 };

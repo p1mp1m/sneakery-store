@@ -1,18 +1,180 @@
 <template>
-  <div class="p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Quản lý Kích thước
-        </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">
-          Quản lý danh sách kích thước giày
-        </p>
+  <div class="max-w-[1600px] mx-auto w-full p-4 space-y-4">
+    <!-- ===== PAGE HEADER ===== -->
+    <div
+      class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+      >
+        <div>
+          <h1
+            class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2"
+          >
+            <i class="material-icons text-purple-600 dark:text-purple-400"
+              >straighten</i
+            >
+            Quản lý Kích thước
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Quản lý danh sách kích thước giày
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
+            @click="openCreateModal"
+          >
+            <i class="material-icons text-base">add</i>
+            Thêm Size
+          </button>
+        </div>
       </div>
+    </div>
+
+    <!-- ===== STATS GRID ===== -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center"
+          >
+            <i class="material-icons text-white text-lg">check_circle</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ activeSizesCount }}
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+            Đang hoạt động
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center"
+          >
+            <i class="material-icons text-white text-lg">pause_circle</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ inactiveSizesCount }}
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+            Tạm ngưng
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center"
+          >
+            <i class="material-icons text-white text-lg">straighten</i>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+            {{ sizes.length }}
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+            Tổng kích thước
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FILTERS BAR ===== -->
+    <div
+      class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
+        <!-- Ô tìm kiếm -->
+        <div class="flex flex-col gap-2">
+          <label
+            class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1 uppercase"
+          >
+            <i class="material-icons text-sm">search</i>
+            Tìm kiếm
+          </label>
+          <input
+            v-model="searchKeyword"
+            type="text"
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="Tìm theo tên size..."
+          />
+        </div>
+
+        <!-- Ô trạng thái -->
+        <div class="flex flex-col gap-2">
+          <label
+            class="text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1 uppercase"
+          >
+            <i class="material-icons text-sm">filter_list</i>
+            Trạng thái
+          </label>
+          <select
+            class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            v-model="filterStatus"
+          >
+            <option value="all">Tất cả</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="inactive">Tạm ngưng</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LOADING STATE ===== -->
+    <div
+      v-if="loading"
+      class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div
+        class="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"
+      ></div>
+      <p class="text-sm text-gray-600 dark:text-gray-400">
+        Đang tải dữ liệu...
+      </p>
+    </div>
+
+    <!-- ===== EMPTY STATE ===== -->
+    <div
+      v-else-if="filteredSizes.length === 0"
+      class="flex flex-col items-center justify-center p-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+    >
+      <div
+        class="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-4"
+      >
+        <i class="material-icons text-purple-600 dark:text-purple-400 text-3xl"
+          >straighten</i
+        >
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        Không tìm thấy kích thước nào
+      </h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
+        {{
+          searchKeyword || filterStatus !== "all"
+            ? "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
+            : "Bắt đầu thêm kích thước đầu tiên"
+        }}
+      </p>
       <button
+        v-if="!searchKeyword && filterStatus === 'all'"
         @click="openCreateModal"
-        class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+        class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-200 text-sm font-medium shadow-sm"
       >
         <i class="material-icons text-base">add</i>
         Thêm Size
@@ -21,6 +183,7 @@
 
     <!-- Table -->
     <div
+      v-else
       class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
     >
       <table class="w-full">
@@ -55,7 +218,7 @@
         </thead>
         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
           <tr
-            v-for="size in sizes"
+            v-for="size in paginatedSizes"
             :key="size.id"
             class="hover:bg-gray-50 dark:hover:bg-gray-700/50"
           >
@@ -113,16 +276,53 @@
               </button>
             </td>
           </tr>
-          <tr v-if="sizes.length === 0">
-            <td
-              colspan="5"
-              class="px-6 py-12 text-center text-gray-500 dark:text-gray-400"
-            >
-              Chưa có size nào
-            </td>
-          </tr>
         </tbody>
       </table>
+
+      <!-- ===== PAGINATION ===== -->
+      <div
+        v-if="totalPages > 1"
+        class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between"
+      >
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+          Hiển thị {{ (currentPage - 1) * itemsPerPage + 1 }} -
+          {{ Math.min(currentPage * itemsPerPage, filteredSizes.length) }} /
+          {{ filteredSizes.length }} kích thước
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            @click="currentPage = 1"
+            :disabled="currentPage === 1"
+            class="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="material-icons text-base">first_page</i>
+          </button>
+          <button
+            @click="currentPage--"
+            :disabled="currentPage === 1"
+            class="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="material-icons text-base">chevron_left</i>
+          </button>
+          <span class="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
+            Trang {{ currentPage }} / {{ totalPages }}
+          </span>
+          <button
+            @click="currentPage++"
+            :disabled="currentPage === totalPages"
+            class="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="material-icons text-base">chevron_right</i>
+          </button>
+          <button
+            @click="currentPage = totalPages"
+            :disabled="currentPage === totalPages"
+            class="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="material-icons text-base">last_page</i>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Modal Create/Edit -->
@@ -240,11 +440,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import adminService from "@/services/adminService";
 import notificationService from "@/utils/notificationService";
 
+// State
 const sizes = ref([]);
+const loading = ref(false);
 const showModal = ref(false);
 const showDeleteModal = ref(false);
 const isEdit = ref(false);
@@ -253,18 +455,69 @@ const isDeleting = ref(false);
 const editingId = ref(null);
 const sizeToDelete = ref(null);
 
+// Search & Filter
+const searchKeyword = ref("");
+const filterStatus = ref("all");
+const currentPage = ref(1);
+const itemsPerPage = 10;
+
 const formData = ref({
   name: "",
   displayOrder: 0,
   isActive: true,
 });
 
+// Computed
+const filteredSizes = computed(() => {
+  let result = sizes.value;
+
+  // Filter by search
+  if (searchKeyword.value) {
+    const keyword = searchKeyword.value.toLowerCase();
+    result = result.filter((size) => size.name.toLowerCase().includes(keyword));
+  }
+
+  // Filter by status
+  if (filterStatus.value !== "all") {
+    const isActive = filterStatus.value === "active";
+    result = result.filter((size) => size.isActive === isActive);
+  }
+
+  return result;
+});
+
+const paginatedSizes = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredSizes.value.slice(start, end);
+});
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredSizes.value.length / itemsPerPage) || 1;
+});
+
+const activeSizesCount = computed(() => {
+  return sizes.value.filter((s) => s.isActive).length;
+});
+
+const inactiveSizesCount = computed(() => {
+  return sizes.value.filter((s) => !s.isActive).length;
+});
+
+// Reset page when filter changes
+watch([searchKeyword, filterStatus], () => {
+  currentPage.value = 1;
+});
+
 const loadSizes = async () => {
+  loading.value = true;
   try {
     sizes.value = await adminService.getAllSizes();
   } catch (err) {
     notificationService.error("Lỗi", "Không thể tải danh sách size");
     console.error(err);
+  } finally {
+    loading.value = false;
   }
 };
 

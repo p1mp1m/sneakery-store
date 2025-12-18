@@ -141,11 +141,13 @@
             @change="handleFilter"
           >
             <option value="">Tất cả màu</option>
-            <option value="Đen">Đen</option>
-            <option value="Trắng">Trắng</option>
-            <option value="Đỏ">Đỏ</option>
-            <option value="Xanh dương">Xanh dương</option>
-            <option value="Xanh lá">Xanh lá</option>
+            <option
+              v-for="color in availableColors"
+              :key="color.id"
+              :value="color.name"
+            >
+              {{ color.name }}
+            </option>
           </select>
         </div>
 
@@ -162,15 +164,13 @@
             @change="handleFilter"
           >
             <option value="">Tất cả size</option>
-            <option value="35">35</option>
-            <option value="36">36</option>
-            <option value="37">37</option>
-            <option value="38">38</option>
-            <option value="39">39</option>
-            <option value="40">40</option>
-            <option value="41">41</option>
-            <option value="42">42</option>
-            <option value="43">43</option>
+            <option
+              v-for="size in availableSizes"
+              :key="size.id"
+              :value="size.name"
+            >
+              {{ size.name }}
+            </option>
           </select>
         </div>
 
@@ -490,7 +490,7 @@
 import { ref, reactive, onMounted, computed, nextTick } from "vue";
 import { useAdminStore } from "@/stores/admin";
 import notificationService from "@/utils/notificationService";
-// import notificationService from "@/utils/notificationService";
+import axios from "axios";
 import VariantModal from "@/assets/components/admin/VariantModal.vue";
 import ConfirmDialog from "@/assets/components/common/ConfirmDialog.vue";
 import { debounce } from "@/utils/debounce";
@@ -524,6 +524,10 @@ const filters = reactive({
   stockStatus: "",
 });
 
+// Dynamic sizes and colors from API
+const availableSizes = ref([]);
+const availableColors = ref([]);
+
 // ===== SORT STATE =====
 const sortBy = ref(null); // null, "price", "stock", "sku", etc.
 const sortDirection = ref("asc"); // "asc" or "desc"
@@ -543,9 +547,27 @@ const paginationInfo = computed(() => ({
 
 // ===== LIFECYCLE =====
 onMounted(async () => {
+  await loadSizesAndColors();
   await loadVariants();
   await loadStats();
 });
+
+// Load sizes and colors from API
+const loadSizesAndColors = async () => {
+  try {
+    const [sizesRes, colorsRes] = await Promise.all([
+      axios.get("/api/sizes"),
+      axios.get("/api/colors"),
+    ]);
+    availableSizes.value = sizesRes.data || [];
+    availableColors.value = colorsRes.data || [];
+  } catch (err) {
+    console.error("Error loading sizes/colors:", err);
+    // Fallback to empty arrays
+    availableSizes.value = [];
+    availableColors.value = [];
+  }
+};
 
 // ===== METHODS =====
 const loadVariants = async () => {

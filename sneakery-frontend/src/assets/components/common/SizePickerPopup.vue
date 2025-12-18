@@ -32,7 +32,7 @@
       <!-- Body -->
       <div class="p-4 grid grid-cols-5 gap-2">
         <button
-          v-for="(s, idx) in sizes"
+          v-for="(s, idx) in sizesToUse"
           :key="idx"
           type="button"
           class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
@@ -72,20 +72,50 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-// import notificationService from "@/utils/notificationService";
+import { ref, watch, onMounted } from "vue";
+import axios from "axios";
 import notificationService from "@/utils/notificationService";
 
 const props = defineProps({
   visible: Boolean,
-  // Có thể nhận string (khi chỉ 1 size) hoặc array (từ dữ liệu cũ)
   initialSelected: [String, Array],
   sizes: {
     type: Array,
-    default: () => [35, 36, 37, 38, 39, 40, 41, 42, 43, 44],
+    default: null, // Will fetch from API if not provided
   },
 });
 const emit = defineEmits(["close", "confirm"]);
+
+// Dynamic sizes from API
+const dynamicSizes = ref([]);
+const sizesToUse = ref([]);
+
+// Load sizes from API
+const loadSizes = async () => {
+  try {
+    const res = await axios.get("/api/sizes");
+    dynamicSizes.value = (res.data || []).map((s) => s.name);
+  } catch (err) {
+    console.error("Error loading sizes:", err);
+    // Fallback to default sizes
+    dynamicSizes.value = [35, 36, 37, 38, 39, 40, 41, 42, 43, 44];
+  }
+};
+
+onMounted(async () => {
+  if (!props.sizes) {
+    await loadSizes();
+  }
+});
+
+// Watch for sizes prop or use dynamic
+watch(
+  [() => props.sizes, dynamicSizes],
+  () => {
+    sizesToUse.value = props.sizes || dynamicSizes.value;
+  },
+  { immediate: true }
+);
 
 const selected = ref("");
 
