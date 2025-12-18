@@ -55,7 +55,8 @@ public class AdminProductVariantService {
         // Nếu sort theo color hoặc size, cần custom sort logic
         // Lấy tất cả data trước (không sort trong query)
         Pageable customPageable = pageable;
-        if (filter.getSortBy() != null && (filter.getSortBy().equalsIgnoreCase("color") || filter.getSortBy().equalsIgnoreCase("size"))) {
+        if (filter.getSortBy() != null
+                && (filter.getSortBy().equalsIgnoreCase("color") || filter.getSortBy().equalsIgnoreCase("size"))) {
             // Lấy tất cả data không sort
             customPageable = PageRequest.of(0, Integer.MAX_VALUE);
         }
@@ -66,11 +67,11 @@ public class AdminProductVariantService {
                 filter.getSize(),
                 filter.getProductId(),
                 filter.getStockStatus(),
-                customPageable
-        );
+                customPageable);
 
         // Nếu sort theo color hoặc size, sort thủ công rồi paginate
-        if (filter.getSortBy() != null && (filter.getSortBy().equalsIgnoreCase("color") || filter.getSortBy().equalsIgnoreCase("size"))) {
+        if (filter.getSortBy() != null
+                && (filter.getSortBy().equalsIgnoreCase("color") || filter.getSortBy().equalsIgnoreCase("size"))) {
             List<ProductVariant> variantList = new ArrayList<>(variants.getContent());
             boolean isAsc = filter.getSortDirection() == null || filter.getSortDirection().equalsIgnoreCase("asc");
 
@@ -104,14 +105,15 @@ public class AdminProductVariantService {
             int size = pageable.getPageSize();
             int start = page * size;
             int end = Math.min(start + size, variantList.size());
-            List<ProductVariant> pagedList = start < variantList.size() ? variantList.subList(start, end) : new ArrayList<>();
+            List<ProductVariant> pagedList = start < variantList.size() ? variantList.subList(start, end)
+                    : new ArrayList<>();
 
             // Tạo Page mới với data đã sort và paginate
             return new org.springframework.data.domain.PageImpl<>(
-                    Objects.requireNonNull(pagedList.stream().map(this::convertToDto).collect(java.util.stream.Collectors.toList())),
+                    Objects.requireNonNull(
+                            pagedList.stream().map(this::convertToDto).collect(java.util.stream.Collectors.toList())),
                     pageable,
-                    variantList.size()
-            );
+                    variantList.size());
         }
 
         return variants.map(this::convertToDto);
@@ -137,12 +139,12 @@ public class AdminProductVariantService {
         ProductVariant variant = new ProductVariant();
         variant.setProduct(product);
         variant.setSku(requestDto.getSku());
-        
+
         // Set size - support both sizeId and size string
         setSizeForVariant(variant, requestDto.getSizeId(), requestDto.getSize());
         // Set color - support both colorId and color string
         setColorForVariant(variant, requestDto.getColorId(), requestDto.getColor());
-        
+
         variant.setPriceBase(requestDto.getPriceBase());
         variant.setPriceSale(requestDto.getPriceSale());
         variant.setCostPrice(requestDto.getCostPrice());
@@ -158,9 +160,10 @@ public class AdminProductVariantService {
         ProductVariant savedVariant = productVariantRepository.save(variant);
         return convertToDto(savedVariant);
     }
-    
+
     /**
      * Helper method to set size for variant - supports both ID and name
+     * Không tự động tạo size mới, chỉ cho phép chọn từ danh sách có sẵn
      */
     private void setSizeForVariant(ProductVariant variant, Integer sizeId, String sizeName) {
         if (sizeId != null) {
@@ -169,23 +172,19 @@ public class AdminProductVariantService {
             variant.setSizeEntity(size);
             variant.setSize(size.getName());
         } else if (sizeName != null && !sizeName.isBlank()) {
-            // Backward compatible: lookup by name or create
+            // Chỉ lookup, không tự động tạo mới
             Size size = sizeRepository.findByName(sizeName.trim())
-                    .orElseGet(() -> {
-                        Size newSize = Size.builder()
-                                .name(sizeName.trim())
-                                .displayOrder(99)
-                                .isActive(true)
-                                .build();
-                        return sizeRepository.save(newSize);
-                    });
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST,
+                            "Size '" + sizeName.trim()
+                                    + "' không tồn tại. Vui lòng tạo size trong phần Quản lý Kích thước trước."));
             variant.setSizeEntity(size);
             variant.setSize(size.getName());
         }
     }
-    
+
     /**
      * Helper method to set color for variant - supports both ID and name
+     * Không tự động tạo color mới, chỉ cho phép chọn từ danh sách có sẵn
      */
     private void setColorForVariant(ProductVariant variant, Integer colorId, String colorName) {
         if (colorId != null) {
@@ -194,16 +193,11 @@ public class AdminProductVariantService {
             variant.setColorEntity(color);
             variant.setColor(color.getName());
         } else if (colorName != null && !colorName.isBlank()) {
-            // Backward compatible: lookup by name or create
+            // Chỉ lookup, không tự động tạo mới
             Color color = colorRepository.findByName(colorName.trim())
-                    .orElseGet(() -> {
-                        Color newColor = Color.builder()
-                                .name(colorName.trim())
-                                .displayOrder(99)
-                                .isActive(true)
-                                .build();
-                        return colorRepository.save(newColor);
-                    });
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST,
+                            "Màu '" + colorName.trim()
+                                    + "' không tồn tại. Vui lòng tạo màu trong phần Quản lý Màu sắc trước."));
             variant.setColorEntity(color);
             variant.setColor(color.getName());
         }
@@ -245,8 +239,7 @@ public class AdminProductVariantService {
                         product.getName(),
                         oldStock,
                         newStock,
-                        addedStock
-                );
+                        addedStock);
                 activityLogService.logAction("UPDATE_STOCK", logMsg);
 
                 resultList.add(convertToDto(existing));
@@ -255,11 +248,11 @@ public class AdminProductVariantService {
                 ProductVariant variant = new ProductVariant();
                 variant.setProduct(product);
                 variant.setSku(requestDto.getSku());
-                
+
                 // Set size and color with FK support
                 setSizeForVariant(variant, requestDto.getSizeId(), requestDto.getSize());
                 setColorForVariant(variant, requestDto.getColorId(), requestDto.getColor());
-                
+
                 variant.setPriceBase(requestDto.getPriceBase());
                 variant.setPriceSale(requestDto.getPriceSale());
                 variant.setCostPrice(requestDto.getCostPrice());
@@ -281,8 +274,7 @@ public class AdminProductVariantService {
                         product.getName(),
                         saved.getColor(),
                         saved.getSize(),
-                        saved.getStockQuantity()
-                );
+                        saved.getStockQuantity());
                 activityLogService.logAction("CREATE_VARIANT", logMsg);
 
                 resultList.add(convertToDto(saved));
@@ -292,7 +284,6 @@ public class AdminProductVariantService {
         return resultList;
     }
 
-
     /**
      * Cập nhật biến thể
      */
@@ -301,11 +292,11 @@ public class AdminProductVariantService {
                 .orElseThrow(() -> new ProductVariantNotFoundException(id));
 
         variant.setSku(requestDto.getSku());
-        
+
         // Set size and color with FK support
         setSizeForVariant(variant, requestDto.getSizeId(), requestDto.getSize());
         setColorForVariant(variant, requestDto.getColorId(), requestDto.getColor());
-        
+
         variant.setPriceBase(requestDto.getPriceBase());
         variant.setPriceSale(requestDto.getPriceSale());
         variant.setCostPrice(requestDto.getCostPrice());
@@ -322,16 +313,19 @@ public class AdminProductVariantService {
     /**
      * Xóa biến thể (hard delete)
      *
-     * <p>Thực hiện hard delete bằng cách xóa tất cả các bản ghi liên quan trước:
+     * <p>
+     * Thực hiện hard delete bằng cách xóa tất cả các bản ghi liên quan trước:
      * <ul>
-     *   <li>1. Xóa Warranties (theo variant_id)</li>
-     *   <li>2. Xóa InventoryLogs (theo variant_id)</li>
-     *   <li>3. Xóa CartItems (theo variant_id)</li>
-     *   <li>4. Xóa OrderDetails (theo variant_id) - lưu ý: có thể ảnh hưởng đến lịch sử đơn hàng</li>
-     *   <li>5. Xóa ProductVariant (hard delete)</li>
+     * <li>1. Xóa Warranties (theo variant_id)</li>
+     * <li>2. Xóa InventoryLogs (theo variant_id)</li>
+     * <li>3. Xóa CartItems (theo variant_id)</li>
+     * <li>4. Xóa OrderDetails (theo variant_id) - lưu ý: có thể ảnh hưởng đến lịch
+     * sử đơn hàng</li>
+     * <li>5. Xóa ProductVariant (hard delete)</li>
      * </ul>
      *
-     * <p><b>Cảnh báo:</b> Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
+     * <p>
+     * <b>Cảnh báo:</b> Hành động này sẽ xóa vĩnh viễn tất cả dữ liệu liên quan.
      */
     public void deleteVariant(Long id) {
         ProductVariant variant = productVariantRepository.findById(Objects.requireNonNull(id))
@@ -341,29 +335,30 @@ public class AdminProductVariantService {
 
         // 1. Xóa Warranties (theo variant_id) - sử dụng native query
         int deletedWarranties = entityManager.createNativeQuery(
-                        "DELETE FROM Warranties WHERE variant_id = :variantId")
+                "DELETE FROM Warranties WHERE variant_id = :variantId")
                 .setParameter("variantId", id)
                 .executeUpdate();
         log.info("Đã xóa {} warranties cho variant ID: {}", deletedWarranties, id);
 
         // 2. Xóa InventoryLogs (theo variant_id) - sử dụng native query
         int deletedLogs = entityManager.createNativeQuery(
-                        "DELETE FROM Inventory_Logs WHERE variant_id = :variantId")
+                "DELETE FROM Inventory_Logs WHERE variant_id = :variantId")
                 .setParameter("variantId", id)
                 .executeUpdate();
         log.info("Đã xóa {} inventory logs cho variant ID: {}", deletedLogs, id);
 
         // 3. Xóa CartItems (theo variant_id) - sử dụng native query
         int deletedCartItems = entityManager.createNativeQuery(
-                        "DELETE FROM Cart_Items WHERE variant_id = :variantId")
+                "DELETE FROM Cart_Items WHERE variant_id = :variantId")
                 .setParameter("variantId", id)
                 .executeUpdate();
         log.info("Đã xóa {} cart items cho variant ID: {}", deletedCartItems, id);
 
-        // 4. Xóa OrderDetails (theo variant_id) - CẢNH BÁO: Có thể ảnh hưởng đến lịch sử đơn hàng
+        // 4. Xóa OrderDetails (theo variant_id) - CẢNH BÁO: Có thể ảnh hưởng đến lịch
+        // sử đơn hàng
         // Tuy nhiên, user yêu cầu xóa hết, nên sẽ xóa
         int deletedOrderDetails = entityManager.createNativeQuery(
-                        "DELETE FROM Order_Details WHERE variant_id = :variantId")
+                "DELETE FROM Order_Details WHERE variant_id = :variantId")
                 .setParameter("variantId", id)
                 .executeUpdate();
         log.info("Đã xóa {} order details cho variant ID: {}", deletedOrderDetails, id);
@@ -410,8 +405,9 @@ public class AdminProductVariantService {
                 .mapToLong(v -> v.getPriceBase().multiply(BigDecimal.valueOf(v.getStockQuantity())).longValue())
                 .sum();
 
-        long averageStockPerVariant = totalVariants > 0 ?
-                allVariants.stream().mapToInt(ProductVariant::getStockQuantity).sum() / (int) totalVariants : 0;
+        long averageStockPerVariant = totalVariants > 0
+                ? allVariants.stream().mapToInt(ProductVariant::getStockQuantity).sum() / (int) totalVariants
+                : 0;
 
         return ProductVariantStatsDto.builder()
                 .totalVariants(totalVariants)
@@ -441,23 +437,25 @@ public class AdminProductVariantService {
         String productName = variant.getProduct() != null ? variant.getProduct().getName() : "Unknown Product";
         String productSlug = variant.getProduct() != null ? variant.getProduct().getSlug() : "";
         String brandName = (variant.getProduct() != null && variant.getProduct().getBrand() != null)
-                ? variant.getProduct().getBrand().getName() : "Unknown Brand";
+                ? variant.getProduct().getBrand().getName()
+                : "Unknown Brand";
 
-//        String imageUrl = variant.getImageUrl();
+        // String imageUrl = variant.getImageUrl();
 
         // ✅ Added: nếu imageUrl null → lấy ảnh bìa từ bảng Product_Images
-//        if ((imageUrl == null || imageUrl.isBlank()) && productId != null) {
-//            Optional<ProductImage> coverImage = productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
-//            if (coverImage.isPresent()) {
-//                imageUrl = coverImage.get().getImageUrl();
-//            }
-//        }
+        // if ((imageUrl == null || imageUrl.isBlank()) && productId != null) {
+        // Optional<ProductImage> coverImage =
+        // productImageRepository.findByProductIdAndIsPrimaryTrue(productId);
+        // if (coverImage.isPresent()) {
+        // imageUrl = coverImage.get().getImageUrl();
+        // }
+        // }
 
         // Get size and color info from FK entities
         Integer sizeId = variant.getSizeEntity() != null ? variant.getSizeEntity().getId() : null;
         Integer colorId = variant.getColorEntity() != null ? variant.getColorEntity().getId() : null;
         String colorHexCode = variant.getColorEntity() != null ? variant.getColorEntity().getHexCode() : null;
-        
+
         return AdminProductVariantDto.builder()
                 .id(variant.getId())
                 .sku(variant.getSku())
@@ -487,8 +485,10 @@ public class AdminProductVariantService {
     }
 
     private String getStockStatus(Integer quantity) {
-        if (quantity == 0) return "out_of_stock";
-        if (quantity <= com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD) return "low_stock";
+        if (quantity == 0)
+            return "out_of_stock";
+        if (quantity <= com.sneakery.store.constants.ProductConstants.LOW_STOCK_THRESHOLD)
+            return "low_stock";
         return "in_stock";
     }
 
