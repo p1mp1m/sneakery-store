@@ -403,8 +403,9 @@
             <div class="flex flex-col gap-2">
               <label
                 class="text-xs font-medium text-gray-700 dark:text-gray-300"
-                >Giá khuyến mãi (VNĐ)</label
               >
+                Giá bán (VNĐ) <span class="text-red-500">*</span>
+              </label>
               <input
                 v-model.number="formData.priceSale"
                 type="number"
@@ -414,7 +415,7 @@
                     ? 'border-red-500 dark:border-red-500'
                     : 'border-gray-300 dark:border-gray-600',
                 ]"
-                placeholder="3000000"
+                placeholder="Giá bán thực tế"
                 min="0"
                 @blur="validatePriceSale"
                 @input="validatePriceSale"
@@ -847,20 +848,26 @@ const validatePriceBase = () => {
 };
 
 const validatePriceSale = () => {
-  if (formData.priceSale !== null && formData.priceSale !== "") {
-    if (formData.priceSale < 0) {
-      errors.priceSale = "Giá khuyến mãi không được âm";
-      return false;
-    }
-    if (formData.priceSale >= formData.priceBase) {
-      errors.priceSale = "Giá khuyến mãi phải nhỏ hơn giá gốc";
-      return false;
-    }
-    if (formData.priceSale > 1000000000) {
-      errors.priceSale = "Giá khuyến mãi không được vượt quá 1 tỷ VNĐ";
-      return false;
-    }
+  if (formData.priceSale === null || formData.priceSale === "") {
+    errors.priceSale = "Vui lòng nhập giá bán";
+    return false;
   }
+
+  if (formData.priceSale <= 0) {
+    errors.priceSale = "Giá bán phải lớn hơn 0";
+    return false;
+  }
+
+  if (formData.priceBase > 0 && formData.priceSale < formData.priceBase) {
+    errors.priceSale = "Giá bán không được nhỏ hơn giá gốc";
+    return false;
+  }
+
+  if (formData.priceSale > 1000000000) {
+    errors.priceSale = "Giá bán không được vượt quá 1 tỷ VNĐ";
+    return false;
+  }
+
   errors.priceSale = "";
   return true;
 };

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Repository
@@ -84,23 +85,38 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     /**
      * Calculate average price (using priceSale if available, else priceBase) - excludes soft deleted
      */
-    @Query("SELECT COALESCE(AVG(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
-           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL AND v.deletedAt IS NULL")
-    java.math.BigDecimal calculateAveragePrice();
+    @Query("""
+    SELECT COALESCE(AVG(v.priceSale), 0)
+    FROM ProductVariant v
+    WHERE v.priceSale IS NOT NULL
+      AND v.priceSale > 0
+      AND v.deletedAt IS NULL
+""")
+    BigDecimal calculateAveragePrice();
 
     /**
      * Get maximum price (using priceSale if available, else priceBase) - excludes soft deleted
      */
-    @Query("SELECT COALESCE(MAX(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
-           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL AND v.deletedAt IS NULL")
-    java.math.BigDecimal getMaxPrice();
+    @Query("""
+    SELECT COALESCE(MAX(v.priceSale), 0)
+    FROM ProductVariant v
+    WHERE v.priceSale IS NOT NULL
+      AND v.priceSale > 0
+      AND v.deletedAt IS NULL
+""")
+    BigDecimal getMaxPrice();
 
     /**
      * Get minimum price (using priceSale if available, else priceBase) - excludes soft deleted
      */
-    @Query("SELECT COALESCE(MIN(CASE WHEN v.priceSale IS NOT NULL AND v.priceSale > 0 THEN v.priceSale ELSE v.priceBase END), 0) " +
-           "FROM ProductVariant v WHERE v.priceBase IS NOT NULL AND v.deletedAt IS NULL")
-    java.math.BigDecimal getMinPrice();
+    @Query("""
+    SELECT COALESCE(MIN(v.priceSale), 0)
+    FROM ProductVariant v
+    WHERE v.priceSale IS NOT NULL
+      AND v.priceSale > 0
+      AND v.deletedAt IS NULL
+""")
+    BigDecimal getMinPrice();
 
     boolean existsBySkuAndProductIdNot(String sku, Long productId);
 

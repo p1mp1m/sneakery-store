@@ -27,42 +27,42 @@ public class ProductValidationUtil {
 
     /**
      * Validate SKU uniqueness trong danh sách variants
-     * 
+     *
      * @param variants Danh sách variants cần validate
      * @param productId ID sản phẩm (null nếu là tạo mới)
      * @throws ApiException nếu có SKU trùng
      */
     public void validateSkuUniqueness(List<AdminVariantRequestDto> variants, Long productId) {
         Set<String> skuSet = new HashSet<>();
-        
+
         for (AdminVariantRequestDto variant : variants) {
             String sku = variant.getSku();
-            
+
             if (sku == null || sku.trim().isEmpty()) {
                 continue; // Skip null/empty, sẽ được validate bởi @NotBlank
             }
-            
+
             // Check duplicate trong list hiện tại
             if (!skuSet.add(sku.trim().toUpperCase())) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, 
-                    "SKU '" + sku + "' bị trùng lặp trong danh sách variants");
+                throw new ApiException(HttpStatus.BAD_REQUEST,
+                        "SKU '" + sku + "' bị trùng lặp trong danh sách variants");
             }
-            
+
             // Check duplicate với variants đã tồn tại trong DB
             // Nếu là update variant (có ID), skip variant đó
             boolean isExistingVariant = variant.getId() != null;
             boolean existsInDb = variantRepository.existsBySku(sku.trim());
-            
+
             if (existsInDb && !isExistingVariant) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, 
-                    "SKU '" + sku + "' đã tồn tại trong hệ thống");
+                throw new ApiException(HttpStatus.BAD_REQUEST,
+                        "SKU '" + sku + "' đã tồn tại trong hệ thống");
             }
         }
     }
 
     /**
      * Validate slug uniqueness
-     * 
+     *
      * @param slug Slug cần validate
      * @param productId ID sản phẩm (null nếu là tạo mới, để skip check chính nó khi update)
      * @throws ApiException nếu slug đã tồn tại
@@ -71,40 +71,65 @@ public class ProductValidationUtil {
         if (slug == null || slug.trim().isEmpty()) {
             return; // Will be validated by @NotBlank
         }
-        
+
         Optional<Product> existingProduct = productRepository.findBySlug(slug.trim());
-        
+
         if (existingProduct.isPresent()) {
             // Nếu là update (có productId), chỉ throw error nếu slug thuộc về sản phẩm khác
             if (productId == null || !existingProduct.get().getId().equals(productId)) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, 
-                    "Slug '" + slug + "' đã tồn tại. Vui lòng chọn slug khác.");
+                throw new ApiException(HttpStatus.BAD_REQUEST,
+                        "Slug '" + slug + "' đã tồn tại. Vui lòng chọn slug khác.");
             }
         }
     }
 
     /**
      * Validate variant price logic
-     * priceSale phải <= priceBase nếu có
-     * 
+     * priceSale phải >= priceBase nếu có
+     *
      * @param variants Danh sách variants
-     * @throws ApiException nếu priceSale > priceBase
+     * @throws ApiException nếu priceSale < priceBase
+     */
+    /**
+     * Validate variant price logic (NEW BUSINESS RULE)
+     * priceSale phải >= priceBase
      */
     public void validateVariantPrices(List<AdminVariantRequestDto> variants) {
+        if (variants == null || variants.isEmpty()) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Sản phẩm phải có ít nhất một biến thể"
+            );
+        }
+
         for (AdminVariantRequestDto variant : variants) {
-            if (variant.getPriceSale() != null && 
-                variant.getPriceBase() != null &&
-                variant.getPriceSale().compareTo(variant.getPriceBase()) > 0) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, 
-                    "Giá sale (" + variant.getPriceSale() + ") không được lớn hơn giá gốc (" + 
-                    variant.getPriceBase() + ") cho SKU: " + variant.getSku());
+            if (variant.getPriceBase() == null || variant.getPriceBase().signum() <= 0) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Giá gốc phải lớn hơn 0 (SKU: " + variant.getSku() + ")"
+                );
+            }
+
+            if (variant.getPriceSale() == null || variant.getPriceSale().signum() <= 0) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Giá bán phải lớn hơn 0 (SKU: " + variant.getSku() + ")"
+                );
+            }
+
+            // 🔑 RULE MỚI
+            if (variant.getPriceSale().compareTo(variant.getPriceBase()) < 0) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Giá bán phải lớn hơn hoặc bằng giá gốc (SKU: " + variant.getSku() + ")"
+                );
             }
         }
     }
 
     /**
      * Validate product name không trùng với sản phẩm khác (cùng brand)
-     * 
+     *
      * @param name Tên sản phẩm
      * @param brandId ID thương hiệu
      * @param productId ID sản phẩm (null nếu là tạo mới)
@@ -114,15 +139,15 @@ public class ProductValidationUtil {
         if (name == null || name.trim().isEmpty() || brandId == null) {
             return;
         }
-        
+
         boolean exists = productRepository.findAll().stream()
                 .anyMatch(p -> p.getName().equalsIgnoreCase(name.trim()) &&
-                              p.getBrand().getId().equals(brandId) &&
-                              (productId == null || !p.getId().equals(productId)));
-        
+                        p.getBrand().getId().equals(brandId) &&
+                        (productId == null || !p.getId().equals(productId)));
+
         if (exists) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, 
-                "Tên sản phẩm '" + name + "' đã tồn tại cho thương hiệu này");
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Tên sản phẩm '" + name + "' đã tồn tại cho thương hiệu này");
         }
     }
 
@@ -130,7 +155,7 @@ public class ProductValidationUtil {
      * Validate price range (giá từ và giá đến)
      * - Giá từ và giá đến phải >= 0 nếu có
      * - Giá từ phải <= giá đến nếu cả 2 đều có
-     * 
+     *
      * @param priceFrom Giá từ (có thể null)
      * @param priceTo Giá đến (có thể null)
      * @throws ApiException nếu validation fail
@@ -138,20 +163,20 @@ public class ProductValidationUtil {
     public void validatePriceRange(Integer priceFrom, Integer priceTo) {
         // Validate giá từ
         if (priceFrom != null && priceFrom < 0) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, 
-                "Giá từ không được âm");
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Giá từ không được âm");
         }
 
         // Validate giá đến
         if (priceTo != null && priceTo < 0) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, 
-                "Giá đến không được âm");
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Giá đến không được âm");
         }
 
         // Validate giá từ <= giá đến (nếu cả 2 đều có)
         if (priceFrom != null && priceTo != null && priceFrom > priceTo) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, 
-                "Giá từ (" + priceFrom + ") phải nhỏ hơn hoặc bằng giá đến (" + priceTo + ")");
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Giá từ (" + priceFrom + ") phải nhỏ hơn hoặc bằng giá đến (" + priceTo + ")");
         }
     }
 }
