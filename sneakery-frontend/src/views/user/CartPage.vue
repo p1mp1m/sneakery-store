@@ -150,7 +150,8 @@
                     </div>
                     <button
                       @click="updateQuantity(item, item.quantity + 1)"
-                      class="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      :disabled="reachedMaxItems.has(item.variantId)"
+                      class="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Tăng số lượng"
                     >
                       <i class="material-icons text-base">add</i>
@@ -455,13 +456,13 @@ const router = useRouter();
 const authStore = useAuthStore();
 const cartStore = useCartStore();
 const couponStore = useCouponStore();
-const lastCouponFetchAt = ref(0)
+const lastCouponFetchAt = ref(0);
 // Local state
 const applyingCoupon = ref(false);
 const activeCoupons = ref([]);
 const loadingActiveCoupons = ref(false);
 const selectedCouponCode = ref("");
-
+const reachedMaxItems = ref(new Set());
 // Use coupon store state
 const couponCode = computed({
   get: () => couponStore.couponCode,
@@ -552,15 +553,39 @@ const fetchCart = async () => {
 const updateQuantity = async (item, newQuantity) => {
   if (newQuantity < 1) return;
 
+  const oldQuantity = item.quantity;
+  const isIncreasing = newQuantity > oldQuantity; // chỉ quan tâm khi bấm +
+
+  // Optimistic update: thay đổi UI trước
+  item.quantity = newQuantity;
+
   try {
     await cartStore.updateQuantity(item.variantId, newQuantity);
+
+    // Thành công → bỏ khóa nếu có (stock có thể tăng lại)
+    reachedMaxItems.value.delete(item.variantId);
+
     notificationService.success("Thành công", "Đã cập nhật số lượng");
   } catch (error) {
-    logger.error("Error updating quantity:", error);
-    notificationService.error(
-      "Lỗi",
-      error.message || "Không thể cập nhật số lượng"
-    );
+    // Rollback về số cũ
+    item.quantity = oldQuantity;
+
+    // Nếu đang bấm tăng (+) và lỗi 400 → coi như đạt max → khóa nút + của item này
+    if (isIncreasing && error?.response?.status === 400) {
+      reachedMaxItems.value.add(item.variantId);
+
+      notificationService.warning(
+        "Không thể tăng thêm",
+        "Sản phẩm đã đạt số lượng tối đa"
+      );
+    } else {
+      notificationService.error("Lỗi", "Không thể cập nhật số lượng");
+    }
+  }
+
+  // Nếu đang giảm số lượng → luôn mở khóa (để có thể tăng lại sau)
+  if (newQuantity < oldQuantity) {
+    reachedMaxItems.value.delete(item.variantId);
   }
 };
 
@@ -613,23 +638,23 @@ const fetchActiveCoupons = async () => {
 };
 
 const onCouponDropdownOpen = async () => {
-  const now = Date.now()
+  const now = Date.now();
 
   // tránh gọi API liên tục (cache 10s)
-  if (now - lastCouponFetchAt.value < 10_000) return
+  if (now - lastCouponFetchAt.value < 10_000) return;
 
   try {
-    loadingActiveCoupons.value = true
-    couponError.value = ''
+    loadingActiveCoupons.value = true;
+    couponError.value = "";
 
-    await fetchActiveCoupons() // API lấy coupon mới nhất
+    await fetchActiveCoupons(); // API lấy coupon mới nhất
 
-    lastCouponFetchAt.value = now
+    lastCouponFetchAt.value = now;
   } catch (err) {
     couponError.value =
-      'Không thể tải danh sách mã giảm giá mới nhất. Vui lòng thử lại.'
+      "Không thể tải danh sách mã giảm giá mới nhất. Vui lòng thử lại.";
   } finally {
-    loadingActiveCoupons.value = false
+    loadingActiveCoupons.value = false;
   }
 };
 
@@ -777,7 +802,6 @@ const proceedToCheckout = async () => {
 
     // OK → cho sang checkout
     await router.push("/checkout");
-
   } catch (error) {
     //  LỖI THẬT → clear coupon
     couponStore.clearCoupon();

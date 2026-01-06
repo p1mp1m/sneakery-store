@@ -270,9 +270,12 @@
           <div class="mb-6">
             <label
               class="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2"
-              >Số lượng:</label
             >
+              Số lượng:
+            </label>
+
             <div class="flex items-center gap-3">
+              <!-- Giảm -->
               <button
                 @click="decreaseQuantity"
                 :disabled="quantity <= 1"
@@ -290,16 +293,22 @@
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
               </button>
+
+              <!-- Input -->
               <input
-                v-model.number="quantity"
+                :value="quantity"
                 type="number"
                 min="1"
-                :max="maxQuantity"
-                class="w-20 h-10 text-center border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                :max="currentMaxQuantity"
+                :disabled="isQuantityLocked"
+                @input="onQuantityInput"
+                class="w-20 h-10 text-center border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:cursor-not-allowed"
               />
+
+              <!-- Tăng -->
               <button
                 @click="increaseQuantity"
-                :disabled="quantity >= maxQuantity"
+                :disabled="isQuantityLocked"
                 class="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <svg
@@ -817,7 +826,7 @@ const showZoom = ref(false);
 const variantImages = ref([]);
 const activeImage = ref(null);
 const productImageStore = useProductImageStore();
-
+const isQuantityLocked = ref(false);
 const resetState = () => {
   product.value = null;
   productImages.value = [];
@@ -1129,16 +1138,53 @@ const selectSize = (size) => {
   if (variant) fetchVariantImages(variant.id);
 };
 
-const increaseQuantity = () => {
-  if (quantity.value < maxQuantity.value) {
-    quantity.value++;
+const updateQuantityAndLock = (newValue) => {
+  const max = currentMaxQuantity.value;
+
+  // Clamp giá trị
+  if (newValue > max) {
+    quantity.value = max;
+  } else if (newValue < 1) {
+    quantity.value = 1;
+  } else {
+    quantity.value = newValue;
   }
+
+  // Quyết định khóa: khi quantity đạt max thì khóa
+  isQuantityLocked.value = quantity.value >= max;
+};
+
+const increaseQuantity = () => {
+  if (isQuantityLocked.value) return;
+
+  updateQuantityAndLock(quantity.value + 1);
 };
 
 const decreaseQuantity = () => {
   if (quantity.value > 1) {
-    quantity.value--;
+    updateQuantityAndLock(quantity.value - 1);
   }
+};
+
+const currentMaxQuantity = computed(() => {
+  return selectedVariant.value?.stockQuantity ?? 1;
+});
+
+const onQuantityInput = (event) => {
+  let inputValue = event.target.value;
+
+  // Xử lý trường hợp nhập rác (chuỗi rỗng, ký tự không phải số...)
+  if (inputValue === '' || isNaN(inputValue)) {
+    // Tạm để 1, chờ user nhập tiếp hoặc blur
+    quantity.value = 1;
+    isQuantityLocked.value = false;
+    return;
+  }
+
+  let value = Number(inputValue);
+
+  // Clamp và cập nhật trạng thái khóa
+  updateQuantityAndLock(value);
 };
 
 const openZoom = () => {
@@ -1246,6 +1292,31 @@ watch(
       fetchProduct();
     }
   }
+);
+
+watch(
+  selectedVariant,
+  (newVariant) => {
+    if (!newVariant) {
+      quantity.value = 1;
+      isQuantityLocked.value = false;
+      return;
+    }
+
+    const max = newVariant.stockQuantity;
+
+    // Trường hợp stock = 0 hoặc rất nhỏ
+    if (max <= 0) {
+      quantity.value = 1;
+      isQuantityLocked.value = true; // vẫn khóa vì không thể tăng
+      return;
+    }
+
+    // Clamp nếu quantity hiện tại vượt quá stock mới
+    // Và cập nhật trạng thái khóa dựa trên quantity mới
+    updateQuantityAndLock(quantity.value);
+  },
+  { immediate: true }
 );
 </script>
 <style scoped>

@@ -575,7 +575,7 @@
                       </button>
                       <input
                         v-model.number="item.quantity"
-                        @change="updateQuantity(index, item.quantity)"
+                        @input="onQuantityInput(index, $event)"
                         class="w-14 h-8 text-center bg-transparent border-0 text-sm font-semibold text-gray-900 dark:text-gray-100 focus:outline-none"
                         type="number"
                         min="1"
@@ -3215,32 +3215,52 @@ const removeFromCart = (index) => {
 };
 
 const updateQuantity = (index, quantity) => {
+  const item = cartItems.value[index];
+
   if (quantity <= 0) {
     removeFromCart(index);
     return;
   }
 
+  if (
+    item.stockQuantity !== undefined &&
+    quantity > item.stockQuantity
+  ) {
+    notificationService.warning(
+      "Cảnh báo",
+      `Không đủ hàng. Tồn kho: ${item.stockQuantity}`
+    );
+    cartItems.value[index].quantity = item.stockQuantity;
+    return;
+  }
+
+  cartItems.value[index].quantity = quantity;
+  badgeAnimationKey.value += 1;
+};
+
+
+const onQuantityInput = (index, event) => {
   const item = cartItems.value[index];
 
-  // Kiểm tra stock nếu tăng số lượng
-  if (quantity > item.quantity && item.stockQuantity !== undefined) {
-    if (quantity > item.stockQuantity) {
-      notificationService.warning(
-        "Cảnh báo",
-        `Không đủ hàng. Tồn kho: ${item.stockQuantity}, Yêu cầu: ${quantity}`
-      );
-      // Giữ nguyên số lượng cũ
-      return;
-    }
+  let value = Number(event.target.value);
+
+  // ❌ Không phải số hoặc < 1
+  if (isNaN(value) || value < 1) {
+    value = 1;
   }
 
-  const oldQuantity = item.quantity;
-  cartItems.value[index].quantity = quantity;
+  // ❌ Vượt tồn kho → clamp về max
+  if (item.stockQuantity !== undefined && value > item.stockQuantity) {
+    value = item.stockQuantity;
 
-  // Trigger animation nếu số lượng thay đổi
-  if (oldQuantity !== quantity) {
-    badgeAnimationKey.value += 1;
+    // Optional: chỉ warn 1 lần khi vượt
+    notificationService.warning(
+      "Cảnh báo",
+      `Số lượng tối đa có thể bán là ${item.stockQuantity}`
+    );
   }
+
+  cartItems.value[index].quantity = value;
 };
 
 const getReceiptSubTotal = () => {
