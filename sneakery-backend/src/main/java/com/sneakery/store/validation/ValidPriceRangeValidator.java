@@ -43,9 +43,8 @@ public class ValidPriceRangeValidator implements ConstraintValidator<ValidPriceR
                 return false;
             }
 
-            // If sale price is provided, it must be > 0 and <= base price
-            if (salePrice != null) {
-                if (salePrice.compareTo(BigDecimal.ZERO) <= 0) {
+            // sale price must be > 0
+            if (salePrice == null || salePrice.compareTo(BigDecimal.ZERO) <= 0) {
                     context.disableDefaultConstraintViolation();
                     context.buildConstraintViolationWithTemplate(
                             "Giá bán phải lớn hơn 0"
@@ -53,13 +52,13 @@ public class ValidPriceRangeValidator implements ConstraintValidator<ValidPriceR
                     return false;
                 }
 
-                if (salePrice.compareTo(basePrice) > 0) {
-                    context.disableDefaultConstraintViolation();
-                    context.buildConstraintViolationWithTemplate(
-                            "Giá bán không được lớn hơn giá gốc"
-                    ).addPropertyNode(salePriceField).addConstraintViolation();
-                    return false;
-                }
+            // 🔑 RULE MỚI: sale >= base
+            if (salePrice.compareTo(basePrice) < 0) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate(
+                        "Giá bán phải lớn hơn hoặc bằng giá gốc"
+                ).addPropertyNode(salePriceField).addConstraintViolation();
+                return false;
             }
 
             return true;

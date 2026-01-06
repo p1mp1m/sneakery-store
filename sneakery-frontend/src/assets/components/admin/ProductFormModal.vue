@@ -479,7 +479,7 @@
                     <label
                       class="block text-xs font-medium text-gray-700 dark:text-gray-300"
                     >
-                      Giá khuyến mãi (VNĐ)
+                      Giá bán (VNĐ) <span class="text-red-500">*</span>
                     </label>
                     <input
                       v-model="variant.priceSale"
@@ -898,15 +898,15 @@ const validateForm = () => {
         errors[`variant_${i}_stockQuantity`] =
           "Tồn kho phải là số nguyên lớn hơn hoặc bằng 0";
       }
-      // ===== Validate giá =====
+      // ===== Validate giá (logic mới: sale >= base) =====
       if (!v.priceBase || Number(v.priceBase) <= 0) {
         errors[`variant_${i}_priceBase`] = "Giá gốc phải lớn hơn 0";
       }
 
       if (!v.priceSale || Number(v.priceSale) <= 0) {
         errors[`variant_${i}_priceSale`] = "Giá bán phải lớn hơn 0";
-      } else if (Number(v.priceSale) >= Number(v.priceBase)) {
-        errors[`variant_${i}_priceSale`] = "Giá bán phải NHỎ HƠN giá gốc";
+      } else if (v.priceBase && Number(v.priceSale) < Number(v.priceBase)) {
+        errors[`variant_${i}_priceSale`] = "Giá bán không được nhỏ hơn giá gốc";
       }
     });
   }

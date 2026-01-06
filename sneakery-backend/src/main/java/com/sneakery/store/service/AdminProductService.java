@@ -1167,12 +1167,14 @@ public class AdminProductService {
             predicates.add(cb.equal(categories.get("id"), filter.getCategoryId()));
         }
 
-        // Price range
+        // Price range – DÙNG GIÁ BÁN THỰC TẾ
         if (filter.getMinPrice() != null) {
-            predicates.add(cb.greaterThanOrEqualTo(variant.get("priceBase"), filter.getMinPrice()));
+            predicates.add(cb.greaterThanOrEqualTo(
+                    variant.get("priceSale"), filter.getMinPrice()));
         }
         if (filter.getMaxPrice() != null) {
-            predicates.add(cb.lessThanOrEqualTo(variant.get("priceBase"), filter.getMaxPrice()));
+            predicates.add(cb.lessThanOrEqualTo(
+                    variant.get("priceSale"), filter.getMaxPrice()));
         }
 
         // Stock level
@@ -1210,7 +1212,7 @@ public class AdminProductService {
 
         switch (filter.getSortBy()) {
             case "price":
-                return isAsc ? cb.asc(variant.get("priceBase")) : cb.desc(variant.get("priceBase"));
+                return isAsc ? cb.asc(variant.get("priceSale")) : cb.desc(variant.get("priceSale"));
             case "stock":
                 return isAsc ? cb.asc(variant.get("stockQuantity")) : cb.desc(variant.get("stockQuantity"));
             case "name":
