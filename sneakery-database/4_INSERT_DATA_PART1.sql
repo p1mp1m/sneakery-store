@@ -395,17 +395,17 @@ GO
 
 -- Customer users (97 users)
 DECLARE @Counter INT = 1;
-WHILE @Counter <= 97
+WHILE @Counter <= 5
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Users WHERE email = 'user' + CAST(@Counter AS NVARCHAR(3)) + '@example.com')
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE email = 'NguyenvanA' + CAST(@Counter AS NVARCHAR(3)) + '@example.com')
     BEGIN
         INSERT INTO Users (email, password_hash, full_name, phone_number, is_active, role, created_at)
         VALUES 
-        ('user' + CAST(@Counter AS NVARCHAR(3)) + '@example.com', 
+        ('NguyenvanA' + CAST(@Counter AS NVARCHAR(3)) + '@example.com', 
          '$2a$10$4qUjgvVWlYZUf1Jx.bRBte0Ls0fff/TSkBwCk2568Z/dfc3Eut.5O',
-         'User ' + CAST(@Counter AS NVARCHAR(3)),
+         'NguyenvanA ' + CAST(@Counter AS NVARCHAR(3)),
          '090' + RIGHT('0000000' + CAST(@Counter AS NVARCHAR(7)), 7),
-         1, 'USER', DATEADD(day, -RAND() * 90, GETDATE()));
+         1, 'USER', DATEADD(day, -RAND() * 5, GETDATE()));
     END;
     
     SET @Counter = @Counter + 1;

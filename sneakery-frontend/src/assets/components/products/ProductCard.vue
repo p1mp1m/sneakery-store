@@ -37,13 +37,6 @@
           </span>
         </div>
 
-        <!-- Flash Sale Badge -->
-        <FlashSaleBadge
-          v-if="productFlashSale"
-          :flashSale="productFlashSale"
-          class="compact"
-        />
-
         <!-- Ảnh chính -->
         <img
           :src="mainImage"

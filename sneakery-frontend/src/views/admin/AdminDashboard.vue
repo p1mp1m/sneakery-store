@@ -520,7 +520,6 @@ const quickActionsTemplate = [
   { path: '/admin/categories', title: 'Quản lý danh mục', desc: 'Quản lý danh mục sản phẩm', icon: 'M4 19H20M4 15H20M4 11H20', badgeKey: 'categories' },
   { path: '/admin/analytics', title: 'Phân tích', desc: 'Xem báo cáo và thống kê', icon: 'M18 20V10M12 20V4M6 20V14', badgeKey: 'new' },
   { path: '/admin/inventory', title: 'Quản lý kho', desc: 'Theo dõi tồn kho', icon: 'M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z', badgeKey: null },
-  { path: '/admin/flash-sales', title: 'Flash Sale', desc: 'Quản lý khuyến mãi nhanh', icon: 'M13 2L3 14H12L11 22L21 10H12L13 2Z', badgeKey: 'hot' },
   { path: '/admin/discounts', title: 'Quản lý giảm giá', desc: 'Tạo và quản lý mã giảm giá', icon: 'M7 7H17M7 17H17M12 2V22M18 6L6 18M18 18L6 6', badgeKey: 'vip' },
   { path: '/admin/reviews', title: 'Quản lí đánh giá', desc: 'Xem và phê duyệt đánh giá', icon: 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z', badgeKey: 'reviews' },
   { path: '/admin/loyalty', title: 'Điểm thưởng', desc: 'Quản lý chương trình tích điểm', icon: 'M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z', badgeKey: 'loyalty' },

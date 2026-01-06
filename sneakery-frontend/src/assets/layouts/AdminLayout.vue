@@ -548,11 +548,6 @@ const adminRoutes = [
         name: "AdminReviews",
         meta: { title: "Quản lí đánh giá", icon: "star_rate" },
       },
-      {
-        path: "/admin/flash-sales",
-        name: "AdminFlashSales",
-        meta: { title: "Flash Sale", icon: "flash_on" },
-      },
     ],
   },
   {
