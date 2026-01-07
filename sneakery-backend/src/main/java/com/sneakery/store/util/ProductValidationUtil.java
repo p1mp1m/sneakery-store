@@ -85,19 +85,44 @@ public class ProductValidationUtil {
 
     /**
      * Validate variant price logic
-     * priceSale phải <= priceBase nếu có
-     * 
+     * priceSale phải >= priceBase nếu có
+     *
      * @param variants Danh sách variants
-     * @throws ApiException nếu priceSale > priceBase
+     * @throws ApiException nếu priceSale < priceBase
+     */
+    /**
+     * Validate variant price logic (NEW BUSINESS RULE)
+     * priceSale phải >= priceBase
      */
     public void validateVariantPrices(List<AdminVariantRequestDto> variants) {
+        if (variants == null || variants.isEmpty()) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Sản phẩm phải có ít nhất một biến thể"
+            );
+        }
+
         for (AdminVariantRequestDto variant : variants) {
-            if (variant.getPriceSale() != null && 
-                variant.getPriceBase() != null &&
-                variant.getPriceSale().compareTo(variant.getPriceBase()) > 0) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, 
-                    "Giá sale (" + variant.getPriceSale() + ") không được lớn hơn giá gốc (" + 
-                    variant.getPriceBase() + ") cho SKU: " + variant.getSku());
+            if (variant.getPriceBase() == null || variant.getPriceBase().signum() <= 0) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Giá gốc phải lớn hơn 0 (SKU: " + variant.getSku() + ")"
+                );
+            }
+
+            if (variant.getPriceSale() == null || variant.getPriceSale().signum() <= 0) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Giá bán phải lớn hơn 0 (SKU: " + variant.getSku() + ")"
+                );
+            }
+
+            // 🔑 RULE MỚI
+            if (variant.getPriceSale().compareTo(variant.getPriceBase()) < 0) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Giá bán phải lớn hơn hoặc bằng giá gốc (SKU: " + variant.getSku() + ")"
+                );
             }
         }
     }

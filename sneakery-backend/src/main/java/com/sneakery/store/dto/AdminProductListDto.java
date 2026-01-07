@@ -28,9 +28,7 @@ public class AdminProductListDto {
     private Boolean isActive;
     @Schema(description = "Tổng tồn kho của tất cả biến thể")
     private Integer totalStock;
-//    @Schema(description = "Ảnh bìa chính của sản phẩm (URL hiển thị đại diện)")
-//    private String mainImageUrl;
-    // 🆕 Bổ sung hai trường này
+
     @Schema(description = "ID chất liệu của sản phẩm", example = "2")
     private Integer materialId;
 

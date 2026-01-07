@@ -122,24 +122,27 @@
 
           <!-- Price Section -->
           <div class="flex items-center gap-4 mb-6">
+            <!-- Giá bán -->
             <span
               class="text-3xl font-bold text-purple-600 dark:text-purple-400"
-              >{{ formatPrice(currentPrice) }}</span
             >
+              {{ formatPrice(currentPrice) }}
+            </span>
+
+            <!-- Giá gốc (chỉ khi có flash sale) -->
             <span
-              v-if="originalPrice > currentPrice"
+              v-if="productFlashSale"
               class="text-xl text-gray-500 line-through"
-              >{{ formatPrice(originalPrice) }}</span
             >
+              {{ formatPrice(originalPrice) }}
+            </span>
+
+            <!-- Badge giảm giá -->
             <span
-              v-if="originalPrice > currentPrice"
+              v-if="productFlashSale"
               class="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm font-semibold"
             >
-              -{{
-                Math.round(
-                  ((originalPrice - currentPrice) / originalPrice) * 100
-                )
-              }}%
+              -{{ productFlashSale.discountPercent }}%
             </span>
           </div>
 
@@ -979,25 +982,29 @@ const productFlashSale = computed(() => {
 });
 
 const currentPrice = computed(() => {
-  if (selectedVariant.value) {
-    const basePrice =
-      selectedVariant.value.priceSale || selectedVariant.value.priceBase;
-    // Apply flash sale discount if available
-    if (productFlashSale.value) {
-      return flashSaleStore.calculateDiscountedPrice(
-        basePrice,
-        productFlashSale.value.discountPercent
-      );
-    }
-    return basePrice;
+  if (!selectedVariant.value) return 0;
+
+  let sellingPrice = selectedVariant.value.priceSale;
+
+  // Apply flash sale nếu có
+  if (productFlashSale.value) {
+    sellingPrice = flashSaleStore.calculateDiscountedPrice(
+      sellingPrice,
+      productFlashSale.value.discountPercent
+    );
   }
-  return 0;
+
+  return sellingPrice;
 });
 
 const originalPrice = computed(() => {
-  if (selectedVariant.value) {
-    return selectedVariant.value.priceBase;
+  if (!selectedVariant.value) return 0;
+
+  // Chỉ hiển thị giá gốc khi có flash sale
+  if (productFlashSale.value) {
+    return selectedVariant.value.priceSale;
   }
+
   return 0;
 });
 

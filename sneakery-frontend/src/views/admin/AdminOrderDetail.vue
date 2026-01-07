@@ -729,6 +729,24 @@
             </p>
           </div>
         </div>
+        <!-- Actions -->
+        <div class="mt-4 flex flex-wrap gap-2">
+          <button
+            v-if="canConfirmPaid"
+            @click="openConfirmPaid"
+            class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-sm font-medium"
+          >
+            <i class="material-icons text-base">paid</i>
+            Xác nhận đã thanh toán
+          </button>
+
+          <span
+            v-else
+            class="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+          >
+            Đơn hàng đã được thanh toán
+          </span>
+        </div>
       </div>
       <!-- Return Request -->
       <div
@@ -1147,6 +1165,36 @@
       @confirm="handleStatusUpdate"
       @cancel="handleCancelStatusChange"
     />
+
+    <!-- Confirm Paid Dialog -->
+    <ConfirmDialog
+      v-model="showConfirmPaidDialog"
+      type="warning"
+      title="Xác nhận thanh toán"
+      :message="`Xác nhận đơn hàng #${order?.id} đã thanh toán?`"
+      description="Hành động này chỉ cập nhật trạng thái thanh toán, không thay đổi trạng thái giao hàng."
+      confirm-text="Xác nhận"
+      cancel-text="Hủy"
+      :loading="confirmPaidLoading"
+      @confirm="submitConfirmPaid"
+      @cancel="() => (showConfirmPaidDialog = false)"
+    >
+      <!-- <template #extra>
+        <div class="mt-3">
+          <label
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Ghi chú admin (tuỳ chọn)
+          </label>
+          <textarea
+            v-model="confirmPaidNote"
+            rows="3"
+            class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            placeholder="Ví dụ: Đã nhận chuyển khoản lúc 14:30"
+          />
+        </div>
+      </template> -->
+    </ConfirmDialog>
   </div>
   <!-- Image Preview Modal -->
   <div
@@ -1192,6 +1240,49 @@ const orderToUpdate = ref(null);
 const oldStatus = ref("");
 const newStatus = ref("");
 const updating = ref(false);
+
+// ===== Confirm Paid (Admin) =====
+const showConfirmPaidDialog = ref(false);
+const confirmPaidLoading = ref(false);
+const confirmPaidNote = ref("");
+
+const canConfirmPaid = computed(() => {
+  if (!order.value) return false;
+
+  // POS order: thường đã coi là paid khi Completed, nhưng vẫn cho confirm nếu payment chưa completed
+  const paymentStatus = order.value?.payment?.status?.toLowerCase();
+
+  // Nếu không có payment object thì không hiện (vì UI payment đang v-if="order.payment")
+  if (!paymentStatus) return false;
+
+  // Chỉ hiện khi chưa completed
+  return paymentStatus !== "completed";
+});
+
+const openConfirmPaid = () => {
+  confirmPaidNote.value = "";
+  showConfirmPaidDialog.value = true;
+};
+
+const submitConfirmPaid = async () => {
+  if (!order.value?.id) return;
+
+  try {
+    confirmPaidLoading.value = true;
+
+    // Gọi API (bạn cần đã thêm AdminService.confirmOrderPaid như mình hướng dẫn trước)
+    await AdminService.confirmOrderPaid(order.value.id, confirmPaidNote.value);
+
+    notificationService.success("Thành công", "Đã xác nhận thanh toán");
+    showConfirmPaidDialog.value = false;
+
+    await fetchOrderDetail(); // refresh
+  } catch (e) {
+    notificationService.apiError(e, "Không thể xác nhận thanh toán");
+  } finally {
+    confirmPaidLoading.value = false;
+  }
+};
 
 // const order = ref(null);
 // const loading = ref(false);
@@ -1403,13 +1494,14 @@ const canChangeToStatus = (currentStatus, targetStatus) => {
   }
 
   // ✅ BLOCK CASE: Shipped → Completed khi chưa thanh toán
+  // ✅ BLOCK CASE: Shipped → Completed khi chưa thanh toán (chỉ cho khi completed)
   if (normalizedCurrent === "Shipped" && targetStatus === "Completed") {
     const paymentStatus = order.value?.payment?.status?.toLowerCase();
 
-    if (!paymentStatus || paymentStatus === "pending") {
+    if (paymentStatus !== "completed") {
       notificationService.warning(
         "Không thể hoàn thành đơn hàng",
-        "Đơn hàng chưa được thanh toán. Vui lòng xác nhận thanh toán trước khi hoàn thành."
+        "Đơn hàng chưa được thanh toán (hoặc thanh toán chưa hoàn tất). Vui lòng xác nhận thanh toán trước khi hoàn thành."
       );
       return false;
     }
@@ -1508,7 +1600,7 @@ const confirmStatusChange = (order, targetStatus) => {
     const currentNormalizedStatus = getNormalizedStatusValue(order.status);
 
     // ⭐ RULE: Không cho Processing → Packed nếu điểm sử dụng vượt quá điểm còn lại
-    if (currentNormalizedStatus === "Pending" && targetStatus === "Confirmed") {
+    if (currentNormalizedStatus === "Processing" && targetStatus === "Packed") {
       const used = Number(order.pointsUsed || 0);
       const balance = Number(order.customerPointBalance || 0);
 
@@ -1518,7 +1610,7 @@ const confirmStatusChange = (order, targetStatus) => {
           `Khách đã dùng ${used} điểm nhưng chỉ còn ${balance} điểm.\n` +
             "Không thể chuyển sang bước Đã đóng gói."
         );
-        return; // ❌ STOP, không mở dialog confirm
+        return;
       }
     }
 

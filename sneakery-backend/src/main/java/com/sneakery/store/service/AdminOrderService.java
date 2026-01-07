@@ -1012,4 +1012,80 @@ public class AdminOrderService {
     private String formatCurrency(BigDecimal amount) {
         return new java.text.DecimalFormat("#,###").format(amount) + " ₫";
     }
+
+    @Transactional
+    public AdminConfirmPaymentResponseDto confirmPaymentByAdmin(Long orderId, AdminConfirmPaymentRequestDto request) {
+
+        if (request == null || request.getPaymentStatus() == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Thiếu paymentStatus");
+        }
+
+        String target = request.getPaymentStatus().trim().toLowerCase();
+        if (!"completed".equals(target)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ xác nhận thanh toán với trạng thái 'completed'");
+        }
+
+        // 1) Load order cơ bản (managed)
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng"));
+
+        // 2) Load payments (fetch) để đảm bảo có payments trong transaction
+        Order orderWithPayments = orderRepository.findByIdWithPayments(orderId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng (payments)"));
+
+        if (orderWithPayments.getPayments() == null || orderWithPayments.getPayments().isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Không tìm thấy thông tin thanh toán của đơn hàng");
+        }
+
+        Payment payment = orderWithPayments.getPayments().get(0);
+
+        // Optional guard: chặn đơn cancelled/refunded (tuỳ bạn)
+        String st = order.getStatus() != null ? order.getStatus().toLowerCase() : "";
+        if ("cancelled".equals(st) || "refunded".equals(st)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Không thể xác nhận thanh toán cho đơn đã hủy/hoàn tiền. Trạng thái hiện tại: " + order.getStatus());
+        }
+
+        // 3) Update payment
+        String currentPayStatus = payment.getStatus() != null ? payment.getStatus().toLowerCase() : "";
+        if (!"completed".equals(currentPayStatus)) {
+            payment.setStatus("completed");
+            if (payment.getPaidAt() == null) {
+                payment.setPaidAt(LocalDateTime.now());
+            }
+        }
+
+        // 4) Ghi audit vào StatusHistory.note nhưng KHÔNG đổi order.status
+        // Load histories fetch để tránh lazy
+        Order orderWithHistories = orderRepository.findByIdWithStatusHistories(orderId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng (histories)"));
+
+        OrderStatusHistory history = new OrderStatusHistory();
+        history.setOrder(order);                    // giữ order managed
+        history.setStatus(order.getStatus());       // giữ status hiện tại
+        history.setChangedAt(LocalDateTime.now());
+
+        String note = "Admin xác nhận đã thanh toán";
+        if (request.getAdminNote() != null && !request.getAdminNote().trim().isEmpty()) {
+            note += " - " + request.getAdminNote().trim();
+        }
+        history.setNote(note);
+
+        statusHistoryRepository.save(history);
+
+        if (orderWithHistories.getStatusHistories() != null) {
+            orderWithHistories.getStatusHistories().add(history);
+        }
+
+        // 5) Save (nếu Payment mapping cascade thì save order đủ; nếu không cascade, vẫn OK vì payment managed)
+        orderRepository.save(order);
+
+        return AdminConfirmPaymentResponseDto.builder()
+                .orderId(order.getId())
+                .paymentStatus(payment.getStatus())
+                .paidAt(payment.getPaidAt())
+                .paymentMethod(payment.getPaymentMethod())
+                .build();
+    }
+
 }
