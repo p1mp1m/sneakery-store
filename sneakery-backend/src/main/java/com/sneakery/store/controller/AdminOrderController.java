@@ -1,8 +1,6 @@
 package com.sneakery.store.controller;
 
-import com.sneakery.store.dto.AdminOrderDetailDto;
-import com.sneakery.store.dto.AdminOrderListDto;
-import com.sneakery.store.dto.OrderStatusUpdateRequestDto;
+import com.sneakery.store.dto.*;
 import com.sneakery.store.service.AdminOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -227,4 +225,13 @@ public class AdminOrderController {
         AdminOrderDetailDto updatedOrder = adminOrderService.updateOrderStatus(id, requestDto.getStatus());
         return ResponseEntity.ok(updatedOrder);
     }
+
+    @PutMapping("/{orderId}/payment/confirm")
+    public ResponseEntity<AdminConfirmPaymentResponseDto> confirmPayment(
+            @PathVariable Long orderId,
+            @Valid @RequestBody AdminConfirmPaymentRequestDto request
+    ) {
+        return ResponseEntity.ok(adminOrderService.confirmPaymentByAdmin(orderId, request));
+    }
+
 }

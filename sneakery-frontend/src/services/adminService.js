@@ -378,6 +378,22 @@ class AdminService {
     }
   }
 
+    /**
+   * Admin xác nhận đã thanh toán cho đơn hàng
+   * Backend endpoint đề xuất: PUT /api/admin/orders/{orderId}/payment/confirm
+   */
+  async confirmOrderPaid(orderId, adminNote = "") {
+  try {
+    const response = await adminApi.put(`/orders/${orderId}/payment/confirm`, {
+      paymentStatus: "completed", // ✅ bắt buộc theo backend validation
+      adminNote: adminNote || "",
+    });
+    return response.data;
+  } catch (error) {
+    throw this.handleError(error);
+  }
+}
+
   async getOrderStatusHistory(orderId) {
     try {
       const response = await adminApi.get(`/orders/${orderId}/status-history`);
