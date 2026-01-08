@@ -134,11 +134,17 @@
     <div
       class="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
     >
-      <div class="flex flex-col md:flex-row gap-4">
+      <div class="flex flex-col lg:flex-row lg:items-end gap-4">
+        <!-- Search -->
         <div class="flex-1">
+          <label
+            class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Tìm kiếm
+          </label>
           <div class="relative">
             <i
-              class="material-icons absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg"
+              class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-lg"
               >search</i
             >
             <input
@@ -151,7 +157,7 @@
             <button
               v-if="filters.search"
               @click="clearSearch"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               title="Xóa tìm kiếm"
             >
               <i class="material-icons text-base">close</i>
@@ -159,11 +165,31 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <!-- Filters -->
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 w-full lg:w-auto"
+        >
+          <!-- Loại hóa đơn -->
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
-              >Trạng thái</label
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Loại hóa đơn
+            </label>
+            <select
+              v-model="filters.orderChannel"
+              @change="applyFilters"
+              class="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
+              <option value="">Tất cả</option>
+              <option value="ONLINE">Online</option>
+              <option value="POS">Tại quầy (POS)</option>
+            </select>
+          </div>
+
+          <!-- Trạng thái -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Trạng thái
+            </label>
             <select
               v-model="filters.status"
               @change="applyFilters"
@@ -177,7 +203,6 @@
               <option value="Shipped">Đã gửi hàng</option>
               <option value="Completed">Hoàn thành</option>
               <option value="Cancelled">Đã hủy</option>
-              <option value="Cancelled">Đã hủy</option>
               <option value="Refunded">Trả hàng/Hoàn tiền</option>
               <option value="Return_Pending">Yêu cầu trả hàng</option>
               <option value="Return_Approved">Đã duyệt trả hàng</option>
@@ -186,10 +211,11 @@
             </select>
           </div>
 
+          <!-- Từ ngày -->
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
-              >Từ ngày</label
-            >
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Từ ngày
+            </label>
             <input
               v-model="filters.startDate"
               @change="applyFilters"
@@ -198,10 +224,11 @@
             />
           </div>
 
+          <!-- Đến ngày -->
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-700 dark:text-gray-300"
-              >Đến ngày</label
-            >
+            <label class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Đến ngày
+            </label>
             <input
               v-model="filters.endDate"
               @change="applyFilters"
@@ -210,14 +237,20 @@
             />
           </div>
 
-          <button
-            @click="resetFilters"
-            class="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium mt-6"
-            title="Xóa tất cả bộ lọc"
-          >
-            <i class="material-icons text-base">refresh</i>
-            Reset
-          </button>
+          <!-- Reset -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-transparent select-none">
+              Reset
+            </label>
+            <button
+              @click="resetFilters"
+              class="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+              title="Xóa tất cả bộ lọc"
+            >
+              <i class="material-icons text-base">refresh</i>
+              Reset
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -825,6 +858,7 @@ const bulkStatus = ref("");
 const filters = ref({
   search: "",
   status: "",
+  orderChannel: "",
   startDate: "",
   endDate: "",
 });
@@ -954,9 +988,17 @@ const fetchOrders = async () => {
     const apiFilters = {
       search: filters.value.search || undefined,
       status: filters.value.status || undefined,
+      channel: filters.value.orderChannel || undefined,
       startDate: filters.value.startDate || undefined,
       endDate: filters.value.endDate || undefined,
     };
+
+    const hasAnyFilter =
+      !!filters.value.search?.trim() ||
+      !!filters.value.status ||
+      !!filters.value.orderChannel ||
+      !!filters.value.startDate ||
+      !!filters.value.endDate;
 
     const result = await adminStore.fetchOrders(
       currentPage.value,
@@ -973,8 +1015,8 @@ const fetchOrders = async () => {
       _originalStatus: normalizeStatusForDisplay(order.status),
     }));
 
-    // ⭐⭐ Chỉ ưu tiên Return_Pending trên TRANG ĐẦU TIÊN ⭐⭐
-    if (currentPage.value === 0) {
+    // ⭐⭐ Chỉ ưu tiên Return_Pending khi KHÔNG có bất kỳ filter/search nào ⭐⭐
+    if (currentPage.value === 0 && !hasAnyFilter) {
       // 2) Lấy toàn bộ Return_Pending
       const specialOrders = await fetchReturnPendingOrders();
 
@@ -1065,6 +1107,7 @@ const applyFilters = () => {
 const resetFilters = () => {
   filters.value.search = "";
   filters.value.status = "";
+  filters.value.orderChannel = "";
   filters.value.startDate = "";
   filters.value.endDate = "";
   currentPage.value = 0;

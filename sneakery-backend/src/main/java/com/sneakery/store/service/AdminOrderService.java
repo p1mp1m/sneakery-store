@@ -49,9 +49,51 @@ public class AdminOrderService {
      * Lấy danh sách đơn hàng với search và filter
      */
     @Transactional(readOnly = true)
-    public Page<AdminOrderListDto> getAllOrdersWithFilters(String search, String status, Pageable pageable) {
-        Page<Order> orderPage = orderRepository.findAllWithUserAndFilters(search, status, pageable);
+    public Page<AdminOrderListDto> getAllOrdersWithFilters(
+            String search,
+            String status,
+            String channel,
+            LocalDateTime startDate,
+            LocalDateTime endDateExclusive,
+            Pageable pageable
+    ) {
+        String cleanedSearch = preprocessSearch(search);
+
+        // IMPORTANT: status filter phải đưa về backend format
+        String normalizedStatus = normalizeOrderStatus(status);
+
+        // ✅ Detect search numeric => search by id EXACT
+        boolean searchIsNumeric = isNumeric(cleanedSearch);
+        Long searchId = searchIsNumeric ? Long.valueOf(cleanedSearch) : null;
+
+        Page<Order> orderPage = orderRepository.findAllWithUserAndFilters(
+                cleanedSearch,
+                searchIsNumeric,
+                searchId,
+                normalizedStatus,
+                channel,
+                startDate,
+                endDateExclusive,
+                pageable
+        );
+
         return orderPage.map(this::convertToOrderListDto);
+    }
+
+    private boolean isNumeric(String s) {
+        return s != null && s.matches("\\d+");
+    }
+
+    private String preprocessSearch(String search) {
+        if (search == null) return null;
+        String s = search.trim();
+        if (s.isEmpty()) return null;
+
+        // user hay gõ "#51"
+        if (s.startsWith("#")) {
+            s = s.substring(1).trim();
+        }
+        return s.isEmpty() ? null : s;
     }
 
     // ... (Giữ nguyên các hàm còn lại: getOrderById, updateOrderStatus, và các hàm
@@ -68,6 +110,32 @@ public class AdminOrderService {
         order.getStatusHistories().size(); // Trigger lazy load
 
         return convertToOrderDetailDto(order);
+    }
+
+    private String detectOrderChannel(Order order) {
+        // Rule A: Ưu tiên orderNumber
+        String orderNumber = order.getOrderNumber();
+        if (orderNumber != null) {
+            if (orderNumber.startsWith("POS-")) return "POS";
+            if (orderNumber.startsWith("ORD-")) return "ONLINE";
+        }
+
+        // Rule B: Fallback theo địa chỉ cửa hàng (dựa theo chính dữ liệu POS bạn đang tạo)
+        Address ship = order.getAddressShipping();
+        if (ship != null) {
+            String line1 = ship.getLine1() != null ? ship.getLine1().toLowerCase() : "";
+            String line2 = ship.getLine2() != null ? ship.getLine2().toLowerCase() : "";
+
+            if (line1.contains("cửa hàng sneakery")
+                    || line2.contains("bán tại quầy")
+                    || line2.contains("pos")
+                    || line2.contains("trịnh văn bô")) {
+                return "POS";
+            }
+        }
+
+        // Default
+        return "ONLINE";
     }
 
     @Transactional
@@ -276,8 +344,12 @@ public class AdminOrderService {
                     .build();
         }
 
+        String orderChannel = detectOrderChannel(order);
+
         return AdminOrderListDto.builder()
                 .id(order.getId())
+                .orderNumber(order.getOrderNumber())
+                .orderChannel(orderChannel)
                 .customerName(order.getUser() != null ? order.getUser().getFullName() : "Guest")
                 .customerEmail(order.getUser() != null ? order.getUser().getEmail() : "N/A")
                 .totalAmount(order.getTotalAmount())

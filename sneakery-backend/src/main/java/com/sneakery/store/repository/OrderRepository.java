@@ -207,4 +207,54 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("startDate") java.time.LocalDateTime startDate,
             @Param("endDate") java.time.LocalDateTime endDate
     );
+
+    @Query(
+            value = "SELECT DISTINCT o FROM Order o " +
+                    "LEFT JOIN o.user u " +
+                    "WHERE ( " +
+                    "   :search IS NULL OR :search = '' OR " +
+                    "   ( :searchIsNumeric = true AND o.id = :searchId ) OR " +
+                    "   ( :searchIsNumeric = false AND ( " +
+                    "       LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    "       LOWER(COALESCE(u.fullName, '')) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    "       LOWER(COALESCE(u.email, '')) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   ) ) " +
+                    ") " +
+                    "AND (:status IS NULL OR :status = '' OR o.status = :status) " +
+                    "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+                    "AND (:endDateExclusive IS NULL OR o.createdAt < :endDateExclusive) " +
+                    "AND (:channel IS NULL OR :channel = '' OR " +
+                    "   (:channel = 'POS' AND COALESCE(o.orderNumber, '') LIKE 'POS-%') OR " +
+                    "   (:channel = 'ONLINE' AND (o.orderNumber IS NULL OR o.orderNumber NOT LIKE 'POS-%'))" +
+                    ")",
+            countQuery = "SELECT COUNT(DISTINCT o) FROM Order o " +
+                    "LEFT JOIN o.user u " +
+                    "WHERE ( " +
+                    "   :search IS NULL OR :search = '' OR " +
+                    "   ( :searchIsNumeric = true AND o.id = :searchId ) OR " +
+                    "   ( :searchIsNumeric = false AND ( " +
+                    "       LOWER(COALESCE(o.orderNumber, '')) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    "       LOWER(COALESCE(u.fullName, '')) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    "       LOWER(COALESCE(u.email, '')) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                    "   ) ) " +
+                    ") " +
+                    "AND (:status IS NULL OR :status = '' OR o.status = :status) " +
+                    "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+                    "AND (:endDateExclusive IS NULL OR o.createdAt < :endDateExclusive) " +
+                    "AND (:channel IS NULL OR :channel = '' OR " +
+                    "   (:channel = 'POS' AND COALESCE(o.orderNumber, '') LIKE 'POS-%') OR " +
+                    "   (:channel = 'ONLINE' AND (o.orderNumber IS NULL OR o.orderNumber NOT LIKE 'POS-%'))" +
+                    ")"
+    )
+    Page<Order> findAllWithUserAndFilters(
+            @Param("search") String search,
+            @Param("searchIsNumeric") boolean searchIsNumeric,
+            @Param("searchId") Long searchId,
+            @Param("status") String status,
+            @Param("channel") String channel,
+            @Param("startDate") java.time.LocalDateTime startDate,
+            @Param("endDateExclusive") java.time.LocalDateTime endDateExclusive,
+            Pageable pageable
+    );
+
 }

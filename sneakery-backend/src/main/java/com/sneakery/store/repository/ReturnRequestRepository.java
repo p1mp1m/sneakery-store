@@ -91,11 +91,14 @@ public interface ReturnRequestRepository extends JpaRepository<ReturnRequest, Lo
     /**
      * Lấy return request theo orderId (cho user)
      */
-    @Query("SELECT rr FROM ReturnRequest rr " +
-           "JOIN FETCH rr.order o " +
-           "JOIN FETCH rr.user u " +
-           "LEFT JOIN FETCH rr.approvedBy " +
-           "WHERE o.id = :orderId")
+    @Query("""
+    SELECT DISTINCT rr
+    FROM ReturnRequest rr
+    JOIN FETCH rr.order o
+    JOIN FETCH rr.user u
+    LEFT JOIN FETCH rr.approvedBy
+    WHERE o.id = :orderId
+""")
     Optional<ReturnRequest> findByOrderIdWithDetails(@Param("orderId") Long orderId);
 
     /**

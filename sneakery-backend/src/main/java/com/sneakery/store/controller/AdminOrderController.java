@@ -8,10 +8,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Controller quản lý đơn hàng cho Admin
@@ -120,18 +124,37 @@ public class AdminOrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String status
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String channel,
+
+            // ✅ thêm lọc ngày (FE gửi "YYYY-MM-DD")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate startDate,
+
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate endDate
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        
-        // Nếu có search hoặc status filter, sử dụng method với filters
-        if ((search != null && !search.trim().isEmpty()) || 
-            (status != null && !status.trim().isEmpty())) {
-            Page<AdminOrderListDto> orderPage = adminOrderService.getAllOrdersWithFilters(search, status, pageable);
+
+        boolean hasSearch = (search != null && !search.trim().isEmpty());
+        boolean hasStatus = (status != null && !status.trim().isEmpty());
+        boolean hasChannel = (channel != null && !channel.trim().isEmpty());
+        boolean hasDate = (startDate != null || endDate != null);
+
+        // ✅ convert LocalDate -> LocalDateTime range
+        LocalDateTime from = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime toExclusive = (endDate != null) ? endDate.plusDays(1).atStartOfDay() : null;
+
+        // ✅ Nếu có bất kỳ filter nào thì dùng method filters
+        if (hasSearch || hasStatus || hasChannel || hasDate) {
+            Page<AdminOrderListDto> orderPage =
+                    adminOrderService.getAllOrdersWithFilters(search, status, channel, from, toExclusive, pageable);
             return ResponseEntity.ok(orderPage);
         }
-        
-        // Nếu không có filter, sử dụng method mặc định
+
+        // Không có filter
         Page<AdminOrderListDto> orderPage = adminOrderService.getAllOrders(pageable);
         return ResponseEntity.ok(orderPage);
     }
