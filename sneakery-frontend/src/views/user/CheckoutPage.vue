@@ -1752,6 +1752,34 @@ const openEditModal = (addr) => {
   showEditModal.value = true;
 };
 
+const onEditCityChange = () => {
+  const cityCode = editingAddress.value?.city || "";
+
+  // Reset cascade
+  editingAddress.value.district = "";
+  editingAddress.value.ward = "";
+
+  // Reload districts by new city
+  filteredDistricts.value = cityCode
+    ? Object.values(districts).filter((d) => d.parent_code == cityCode)
+    : [];
+
+  // Clear wards list
+  filteredWards.value = [];
+};
+
+const onEditDistrictChange = () => {
+  const districtCode = editingAddress.value?.district || "";
+
+  // Reset ward when district changes
+  editingAddress.value.ward = "";
+
+  // Reload wards by new district
+  filteredWards.value = districtCode
+    ? Object.values(wards).filter((w) => w.parent_code == districtCode)
+    : [];
+};
+
 const openDeleteModal = (id) => {
   addressIdToDelete.value = id;
   showDeleteConfirm.value = true;

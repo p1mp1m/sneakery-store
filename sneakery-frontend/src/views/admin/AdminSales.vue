@@ -2489,7 +2489,7 @@ const confirmAndCreateOrder = async () => {
       customerEmail: selectedCustomer.value?.email || null,
       customerPhone: selectedCustomer.value?.phoneNumber || null,
 
-      discountCode: discountCode.value || null,
+      discountCode: appliedCoupon.value?.code || null,
 
       pointsUsed: loyaltyPointsToUse.value || 0,
 
@@ -2549,6 +2549,8 @@ const confirmAndCreateOrder = async () => {
     cartItems.value = [];
     discountCode.value = "";
     discountAmount.value = 0;
+    couponError.value = '';
+    discountCode.value = '';
 
     loyaltyPointsToUse.value = 0;
     loyaltyDiscountAmount.value = 0;
@@ -3061,7 +3063,7 @@ watch(showCustomerModal, async (newVal) => {
 // };
 
 const loadMoreProducts = async () => {
-  if (noMoreProducts.value || loading.value) return;
+  if (noMoreProducts.value || loading.value || loadingMore.value) return;
 
   pageIndex.value++;
 
@@ -3070,21 +3072,33 @@ const loadMoreProducts = async () => {
 
     const result = await adminStore.fetchProducts(pageIndex.value, pageSize, {
       isActive: true,
-      search: searchQuery.value || null,
-      brandId: filterBrand.value || null,
-      categoryId: filterCategory.value || null,
+      search: searchQuery.value?.trim() || null,
+      brandId: filterBrand.value ? parseInt(filterBrand.value, 10) : null,
+      categoryId: filterCategory.value ? parseInt(filterCategory.value, 10) : null,
     });
 
-    const items = result.content || [];
+    let items = result.content || [];
 
-    products.value = [...products.value, ...items];
+    // 1) Enrich (lấy detail nếu thiếu price/variants)
+    items = await enrichProductsWithDetails(items);
 
-    // Kiểm tra hết trang
-    if (items.length < pageSize || pageIndex.value >= result.totalPages - 1) {
+    // 2) Dedupe variants
+    items = items.map((p) => ({
+      ...p,
+      variants: dedupeVariants(p.variants),
+    }));
+
+    // 3) Append + dedupe products (phòng thủ)
+    const merged = [...products.value, ...items];
+    products.value = dedupeProducts(merged);
+
+    // 4) Hết trang?
+    if (result.last === true || items.length < pageSize || pageIndex.value >= (result.totalPages ?? 1) - 1) {
       noMoreProducts.value = true;
     }
   } catch (error) {
     logger.error("Error loading more products:", error);
+    notificationService.apiError(error, "Không thể tải thêm sản phẩm");
   } finally {
     loadingMore.value = false;
   }

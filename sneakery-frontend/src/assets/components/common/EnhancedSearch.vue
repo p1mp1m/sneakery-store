@@ -170,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { debounce } from "@/utils/debounce";
 import { API_ENDPOINTS } from "@/config/api";
@@ -218,7 +218,6 @@ const handleSearch = debounce(async () => {
 }, 300);
 
 const handleBlur = () => {
-  // Delay để cho phép click vào suggestion
   setTimeout(() => {
     showSuggestions.value = false;
   }, 200);
@@ -230,8 +229,32 @@ const clearSearch = () => {
   showSuggestions.value = false;
 };
 
+/**
+ * Lấy slug từ item theo nhiều key phổ biến.
+ * Bạn có thể giữ 1 key duy nhất nếu BE đã chuẩn hoá.
+ */
+const getProductSlug = (product) => {
+  return (
+    product?.slug ||
+    product?.productSlug ||
+    product?.product_slug ||
+    product?.product?.slug ||
+    null
+  );
+};
+
 const selectSuggestion = (product) => {
-  router.push(`/home/products/${product.id}`);
+  const slug = getProductSlug(product);
+
+  // Nếu có slug -> đi theo slug
+  if (slug) {
+    router.push(`/home/products/${slug}`);
+  } else {
+    // Fallback: nếu chưa có slug từ BE thì tạm đi theo id (hoặc show toast)
+    logger.warn("Missing product slug, fallback to id:", product);
+    router.push(`/home/products/${product.id}`);
+  }
+
   showSuggestions.value = false;
   searchQuery.value = "";
 };
@@ -249,3 +272,4 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 </script>
+
