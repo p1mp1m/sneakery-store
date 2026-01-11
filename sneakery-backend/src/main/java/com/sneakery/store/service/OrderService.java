@@ -770,33 +770,33 @@ public class OrderService {
         }
 
         // 4. Trừ tồn kho thực tế (theo đúng rule bạn ghi chú)
-        if (order.getOrderDetails() != null) {
-            for (OrderDetail detail : order.getOrderDetails()) {
-                ProductVariant variant = detail.getVariant();
+        // if (order.getOrderDetails() != null) {
+        //     for (OrderDetail detail : order.getOrderDetails()) {
+        //         ProductVariant variant = detail.getVariant();
 
-                if (variant != null) {
-                    int currentStock = variant.getStockQuantity();
-                    int quantityToReduce = detail.getQuantity();
+        //         if (variant != null) {
+        //             int currentStock = variant.getStockQuantity();
+        //             int quantityToReduce = detail.getQuantity();
 
-                    if (currentStock < quantityToReduce) {
-                        throw new ApiException(HttpStatus.BAD_REQUEST,
-                                "Không đủ tồn kho cho sản phẩm: " + variant.getProduct().getName());
-                    }
+        //             if (currentStock < quantityToReduce) {
+        //                 throw new ApiException(HttpStatus.BAD_REQUEST,
+        //                         "Không đủ tồn kho cho sản phẩm: " + variant.getProduct().getName());
+        //             }
 
-                    variant.setStockQuantity(currentStock - quantityToReduce);
-                    variant.setReservedQuantity(
-                            variant.getReservedQuantity() - quantityToReduce
-                    );
-                    if (variant.getReservedQuantity() < 0) {
-                        variant.setReservedQuantity(0); // Safety guard
-                    }
-                    variantRepository.save(variant);
+        //             variant.setStockQuantity(currentStock - quantityToReduce);
+        //             variant.setReservedQuantity(
+        //                     variant.getReservedQuantity() - quantityToReduce
+        //             );
+        //             if (variant.getReservedQuantity() < 0) {
+        //                 variant.setReservedQuantity(0); // Safety guard
+        //             }
+        //             variantRepository.save(variant);
 
-                    log.info("📦 Reduced stock for variant #{}: {} -> {}",
-                            variant.getId(), currentStock, (currentStock - quantityToReduce));
-                }
-            }
-        }
+        //             log.info("📦 Reduced stock for variant #{}: {} -> {}",
+        //                     variant.getId(), currentStock, (currentStock - quantityToReduce));
+        //         }
+        //     }
+        // }
 
         // 5. Cập nhật trạng thái order
         order.setStatus("delivered");
