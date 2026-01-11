@@ -12,9 +12,6 @@
           <span v-if="product.isFeatured" class="badge badge-featured"
             >Nổi bật</span
           >
-          <span v-if="!product.inStock" class="badge badge-out-of-stock"
-            >Hết hàng</span
-          >
         </div>
 
         <!-- Stock Badge -->
