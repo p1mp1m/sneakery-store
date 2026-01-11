@@ -155,34 +155,27 @@ DECLARE @TPUId INT = (SELECT id FROM Shoe_Soles WHERE slug = 'tpu');
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('NIKE-001', @NikeId, @KnitId, @EVAId, N'Nike Air Force 1', 'nike-air-force-1', N'Giày sneaker cổ điển với thiết kế đơn giản và thoải mái', N'Giày sneaker cổ điển', 1, 1, 0, 1250, 45, 4.5, 12, GETDATE()),
 ('NIKE-002', @NikeId, @MeshId, @EVAId, N'Nike Air Max 90', 'nike-air-max-90', N'Giày chạy bộ với công nghệ Air Max', N'Giày chạy bộ công nghệ Air', 1, 1, 1, 980, 32, 4.3, 8, GETDATE()),
-('NIKE-005', @NikeId, @LeatherId, @RubberId, N'Nike Blazer Mid', 'nike-blazer-mid', N'Giày cổ điển thiết kế retro', N'Giày retro', 1, 1, 0, 890, 35, 4.1, 9, GETDATE()),
-('NIKE-008', @NikeId, @LeatherId, @RubberId, N'Nike Cortez', 'nike-cortez', N'Giày cổ điển năm 1972', N'Giày cổ điển', 1, 1, 0, 1100, 42, 4.6, 11, GETDATE()),
-('NIKE-010', @NikeId, @KnitId, @EVAId, N'Nike VaporMax', 'nike-vapormax', N'Giày với đế Air VaporMax', N'Giày công nghệ Air', 1, 1, 1, 1350, 50, 4.7, 15, GETDATE());
+('NIKE-005', @NikeId, @LeatherId, @RubberId, N'Nike Blazer Mid', 'nike-blazer-mid', N'Giày cổ điển thiết kế retro', N'Giày retro', 1, 1, 0, 890, 35, 4.1, 9, GETDATE());
 
 -- Adidas products (4)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('ADIDAS-001', @AdidasId, @KnitId, @EVAId, N'Adidas Ultraboost 22', 'adidas-ultraboost-22', N'Giày chạy bộ với Boost technology', N'Giày chạy bộ Boost', 1, 1, 1, 1200, 48, 4.6, 13, GETDATE()),
-('ADIDAS-002', @AdidasId, @CanvasId, @RubberId, N'Adidas Superstar', 'adidas-superstar', N'Giày cổ điển với vỏ sò', N'Giày cổ điển', 1, 1, 0, 1050, 40, 4.5, 10, GETDATE()),
-('ADIDAS-004', @AdidasId, @KnitId, @EVAId, N'Adidas NMD R1', 'adidas-nmd-r1', N'Giày lifestyle với Boost', N'Giày lifestyle', 1, 1, 0, 880, 30, 4.3, 7, GETDATE()),
-('ADIDAS-007', @AdidasId, @KnitId, @EVAId, N'Adidas Yeezy 350', 'adidas-yeezy-350', N'Giày collaboration với Kanye West', N'Giày Yeezy', 1, 1, 1, 1500, 55, 4.8, 18, GETDATE());
+('ADIDAS-002', @AdidasId, @CanvasId, @RubberId, N'Adidas Superstar', 'adidas-superstar', N'Giày cổ điển với vỏ sò', N'Giày cổ điển', 1, 1, 0, 1050, 40, 4.5, 10, GETDATE());
 
 -- Puma products (3)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('PUMA-001', @PumaId, @LeatherId, @RubberId, N'Puma Suede Classic', 'puma-suede-classic', N'Giày cổ điển với da lộn', N'Giày cổ điển', 1, 1, 0, 850, 32, 4.4, 8, GETDATE()),
-('PUMA-002', @PumaId, @MeshId, @EVAId, N'Puma RS-X', 'puma-rs-x', N'Giày retro futuristic', N'Giày retro', 1, 0, 1, 750, 26, 4.3, 6, GETDATE()),
-('PUMA-004', @PumaId, @CanvasId, @RubberId, N'Puma Basket', 'puma-basket', N'Giày bóng rổ cổ điển', N'Giày bóng rổ', 1, 1, 0, 780, 28, 4.3, 7, GETDATE());
+('PUMA-002', @PumaId, @MeshId, @EVAId, N'Puma RS-X', 'puma-rs-x', N'Giày retro futuristic', N'Giày retro', 1, 0, 1, 750, 26, 4.3, 6, GETDATE());
 
 -- Converse products (3)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('CONV-001', @ConverseId, @CanvasId, @RubberId, N'Converse Chuck Taylor All Star', 'converse-chuck-taylor-all-star', N'Giày cổ điển nhất mọi thời đại', N'Giày cổ điển', 1, 1, 0, 1300, 52, 4.7, 14, GETDATE()),
-('CONV-002', @ConverseId, @CanvasId, @RubberId, N'Converse One Star', 'converse-one-star', N'Giày với ngôi sao', N'Giày One Star', 1, 0, 0, 950, 38, 4.5, 9, GETDATE()),
-('CONV-004', @ConverseId, @CanvasId, @RubberId, N'Converse Run Star Hike', 'converse-run-star-hike', N'Giày platform cao', N'Giày platform', 1, 1, 0, 1100, 42, 4.6, 11, GETDATE());
+('CONV-002', @ConverseId, @CanvasId, @RubberId, N'Converse One Star', 'converse-one-star', N'Giày với ngôi sao', N'Giày One Star', 1, 0, 0, 950, 38, 4.5, 9, GETDATE());
 
 -- Vans products (3)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
 ('VANS-001', @VansId, @CanvasId, @RubberId, N'Vans Old Skool', 'vans-old-skool', N'Giày skateboard cổ điển', N'Giày skateboard', 1, 1, 0, 1150, 45, 4.6, 12, GETDATE()),
-('VANS-002', @VansId, @CanvasId, @RubberId, N'Vans Authentic', 'vans-authentic', N'Giày skateboard đơn giản', N'Giày skateboard', 1, 0, 0, 980, 36, 4.4, 9, GETDATE()),
-('VANS-003', @VansId, @CanvasId, @RubberId, N'Vans Sk8-Hi', 'vans-sk8-hi', N'Giày cổ cao', N'Giày cổ cao', 1, 1, 1, 1050, 40, 4.5, 10, GETDATE());
+('VANS-002', @VansId, @CanvasId, @RubberId, N'Vans Authentic', 'vans-authentic', N'Giày skateboard đơn giản', N'Giày skateboard', 1, 0, 0, 980, 36, 4.4, 9, GETDATE());
 
 -- New Balance products (2)
 INSERT INTO Products (product_code, brand_id, material_id, shoe_sole_id, name, slug, description, short_description, is_active, is_featured, is_new, view_count, order_count, avg_rating, review_count, created_at) VALUES
@@ -309,16 +302,6 @@ BEGIN
     VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '41', N'Đen', @PriceBase, @PriceSale, 45, 10, 1, GETDATE());
     SET @SkuCounter = @SkuCounter + 1;
     
-    -- Variant 3: Size 40, Color 2
-    INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, stock_quantity, low_stock_threshold, is_active, created_at)
-    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '40', N'Trắng', @PriceBase, @PriceSale, 40, 10, 1, GETDATE());
-    SET @SkuCounter = @SkuCounter + 1;
-    
-    -- Variant 4: Size 42, Color 1
-    INSERT INTO Product_Variants (product_id, sku, size, color, price_base, price_sale, stock_quantity, low_stock_threshold, is_active, created_at)
-    VALUES (@ProductId, 'SKU-' + FORMAT(@SkuCounter, '000000'), '42', N'Đen', @PriceBase, @PriceSale, 35, 10, 1, GETDATE());
-    SET @SkuCounter = @SkuCounter + 1;
-    
     FETCH NEXT FROM product_cursor INTO @ProductId;
 END;
 
@@ -393,26 +376,68 @@ BEGIN
 END;
 GO
 
--- Customer users (97 users)
+-- =====================================================
+-- Tạo 15 user customer với tên khác nhau
+-- =====================================================
+PRINT 'Inserting 15 customer users with real names...';
+
+DECLARE @CustomerNames TABLE (
+    idx INT IDENTITY(1,1),
+    full_name NVARCHAR(100),
+    email_base NVARCHAR(100)
+);
+
+INSERT INTO @CustomerNames (full_name, email_base) VALUES
+(N'Nguyễn Văn An',     N'nguyenvanan'),
+(N'Trần Thị Bình',     N'tranthibinh'),
+(N'Lê Hoàng Minh',     N'lehoangminh'),
+(N'Phạm Ngọc Lan',     N'phamngoclan'),
+(N'Vũ Đức Hải',        N'vuduchai'),
+(N'Hoàng Thị Mai',     N'hoangthimai'),
+(N'Đặng Văn Nam',      N'dangvannam'),
+(N'Ngô Thị Hoa',       N'ngothihoa'),
+(N'Bùi Văn Long',      N'buivanlong'),
+(N'Đỗ Thị Hương',      N'dothihuong'),
+(N'Phan Văn Khoa',     N'phanvankhoa'),
+(N'Trương Thị Ngọc',   N'truongthingoc'),
+(N'Lý Văn Phát',       N'lyvanphat'),
+(N'Võ Thị Quỳnh',      N'vothiquynh'),
+(N'Huỳnh Văn Sơn',     N'huynhvnson');
+
 DECLARE @Counter INT = 1;
-WHILE @Counter <= 5
+WHILE @Counter <= 15
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Users WHERE email = 'NguyenvanA' + CAST(@Counter AS NVARCHAR(3)) + '@example.com')
+    DECLARE @FullName NVARCHAR(100);
+    DECLARE @EmailBase NVARCHAR(100);
+    DECLARE @Email NVARCHAR(150);
+
+    SELECT @FullName = full_name, @EmailBase = email_base 
+    FROM @CustomerNames 
+    WHERE idx = @Counter;
+
+    SET @Email = @EmailBase + RIGHT('00' + CAST(@Counter AS NVARCHAR(2)), 2) + '@example.com';
+
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE email = @Email)
     BEGIN
-        INSERT INTO Users (email, password_hash, full_name, phone_number, is_active, role, created_at)
+        INSERT INTO Users (
+            email, password_hash, full_name, phone_number, is_active, role, created_at
+        )
         VALUES 
-        ('NguyenvanA' + CAST(@Counter AS NVARCHAR(3)) + '@example.com', 
-         '$2a$10$4qUjgvVWlYZUf1Jx.bRBte0Ls0fff/TSkBwCk2568Z/dfc3Eut.5O',
-         'NguyenvanA ' + CAST(@Counter AS NVARCHAR(3)),
-         '090' + RIGHT('0000000' + CAST(@Counter AS NVARCHAR(7)), 7),
-         1, 'USER', DATEADD(day, -RAND() * 5, GETDATE()));
+        (
+            @Email,
+            '$2a$10$4qUjgvVWlYZUf1Jx.bRBte0Ls0fff/TSkBwCk2568Z/dfc3Eut.5O',
+            @FullName,
+            '090' + RIGHT('0000000' + CAST(1000000 + @Counter AS NVARCHAR(7)), 7),
+            1, 'USER',
+            DATEADD(day, -RAND() * 90, GETDATE())
+        );
     END;
-    
+
     SET @Counter = @Counter + 1;
 END;
 GO
 
-PRINT '  - Inserted 30 users (1 admin, 2 moderators, 27 customers)';
+PRINT '  - Inserted ~20 users (1 admin, 2 moderators, 15 customers)';
 GO
 
 -- =====================================================
