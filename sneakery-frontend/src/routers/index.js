@@ -31,11 +31,13 @@ const routes = [
         path: "",
         name: "home",
         component: HomePage,
+        meta: { title: "Trang chủ" },
       },
       {
         path: "products",
         name: "products",
         component: () => import("../views/common/ProductListPage.vue"),
+        meta: { title: "Sản phẩm" },
       },
       {
         path: "products/:slug",
@@ -44,16 +46,19 @@ const routes = [
           // Fallback nếu import thất bại
           return import("../views/common/ProductListPage.vue");
         }),
+        meta: { title: "Chi tiết sản phẩm" },
       },
       {
         path: "flash-sale",
         name: "flash-sale",
         component: () => import("../views/common/FlashSalePage.vue"),
+        meta: { title: "Flash Sale" },
       },
       {
         path: "reviews",
         name: "reviews",
         component: () => import("../views/common/ReviewsPage.vue"),
+        meta: { title: "Đánh giá" },
       },
     ],
   },
@@ -62,21 +67,25 @@ const routes = [
     path: "/login",
     name: "login",
     component: LoginPage,
+    meta: { title: "Đăng nhập" },
   },
   {
     path: "/register",
     name: "register",
     component: RegisterPage,
+    meta: { title: "Đăng ký" },
   },
   {
     path: "/forgot-password",
     name: "forgot-password",
     component: ForgotPassword,
+    meta: { title: "Quên mật khẩu" },
   },
   {
     path: "/reset-password",
     name: "reset-password",
     component: ResetPassWord,
+    meta: { title: "Đặt lại mật khẩu" },
   },
   // Cart and Checkout pages (Public - Cho phép cả guest và authenticated users)
   // ✅ Wrapper DefaultLayout for standalone public routes
@@ -88,6 +97,7 @@ const routes = [
         path: "cart",
         name: "Cart",
         component: () => import("../views/user/CartPage.vue"),
+        meta: { title: "Giỏ hàng" },
       },
       {
         path: "checkout",
@@ -96,6 +106,7 @@ const routes = [
           import("../views/user/CheckoutPage.vue").catch(() =>
             import("../views/user/CartPage.vue")
           ),
+        meta: { title: "Thanh toán" },
       },
     ],
   },
@@ -162,6 +173,20 @@ router.beforeEach(async (to, from, next) => {
   else {
     next();
   }
+});
+
+// ===== SET TITLE THEO TỪNG TRANG =====
+router.afterEach((to) => {
+  const baseTitle = "Sneakery Store";
+
+  // Cho phép meta.title là string hoặc function
+  const rawTitle = to.meta?.title;
+  const pageTitle =
+    typeof rawTitle === "function" ? rawTitle(to) : rawTitle;
+
+  document.title = pageTitle
+    ? `${pageTitle} | ${baseTitle}`
+    : baseTitle;
 });
 
 export default router;

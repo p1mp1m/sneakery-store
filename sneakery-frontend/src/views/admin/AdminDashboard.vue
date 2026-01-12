@@ -96,7 +96,6 @@
         <select 
           v-if="autoRefreshEnabled"
           v-model="autoRefreshIntervalSeconds"
-          @change="startAutoRefresh"
           class="px-2 py-1.5 text-xs bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
           title="Chọn khoảng thời gian tự động làm mới"
         >
@@ -457,7 +456,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAdminStore } from '@/stores/admin';
 import { useAuthStore } from '@/stores/auth';
@@ -484,9 +483,11 @@ const selectedPeriod = ref('7d');
 const currentTime = ref('');
 const currentDate = ref('');
 const showProfileMenu = ref(false);
-const autoRefreshEnabled = ref(true);
-const autoRefreshIntervalSeconds = ref(120); // OPTIMIZED: Tăng từ 60s lên 120s để giảm server load
+// const autoRefreshEnabled = ref(true);
+// const autoRefreshIntervalSeconds = ref(120); // OPTIMIZED: Tăng từ 60s lên 120s để giảm server load
 const lastRefreshTime = ref(null);
+const AUTO_REFRESH_ENABLED_KEY = 'admin_dashboard_auto_refresh_enabled';
+const AUTO_REFRESH_INTERVAL_KEY = 'admin_dashboard_auto_refresh_interval_seconds';
 const chartsVisible = ref({
   revenue: false,
   orderStatus: false,
@@ -494,6 +495,14 @@ const chartsVisible = ref({
 });
 let autoRefreshInterval = null;
 let chartObservers = [];
+
+const autoRefreshEnabled = ref(
+  JSON.parse(localStorage.getItem(AUTO_REFRESH_ENABLED_KEY) ?? 'true')
+);
+
+const autoRefreshIntervalSeconds = ref(
+  Number(localStorage.getItem(AUTO_REFRESH_INTERVAL_KEY) ?? 120)
+);
 
 const stats = ref({
   totalRevenue: 0,
@@ -1028,11 +1037,22 @@ const setupChartObservers = () => {
   }
 };
 
+watch(autoRefreshEnabled, (val) => {
+  localStorage.setItem(AUTO_REFRESH_ENABLED_KEY, JSON.stringify(val));
+  if (val) startAutoRefresh();
+  else stopAutoRefresh();
+});
+
+watch(autoRefreshIntervalSeconds, (val) => {
+  localStorage.setItem(AUTO_REFRESH_INTERVAL_KEY, String(val));
+  if (autoRefreshEnabled.value) startAutoRefresh();
+});
+
 onMounted(() => {
   loadDashboardData();
   updateDateTime();
   timeInterval = setInterval(updateDateTime, 1000);
-  startAutoRefresh();
+  if (autoRefreshEnabled.value) startAutoRefresh();
   
   // Setup chart observers after DOM is ready
   setTimeout(() => {

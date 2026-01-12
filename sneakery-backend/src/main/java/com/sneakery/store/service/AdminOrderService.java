@@ -38,6 +38,7 @@ public class AdminOrderService {
     private final ReturnRequestRepository returnRequestRepository;
     private final LoyaltyPointRepository loyaltyPointRepository;
     private final CacheManager cacheManager;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<AdminOrderListDto> getAllOrders(Pageable pageable) {
@@ -289,6 +290,16 @@ public class AdminOrderService {
 
         Order savedOrder = orderRepository.save(order);
         log.info("✅ Order #{} status updated successfully to: {}", orderId, normalizedStatus);
+
+        // ✅ SEND NOTIFICATION (sau khi save để đảm bảo trạng thái + orderId chắc chắn)
+        try {
+            if (!isPOSOrder && savedOrder.getUser() != null) {
+                notificationService.notifyOrderStatusChange(savedOrder);
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Failed to send order status notification for order #{}: {}", orderId, e.getMessage(), e);
+            // Không throw để tránh làm fail flow update status
+        }
 
         // Convert trực tiếp order đã save thay vì query lại
         // Đảm bảo relationships vẫn được giữ trong cùng transaction

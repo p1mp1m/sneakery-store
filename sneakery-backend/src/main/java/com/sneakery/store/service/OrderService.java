@@ -81,6 +81,8 @@ public class OrderService {
     private final OrderStatusHistoryRepository statusHistoryRepository;
     private final ReturnRequestRepository returnRequestRepository;
     private final ShippingService shippingService;
+    private final NotificationService notificationService;
+    private final PaymentRepository paymentRepository;
 
     /**
      * Xử lý Checkout - Tạo đơn hàng từ giỏ hàng
@@ -714,6 +716,16 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         log.info("✅ Order #{} cancelled successfully", orderId);
 
+        // ✅ SEND NOTIFICATION
+        try {
+            if (savedOrder.getUser() != null && savedOrder.getUser().getId() != null) {
+                // optional: chặn guest system account nếu bạn có rule riêng
+                notificationService.notifyOrderStatusChange(savedOrder);
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Failed to send cancel notification for order #{}: {}", orderId, e.getMessage(), e);
+        }
+
         // Convert và trả về OrderDto
         return convertToOrderDto(savedOrder, null);
     }
@@ -767,6 +779,30 @@ public class OrderService {
             payment.setStatus("completed");
             payment.setPaidAt(LocalDateTime.now());
             log.info("💰 Payment for order #{} has been COMPLETED", orderId);
+            // ✅ Persist payment chắc chắn
+            paymentRepository.save(payment);
+
+            log.info("💰 Payment for order #{} has been COMPLETED", orderId);
+
+            // ✅ Create notification: Thanh toán thành công
+            try {
+                if (order.getUser() != null && order.getUser().getId() != null) {
+                    String title = "Thanh toán thành công";
+                    String message = String.format("Đơn hàng %s đã được ghi nhận thanh toán thành công.",
+                            order.getOrderNumber() != null ? order.getOrderNumber() : ("#" + order.getId()));
+                    String link = "/user/orders/" + order.getId();
+
+                    notificationService.createNotification(
+                            order.getUser().getId(),
+                            "system", // hoặc "order_status"
+                            title,
+                            message,
+                            link
+                    );
+                }
+            } catch (Exception e) {
+                log.warn("⚠️ Failed to send payment success notification for order #{}: {}", orderId, e.getMessage(), e);
+            }
         }
 
         // 4. Trừ tồn kho thực tế (theo đúng rule bạn ghi chú)

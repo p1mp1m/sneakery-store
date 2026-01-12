@@ -21,7 +21,7 @@ const userRoutes = [
         path: 'dashboard',
         name: 'UserDashboard',
         component: UserDashboard,
-        meta: { 
+        meta: {
           requiresAuth: true,
           isUserRoute: true,
           title: 'Tổng quan',
@@ -32,7 +32,7 @@ const userRoutes = [
         path: 'profile',
         name: 'UserProfile',
         component: UserProfile,
-        meta: { 
+        meta: {
           requiresAuth: true,
           isUserRoute: true,
           title: 'Hồ sơ',
@@ -43,7 +43,18 @@ const userRoutes = [
         path: 'orders',
         name: 'UserOrders',
         component: UserOrders,
-        meta: { 
+        meta: {
+          requiresAuth: true,
+          isUserRoute: true,
+          title: 'Đơn hàng',
+          icon: 'shopping_bag'
+        }
+      },
+      {
+        path: "/user/orders/:id",
+        name: "UserOrderDetail",
+        component: () => import("@/views/user/UserOrderDetail.vue"),
+        meta: {
           requiresAuth: true,
           isUserRoute: true,
           title: 'Đơn hàng',
@@ -54,7 +65,7 @@ const userRoutes = [
         path: 'wishlist',
         name: 'UserWishlist',
         component: WishlistPage,
-        meta: { 
+        meta: {
           requiresAuth: true,
           isUserRoute: true,
           title: 'Yêu thích',
@@ -68,7 +79,7 @@ const userRoutes = [
 // User route guard - Chặn ADMIN/MODERATOR và người chưa đăng nhập
 export const userGuard = async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // Kiểm tra đăng nhập
   if (!authStore.isAuthenticated) {
     // Chưa đăng nhập → redirect đến login
@@ -78,10 +89,10 @@ export const userGuard = async (to, from, next) => {
     })
     return
   }
-  
+
   // Kiểm tra role - Chặn ADMIN/MODERATOR truy cập user routes
   const user = authStore.currentUser
-  
+
   if (user && (user.role === 'ADMIN' || user.role === 'MODERATOR')) {
     // Là ADMIN/MODERATOR → Chuyển về admin panel
     next({
@@ -90,7 +101,7 @@ export const userGuard = async (to, from, next) => {
     })
     return
   }
-  
+
   // Là USER thường → cho phép truy cập
   next()
 }
