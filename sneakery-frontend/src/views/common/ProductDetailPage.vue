@@ -120,6 +120,16 @@
             {{ product.name }}
           </h1>
 
+          <!-- SKU -->
+<div class="mb-4">
+  <span class="text-sm text-gray-500 dark:text-gray-400">
+    SKU:
+    <span class="font-semibold text-gray-900 dark:text-gray-100">
+      {{ selectedVariant?.sku || product?.variants?.[0]?.sku || "—" }}
+    </span>
+  </span>
+</div>
+
           <!-- Price Section -->
           <div class="flex items-center gap-4 mb-6">
             <!-- Giá bán -->
