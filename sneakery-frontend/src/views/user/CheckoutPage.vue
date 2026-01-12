@@ -28,7 +28,7 @@
       <!-- SHIPPING OVERLAY (CHE TOÀN BỘ PHẦN ĐANG HIỂN THỊ) -->
       <div
         v-if="calculatingShipping"
-        class="fixed left-0 right-0 z-[200] bg-black/30 backdrop-blur-sm flex items-center justify-center"
+        class="fixed left-0 right-0 z-[9000] bg-black/30 backdrop-blur-sm flex items-center justify-center"
         :style="{ top: headerHeight, bottom: '0' }"
       >
         <OrbitSpinner :size="80" glow />
@@ -480,7 +480,7 @@
                 </div>
               </div>
 
-              <div
+              <!-- <div
                 :class="[
                   'p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md',
                   paymentMethod === 'online'
@@ -540,7 +540,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> -->
               <!-- ================= CHỌN PHƯƠNG THỨC THANH TOÁN ONLINE ================= -->
               <transition
                 enter-active-class="transition-all duration-300 ease-out"
@@ -1416,7 +1416,7 @@
   <!-- Edit Address Modal -->
   <div
     v-if="showEditModal"
-    class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+    class="fixed inset-0 z-[5000] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
     @click.self="showEditModal = false"
   >
     <div
@@ -1803,7 +1803,7 @@ const confirmDeleteAddress = async () => {
     notificationService.success("Thành công", "Đã xóa địa chỉ");
   } catch (err) {
     logger.error("Delete address error:", err);
-    notificationService.error("Lỗi", "Không thể xóa địa chỉ");
+    notificationService.warning("Cảnh báo", "Không thể xóa địa chỉ");
   } finally {
     showDeleteConfirm.value = false;
     addressIdToDelete.value = null;
@@ -1838,11 +1838,16 @@ const updateAddress = async () => {
       addresses.value[index] = response;
     }
 
+    // ✅ NẾU ĐANG CHỌN ĐỊA CHỈ NÀY → TÍNH PHÍ SHIP LẠI NGAY
+    if (selectedAddress.value === response.id) {
+      await calculateShippingFee(response);
+    }
+
     notificationService.success("Thành công", "Đã cập nhật địa chỉ");
     showEditModal.value = false;
   } catch (err) {
     logger.error("Update address error:", err);
-    notificationService.error("Lỗi", "Không thể cập nhật địa chỉ");
+    notificationService.warning("Cảnh báo", "Không thể cập nhật địa chỉ");
   }
 };
 
@@ -2046,8 +2051,8 @@ const fetchData = async () => {
     }
   } catch (error) {
     logger.error("Error fetching data:", error);
-    notificationService.error(
-      "Lỗi",
+    notificationService.warning(
+      "Cảnh báo",
       error.response?.data?.message || "Không thể tải thông tin"
     );
 
@@ -2119,7 +2124,7 @@ const onCouponSelected = async () => {
   } catch (error) {
     logger.error("Error applying coupon:", error);
     couponStore.setError(error.message || "Không thể áp dụng mã giảm giá");
-    notificationService.error("Lỗi", couponStore.couponError);
+    notificationService.warning("Cảnh báo", couponStore.couponError);
     couponStore.clearCoupon();
     selectedCouponCode.value = "";
   } finally {
@@ -2172,7 +2177,7 @@ const deleteAddress = async (id) => {
     notificationService.success("Thành công", "Đã xóa địa chỉ thành công");
   } catch (err) {
     logger.error("Error deleting address:", err);
-    notificationService.error("Lỗi", "Không thể xóa địa chỉ");
+    notificationService.warning("Cảnh báo", "Không thể xóa địa chỉ");
   }
 };
 
@@ -2323,8 +2328,8 @@ const saveAddress = async () => {
 
   // Validate phone number
   if (!validateVietnamesePhone(newAddress.value.phone)) {
-    notificationService.error(
-      "Lỗi",
+    notificationService.warning(
+      "Cảnh báo",
       "Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)"
     );
     return;
@@ -2332,8 +2337,8 @@ const saveAddress = async () => {
 
   // Validate address format
   if (!validateAddress(newAddress.value.line1)) {
-    notificationService.error(
-      "Lỗi",
+    notificationService.warning(
+      "Cảnh báo",
       "Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)"
     );
     return;
@@ -2341,17 +2346,17 @@ const saveAddress = async () => {
 
   // Validate district and city
   if (!newAddress.value.city) {
-    notificationService.error("Lỗi", "Vui lòng chọn Tỉnh/Thành phố");
+    notificationService.warning("Cảnh báo", "Vui lòng chọn Tỉnh/Thành phố");
     return;
   }
 
   if (!newAddress.value.district) {
-    notificationService.error("Lỗi", "Vui lòng chọn Quận/Huyện");
+    notificationService.warning("Cảnh báo", "Vui lòng chọn Quận/Huyện");
     return;
   }
 
   if (!newAddress.value.ward) {
-    notificationService.error("Lỗi", "Vui lòng chọn Phường/Xã");
+    notificationService.warning("Cảnh báo", "Vui lòng chọn Phường/Xã");
     return;
   }
 
@@ -2374,6 +2379,7 @@ const saveAddress = async () => {
 
     addresses.value.push(response);
     selectedAddress.value = response.id;
+    await calculateShippingFee(response);
     showAddressForm.value = false;
 
     // Reset form
@@ -2392,7 +2398,7 @@ const saveAddress = async () => {
     notificationService.success("Thành công", "Đã thêm địa chỉ mới");
   } catch (error) {
     logger.error("Error saving address:", error);
-    notificationService.error("Lỗi", "Không thể thêm địa chỉ");
+    notificationService.warning("Cảnh báo", "Không thể thêm địa chỉ");
   }
 };
 
@@ -2433,8 +2439,8 @@ const calculateShippingFee = async (address) => {
 const confirmCheckout = () => {
   showConfirmOrder.value = false;
   if (usePoints.value && pointsToUse.value > maxPointsUsable.value) {
-    notificationService.error(
-      "Lỗi điểm thưởng",
+    notificationService.warning(
+      "Cảnh báo",
       `Bạn chỉ có thể sử dụng tối đa ${maxPointsUsable.value.toLocaleString()} điểm.`
     );
     return;
@@ -2648,8 +2654,8 @@ const handleCheckout = async () => {
     }, 1500);
   } catch (error) {
     logger.error("Error during checkout:", error);
-    notificationService.error(
-      "Lỗi",
+    notificationService.warning(
+      "Cảnh báo",
       error.message || error.response?.data?.message || "Không thể đặt hàng"
     );
   } finally {

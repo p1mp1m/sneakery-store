@@ -700,7 +700,7 @@ const saveBrand = async () => {
     );
   } catch (error) {
     logger.error("Error saving brand:", error);
-    notificationService.apiError(error, "Lỗi khi lưu thương hiệu");
+    notificationService.apiError(error, "Cảnh báo khi lưu thương hiệu");
   } finally {
     saving.value = false;
   }
@@ -724,7 +724,7 @@ const deleteBrand = async () => {
     });
   } catch (error) {
     logger.error("Error deleting brand:", error);
-    notificationService.apiError(error, "Lỗi khi xóa thương hiệu");
+    notificationService.apiError(error, "Cảnh báo khi xóa thương hiệu");
   } finally {
     deleting.value = false;
   }

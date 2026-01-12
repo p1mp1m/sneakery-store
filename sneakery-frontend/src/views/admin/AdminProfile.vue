@@ -195,7 +195,7 @@ const updateProfile = async () => {
 
     // Validate phone number if provided
     if (profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)) {
-      notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)')
+      notificationService.warning('Cảnh báo', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)')
       updating.value = false
       return
     }

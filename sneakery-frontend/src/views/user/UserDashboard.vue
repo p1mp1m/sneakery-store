@@ -1068,7 +1068,7 @@ const loadDashboardData = async () => {
     // }
   } catch (error) {
     logger.error("Error loading dashboard data:", error);
-    notificationService.error("Lỗi", "Không thể tải dữ liệu dashboard");
+    notificationService.warning("Cảnh báo", "Không thể tải dữ liệu dashboard");
   } finally {
     loading.value = false;
   }

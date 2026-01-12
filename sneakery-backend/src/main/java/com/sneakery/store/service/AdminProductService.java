@@ -88,7 +88,7 @@ public class AdminProductService {
     private final com.sneakery.store.util.ProductValidationUtil productValidationUtil;
     private final ProductImageRepository productImageRepository;
     private final ActivityLogService activityLogService;
-
+    private final OrderDetailRepository orderDetailRepository;
 
 
     /**
@@ -353,7 +353,7 @@ public class AdminProductService {
      * </pre>
      */
     @Transactional(readOnly = true)
-    @Cacheable(value = "products", key = "#productId")
+//    @Cacheable(value = "products", key = "#productId")
     public AdminProductDetailDto getProductByIdForAdmin(Long productId) {
         Product product = productRepository.findByIdWithDetails(productId) // Dùng query tối ưu
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
@@ -747,7 +747,19 @@ public class AdminProductService {
                     }
                     dto.setPriceBase(v.getPriceBase());
                     dto.setPriceSale(v.getPriceSale());
-                    dto.setStockQuantity(v.getStockQuantity());
+                    Integer stockQty = v.getStockQuantity() != null ? v.getStockQuantity() : 0;
+                    Integer reservedQty = 0;
+
+                    if (v.getId() != null) {
+                        Integer dbReserved = orderDetailRepository.sumReservedQuantityByVariantId(v.getId());
+                        reservedQty = dbReserved != null ? dbReserved : 0;
+                    }
+
+                    int available = stockQty - reservedQty;
+                    if (available < 0) available = 0;
+                    dto.setStockQuantity(stockQty);
+                    dto.setReservedQuantity(reservedQty);
+                    dto.setAvailableStock(available);
                     return dto;
                 }).collect(Collectors.toList());
 

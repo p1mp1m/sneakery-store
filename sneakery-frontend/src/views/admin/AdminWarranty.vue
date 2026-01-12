@@ -648,7 +648,7 @@ const handleFileUpload = (event) => {
   const files = Array.from(event.target.files)
   files.forEach(file => {
     if (file.size > 10 * 1024 * 1024) {
-      notificationService.error('Lỗi',`File ${file.name} quá lớn (> 10MB)`)
+      notificationService.warning('Cảnh báo',`File ${file.name} quá lớn (> 10MB)`)
       return
     }
     uploadedFiles.value.push(file)

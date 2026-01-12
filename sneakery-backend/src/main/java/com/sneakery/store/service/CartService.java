@@ -164,6 +164,8 @@ public class CartService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
         }
 
+        int availableStock = getAvailableStock(variant);
+
         // Tìm item đã có trong giỏ
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getVariant().getId().equals(requestDto.getVariantId()))
@@ -174,14 +176,20 @@ public class CartService {
 
             int newQty = item.getQuantity() + addQuantity; // 🔥 CỘNG DỒN
 
-            if (newQty > variant.getStockQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+            if (newQty > availableStock) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Không đủ hàng tồn kho khả dụng. Tối đa có thể mua: " + availableStock
+                );
             }
 
             item.setQuantity(newQty);
         } else {
-            if (addQuantity > variant.getStockQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+            if (addQuantity > availableStock) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Không đủ hàng tồn kho khả dụng. Tối đa có thể mua: " + availableStock
+                );
             }
 
             CartItem newItem = new CartItem();
@@ -260,6 +268,8 @@ public class CartService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
         }
 
+        int availableStock = getAvailableStock(variant);
+
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getVariant().getId().equals(requestDto.getVariantId()))
                 .findFirst();
@@ -269,14 +279,20 @@ public class CartService {
 
             int newQty = item.getQuantity() + addQuantity; // 🔥 CỘNG DỒN
 
-            if (newQty > variant.getStockQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+            if (newQty > availableStock) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Không đủ hàng tồn kho khả dụng. Tối đa có thể mua: " + availableStock
+                );
             }
 
             item.setQuantity(newQty);
         } else {
-            if (addQuantity > variant.getStockQuantity()) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+            if (addQuantity > availableStock) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "Không đủ hàng tồn kho khả dụng. Tối đa có thể mua: " + availableStock
+                );
             }
 
             CartItem newItem = new CartItem();
@@ -422,8 +438,14 @@ public class CartService {
         if (newQuantity <= 0)
             throw new ApiException(HttpStatus.BAD_REQUEST, "Số lượng phải lớn hơn 0");
 
-        if (newQuantity > variant.getStockQuantity())
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Không đủ hàng tồn kho");
+        int availableStock = getAvailableStock(variant);
+
+        if (newQuantity > availableStock) {
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "Không đủ hàng tồn kho khả dụng. Tối đa có thể mua: " + availableStock
+            );
+        }
 
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getVariant().getId().equals(requestDto.getVariantId()))
@@ -437,6 +459,16 @@ public class CartService {
 
         // Load lại bằng query tối ưu
         return getCartByUserId(userId);
+    }
+
+    private int getAvailableStock(ProductVariant variant) {
+        if (variant == null) return 0;
+
+        int stock = variant.getStockQuantity() == null ? 0 : variant.getStockQuantity();
+        int reserved = variant.getReservedQuantity() == null ? 0 : variant.getReservedQuantity();
+
+        int available = stock - reserved;
+        return Math.max(0, available);
     }
 
 }

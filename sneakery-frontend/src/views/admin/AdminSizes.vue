@@ -514,7 +514,7 @@ const loadSizes = async () => {
   try {
     sizes.value = await adminService.getAllSizes();
   } catch (err) {
-    notificationService.error("Lỗi", "Không thể tải danh sách size");
+    notificationService.warning("Cảnh báo", "Không thể tải danh sách size");
     console.error(err);
   } finally {
     loading.value = false;
@@ -562,7 +562,7 @@ const handleSubmit = async () => {
     closeModal();
     await loadSizes();
   } catch (err) {
-    notificationService.error("Lỗi", err.message || "Không thể lưu size");
+    notificationService.warning("Cảnh báo", err.message || "Không thể lưu size");
   } finally {
     isSubmitting.value = false;
   }
@@ -577,8 +577,8 @@ const toggleActive = async (size) => {
     );
     await loadSizes();
   } catch (err) {
-    notificationService.error(
-      "Lỗi",
+    notificationService.warning(
+      "Cảnh báo",
       err.message || "Không thể thay đổi trạng thái"
     );
   }
@@ -600,7 +600,7 @@ const deleteSize = async () => {
     sizeToDelete.value = null;
     await loadSizes();
   } catch (err) {
-    notificationService.error("Lỗi", err.message || "Không thể xóa size");
+    notificationService.warning("Cảnh báo", err.message || "Không thể xóa size");
   } finally {
     isDeleting.value = false;
   }

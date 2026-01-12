@@ -2843,7 +2843,7 @@ const handleSubmit = async (submittedData = null) => {
 
     // 🟣 Bắt lỗi SKU trùng
     if (msg.includes("SKU") && msg.includes("bị trùng lặp")) {
-      notificationService.error("Lỗi trùng SKU", msg);
+      notificationService.warning("Cảnh báo trùng SKU", msg);
       formErrors.value.variants =
         "SKU bị trùng, vui lòng kiểm tra lại biến thể!";
       isSubmitting.value = false;

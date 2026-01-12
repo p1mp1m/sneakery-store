@@ -360,14 +360,14 @@ const getProductImage = (productId) => {
 //   try {
 //     await wishlistStore.fetchWishlist();
 //   } catch (error) {
-//     notificationService.error('Lỗi','Không thể tải danh sách yêu thích');
+//     notificationService.warning('Lỗi','Không thể tải danh sách yêu thích');
 //   }
 // });
 onMounted(async () => {
   try {
     await Promise.all([wishlistStore.fetchWishlist(), loadProductImages()]);
   } catch (error) {
-    notificationService.error("Lỗi", "Không thể tải danh sách yêu thích");
+    notificationService.warning("Cảnh báo", "Không thể tải danh sách yêu thích");
   }
 });
 
@@ -402,7 +402,7 @@ const removeFromWishlist = async (item) => {
     );
   } catch (error) {
     if (error !== "cancel") {
-      notificationService.error("Lỗi", "Không thể xóa sản phẩm");
+      notificationService.warning("Cảnh báo", "Không thể xóa sản phẩm");
     }
   }
 };
@@ -451,7 +451,7 @@ const clearWishlist = async () => {
     );
   } catch (error) {
     if (error !== "cancel") {
-      notificationService.error("Lỗi", "Không thể xóa wishlist");
+      notificationService.warning("Cảnh báo", "Không thể xóa wishlist");
     }
   }
 };
@@ -466,7 +466,7 @@ const shareWishlist = () => {
     shareLink.value = `${window.location.origin}/wishlist/shared/${userId}`;
     showShareModal.value = true;
   } else {
-    notificationService.error("Lỗi", "Vui lòng đăng nhập để chia sẻ wishlist");
+    notificationService.warning("Cảnh báo", "Vui lòng đăng nhập để chia sẻ wishlist");
   }
 };
 
@@ -475,7 +475,7 @@ const copyLink = async () => {
     await navigator.clipboard.writeText(shareLink.value);
     notificationService.success("Thành công", "Đã copy link vào clipboard");
   } catch (error) {
-    notificationService.error("Lỗi", "Không thể copy link");
+    notificationService.warning("Cảnh báo", "Không thể copy link");
   }
 };
 

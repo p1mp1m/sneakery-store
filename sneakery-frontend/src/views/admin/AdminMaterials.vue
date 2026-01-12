@@ -437,7 +437,7 @@ const saveMaterial = async () => {
     notificationService.success('Thành công', `${isEditMode.value ? "Cập nhật" : "Thêm"} chất liệu thành công!`, { duration: 3000 });
   } catch (error) {
     logger.error("Error saving material:", error);
-    notificationService.apiError(error, "Lỗi khi lưu chất liệu")
+    notificationService.apiError(error, "Cảnh báo khi lưu chất liệu")
   } finally {
     saving.value = false;
   }
@@ -458,7 +458,7 @@ const deleteMaterial = async () => {
     notificationService.success('Thành công', "Xóa chất liệu thành công!", { duration: 3000 });
   } catch (error) {
     logger.error("Error deleting material:", error);
-    notificationService.apiError(error, "Lỗi khi xóa chất liệu")
+    notificationService.apiError(error, "Cảnh báo khi xóa chất liệu")
   } finally {
     deleting.value = false;
   }

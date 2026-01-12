@@ -225,14 +225,14 @@ const passwordStrength = computed(() => {
 const changePassword = async () => {
   // Validation
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    notificationService.error('Lỗi','Mật khẩu xác nhận không khớp')
+    notificationService.warning('Cảnh báo','Mật khẩu xác nhận không khớp')
     return
   }
 
   // Validate password strength
   const strength = validatePasswordStrength(passwordForm.newPassword)
   if (!strength.valid) {
-    notificationService.error('Lỗi', strength.errors[0] || 'Mật khẩu không hợp lệ')
+    notificationService.warning('Cảnh báo', strength.errors[0] || 'Mật khẩu không hợp lệ')
     return
   }
 

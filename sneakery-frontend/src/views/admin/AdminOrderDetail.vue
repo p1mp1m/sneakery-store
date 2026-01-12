@@ -245,7 +245,7 @@
             </div>
           </div>
           <!-- ⭐ UI cảnh báo điểm không đủ -->
-          <div
+          <!-- <div
             v-if="
               getNormalizedStatusValue(order.status) === 'Processing' &&
               getNextStep(order.status) === 'Packed' &&
@@ -264,7 +264,7 @@
                 Không thể chuyển sang bước <strong>Đã đóng gói</strong>.
               </p>
             </div>
-          </div>
+          </div> -->
         </div>
         <!-- Return Status Flow -->
         <div
@@ -646,10 +646,10 @@
                       <span>{{ formatCurrency(order.shippingFee) }}</span>
                     </div>
 
-                    <div class="flex justify-between">
+                    <!-- <div class="flex justify-between">
                       <span>VAT:</span>
                       <span>{{ formatCurrency(order.taxAmount) }}</span>
-                    </div>
+                    </div> -->
 
                     <div
                       class="flex justify-between text-lg font-bold text-purple-600 dark:text-purple-400 pt-2 border-t border-gray-300 dark:border-gray-600"
@@ -1600,19 +1600,19 @@ const confirmStatusChange = (order, targetStatus) => {
     const currentNormalizedStatus = getNormalizedStatusValue(order.status);
 
     // ⭐ RULE: Không cho Processing → Packed nếu điểm sử dụng vượt quá điểm còn lại
-    if (currentNormalizedStatus === "Processing" && targetStatus === "Packed") {
-      const used = Number(order.pointsUsed || 0);
-      const balance = Number(order.customerPointBalance || 0);
+    // if (currentNormalizedStatus === "Processing" && targetStatus === "Packed") {
+    //   const used = Number(order.pointsUsed || 0);
+    //   const balance = Number(order.customerPointBalance || 0);
 
-      if (used > balance) {
-        notificationService.warning(
-          "Không thể chuyển trạng thái",
-          `Khách đã dùng ${used} điểm nhưng chỉ còn ${balance} điểm.\n` +
-            "Không thể chuyển sang bước Đã đóng gói."
-        );
-        return;
-      }
-    }
+    //   if (used > balance) {
+    //     notificationService.warning(
+    //       "Không thể chuyển trạng thái",
+    //       `Khách đã dùng ${used} điểm nhưng chỉ còn ${balance} điểm.\n` +
+    //         "Không thể chuyển sang bước Đã đóng gói."
+    //     );
+    //     return;
+    //   }
+    // }
 
     // Kiểm tra xem có thể chuyển đổi không
     if (!canChangeToStatus(currentNormalizedStatus, targetStatus)) {
@@ -1898,13 +1898,13 @@ const isReturnRejected = computed(() => {
   return order.value?.returnRequest?.status?.toLowerCase() === "rejected";
 });
 
-const isInsufficientPoints = computed(() => {
-  if (!order.value) return false;
-  const used = Number(order.value.pointsUsed || 0);
-  const balance = Number(order.value.customerPointBalance || 0);
+// const isInsufficientPoints = computed(() => {
+//   if (!order.value) return false;
+//   const used = Number(order.value.pointsUsed || 0);
+//   const balance = Number(order.value.customerPointBalance || 0);
 
-  return used > balance;
-});
+//   return used > balance;
+// });
 
 const canMarkDeliveryFailed = (status) => {
   const normalized = getNormalizedStatusValue(status);

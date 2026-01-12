@@ -676,12 +676,12 @@ const calculateNewStock = () => {
 
 const confirmAdjustment = async () => {
   if (!adjustmentQuantity.value || adjustmentQuantity.value <= 0) {
-    notificationService.error('Lỗi','Vui lòng nhập số lượng hợp lệ')
+    notificationService.warning('Cảnh báo','Vui lòng nhập số lượng hợp lệ')
     return
   }
 
   if (!adjustmentReason.value.trim()) {
-    notificationService.error('Lỗi','Vui lòng nhập lý do điều chỉnh')
+    notificationService.warning('Cảnh báo','Vui lòng nhập lý do điều chỉnh')
     return
   }
 

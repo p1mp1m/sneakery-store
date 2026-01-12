@@ -561,7 +561,7 @@ const loadColors = async () => {
   try {
     colors.value = await adminService.getAllColors();
   } catch (err) {
-    notificationService.error("Lỗi", "Không thể tải danh sách màu");
+    notificationService.warning("Cảnh báo", "Không thể tải danh sách màu");
     console.error(err);
   } finally {
     loading.value = false;
@@ -620,7 +620,7 @@ const handleSubmit = async () => {
     closeModal();
     await loadColors();
   } catch (err) {
-    notificationService.error("Lỗi", err.message || "Không thể lưu màu");
+    notificationService.warning("Cảnh báo", err.message || "Không thể lưu màu");
   } finally {
     isSubmitting.value = false;
   }
@@ -635,8 +635,8 @@ const toggleActive = async (color) => {
     );
     await loadColors();
   } catch (err) {
-    notificationService.error(
-      "Lỗi",
+    notificationService.warning(
+      "Cảnh báo",
       err.message || "Không thể thay đổi trạng thái"
     );
   }
@@ -658,7 +658,7 @@ const deleteColor = async () => {
     colorToDelete.value = null;
     await loadColors();
   } catch (err) {
-    notificationService.error("Lỗi", err.message || "Không thể xóa màu");
+    notificationService.warning("Cảnh báo", err.message || "Không thể xóa màu");
   } finally {
     isDeleting.value = false;
   }

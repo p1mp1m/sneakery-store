@@ -399,8 +399,8 @@ const handleToggleFavorite = async (event) => {
         query: { redirect: router.currentRoute.value.fullPath },
       });
     } else {
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         error.response?.data?.message || "Không thể cập nhật yêu thích"
       );
     }
@@ -430,7 +430,7 @@ const handleQuickAddToCart = async (event) => {
 
   // Kiểm tra sản phẩm có thể thêm vào giỏ hàng
   if (!canAddToCart.value) {
-    notificationService.error("Lỗi", "Sản phẩm này hiện không có sẵn");
+    notificationService.warning("Cảnh báo", "Sản phẩm này hiện không có sẵn");
     return;
   }
 
@@ -440,7 +440,7 @@ const handleQuickAddToCart = async (event) => {
       await router.push(`/home/products/${props.product.slug}`);
     } catch (navError) {
       logger.error("Navigation error:", navError);
-      notificationService.error("Lỗi", "Không thể mở trang chi tiết sản phẩm");
+      notificationService.warning("Cảnh báo", "Không thể mở trang chi tiết sản phẩm");
     }
     return;
   }
@@ -450,7 +450,7 @@ const handleQuickAddToCart = async (event) => {
   if (props.product.variants && props.product.variants.length > 0) {
     variantId = firstAvailableVariant.value?.id;
     if (!variantId) {
-      notificationService.error("Lỗi", "Không tìm thấy biến thể sản phẩm");
+      notificationService.warning("Cảnh báo", "Không tìm thấy biến thể sản phẩm");
       return;
     }
   } else if (props.product.variantId) {
@@ -461,7 +461,7 @@ const handleQuickAddToCart = async (event) => {
       await router.push(`/home/products/${props.product.slug}`);
     } catch (navError) {
       logger.error("Navigation error:", navError);
-      notificationService.error("Lỗi", "Không thể mở trang chi tiết sản phẩm");
+      notificationService.warning("Cảnh báo", "Không thể mở trang chi tiết sản phẩm");
     }
     return;
   }
@@ -489,14 +489,14 @@ const handleQuickAddToCart = async (event) => {
         query: { redirect: router.currentRoute.value.fullPath },
       });
     } else if (error.response?.status === 400) {
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         error.response?.data?.message ||
           "Sản phẩm không có sẵn hoặc đã hết hàng"
       );
     } else {
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         error.response?.data?.message || "Không thể thêm vào giỏ hàng"
       );
     }

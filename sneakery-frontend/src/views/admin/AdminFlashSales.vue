@@ -961,7 +961,7 @@ const saveFlashSale = async () => {
     loadFlashSales();
   } catch (error) {
     logger.error("Error saving flash sale:", error);
-    notificationService.apiError(error, "Lỗi khi lưu Flash Sale");
+    notificationService.apiError(error, "Cảnh báo khi lưu Flash Sale");
   } finally {
     saving.value = false;
   }
@@ -982,7 +982,7 @@ const deleteFlashSale = async () => {
     loadFlashSales();
   } catch (error) {
     logger.error("Error deleting flash sale:", error);
-    notificationService.apiError(error, "Lỗi khi xóa Flash Sale");
+    notificationService.apiError(error, "Cảnh báo khi xóa Flash Sale");
   } finally {
     deleting.value = false;
   }

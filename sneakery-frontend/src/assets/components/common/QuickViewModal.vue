@@ -317,7 +317,7 @@ const fetchProduct = async () => {
     }
   } catch (error) {
     logger.error("Error fetching product:", error);
-    notificationService.error("Lỗi", "Không thể tải thông tin sản phẩm");
+    notificationService.warning("Cảnh báo", "Không thể tải thông tin sản phẩm");
   } finally {
     loading.value = false;
   }
@@ -373,8 +373,8 @@ const handleAddToCart = async () => {
       close();
       router.push("/login");
     } else {
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         error.response?.data?.message || "Không thể thêm vào giỏ hàng"
       );
     }

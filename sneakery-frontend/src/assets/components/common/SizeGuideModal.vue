@@ -179,7 +179,7 @@ const loadSizeCharts = async () => {
     sizeCharts.value = response.data || [];
   } catch (error) {
     logger.error('Error loading size charts:', error);
-    notificationService.error('Lỗi','Không thể tải bảng size');
+    notificationService.warning('Cảnh báo','Không thể tải bảng size');
   } finally {
     loading.value = false;
   }

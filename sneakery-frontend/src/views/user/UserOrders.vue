@@ -1123,8 +1123,8 @@ const fetchOrders = async (silent = false) => {
   } catch (error) {
     logger.error("Error fetching orders:", error);
     if (!silent) {
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         error.message || "Không thể tải danh sách đơn hàng"
       );
     }
@@ -1179,8 +1179,8 @@ const viewOrderDetail = async (orderId, silent = false) => {
 
     // Chỉ hiển thị toast và đóng modal nếu không phải silent refresh
     if (!silent) {
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         error.message || "Không thể tải chi tiết đơn hàng"
       );
       showDetail.value = false;
@@ -1255,7 +1255,7 @@ const cancelOrder = async (orderId) => {
         error.response?.data?.message ||
         error.message ||
         "Không thể hủy đơn hàng";
-      notificationService.error("Lỗi", errorMessage);
+      notificationService.warning("Cảnh báo", errorMessage);
     }
   }
 };
@@ -1294,7 +1294,7 @@ const reorder = async (orderId) => {
     notificationService.info("Thông tin", "Tính năng đang được phát triển");
   } catch (error) {
     logger.error("Error reordering:", error);
-    notificationService.error("Lỗi", "Không thể đặt lại đơn hàng");
+    notificationService.warning("Cảnh báo", "Không thể đặt lại đơn hàng");
   }
 };
 
@@ -1513,7 +1513,7 @@ const canMarkAsReceived = (status) => {
 // Xác nhận đã nhận hàng + thanh toán
 const markAsReceived = async (orderId) => {
   if (!selectedOrder.value) {
-    notificationService.error("Lỗi", "Không tìm thấy thông tin đơn hàng");
+    notificationService.warning("Cảnh báo", "Không tìm thấy thông tin đơn hàng");
     return;
   }
 
@@ -1557,7 +1557,7 @@ const markAsReceived = async (orderId) => {
         error.message ||
         "Không thể xác nhận đã nhận hàng";
 
-      notificationService.error("Lỗi", errorMessage);
+      notificationService.warning("Cảnh báo", errorMessage);
     }
   }
 };
@@ -1755,7 +1755,7 @@ const submitReturnRequest = async () => {
   }
 
   if (!selectedOrder.value) {
-    notificationService.error("Lỗi", "Không tìm thấy đơn hàng");
+    notificationService.warning("Cảnh báo", "Không tìm thấy đơn hàng");
     return;
   }
 
@@ -1797,7 +1797,7 @@ const submitReturnRequest = async () => {
       error.response?.data?.message ||
       error.message ||
       "Không thể gửi yêu cầu hoàn trả";
-    notificationService.error("Lỗi", errorMessage);
+    notificationService.warning("Cảnh báo", errorMessage);
 
     // Show validation errors if any
     if (error.response?.data?.validationErrors) {

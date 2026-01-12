@@ -1518,15 +1518,15 @@
                       class="px-2 py-1 rounded-full text-xs font-semibold"
                       :class="{
                         'bg-red-500/90 text-white':
-                          (variant.stockQuantity || 0) === 0,
+                          (variant.availableStock || 0) === 0,
                         'bg-yellow-500/90 text-white':
-                          (variant.stockQuantity || 0) > 0 &&
-                          (variant.stockQuantity || 0) < 10,
+                          (variant.availableStock || 0) > 0 &&
+                          (variant.availableStock || 0) < 10,
                         'bg-green-500/90 text-white':
-                          (variant.stockQuantity || 0) >= 10,
+                          (variant.availableStock || 0) >= 10,
                       }"
                     >
-                      Tồn: {{ variant.stockQuantity || 0 }}
+                      Tồn: {{ variant.availableStock || 0 }}
                     </span>
                     <div
                       v-if="selectedVariant?.id === variant.id"
@@ -2213,27 +2213,27 @@ const dedupeProducts = (products) => {
   return result;
 };
 
-const loadMore = async () => {
-  if (noMoreProducts.value) return;
+// const loadMore = async () => {
+//   if (noMoreProducts.value) return;
 
-  try {
-    loadingMore.value = true;
-    pageIndex.value++;
+//   try {
+//     loadingMore.value = true;
+//     pageIndex.value++;
 
-    const result = await adminStore.fetchProducts(pageIndex.value, pageSize, {
-      isActive: true,
-    });
+//     const result = await adminStore.fetchProducts(pageIndex.value, pageSize, {
+//       isActive: true,
+//     });
 
-    const newProducts = result.content || [];
+//     const newProducts = result.content || [];
 
-    // Merge thêm sản phẩm
-    products.value = [...products.value, ...newProducts];
-  } catch (error) {
-    logger.error("Error loading more products:", error);
-  } finally {
-    loadingMore.value = false;
-  }
-};
+//     // Merge thêm sản phẩm
+//     products.value = [...products.value, ...newProducts];
+//   } catch (error) {
+//     logger.error("Error loading more products:", error);
+//   } finally {
+//     loadingMore.value = false;
+//   }
+// };
 
 const useMaxLoyaltyPoints = () => {
   loyaltyPointsToUse.value = selectedCustomerLoyaltyPoints.value || 0;
@@ -2587,6 +2587,11 @@ const searchProducts = async () => {
         search: searchQuery.value,
       };
 
+      // Reset paging khi search
+pageIndex.value = 0;
+noMoreProducts.value = false;
+totalPages.value = 1;
+
       const result = await adminStore.fetchProducts(0, 50, filters); // Giới hạn 50 khi search
       let productsList = result.content || result || [];
 
@@ -2711,6 +2716,11 @@ const filterProducts = async () => {
         filters.categoryId = categoryId;
       }
     }
+
+    // Reset paging khi search
+pageIndex.value = 0;
+noMoreProducts.value = false;
+totalPages.value = 1;
 
     const result = await adminStore.fetchProducts(0, 50, filters); // Giới hạn 50 khi filter
     let productsList = result.content || result || [];
@@ -3005,7 +3015,7 @@ const handleCreateCustomer = async () => {
 
     const createdUser = await adminStore.createUser(userData);
 
-    toastService.success(
+    notificationService.success(
       "Thành công",
       `Đã tạo khách hàng "${
         createdUser.fullName || createdUser.email
@@ -3021,7 +3031,7 @@ const handleCreateCustomer = async () => {
     // Refresh danh sách khách hàng
     await loadSuggestedCustomers();
   } catch (error) {
-    logger.error("Lỗi khi tạo khách hàng:", error);
+    logger.error("Cảnh báo khi tạo khách hàng:", error);
     notificationService.apiError(error, "Không thể tạo khách hàng");
 
     // Hiển thị lỗi cụ thể nếu có
@@ -3109,7 +3119,7 @@ const selectProductForCart = (product) => {
   // Kiểm tra tồn kho tổng
   const availableStock = getProductStock(product);
   if (availableStock === 0) {
-    notificationService.error("Lỗi", "Sản phẩm này đã hết hàng");
+    notificationService.warning("Cảnh báo", "Sản phẩm này đã hết hàng");
     return;
   }
 
@@ -3173,7 +3183,7 @@ const addToCartWithVariant = (product, variant) => {
   }
 
   if (variantStock === 0) {
-    notificationService.error("Lỗi", "Sản phẩm này đã hết hàng");
+    notificationService.warning("Cảnh báo", "Sản phẩm này đã hết hàng");
     return;
   }
 
@@ -3310,8 +3320,8 @@ const applyDiscount = async () => {
     const coupon = await adminStore.validateCoupon(discountCode.value.trim());
 
     if (!coupon || !coupon.isActive) {
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         "Mã giảm giá không hợp lệ hoặc đã bị vô hiệu hóa"
       );
       discountAmount.value = 0;
@@ -3469,18 +3479,18 @@ const getProductPrice = (product) => {
 
 // Helper function để lấy stock quantity
 const getProductStock = (product) => {
-  if (
-    product.stockQuantity !== null &&
-    product.stockQuantity !== undefined &&
-    !isNaN(product.stockQuantity)
-  ) {
-    return Number(product.stockQuantity);
-  }
+  // if (
+  //   product.stockQuantity !== null &&
+  //   product.stockQuantity !== undefined &&
+  //   !isNaN(product.stockQuantity)
+  // ) {
+  //   return Number(product.stockQuantity);
+  // }
 
   // Nếu có variants, tính tổng stock
   if (product.variants && product.variants.length > 0) {
     const totalStock = product.variants.reduce((sum, variant) => {
-      const stock = variant.stockQuantity || 0;
+      const stock = variant.availableStock || 0;
       return sum + (isNaN(stock) ? 0 : Number(stock));
     }, 0);
     return totalStock;
@@ -3731,15 +3741,74 @@ watch(
   },
   { immediate: true }
 )
+
+const resetProductViewState = () => {
+  products.value = [];
+  pageIndex.value = 0;
+  totalPages.value = 1;
+  noMoreProducts.value = false;
+  loadingMore.value = false;
+  showingAll.value = false;
+
+  // nếu bạn muốn reload luôn về trạng thái mặc định (không search/filter) thì mở:
+  // searchQuery.value = "";
+  // filterBrand.value = "";
+  // filterCategory.value = "";
+};
+
+const refreshCartStocksFromProducts = () => {
+  if (!cartItems.value?.length) return;
+  if (!products.value?.length) return;
+
+  for (const item of cartItems.value) {
+    const p = products.value.find((x) => x.id === item.id);
+    if (!p) continue;
+
+    // Nếu có variantId thì lấy đúng tồn kho variant
+    if (item.variantId) {
+      const v = (p.variants || []).find((x) => x.id === item.variantId);
+      if (v) {
+        item.stockQuantity = Number(v.stockQuantity || 0);
+      }
+    } else {
+      // Không có variantId => lấy tổng tồn kho product
+      item.stockQuantity = Number(getProductStock(p) || 0);
+    }
+
+    // Clamp quantity nếu vượt tồn kho mới
+    if (
+      item.stockQuantity !== undefined &&
+      item.stockQuantity !== null &&
+      !isNaN(item.stockQuantity) &&
+      item.quantity > item.stockQuantity
+    ) {
+      item.quantity = item.stockQuantity;
+    }
+
+    // Nếu hết hàng thì clamp về 0 hoặc 1 tùy logic bạn muốn
+    if (item.stockQuantity === 0 && item.quantity > 0) {
+      item.quantity = 0; // hoặc 1 nếu bạn không muốn 0 (nhưng 0 sẽ bị remove ở updateQuantity)
+    }
+  }
+
+  // Xóa những item quantity <= 0 (tránh hiển thị lạ)
+  cartItems.value = cartItems.value.filter((x) => (x.quantity || 0) > 0);
+};
+
 // Load data on mount
 onMounted(async () => {
   console.log("🔥 POS Mounted!");
   loadCartFromLocalStorage();
 
+  resetProductViewState();
+
   await Promise.all([
     loadData(),
     adminImageStore.loadAllAdminImages(), // ⭐ CHỜ API ẢNH ADMIN
   ]);
+
+  // Cập nhật lại stock trong cart theo products mới
+  refreshCartStocksFromProducts();
 
   window.addEventListener("keydown", handleKeydown);
 });

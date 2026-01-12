@@ -1030,7 +1030,7 @@ const loadProducts = async () => {
     products.value = result.content || [];
   } catch (error) {
     console.error("Error loading products:", error);
-    notificationService.error("Lỗi", "Không thể tải danh sách sản phẩm", {
+    notificationService.warning("Cảnh báo", "Không thể tải danh sách sản phẩm", {
       duration: 3000,
     });
   }
@@ -1185,8 +1185,8 @@ watch(
         resetKey.value++;
       } catch (err) {
         console.error("Không tải được ảnh từ DB:", err);
-        notificationService.error(
-          "Lỗi",
+        notificationService.warning(
+          "Cảnh báo",
           "Không thể tải thư viện ảnh của sản phẩm"
         );
       }
@@ -1348,8 +1348,8 @@ const handleSubmit = async () => {
     if (isEdit.value) {
       const variantId = props.variant?.id;
       if (!variantId) {
-        notificationService.error(
-          "Lỗi",
+        notificationService.warning(
+          "Cảnh báo",
           "Không xác định được ID biến thể cần cập nhật"
         );
         return;
@@ -1452,7 +1452,7 @@ const handleSubmit = async () => {
     emit("close");
   } catch (error) {
     console.error("Error saving variants:", error);
-    notificationService.error("Lỗi", "Không thể lưu biến thể");
+    notificationService.warning("Cảnh báo", "Không thể lưu biến thể");
   } finally {
     isSubmitting.value = false;
   }
@@ -1470,7 +1470,7 @@ const handleSubmit = async () => {
 //     }));
 //   } catch (err) {
 //     console.error("Không tải được thư viện ảnh:", err);
-//     notificationService.error("Lỗi", "Không thể tải thư viện ảnh của sản phẩm");
+//     notificationService.warning("Cảnh báo", "Không thể tải thư viện ảnh của sản phẩm");
 //     return [];
 //   }
 // };

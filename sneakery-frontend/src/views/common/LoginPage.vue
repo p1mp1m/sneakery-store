@@ -224,7 +224,7 @@ const handleLogin = async () => {
     }
   } catch (error) {
     serverError.value = error.response?.data?.message || 'Email hoặc mật khẩu không chính xác.';
-    notificationService.error('Lỗi', serverError.value);
+    notificationService.warning('Cảnh báo', serverError.value);
   } finally {
     loading.value = false;
   }

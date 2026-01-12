@@ -229,8 +229,8 @@ const handleUrlAdd = () => {
       /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(url));
 
   if (!isLikelyImageUrl) {
-    return notificationService.error(
-      "Lỗi",
+    return notificationService.warning(
+      "Cảnh báo",
       "URL không hợp lệ hoặc không phải ảnh"
     );
   }

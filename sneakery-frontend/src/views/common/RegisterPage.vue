@@ -274,7 +274,7 @@ const handleRegister = async () => {
     }, 2000);
   } catch (error) {
     serverError.value = error.response?.data?.message || 'Đã có lỗi xảy ra, vui lòng thử lại.';
-    notificationService.error('Lỗi', serverError.value);
+    notificationService.warning('Cảnh báo', serverError.value);
   } finally {
     loading.value = false;
   }

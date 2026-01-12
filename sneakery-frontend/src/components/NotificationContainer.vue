@@ -179,16 +179,24 @@ export default {
   position: fixed !important;
   top: var(--spacing-xl, 2rem) !important;
   bottom: unset !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+
+  /* ✅ Top-right */
+  right: var(--spacing-xl, 2rem) !important;
+  left: unset !important;
+  transform: none !important;
+
   z-index: var(--z-toast, 9999) !important;
   display: flex !important;
   flex-direction: column !important;
-  align-items: center !important;
+  align-items: flex-end !important; /* ✅ canh phải */
   gap: var(--spacing-sm, 0.5rem) !important;
+
   pointer-events: none !important;
-  max-width: min(95vw, 900px) !important;
+
+  /* ✅ giới hạn chiều ngang hợp lý khi ở góc */
+  max-width: min(95vw, 420px) !important;
   width: auto !important;
+
   min-height: fit-content !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -207,9 +215,10 @@ export default {
   display: flex !important;
   flex-direction: column !important;
   gap: var(--spacing-sm, 0.5rem) !important;
-  width: auto !important;
+
+  width: 100% !important;              /* ✅ list chiếm hết bề ngang container */
   max-width: 100% !important;
-  align-items: center !important;
+  align-items: flex-end !important;     /* ✅ item dồn về phải */
   position: relative !important;
 }
 
@@ -222,8 +231,8 @@ export default {
   gap: var(--spacing-md, 1rem) !important;
   min-height: 64px !important;
   height: auto !important;
-  min-width: 360px !important; 
-  max-width: min(90vw, 420px) !important; 
+  min-width: min(360px, 95vw) !important; 
+  max-width: 100% !important; 
   width: 100% !important;
 
   padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.5rem) !important;
@@ -277,7 +286,7 @@ export default {
   background: rgba(16, 185, 129, 0.2) !important;
 }
 
-/* Error variant */
+/* Error variant
 .notification-error {
   border-left: 4px solid var(--color-error, #ef4444) !important;
 }
@@ -288,19 +297,42 @@ export default {
 
 .dark .notification-error .notification-icon-wrapper {
   background: rgba(239, 68, 68, 0.2) !important;
-}
+}*/
 
-/* Warning variant */
-.notification-warning {
+/* Error variant - USE WARNING COLOR */
+.notification-error {
   border-left: 4px solid var(--color-warning, #f59e0b) !important;
 }
 
-.notification-warning .notification-icon-wrapper {
+.notification-error .notification-icon-wrapper {
   background: var(--color-warning-light, #fef3c7) !important;
 }
 
-.dark .notification-warning .notification-icon-wrapper {
+.dark .notification-error .notification-icon-wrapper {
   background: rgba(245, 158, 11, 0.2) !important;
+}
+
+.notification-error .notification-icon {
+  color: var(--color-warning, #f59e0b);
+}
+
+/* ============================================
+   WARNING VARIANT - NEON YELLOW
+   ============================================ */
+.notification-warning {
+  border-left: 4px solid var(--color-warning, #faff00) !important;
+}
+
+.notification-warning .notification-icon-wrapper {
+  background: var(--color-warning-light, #ffffb3) !important;
+}
+
+.dark .notification-warning .notification-icon-wrapper {
+  background: rgba(250, 255, 0, 0.2) !important;
+}
+
+.notification-warning .notification-icon {
+  color: var(--color-warning, #faff00) !important;
 }
 
 /* Info variant */
@@ -573,16 +605,21 @@ export default {
    ============================================ */
 @media (max-width: 640px) {
   .notification-container {
-    bottom: var(--spacing-sm, 0.5rem);
-    left: var(--spacing-sm, 0.5rem);
-    right: var(--spacing-sm, 0.5rem);
-    transform: none;
-    max-width: calc(100vw - 1rem);
-    width: calc(100vw - 1rem);
+    top: unset !important;
+    bottom: var(--spacing-sm, 0.5rem) !important;
+
+    left: var(--spacing-sm, 0.5rem) !important;
+    right: var(--spacing-sm, 0.5rem) !important;
+    transform: none !important;
+
+    max-width: calc(100vw - 1rem) !important;
+    width: calc(100vw - 1rem) !important;
+    align-items: stretch !important; /* ✅ full width cho dễ đọc */
   }
 
   .notification-list {
-    width: 100%;
+    width: 100% !important;
+    align-items: stretch !important;
   }
 
   .notification-item {

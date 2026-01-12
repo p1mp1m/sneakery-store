@@ -23,4 +23,14 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
             "ORDER BY totalSold DESC",
             nativeQuery = true)
     List<Object[]> getTopSellingProducts();
+
+    @Query(value =
+            "SELECT COALESCE(SUM(od.quantity), 0) " +
+                    "FROM Order_Details od " +
+                    "JOIN Orders o ON od.order_id = o.id " +
+                    "WHERE od.variant_id = :variantId " +
+                    "  AND o.status IN ('pending', 'confirmed', 'processing', 'paid', 'shipped')",
+            nativeQuery = true)
+    Integer sumReservedQuantityByVariantId(Long variantId);
+
 }

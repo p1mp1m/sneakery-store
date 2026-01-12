@@ -73,7 +73,7 @@ const handleToggle = async () => {
     console.error('Error toggling wishlist:', error)
     
     const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra'
-    notificationService.error('Lỗi', errorMessage)
+    notificationService.warning('Cảnh báo', errorMessage)
   } finally {
     loading.value = false
   }

@@ -986,17 +986,17 @@ const insertVariable = (variable) => {
 
 const saveTemplate = async () => {
   if (!templateForm.value.name.trim()) {
-    notificationService.error('Lỗi','Vui lòng nhập tên template')
+    notificationService.warning('Cảnh báo','Vui lòng nhập tên template')
     return
   }
   
   if (!templateForm.value.subject.trim()) {
-    notificationService.error('Lỗi','Vui lòng nhập chủ đề email')
+    notificationService.warning('Cảnh báo','Vui lòng nhập chủ đề email')
     return
   }
   
   if (!templateForm.value.body.trim()) {
-    notificationService.error('Lỗi','Vui lòng nhập nội dung email')
+    notificationService.warning('Cảnh báo','Vui lòng nhập nội dung email')
     return
   }
 

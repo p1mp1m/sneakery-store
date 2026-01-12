@@ -20,8 +20,8 @@ function generateInvoiceHtml(order) {
     const day = String(d.getDate()).padStart(2, '0')
     const month = d.getMonth() + 1
     const year = d.getFullYear()
-    const monthNames = ['tháng 1', 'tháng 2', 'tháng 3', 'tháng 4', 'tháng 5', 'tháng 6', 
-                        'tháng 7', 'tháng 8', 'tháng 9', 'tháng 10', 'tháng 11', 'tháng 12']
+    const monthNames = ['tháng 1', 'tháng 2', 'tháng 3', 'tháng 4', 'tháng 5', 'tháng 6',
+      'tháng 7', 'tháng 8', 'tháng 9', 'tháng 10', 'tháng 11', 'tháng 12']
     return `lúc ${hours}:${minutes} ${day} ${monthNames[month - 1]}, ${year}`
   }
 
@@ -41,6 +41,25 @@ function generateInvoiceHtml(order) {
     return statusMap[status.toLowerCase()] || status
   }
 
+  const getPaymentStatusLabel = (status) => {
+    if (!status) return 'Không xác định'
+
+    const statusMap = {
+      'unpaid': 'Chưa thanh toán',
+      'pending': 'Chờ thanh toán',
+      'processing': 'Đang xử lý thanh toán',
+      'completed': 'Đã thanh toán',
+      'success': 'Thanh toán thành công',
+      'failed': 'Thanh toán thất bại',
+      'cancelled': 'Đã hủy thanh toán',
+      'refunded': 'Đã hoàn tiền',
+      'partial_refund': 'Hoàn tiền một phần',
+      'expired': 'Phiên thanh toán đã hết hạn'
+    }
+
+    return statusMap[status.toLowerCase()] || status
+  }
+
   const getPaymentMethodLabel = (method) => {
     if (!method) return 'N/A'
     const methodMap = {
@@ -55,21 +74,21 @@ function generateInvoiceHtml(order) {
   // Format địa chỉ giao hàng
   const formatShippingAddress = (address) => {
     if (!address) return 'Không có thông tin'
-    
+
     const parts = []
     if (address.recipientName) parts.push(`<strong>${address.recipientName}</strong>`)
     if (address.phone) parts.push(address.phone)
     if (address.line1) parts.push(address.line1)
     if (address.line2) parts.push(address.line2)
-    
+
     const locationParts = []
     if (address.ward) locationParts.push(address.ward)
     if (address.district) locationParts.push(address.district)
     if (address.city) locationParts.push(address.city)
     if (locationParts.length > 0) parts.push(locationParts.join(', '))
-    
+
     if (address.postalCode) parts.push(`Mã bưu điện: ${address.postalCode}`)
-    
+
     return parts.length > 0 ? parts.join('<br>') : 'Không có thông tin'
   }
 
@@ -199,18 +218,18 @@ function generateInvoiceHtml(order) {
         </thead>
         <tbody>
           ${orderItems.length > 0 ? orderItems.map(item => {
-  const productName = item.productName || 'Sản phẩm'
-  const brandName = item.brandName || ''
-  const size = item.size ? `Size: ${item.size}` : ''
-  const color = item.color ? `Màu: ${item.color}` : ''
-  const variantInfo = [size, color].filter(Boolean).join(' | ')
-  const sku = item.sku || "N/A"
-  const quantity = item.quantity || 1
-  const unitPrice = item.unitPrice || 0
-  const totalPrice = item.totalPrice || (unitPrice * quantity)
-  // const vat = totalPrice * 0.1
+    const productName = item.productName || 'Sản phẩm'
+    const brandName = item.brandName || ''
+    const size = item.size ? `Size: ${item.size}` : ''
+    const color = item.color ? `Màu: ${item.color}` : ''
+    const variantInfo = [size, color].filter(Boolean).join(' | ')
+    const sku = item.sku || "N/A"
+    const quantity = item.quantity || 1
+    const unitPrice = item.unitPrice || 0
+    const totalPrice = item.totalPrice || (unitPrice * quantity)
+    // const vat = totalPrice * 0.1
 
-  return `
+    return `
   <tr>
     <td>
       <div class="product-name">${productName}</div>
@@ -223,7 +242,7 @@ function generateInvoiceHtml(order) {
     <td class="text-right">${formatCurrency(totalPrice)}</td>
   </tr>
   `
-}).join('') : `
+  }).join('') : `
 <tr>
   <td colspan="5" style="text-align:center; padding:20px; color:#666;">
     Không có sản phẩm
@@ -237,36 +256,29 @@ function generateInvoiceHtml(order) {
   <td class="text-right">${formatCurrency(order.subtotal || 0)}</td>
 </tr>
 
-${
-  order.discountAmount > 0
-    ? `
+${order.discountAmount > 0
+      ? `
 <tr>
   <td colspan="4" style="text-align:right; color:#dc2626;">Giảm giá Coupon:</td>
   <td class="text-right" style="color:#dc2626;">- ${formatCurrency(order.discountAmount)}</td>
 </tr>
 `
-    : ""
-}
+      : ""
+    }
 
-${
-  order.pointsUsed > 0
-    ? `
+${order.pointsUsed > 0
+      ? `
 <tr>
   <td colspan="4" style="text-align:right; color:#0ea5e9;">Điểm đã dùng (${order.pointsUsed} điểm):</td>
   <td class="text-right" style="color:#0ea5e9;">- ${formatCurrency(order.pointsDiscount || 0)}</td>
 </tr>
 `
-    : ""
-}
+      : ""
+    }
 
 <tr>
   <td colspan="4" style="text-align:right;">Phí vận chuyển:</td>
   <td class="text-right">${formatCurrency(order.shippingFee || 0)}</td>
-</tr>
-
-<tr>
-  <td colspan="4" style="text-align:right;">Thuế VAT:</td>
-  <td class="text-right">${formatCurrency(order.taxAmount || 0)}</td>
 </tr>
 
 <tr class="total-row">
@@ -295,7 +307,7 @@ ${
 
       ${paymentStatus ? `
       <div style="margin-top: 8px;">
-        <strong>Trạng thái:</strong> ${paymentStatus}
+        <strong>Trạng thái:</strong> ${getPaymentStatusLabel(paymentStatus)}
       </div>` : ''}
 
       ${order.payment?.paidAt ? `
@@ -324,11 +336,11 @@ ${
 export function printInvoice(order) {
   const html = generateInvoiceHtml(order)
   const printWindow = window.open('', '_blank')
-  
+
   if (printWindow) {
     printWindow.document.write(html)
     printWindow.document.close()
-    
+
     // Wait for content to load then print
     printWindow.onload = () => {
       setTimeout(() => {
@@ -348,7 +360,7 @@ export function downloadInvoiceHtml(order) {
   const blob = new Blob([html], { type: 'text/html' })
   const link = document.createElement('a')
   const url = URL.createObjectURL(blob)
-  
+
   link.setAttribute('href', url)
   link.setAttribute('download', `invoice-${order.id}.html`)
   link.style.visibility = 'hidden'

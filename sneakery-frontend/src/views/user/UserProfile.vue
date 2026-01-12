@@ -753,13 +753,13 @@ const updateProfile = async () => {
     
     // Validate required fields
     if (!profile.fullName || !profile.fullName.trim()) {
-      notificationService.error('Lỗi', 'Họ và tên không được để trống');
+      notificationService.warning('Cảnh báo', 'Họ và tên không được để trống');
       return;
     }
 
     // Validate phone number if provided
     if (profile.phoneNumber && !validateVietnamesePhone(profile.phoneNumber)) {
-      notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
+      notificationService.warning('Cảnh báo', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
       return;
     }
 
@@ -783,7 +783,7 @@ const updateProfile = async () => {
   } catch (error) {
     logger.error('Error updating profile:', error);
     const errorMessage = error.response?.data?.message || error.message || 'Không thể cập nhật thông tin';
-    notificationService.error('Lỗi', errorMessage);
+    notificationService.warning('Cảnh báo', errorMessage);
   } finally {
     updating.value = false;
   }
@@ -791,14 +791,14 @@ const updateProfile = async () => {
 
 const changePassword = async () => {
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    notificationService.error('Lỗi','Mật khẩu xác nhận không khớp');
+    notificationService.warning('Cảnh báo','Mật khẩu xác nhận không khớp');
     return;
   }
 
   // Validate password strength
   const strength = validatePasswordStrength(passwordForm.newPassword);
   if (!strength.valid) {
-    notificationService.error('Lỗi', strength.errors[0] || 'Mật khẩu không hợp lệ');
+    notificationService.warning('Cảnh báo', strength.errors[0] || 'Mật khẩu không hợp lệ');
     return;
   }
 
@@ -821,7 +821,7 @@ const changePassword = async () => {
   } catch (error) {
     logger.error('Error changing password:', error);
     const errorMessage = error.response?.data?.message || error.message || 'Không thể đổi mật khẩu';
-    notificationService.error('Lỗi', errorMessage);
+    notificationService.warning('Cảnh báo', errorMessage);
   } finally {
     changingPassword.value = false;
   }
@@ -833,7 +833,7 @@ const loadAddresses = async () => {
     addresses.value = await userService.getMyAddresses();
   } catch (error) {
     logger.error('Error loading addresses:', error);
-    notificationService.error('Lỗi',error.message || 'Không thể tải danh sách địa chỉ');
+    notificationService.warning('Cảnh báo',error.message || 'Không thể tải danh sách địa chỉ');
   } finally {
     loadingAddresses.value = false;
   }
@@ -858,24 +858,24 @@ const saveAddress = async () => {
 
   // Validate phone number
   if (!validateVietnamesePhone(addressForm.phone)) {
-    notificationService.error('Lỗi', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
+    notificationService.warning('Cảnh báo', 'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10-11 số, bắt đầu bằng 0)');
     return;
   }
 
   // Validate address format
   if (!validateAddress(addressForm.line1)) {
-    notificationService.error('Lỗi', 'Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)');
+    notificationService.warning('Cảnh báo', 'Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ đầy đủ (tối thiểu 5 ký tự)');
     return;
   }
 
   // Validate district and city
   if (!validateLocation(addressForm.district)) {
-    notificationService.error('Lỗi', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
+    notificationService.warning('Cảnh báo', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
     return;
   }
 
   if (!validateLocation(addressForm.city)) {
-    notificationService.error('Lỗi', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
+    notificationService.warning('Cảnh báo', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
     return;
   }
 
@@ -898,7 +898,7 @@ const saveAddress = async () => {
     closeAddressForm();
   } catch (error) {
     logger.error('Error saving address:', error);
-    notificationService.error('Lỗi',error.message || 'Không thể lưu địa chỉ');
+    notificationService.warning('Cảnh báo',error.message || 'Không thể lưu địa chỉ');
   }
 };
 
@@ -920,7 +920,7 @@ const deleteAddress = async (id) => {
   } catch (error) {
     if (error !== 'cancel') {
       logger.error('Error deleting address:', error);
-      notificationService.error('Lỗi','Không thể xóa địa chỉ');
+      notificationService.warning('Cảnh báo','Không thể xóa địa chỉ');
     }
   }
 };

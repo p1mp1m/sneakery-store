@@ -141,16 +141,21 @@
                       <i class="material-icons text-base">remove</i>
                     </button>
                     <div
-                      class="w-12 h-9 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
-                    >
-                      <span
-                        class="text-base font-semibold text-gray-900 dark:text-gray-100"
-                        >{{ item.quantity }}</span
-                      >
-                    </div>
+  class="w-12 h-9 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 overflow-hidden"
+>
+  <input
+    :value="getDraftQuantity(item)"
+    @input="onQuantityInput(item, $event)"
+    @keydown.enter.prevent="onQuantityEnter(item, $event)"
+    @blur="onQuantityBlur(item, $event)"
+    inputmode="numeric"
+    class="w-full h-full text-center text-base font-semibold text-gray-900 dark:text-gray-100 bg-transparent outline-none focus:ring-2 focus:ring-purple-500"
+    aria-label="Nhập số lượng"
+  />
+</div>
                     <button
                       @click="updateQuantity(item, item.quantity + 1)"
-                      :disabled="reachedMaxItems.has(item.variantId)"
+                      :disabled="isPlusDisabled(item)"
                       class="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-600 transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Tăng số lượng"
                     >
@@ -463,6 +468,155 @@ const activeCoupons = ref([]);
 const loadingActiveCoupons = ref(false);
 const selectedCouponCode = ref("");
 const reachedMaxItems = ref(new Set());
+// Draft quantity input per item (key by variantId)
+const quantityDraft = ref(new Map()); // Map<number, string> (string để giữ input)
+const committingQuantity = ref(new Set()); // tránh commit trùng khi blur+enter
+const getMaxAllowedQuantity = (item) => {
+  // Ưu tiên các field tồn kho nếu backend có trả
+  const candidates = [
+    item.availableStock,
+    item.stockQuantity,
+    item.availableQuantity,
+    item.maxQuantity,
+    item.quantityAvailable,
+  ];
+
+  const max = candidates.find((v) => Number.isFinite(Number(v)) && Number(v) >= 0);
+  return max == null ? null : Number(max);
+};
+
+const getDraftQuantity = (item) => {
+  const key = item.variantId;
+  const draft = quantityDraft.value.get(key);
+  // Nếu chưa có draft thì lấy theo quantity hiện tại
+  return draft != null ? draft : String(item.quantity ?? 1);
+};
+
+const setDraftQuantity = (item, val) => {
+  quantityDraft.value.set(item.variantId, String(val));
+};
+
+const isPlusDisabled = (item) => {
+  if (reachedMaxItems.value.has(item.variantId)) return true;
+
+  const maxAllowed = getMaxAllowedQuantity(item);
+  if (maxAllowed == null) return false; // chưa có tồn kho → để backend validate
+  return Number(item.quantity) >= maxAllowed;
+};
+
+const normalizeQuantity = (rawValue) => {
+  // Chỉ lấy số nguyên dương
+  const n = parseInt(String(rawValue).replace(/[^\d]/g, ""), 10);
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return n;
+};
+
+const commitQuantityFromInput = async (item, rawValue) => {
+  const key = item.variantId;
+
+  if (committingQuantity.value.has(key)) return;
+  committingQuantity.value.add(key);
+
+  try {
+    const oldQuantity = Number(item.quantity ?? 1);
+    let nextQuantity = normalizeQuantity(rawValue);
+
+    // 1) Validate client-side theo availableStock nếu có (chặt ngay tại chỗ)
+    const maxAllowedLocal = getMaxAllowedQuantity(item);
+
+    if (maxAllowedLocal != null && nextQuantity > maxAllowedLocal) {
+      // ✅ CLAMP NGAY THEO LOCAL MAX
+      nextQuantity = maxAllowedLocal;
+      reachedMaxItems.value.add(item.variantId);
+
+      notificationService.warning(
+        "Số lượng không hợp lệ",
+        `Không đủ hàng tồn kho khả dụng. Tối đa có thể mua: ${maxAllowedLocal}`
+      );
+    } else {
+      reachedMaxItems.value.delete(item.variantId);
+    }
+
+    // 2) Nếu không đổi -> sync draft
+    if (Number(nextQuantity) === Number(oldQuantity)) {
+      setDraftQuantity(item, String(oldQuantity));
+      return;
+    }
+
+    // 3) Commit lên backend (silent để không toast success liên tục)
+    const result = await updateQuantity(item, nextQuantity, { silent: true });
+
+    // 4) Nếu backend báo stock và có maxAllowed -> SET VỀ MAX & COMMIT LẠI (đúng yêu cầu)
+    if (!result.ok && result.reason === "stock" && result.maxAllowed != null) {
+      const max = Math.max(1, Number(result.maxAllowed));
+
+      // UI clamp về max
+      item.quantity = max;
+      setDraftQuantity(item, String(max));
+      reachedMaxItems.value.add(item.variantId);
+
+      // ✅ GỌI LẠI backend để UPDATE quantity = max (đưa "lớn nhất" vào giỏ)
+      // silent: true để không spam toast success
+      await updateQuantity(item, max, { silent: true });
+
+      // Toast warning 1 lần là đủ (đã có trong updateQuantity khi error)
+      return;
+    }
+
+    // 5) Đồng bộ draft theo quantity cuối cùng
+    setDraftQuantity(item, String(item.quantity));
+  } finally {
+    setTimeout(() => committingQuantity.value.delete(key), 0);
+  }
+};
+
+const onQuantityInput = (item, e) => {
+  // Cho user gõ tự do, nhưng chỉ lưu text (để Enter/Blur mới commit)
+  const value = e?.target?.value ?? "";
+  setDraftQuantity(item, value);
+};
+
+const onQuantityEnter = async (item, e) => {
+  const value = e?.target?.value ?? getDraftQuantity(item);
+  await commitQuantityFromInput(item, value);
+
+  // Sau commit, đảm bảo input hiển thị đúng
+  if (e?.target) e.target.value = String(item.quantity);
+};
+
+const onQuantityBlur = async (item, e) => {
+  const value = e?.target?.value ?? getDraftQuantity(item);
+  await commitQuantityFromInput(item, value);
+
+  // Sau commit, đảm bảo input hiển thị đúng
+  if (e?.target) e.target.value = String(item.quantity);
+};
+
+const extractMaxAllowedFromBackendMessage = (error) => {
+  const msg =
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.message ||
+    "";
+
+  // Match số cuối trong câu "Tối đa có thể mua: 2"
+  const m = String(msg).match(/Tối đa có thể mua:\s*(\d+)/i);
+  if (m && m[1]) {
+    const n = Number(m[1]);
+    if (Number.isFinite(n) && n >= 0) return n;
+  }
+  return null;
+};
+
+const extractUserFriendlyMessage = (error, fallback = "Không thể cập nhật số lượng") => {
+  return (
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.message ||
+    fallback
+  );
+};
+
 // Use coupon store state
 const couponCode = computed({
   get: () => couponStore.couponCode,
@@ -546,46 +700,72 @@ const fetchCart = async () => {
     await cartStore.fetchCart();
   } catch (error) {
     logger.error("Error fetching cart:", error);
-    notificationService.error("Lỗi", error.message || "Không thể tải giỏ hàng");
+    notificationService.warning("Cảnh báo", error.message || "Không thể tải giỏ hàng");
   }
 };
 
-const updateQuantity = async (item, newQuantity) => {
-  if (newQuantity < 1) return;
+const updateQuantity = async (item, newQuantity, options = {}) => {
+  const { silent = false } = options;
 
-  const oldQuantity = item.quantity;
-  const isIncreasing = newQuantity > oldQuantity; // chỉ quan tâm khi bấm +
+  if (newQuantity < 1) return { ok: false };
 
-  // Optimistic update: thay đổi UI trước
-  item.quantity = newQuantity;
+  const oldQuantity = Number(item.quantity ?? 1);
+  const isIncreasing = Number(newQuantity) > oldQuantity;
+
+  // Optimistic update
+  item.quantity = Number(newQuantity);
 
   try {
-    await cartStore.updateQuantity(item.variantId, newQuantity);
+    await cartStore.updateQuantity(item.variantId, Number(newQuantity));
 
-    // Thành công → bỏ khóa nếu có (stock có thể tăng lại)
+    // Thành công → mở khóa
     reachedMaxItems.value.delete(item.variantId);
 
-    notificationService.success("Thành công", "Đã cập nhật số lượng");
+    // Đồng bộ draft
+    setDraftQuantity(item, String(item.quantity));
+
+    if (!silent) {
+      notificationService.success("Thành công", "Đã cập nhật số lượng");
+    }
+
+    return { ok: true };
   } catch (error) {
-    // Rollback về số cũ
+    // Rollback
     item.quantity = oldQuantity;
 
-    // Nếu đang bấm tăng (+) và lỗi 400 → coi như đạt max → khóa nút + của item này
-    if (isIncreasing && error?.response?.status === 400) {
-      reachedMaxItems.value.add(item.variantId);
+    // Lấy message backend
+    const backendMsg = extractUserFriendlyMessage(error, "Không thể cập nhật số lượng");
 
-      notificationService.warning(
-        "Không thể tăng thêm",
-        "Sản phẩm đã đạt số lượng tối đa"
-      );
-    } else {
-      notificationService.error("Lỗi", "Không thể cập nhật số lượng");
+    // Parse maxAllowed từ message
+    const maxAllowed = extractMaxAllowedFromBackendMessage(error);
+
+    // Xác định lỗi tồn kho (hiện backend trả 400)
+    const isStockError = error?.response?.status === 400;
+
+    if (isStockError) {
+      // Không báo đỏ, báo warning + message backend
+      notificationService.warning("Không thể cập nhật", backendMsg);
+
+      // Nếu biết maxAllowed → clamp về maxAllowed và khóa nút +
+      if (maxAllowed != null) {
+        reachedMaxItems.value.add(item.variantId);
+
+        const safeQty = Math.max(1, Number(maxAllowed));
+        item.quantity = safeQty;
+        setDraftQuantity(item, String(safeQty));
+      } else {
+        // Không biết max → chỉ sync draft về old
+        setDraftQuantity(item, String(oldQuantity));
+      }
+
+      return { ok: false, reason: "stock", maxAllowed };
     }
-  }
 
-  // Nếu đang giảm số lượng → luôn mở khóa (để có thể tăng lại sau)
-  if (newQuantity < oldQuantity) {
-    reachedMaxItems.value.delete(item.variantId);
+    // Lỗi khác
+    notificationService.warning("Không thể cập nhật", backendMsg);
+    setDraftQuantity(item, String(oldQuantity));
+
+    return { ok: false, reason: "unknown" };
   }
 };
 
@@ -610,8 +790,8 @@ const removeItem = async (item) => {
   } catch (error) {
     if (error !== "cancel") {
       logger.error("Error removing item:", error);
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         error.message || "Không thể xóa sản phẩm"
       );
     }
@@ -700,7 +880,7 @@ const onCouponSelected = async () => {
     couponStore.setError(error.message || "Không thể áp dụng mã giảm giá");
     couponStore.clearCoupon();
     selectedCouponCode.value = "";
-    notificationService.error("Lỗi", couponStore.couponError);
+    notificationService.warning("Cảnh báo", couponStore.couponError);
   } finally {
     applyingCoupon.value = false;
   }
@@ -806,7 +986,7 @@ const proceedToCheckout = async () => {
     //  LỖI THẬT → clear coupon
     couponStore.clearCoupon();
 
-    notificationService.error(
+    notificationService.warning(
       "Mã giảm giá không hợp lệ",
       error?.response?.data?.message ||
         "Mã giảm giá không còn hợp lệ. Vui lòng chọn lại."
@@ -840,10 +1020,26 @@ watch(
   }
 );
 
+// watch(
+//   () => cart.value?.items,
+//   async () => {
+//     syncDraftFromCart();
+//     await loadVariantImagesForCart();
+//   },
+//   { deep: true }
+// );
+
+const syncDraftFromCart = () => {
+  if (!cart.value?.items) return;
+  for (const item of cart.value.items) {
+    setDraftQuantity(item, String(item.quantity ?? 1));
+  }
+};
 // Lifecycle
 onMounted(async () => {
   couponStore.init();
   await fetchCart(); // tải cart
+  syncDraftFromCart();
   await loadVariantImagesForCart(); // 🔥 tải ảnh variant đầu tiên
   fetchActiveCoupons();
 });
@@ -851,6 +1047,7 @@ onMounted(async () => {
 watch(
   () => cart.value?.items,
   async () => {
+    syncDraftFromCart();
     await loadVariantImagesForCart();
   },
   { deep: true }

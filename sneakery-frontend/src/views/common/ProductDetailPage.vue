@@ -1213,7 +1213,7 @@ const addToCart = async () => {
   }
 
   if (!canAddToCart.value) {
-    notificationService.error("Lỗi", "Sản phẩm này hiện không có sẵn");
+    notificationService.warning("Cảnh báo", "Sản phẩm này hiện không có sẵn");
     return;
   }
 
@@ -1236,8 +1236,8 @@ const addToCart = async () => {
       );
       router.push("/login");
     } else {
-      notificationService.error(
-        "Lỗi",
+      notificationService.warning(
+        "Cảnh báo",
         err.response?.data?.message || "Không thể thêm vào giỏ hàng"
       );
     }
