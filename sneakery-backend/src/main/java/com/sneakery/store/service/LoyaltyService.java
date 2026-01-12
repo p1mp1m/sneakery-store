@@ -3,6 +3,7 @@ package com.sneakery.store.service;
 import com.sneakery.store.entity.LoyaltyPoint;
 import com.sneakery.store.entity.Order;
 import com.sneakery.store.entity.User;
+import com.sneakery.store.dto.LoyaltyHistoryItemDto;
 import com.sneakery.store.exception.ApiException;
 import com.sneakery.store.repository.LoyaltyPointRepository;
 import com.sneakery.store.repository.UserRepository;
@@ -51,8 +52,8 @@ public class LoyaltyService {
      * Lấy transaction history
      */
     @Transactional(readOnly = true)
-    public List<LoyaltyPoint> getUserPointsHistory(Long userId) {
-        return loyaltyPointRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    public List<LoyaltyHistoryItemDto> getUserPointsHistory(Long userId) {
+        return loyaltyPointRepository.findHistoryItemsByUserId(userId);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.sneakery.store.controller;
 
 import com.sneakery.store.entity.LoyaltyPoint;
 import com.sneakery.store.entity.User;
+import com.sneakery.store.dto.LoyaltyHistoryItemDto;
 import com.sneakery.store.service.LoyaltyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -144,12 +145,12 @@ public class LoyaltyController {
      * </pre>
      */
     @GetMapping("/history")
-    public ResponseEntity<List<LoyaltyPoint>> getHistory(@AuthenticationPrincipal User userPrincipal) {
+    public ResponseEntity<List<LoyaltyHistoryItemDto>> getHistory(@AuthenticationPrincipal User userPrincipal) {
         log.info("📍 GET /api/loyalty/history - User: {}", userPrincipal.getId());
-        
+
         Long userId = userPrincipal.getId();
-        List<LoyaltyPoint> history = loyaltyService.getUserPointsHistory(userId);
-        
+        List<LoyaltyHistoryItemDto> history = loyaltyService.getUserPointsHistory(userId);
+
         return ResponseEntity.ok(history);
     }
 }

@@ -168,9 +168,9 @@
               <p class="text-sm text-gray-600 dark:text-gray-400">Quản lý địa chỉ giao hàng của bạn</p>
             </div>
             <button 
-              @click="showAddressForm = true"
-              @keydown.enter="showAddressForm = true"
-              @keydown.space.prevent="showAddressForm = true"
+              @click="openCreateAddress"
+              @keydown.enter="openCreateAddress"
+              @keydown.space.prevent="openCreateAddress"
               aria-label="Thêm địa chỉ mới"
               class="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-purple-400 focus-visible:outline-offset-2"
             >
@@ -236,13 +236,13 @@
                     </p>
                     <p class="flex items-center gap-2">
                       <i class="material-icons text-xs text-gray-400">location_city</i>
-                      {{ addr.district }}, {{ addr.city }}
+                      {{ addr.ward }}, {{ addr.district }}, {{ addr.city }}
                     </p>
                   </div>
                 </div>
                 <div class="flex flex-col gap-2 flex-shrink-0">
                   <button 
-                    @click="editAddress(addr)" 
+                    @click="openEditAddress(addr)" 
                     class="px-3 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-purple-300 dark:hover:border-purple-600 transition-all text-sm font-medium flex items-center gap-1"
                   >
                     <i class="material-icons text-sm">edit</i>
@@ -279,6 +279,7 @@
               <input 
                 v-model="passwordForm.currentPassword" 
                 type="password" 
+                autocomplete="current-password"
                 class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
                 placeholder="Nhập mật khẩu hiện tại"
                 required 
@@ -290,6 +291,7 @@
               <input 
                 v-model="passwordForm.newPassword" 
                 type="password" 
+                autocomplete="new-password"
                 class="w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 transition-all"
                 :class="[
                   passwordForm.newPassword && passwordStrength && !passwordStrength.valid
@@ -360,7 +362,7 @@
               </div>
               <small v-else class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                 <i class="material-icons text-xs">info</i>
-                Mật khẩu phải có ít nhất 6 ký tự
+                Mật khẩu phải có ít nhất 8 ký tự
               </small>
             </div>
 
@@ -369,6 +371,7 @@
               <input 
                 v-model="passwordForm.confirmPassword" 
                 type="password" 
+                autocomplete="new-password"
                 class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all" 
                 placeholder="Nhập lại mật khẩu mới"
                 required 
@@ -426,14 +429,14 @@
             <div v-else class="space-y-4">
               <div class="text-center">
                 <div class="text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                  {{ loyaltyStore.currentBalance.toLocaleString() }}
+                  {{ Number(loyaltyStore.balance ?? 0).toLocaleString('vi-VN') }}
                 </div>
                 <div class="text-lg text-gray-600 dark:text-gray-400 font-medium">Điểm</div>
               </div>
 
               <div class="flex items-center justify-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg py-2 px-4">
                 <i class="material-icons text-yellow-500">monetization_on</i>
-                <span class="font-semibold">≈ {{ formatCurrency(loyaltyStore.calculateVndFromPoints(loyaltyStore.currentBalance)) }}</span>
+                <span class="font-semibold">≈ {{ formatCurrency(loyaltyStore.calculateVndFromPoints(Number(loyaltyStore.balance ?? 0))) }}</span>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
@@ -584,7 +587,16 @@
     </div>
 
     <!-- Add/Edit Address Modal -->
-    <div v-if="showAddressForm" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showAddressForm = false">
+     <AddressModal
+     :key="`${addressModalMode}-${editingAddress?.id ?? 'new'}`"
+  v-model:visible="showAddressModal"
+  :mode="addressModalMode"
+  :initialAddress="editingAddress"
+  :submitting="savingAddress"
+  @close="onAddressModalClose"
+  @submit="onAddressModalSubmit"
+/>
+    <!-- <div v-if="showAddressForm" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" @click.self="showAddressForm = false">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
         <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
           <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -682,12 +694,12 @@
           </button>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, nextTick, toRaw } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useLoyaltyStore } from '@/stores/loyalty';
 import { useTheme } from '@/composables/useTheme';
@@ -698,6 +710,12 @@ import { API_ENDPOINTS } from '@/config/api';
 import logger from '@/utils/logger';
 import userService from '@/services/userService';
 import { formatCurrency } from '@/utils/formatters';
+import {
+  validateVietnamesePhone,
+  formatPhoneNumber,
+  validateAddress,
+} from "@/utils/validators";
+import AddressModal from "@/assets/components/common/AddressModal.vue";
 
 const authStore = useAuthStore();
 const loyaltyStore = useLoyaltyStore();
@@ -711,6 +729,91 @@ const changingPassword = ref(false);
 const loadingAddresses = ref(false);
 const showAddressForm = ref(false);
 const editingAddress = ref(null);
+const hasLoadedLoyalty = ref(false)
+
+const showAddressModal = ref(false);
+const addressModalMode = ref("create"); // "create" | "edit"
+const savingAddress = ref(false);
+
+const openCreateAddress = async () => {
+  addressModalMode.value = "create";
+  editingAddress.value = null;
+  await nextTick();
+  showAddressModal.value = true;
+};
+
+const openEditAddress = async (addr) => {
+  addressModalMode.value = "edit";
+  editingAddress.value = addr; // addr từ server (NAME: city/district/ward)
+  await nextTick();
+  showAddressModal.value = true;
+};
+
+const onAddressModalClose = () => {
+  // optional: cleanup nhẹ
+  // (component đã tự hydrate lại khi mở)
+};
+
+const onAddressModalSubmit = async ({ ok, error, mode, payload }) => {
+  if (!ok) {
+    notificationService.warning("Cảnh báo", error || "Dữ liệu không hợp lệ");
+    return;
+  }
+
+  try {
+    savingAddress.value = true;
+
+    if (mode === "create") {
+      const created = await userService.createAddress({
+        recipientName: payload.recipientName,
+        phone: payload.phone,
+        line1: payload.line1,
+        line2: payload.line2,
+        // payload đã CODE -> NAME sẵn
+        city: payload.city,
+        district: payload.district,
+        ward: payload.ward,
+        postalCode: payload.postalCode,
+        email: payload.email || "",
+      });
+
+      addresses.value.push(created);
+      notificationService.success("Thành công", "Thêm địa chỉ thành công");
+      showAddressModal.value = false;
+      return;
+    }
+
+    if (mode === "edit") {
+      const updated = await userService.updateAddress(payload.id, {
+        id: payload.id,
+        recipientName: payload.recipientName,
+        phone: payload.phone,
+        line1: payload.line1,
+        line2: payload.line2,
+        city: payload.city,
+        district: payload.district,
+        ward: payload.ward,
+        postalCode: payload.postalCode,
+        email: payload.email || "",
+      });
+
+      const idx = addresses.value.findIndex((a) => a.id === updated.id);
+      if (idx !== -1) addresses.value[idx] = updated;
+
+      notificationService.success("Thành công", "Cập nhật địa chỉ thành công");
+      showAddressModal.value = false;
+      return;
+    }
+  } catch (e) {
+    logger.error("Error saving address:", e);
+    notificationService.warning(
+      "Cảnh báo",
+      e?.response?.data?.message || e?.message || "Không thể lưu địa chỉ"
+    );
+  } finally {
+    savingAddress.value = false;
+  }
+};
 
 const profile = reactive({
   fullName: '',
@@ -723,6 +826,54 @@ const passwordForm = reactive({
   newPassword: '',
   confirmPassword: '',
 });
+
+/**
+ * Validate password strength
+ * Rules (theo UI bạn đang hiển thị):
+ * - >= 8 ký tự
+ * - có ít nhất 1 chữ hoa
+ * - có ít nhất 1 chữ thường
+ * - có ít nhất 1 số
+ */
+const validatePasswordStrength = (password) => {
+  const pwd = String(password || "");
+  const errors = [];
+
+  if (pwd.length < 8) errors.push("Mật khẩu phải có ít nhất 8 ký tự");
+  if (!/[A-Z]/.test(pwd)) errors.push("Mật khẩu phải có ít nhất 1 chữ hoa");
+  if (!/[a-z]/.test(pwd)) errors.push("Mật khẩu phải có ít nhất 1 chữ thường");
+  if (!/[0-9]/.test(pwd)) errors.push("Mật khẩu phải có ít nhất 1 số");
+
+  const valid = errors.length === 0;
+
+  // Strength label: weak / medium / strong
+  // - weak: fail >=2 điều kiện
+  // - medium: fail 1 điều kiện hoặc chỉ đạt mức tối thiểu
+  // - strong: pass hết + khuyến khích dài hơn / có ký tự đặc biệt
+  let strength = "weak";
+
+  if (valid) {
+    const hasSymbol = /[^A-Za-z0-9]/.test(pwd);
+    if (pwd.length >= 12 && hasSymbol) strength = "strong";
+    else strength = "medium";
+  } else {
+    const failedCount = errors.length;
+    strength = failedCount <= 1 ? "medium" : "weak";
+  }
+
+  return { valid, strength, errors };
+};
+
+/**
+ * Computed cho template dùng trực tiếp:
+ * passwordStrength.valid
+ * passwordStrength.strength
+ * passwordStrength.errors
+ */
+const passwordStrength = computed(() => {
+  return validatePasswordStrength(passwordForm.newPassword);
+});
+
 
 const addresses = ref([]);
 
@@ -868,16 +1019,16 @@ const saveAddress = async () => {
     return;
   }
 
-  // Validate district and city
-  if (!validateLocation(addressForm.district)) {
-    notificationService.warning('Cảnh báo', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
-    return;
-  }
+  // // Validate district and city
+  // if (!validateLocation(addressForm.district)) {
+  //   notificationService.warning('Cảnh báo', 'Quận/Huyện không hợp lệ. Vui lòng nhập quận/huyện đầy đủ');
+  //   return;
+  // }
 
-  if (!validateLocation(addressForm.city)) {
-    notificationService.warning('Cảnh báo', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
-    return;
-  }
+  // if (!validateLocation(addressForm.city)) {
+  //   notificationService.warning('Cảnh báo', 'Tỉnh/Thành phố không hợp lệ. Vui lòng nhập tỉnh/thành phố đầy đủ');
+  //   return;
+  // }
 
   try {
     if (editingAddress.value) {
@@ -959,11 +1110,12 @@ const formatDate = (timestamp) => {
 };
 
 // Watch tab changes
-watch(activeTab, (newTab) => {
-  if (newTab === 'loyalty') {
-    loadLoyaltyData();
+watch(activeTab, async (newTab) => {
+  if (newTab === 'loyalty' && !hasLoadedLoyalty.value) {
+    hasLoadedLoyalty.value = true
+    await loadLoyaltyData()
   }
-});
+})
 
 // Theme settings
 const handleThemeChange = (newTheme) => {

@@ -1,6 +1,7 @@
 package com.sneakery.store.repository;
 
 import com.sneakery.store.entity.LoyaltyPoint;
+import com.sneakery.store.dto.LoyaltyHistoryItemDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -76,5 +77,24 @@ public interface LoyaltyPointRepository extends JpaRepository<LoyaltyPoint, Long
     @EntityGraph(value = "LoyaltyPoint.withUser", type = EntityGraph.EntityGraphType.FETCH)
     @Query("SELECT lp FROM LoyaltyPoint lp")
     Page<LoyaltyPoint> findAllWithUser(Pageable pageable);
+
+    /**
+     * Lấy lịch sử điểm theo DTO để trả về API (tránh Hibernate proxy serialization)
+     */
+    @Query("""
+        SELECT new com.sneakery.store.dto.LoyaltyHistoryItemDto(
+            lp.id,
+            lp.points,
+            lp.transactionType,
+            lp.description,
+            lp.createdAt,
+            lp.expiresAt
+        )
+        FROM LoyaltyPoint lp
+        WHERE lp.user.id = :userId
+        ORDER BY lp.createdAt DESC
+        """)
+    List<LoyaltyHistoryItemDto> findHistoryItemsByUserId(@Param("userId") Long userId);
+
 }
 

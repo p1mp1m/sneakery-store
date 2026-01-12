@@ -79,18 +79,25 @@ const routes = [
     component: ResetPassWord,
   },
   // Cart and Checkout pages (Public - Cho phép cả guest và authenticated users)
+  // ✅ Wrapper DefaultLayout for standalone public routes
   {
-    path: '/cart',
-    name: 'Cart',
-    component: () => import('../views/user/CartPage.vue'),
-  },
-  {
-    path: '/checkout',
-    name: 'Checkout',
-    component: () => import('../views/user/CheckoutPage.vue').catch(() => {
-      // Fallback nếu import thất bại
-      return import('../views/user/CartPage.vue');
-    }),
+    path: "/",
+    component: DefaultLayout,
+    children: [
+      {
+        path: "cart",
+        name: "Cart",
+        component: () => import("../views/user/CartPage.vue"),
+      },
+      {
+        path: "checkout",
+        name: "Checkout",
+        component: () =>
+          import("../views/user/CheckoutPage.vue").catch(() =>
+            import("../views/user/CartPage.vue")
+          ),
+      },
+    ],
   },
   // User routes (Protected - chỉ dành cho user đã đăng nhập)
   ...userRoutes,
