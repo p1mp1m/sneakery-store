@@ -266,6 +266,15 @@ public class AdminOrderService {
                 variantRepository.save(variant);
                 log.info("✅ Deducted {} units from variant {} (new stock: {})",
                         quantityToDeduct, variant.getId(), variant.getStockQuantity());
+
+                if (order.getUser() != null) {
+                    try {
+                        loyaltyService.earnPointsFromOrder(order);
+                        log.info("🎁 Earned loyalty points for delivered order #{}", orderId);
+                    } catch (Exception e) {
+                        log.warn("⚠️ Earn points failed for order #{}: {}", orderId, e.getMessage(), e);
+                    }
+                }
             }
         }
 

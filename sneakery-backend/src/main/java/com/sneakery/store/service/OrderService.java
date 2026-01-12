@@ -770,56 +770,56 @@ public class OrderService {
         }
 
         // 4. Trừ tồn kho thực tế (theo đúng rule bạn ghi chú)
-        if (order.getOrderDetails() != null) {
-            for (OrderDetail detail : order.getOrderDetails()) {
-                ProductVariant variant = detail.getVariant();
-
-                if (variant != null) {
-                    int currentStock = variant.getStockQuantity();
-                    int quantityToReduce = detail.getQuantity();
-
-                    if (currentStock < quantityToReduce) {
-                        throw new ApiException(HttpStatus.BAD_REQUEST,
-                                "Không đủ tồn kho cho sản phẩm: " + variant.getProduct().getName());
-                    }
-
-                    variant.setStockQuantity(currentStock - quantityToReduce);
-                    variant.setReservedQuantity(
-                            variant.getReservedQuantity() - quantityToReduce
-                    );
-                    if (variant.getReservedQuantity() < 0) {
-                        variant.setReservedQuantity(0); // Safety guard
-                    }
-                    variantRepository.save(variant);
-
-                    log.info("📦 Reduced stock for variant #{}: {} -> {}",
-                            variant.getId(), currentStock, (currentStock - quantityToReduce));
-                }
-            }
-        }
-
-        // 5. Cập nhật trạng thái order
-        order.setStatus("delivered");
-        orderRepository.save(order);
-
-        // 6. Ghi lịch sử trạng thái
-        OrderStatusHistory history = new OrderStatusHistory();
-        history.setOrder(order);
-        history.setStatus("delivered");
-        history.setChangedAt(LocalDateTime.now());
-
-        statusHistoryRepository.save(history);
-        order.getStatusHistories().add(history);
-
-        log.info("✅ Order #{} is now DELIVERED and PAYMENT COMPLETED", orderId);
-
-        // 7. Cộng điểm loyalty cho đơn hàng đã hoàn thành
-        try {
-            loyaltyService.earnPointsFromOrder(order);
-            log.info("🎁 Loyalty points have been added for order #{}", orderId);
-        } catch (Exception e) {
-            log.warn("⚠️ Cannot earn loyalty points for order #{}: {}", orderId, e.getMessage());
-        }
+//        if (order.getOrderDetails() != null) {
+//            for (OrderDetail detail : order.getOrderDetails()) {
+//                ProductVariant variant = detail.getVariant();
+//
+//                if (variant != null) {
+//                    int currentStock = variant.getStockQuantity();
+//                    int quantityToReduce = detail.getQuantity();
+//
+//                    if (currentStock < quantityToReduce) {
+//                        throw new ApiException(HttpStatus.BAD_REQUEST,
+//                                "Không đủ tồn kho cho sản phẩm: " + variant.getProduct().getName());
+//                    }
+//
+//                    variant.setStockQuantity(currentStock - quantityToReduce);
+//                    variant.setReservedQuantity(
+//                            variant.getReservedQuantity() - quantityToReduce
+//                    );
+//                    if (variant.getReservedQuantity() < 0) {
+//                        variant.setReservedQuantity(0); // Safety guard
+//                    }
+//                    variantRepository.save(variant);
+//
+//                    log.info("📦 Reduced stock for variant #{}: {} -> {}",
+//                            variant.getId(), currentStock, (currentStock - quantityToReduce));
+//                }
+//            }
+//        }
+//
+//        // 5. Cập nhật trạng thái order
+//        order.setStatus("delivered");
+//        orderRepository.save(order);
+//
+//        // 6. Ghi lịch sử trạng thái
+//        OrderStatusHistory history = new OrderStatusHistory();
+//        history.setOrder(order);
+//        history.setStatus("delivered");
+//        history.setChangedAt(LocalDateTime.now());
+//
+//        statusHistoryRepository.save(history);
+//        order.getStatusHistories().add(history);
+//
+//        log.info("✅ Order #{} is now DELIVERED and PAYMENT COMPLETED", orderId);
+//
+//        // 7. Cộng điểm loyalty cho đơn hàng đã hoàn thành
+//        try {
+//            loyaltyService.earnPointsFromOrder(order);
+//            log.info("🎁 Loyalty points have been added for order #{}", orderId);
+//        } catch (Exception e) {
+//            log.warn("⚠️ Cannot earn loyalty points for order #{}: {}", orderId, e.getMessage());
+//        }
     }
 
 
