@@ -3710,6 +3710,7 @@ const closeReceiptModal = () => {
   badgeAnimationKey.value++;
 
   localStorage.removeItem("pos_cart");
+  removeCoupon()
 };
 
 const hideReceiptOnly = () => {
