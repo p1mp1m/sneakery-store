@@ -393,26 +393,69 @@ BEGIN
 END;
 GO
 
--- Customer users (97 users)
+
+-- =====================================================
+-- Tạo 15 user customer với tên khác nhau
+-- =====================================================
+PRINT 'Inserting 15 customer users with real names...';
+
+DECLARE @CustomerNames TABLE (
+    idx INT IDENTITY(1,1),
+    full_name NVARCHAR(100),
+    email_base NVARCHAR(100)
+);
+
+INSERT INTO @CustomerNames (full_name, email_base) VALUES
+(N'Nguyễn Văn An',     N'nguyenvanan'),
+(N'Trần Thị Bình',     N'tranthibinh'),
+(N'Lê Hoàng Minh',     N'lehoangminh'),
+(N'Phạm Ngọc Lan',     N'phamngoclan'),
+(N'Vũ Đức Hải',        N'vuduchai'),
+(N'Hoàng Thị Mai',     N'hoangthimai'),
+(N'Đặng Văn Nam',      N'dangvannam'),
+(N'Ngô Thị Hoa',       N'ngothihoa'),
+(N'Bùi Văn Long',      N'buivanlong'),
+(N'Đỗ Thị Hương',      N'dothihuong'),
+(N'Phan Văn Khoa',     N'phanvankhoa'),
+(N'Trương Thị Ngọc',   N'truongthingoc'),
+(N'Lý Văn Phát',       N'lyvanphat'),
+(N'Võ Thị Quỳnh',      N'vothiquynh'),
+(N'Huỳnh Văn Sơn',     N'huynhvnson');
+
 DECLARE @Counter INT = 1;
-WHILE @Counter <= 5
+WHILE @Counter <= 15
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Users WHERE email = 'NguyenvanA' + CAST(@Counter AS NVARCHAR(3)) + '@example.com')
+    DECLARE @FullName NVARCHAR(100);
+    DECLARE @EmailBase NVARCHAR(100);
+    DECLARE @Email NVARCHAR(150);
+
+    SELECT @FullName = full_name, @EmailBase = email_base 
+    FROM @CustomerNames 
+    WHERE idx = @Counter;
+
+    SET @Email = @EmailBase + RIGHT('00' + CAST(@Counter AS NVARCHAR(2)), 2) + '@example.com';
+
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE email = @Email)
     BEGIN
-        INSERT INTO Users (email, password_hash, full_name, phone_number, is_active, role, created_at)
+        INSERT INTO Users (
+            email, password_hash, full_name, phone_number, is_active, role, created_at
+        )
         VALUES 
-        ('NguyenvanA' + CAST(@Counter AS NVARCHAR(3)) + '@example.com', 
-         '$2a$10$4qUjgvVWlYZUf1Jx.bRBte0Ls0fff/TSkBwCk2568Z/dfc3Eut.5O',
-         'NguyenvanA ' + CAST(@Counter AS NVARCHAR(3)),
-         '090' + RIGHT('0000000' + CAST(@Counter AS NVARCHAR(7)), 7),
-         1, 'USER', DATEADD(day, -RAND() * 5, GETDATE()));
+        (
+            @Email,
+            '$2a$10$4qUjgvVWlYZUf1Jx.bRBte0Ls0fff/TSkBwCk2568Z/dfc3Eut.5O',
+            @FullName,
+            '090' + RIGHT('0000000' + CAST(1000000 + @Counter AS NVARCHAR(7)), 7),
+            1, 'USER',
+            DATEADD(day, -RAND() * 90, GETDATE())
+        );
     END;
-    
+
     SET @Counter = @Counter + 1;
 END;
 GO
 
-PRINT '  - Inserted 30 users (1 admin, 2 moderators, 27 customers)';
+PRINT '  - Inserted ~20 users (1 admin, 2 moderators, 15 customers)';
 GO
 
 -- =====================================================

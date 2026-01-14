@@ -2556,13 +2556,14 @@ const confirmAndCreateOrder = async () => {
     loyaltyDiscountAmount.value = 0;
     selectedCustomer.value = null;
     selectedCustomerLoyaltyPoints.value = null;
-
+    
     localStorage.removeItem("pos_cart");
 
     await loadData();
 
     await loadSalesHistory();
-
+    
+    await removeCoupon();
     notificationService.success("Thành công", "Thanh toán thành công 🎉");
   } catch (error) {
     logger.error("❌ Error confirm order:", error);
