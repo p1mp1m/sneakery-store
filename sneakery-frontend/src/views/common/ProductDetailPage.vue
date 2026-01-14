@@ -1255,8 +1255,21 @@ const addToCart = async () => {
 };
 
 const buyNow = async () => {
-  await addToCart();
-  router.push("/cart");
+  if (!authStore.isAuthenticated) {
+    notificationService.warning(
+      "Cảnh báo",
+      "Vui lòng đăng nhập để mua hàng"
+    );
+    close();
+    router.push("/login");
+    return;
+  }
+  try {
+    await addToCart();
+    router.push("/cart");
+  } catch (error) {
+    logger.error("Error in buy now:", error);
+  }
 };
 
 const fetchVariantImages = async (variantId) => {

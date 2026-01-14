@@ -598,7 +598,7 @@
               </button>
 
               <button
-                v-if="canRequestReturn(order?.status)"
+                v-if="canRequestReturn(selectedOrder?.status, selectedOrder)"
                 @click="openReturnModal"
                 class="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center justify-center gap-2"
               >
@@ -1023,6 +1023,26 @@ const getStatusText = (status) => {
   return statusMap[normalizedStatus] || normalizedStatus || status;
 };
 
+const isPosOrder = (order) => {
+  if (!order) return false;
+
+  // 1) Ưu tiên check theo orderNumber
+  if (typeof order.orderNumber === "string" && order.orderNumber.startsWith("POS-")) {
+    return true;
+  }
+
+  // 2) Fallback: check theo địa chỉ giao hàng có keyword POS
+  const line2 = order.addressShipping?.line2 || "";
+  if (typeof line2 === "string" && line2.toLowerCase().includes("pos")) {
+    return true;
+  }
+
+  // 3) (Optional) nếu sau này backend thêm field type/source/channel
+  // if (order.orderSource === "POS") return true;
+
+  return false;
+};
+
 const getPaymentMethodText = (method) => {
   const methodMap = {
     cod: "Thanh toán khi nhận hàng (COD)",
@@ -1195,7 +1215,16 @@ const refreshDetail = async (silent = true) => {
  * Actions
  */
 const canMarkAsReceived = (status) => getNormalizedStatus(status) === "Shipped";
-const canRequestReturn = (status) => getNormalizedStatus(status) === "Completed";
+// const canRequestReturn = (status) => getNormalizedStatus(status) === "Completed";
+const canRequestReturn = (status, order = null) => {
+  const normalized = getNormalizedStatus(status);
+  if (normalized !== "Completed") return false;
+
+  // Ẩn với đơn POS
+  if (isPosOrder(order)) return false;
+
+  return true;
+};
 
 const markAsReceived = async (id) => {
   if (!order.value) {

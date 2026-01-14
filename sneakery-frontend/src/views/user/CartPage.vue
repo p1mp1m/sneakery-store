@@ -99,10 +99,13 @@
                   <h3
                     class="font-semibold text-gray-900 dark:text-gray-100 mb-1 line-clamp-2"
                   >
-                    {{ item.productName }}
+                    {{ item.productName }} - {{ item.brandName }}
                   </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  <!-- <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
                     {{ item.brandName }}
+                  </p> -->
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    {{ item.sku}}
                   </p>
                   <div class="flex flex-wrap gap-2 mb-3">
                     <span

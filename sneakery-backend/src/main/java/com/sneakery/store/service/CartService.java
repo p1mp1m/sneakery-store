@@ -405,6 +405,7 @@ public class CartService {
         return CartItemDto.builder()
                 .cartItemId(item.getId())
                 .variantId(variant.getId())
+                .sku(variant.getSku())
                 .productName(variant.getProduct().getName())
                 .brandName(variant.getProduct().getBrand().getName())
                 .size(variant.getSize())

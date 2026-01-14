@@ -229,10 +229,10 @@
                 </div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900 dark:text-gray-100">{{ formatCurrency(product.costPrice) }}</div>
+                <div class="text-sm text-gray-900 dark:text-gray-100">{{ formatCurrency(product.priceBase) }}</div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ formatCurrency(product.priceBase) }}</div>
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ formatCurrency(product.priceSale) }}</div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <span 
@@ -585,8 +585,8 @@ const fetchProducts = async () => {
         brandName: variant.brandName || variant.product?.brand?.name || variant.brand?.name || 'N/A',
         stockQuantity: variant.stockQuantity !== undefined && variant.stockQuantity !== null ? Number(variant.stockQuantity) : 0,
         lowStockThreshold: variant.lowStockThreshold !== undefined && variant.lowStockThreshold !== null ? Number(variant.lowStockThreshold) : 10,
-        costPrice: variant.costPrice ? Number(variant.costPrice) : 0,
         priceBase: variant.priceBase ? Number(variant.priceBase) : 0,
+        priceSale: variant.priceSale ? Number(variant.priceSale) : 0,
         image: variant.imageUrl || variant.product?.imageUrl || variant.product?.mainImageUrl || null,
         updatedAt: variant.updatedAt || variant.createdAt || new Date().toISOString()
       }
@@ -769,8 +769,8 @@ const exportInventory = (format) => {
       'Màu sắc': product.color,
       'Tồn kho': formatNumber(product.stockQuantity),
       'Ngưỡng cảnh báo': formatNumber(product.lowStockThreshold),
-      'Giá nhập': formatCurrency(product.costPrice),
-      'Giá bán': formatCurrency(product.priceBase),
+      'Giá nhập': formatCurrency(product.priceBase),
+      'Giá bán': formatCurrency(product.priceSale),
       'Trạng thái': getStockStatusText(product.stockQuantity, product.lowStockThreshold),
       'Cập nhật cuối': formatDateTime(product.updatedAt)
     }))

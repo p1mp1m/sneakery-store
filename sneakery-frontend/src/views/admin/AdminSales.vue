@@ -45,7 +45,7 @@
             </div>
           </div>
           <div class="flex items-center gap-3 flex-wrap">
-            <button
+            <!-- <button
               @click="showBarcode = !showBarcode"
               class="group flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl hover:scale-105"
             >
@@ -54,7 +54,7 @@
                 >qr_code_scanner</i
               >
               Quét mã
-            </button>
+            </button> -->
             <button
               @click="showShortcuts = true"
               class="group flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-sm text-white rounded-xl hover:bg-white/20 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl hover:scale-105"
@@ -84,7 +84,7 @@
       </div>
 
       <!-- Barcode Scanner with Premium Design -->
-      <transition
+      <!-- <transition
         enter-active-class="transition-all duration-500 ease-out"
         leave-active-class="transition-all duration-300 ease-in"
         enter-from-class="opacity-0 -translate-y-8 scale-95"
@@ -117,7 +117,7 @@
             </button>
           </div>
         </div>
-      </transition>
+      </transition> -->
 
       <!-- POS Grid with Enhanced Layout -->
       <div
@@ -1711,7 +1711,7 @@
     <transition name="modal">
       <div
         v-if="showHistory"
-        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        class="fixed inset-0 z-[8000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         @click="showHistory = false"
       >
         <div
@@ -1846,23 +1846,13 @@
                       </span>
                     </div>
                     <div v-if="order.status" class="mt-2">
-                      <span
-                        class="px-2 py-1 rounded-full text-xs font-semibold"
-                        :class="{
-                          'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300':
-                            order.status === 'Completed',
-                          'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300':
-                            order.status === 'Pending' ||
-                            order.status === 'Processing',
-                          'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300':
-                            order.status === 'Cancelled',
-                          'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300':
-                            order.status === 'Confirmed',
-                        }"
-                      >
-                        {{ order.status }}
-                      </span>
-                    </div>
+  <span
+  class="px-2 py-1 rounded-full text-xs font-semibold"
+  :class="getOrderStatusClass(order.status)"
+>
+  {{ getOrderStatusLabelVi(order.status) }}
+</span>
+</div>
                   </div>
                   <button
                     @click.stop="viewOrderDetails(order)"
@@ -1980,6 +1970,112 @@ const shortcuts = [
   { keys: ["Ctrl", "R"], description: "Làm mới giỏ hàng" },
   { keys: ["+", "/", "-"], description: "Tăng/giảm số lượng sản phẩm" },
 ];
+
+// ============================
+// ORDER STATUS (VI) - based on your statusMap
+// ============================
+
+const normalizeOrderStatus = (status) => {
+  if (!status) return "";
+
+  // Chuẩn hóa: trim, thay khoảng trắng/dấu - thành _, về lower
+  // Ví dụ:
+  // "Return_Approved" -> "return_approved"
+  // "RETURN-APPROVED" -> "return_approved"
+  // " shipped " -> "shipped"
+  return String(status)
+    .trim()
+    .replace(/\s+/g, "_")
+    .replace(/-/g, "_")
+    .toLowerCase();
+};
+
+const getOrderStatusLabelVi = (status) => {
+  const s = normalizeOrderStatus(status);
+
+  const viMap = {
+    // Order flow
+    pending: "Chờ xử lý",
+    processing: "Đang xử lý",
+    confirmed: "Đã xác nhận",
+    packed: "Đã đóng gói",
+    shipped: "Đang giao hàng",
+    delivered: "Đã giao hàng",
+    completed: "Hoàn thành",
+
+    // Cancel/Fail
+    cancelled: "Đã hủy",
+    failed: "Thất bại",
+
+    // Review/approval
+    rejected: "Bị từ chối",
+    approved: "Đã duyệt",
+
+    // Refund/return
+    refunded: "Đã hoàn tiền",
+
+    return_pending: "Chờ duyệt trả hàng",
+    return_approved: "Đã duyệt trả hàng",
+    return_rejected: "Từ chối trả hàng",
+    return_completed: "Đã hoàn tất trả hàng",
+  };
+
+  // Fallback nếu backend trả giá trị lạ
+  return viMap[s] || status;
+};
+
+/**
+ * Optional: class màu cho badge theo status
+ * (bạn có thể chỉnh tone màu tùy UI POS)
+ */
+const getOrderStatusClass = (status) => {
+  const s = normalizeOrderStatus(status);
+
+  const map = {
+    // Good / done
+    completed:
+      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+    delivered:
+      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+    approved:
+      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+    refunded:
+      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+    return_completed:
+      "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300",
+
+    // In progress
+    pending:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300",
+    processing:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300",
+    packed:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300",
+    shipped:
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+    confirmed:
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+    return_pending:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300",
+    return_approved:
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300",
+
+    // Bad
+    cancelled:
+      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+    failed:
+      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+    rejected:
+      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+    return_rejected:
+      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300",
+  };
+
+  return (
+    map[s] ||
+    "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+  );
+};
 
 // Computed
 const subtotal = computed(() => {
@@ -3557,11 +3653,45 @@ const loadSalesHistory = async () => {
   }
 };
 
+const mapReceiptForUi = (raw) => {
+  if (!raw) return null;
+
+  // Dùng đúng field backend POS list trả về
+  const couponCode = raw.couponCode ?? raw.discountCode ?? null;
+  const couponDiscount = Number(raw.discountAmount ?? 0) || 0;
+
+  const pointsUsed = Number(raw.pointsUsed ?? 0) || 0;
+  const pointsDiscount = Number(raw.pointsDiscount ?? 0) || 0;
+
+  return {
+    ...raw,
+
+    // Chuẩn hóa để UI chỉ đọc 1 bộ field cố định
+    couponCode,
+    discountAmount: couponDiscount,
+
+    loyaltyPointsUsed: pointsUsed,
+    loyaltyDiscountAmount: pointsDiscount,
+
+    // Chuẩn hóa items để UI dễ render (nếu UI đang dùng items)
+    items:
+      (raw.orderDetails || raw.items || []).map((d) => ({
+        productName: d.productName,
+        size: d.size,
+        color: d.color,
+        quantity: d.quantity,
+        unitPrice: d.unitPrice,
+        sku: d.sku,
+        variantId: d.variantId,
+      })) || [],
+  };
+};
+
 const viewOrderDetails = (order) => {
   // Hiển thị chi tiết đơn hàng
-  currentReceipt.value = order;
+  currentReceipt.value = mapReceiptForUi(order);
   showReceipt.value = true;
-  showHistory.value = false;
+  // showHistory.value = false;
 };
 
 // Watch showHistory để load data khi mở modal

@@ -68,7 +68,15 @@
             <div class="quick-view-info">
               <span class="product-brand">{{ product.brandName }}</span>
               <h2 class="product-name">{{ product.name }}</h2>
-
+              <!-- SKU -->
+<div class="mb-4">
+  <span class="text-sm text-gray-500 dark:text-gray-400">
+    SKU:
+    <span class="font-semibold text-gray-900 dark:text-gray-100">
+      {{ selectedVariant?.sku || product?.variants?.[0]?.sku || "—" }}
+    </span>
+  </span>
+</div>
               <div class="product-rating">
                 <div class="stars">
                   <span
@@ -382,6 +390,16 @@ const handleAddToCart = async () => {
 };
 
 const handleBuyNow = async () => {
+  if (!authStore.isAuthenticated) {
+    notificationService.warning(
+      "Cảnh báo",
+      "Vui lòng đăng nhập để mua hàng"
+    );
+    close();
+    router.push("/login");
+    return;
+  }
+
   try {
     await handleAddToCart();
     router.push("/cart");
@@ -467,6 +485,13 @@ watch(currentVariant, (variant) => {
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  /* Ẩn scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE & Edge */
+}
+
+.quick-view-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 
 .dark .quick-view-content {

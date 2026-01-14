@@ -42,6 +42,7 @@ public class AdminReturnService {
     private final ProductVariantRepository variantRepository;
     private final LoyaltyPointRepository loyaltyPointRepository;
     private final CouponRepository couponRepository;
+    private final NotificationService notificationService;
 
     /**
      * Lấy tất cả return requests với pagination và filter
@@ -76,98 +77,90 @@ public class AdminReturnService {
     /**
      * Cập nhật trạng thái return request
      */
+    /**
+     * Cập nhật trạng thái return request
+     */
     @Transactional
     public AdminReturnDto updateReturnStatus(Long id, String status, Long adminId, String adminNote) {
         log.info("✅ Updating return status - ID: {}, status: {}, by admin: {}", id, status, adminId);
 
         try {
-            // Load return request with all relationships
             ReturnRequest returnRequest = returnRequestRepository.findByIdWithDetails(Objects.requireNonNull(id))
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
 
             User admin = userRepository.findById(Objects.requireNonNull(adminId))
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
 
-            // Update fields
-            returnRequest.setStatus(status);
-            if (adminNote != null && !adminNote.trim().isEmpty()) {
-                returnRequest.setAdminNote(adminNote);
+            // Normalize status
+            String normalizedStatus = (status == null) ? "" : status.trim().toLowerCase();
+            if (normalizedStatus.isBlank()) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: rỗng");
             }
 
-            if ("approved".equals(status) || "rejected".equals(status)) {
+            // Nếu status không đổi -> không tạo history/notification tránh spam
+            String oldStatus = returnRequest.getStatus();
+            String oldNormalized = (oldStatus == null) ? "" : oldStatus.trim().toLowerCase();
+            boolean isStatusChanged = !Objects.equals(oldNormalized, normalizedStatus);
+
+            // Update admin note (nếu có)
+            if (adminNote != null && !adminNote.trim().isEmpty()) {
+                returnRequest.setAdminNote(adminNote.trim());
+            }
+
+            // Update ReturnRequest status
+            returnRequest.setStatus(normalizedStatus);
+
+            // Set approvedBy/approvedAt cho trạng thái kết luận
+            if ("approved".equals(normalizedStatus) || "rejected".equals(normalizedStatus) || "completed".equals(normalizedStatus)) {
                 returnRequest.setApprovedBy(admin);
                 returnRequest.setApprovedAt(LocalDateTime.now());
             }
 
-            // ====== UPDATE ORDER STATUS ======
-            switch (status.toLowerCase()) {
-                case "approved":
-                    returnRequest.getOrder().setStatus("return_approved");
-                    break;
+            // ===== UPDATE ORDER STATUS =====
+            String newOrderStatus = switch (normalizedStatus) {
+                case "approved" -> "return_approved";
+                case "rejected" -> "return_rejected";
+                case "completed" -> "return_completed";
+                default -> throw new ApiException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: " + status);
+            };
 
-                case "rejected":
-                    returnRequest.getOrder().setStatus("return_rejected");
-                    break;
+            Order order = returnRequest.getOrder();
+            order.setStatus(newOrderStatus);
+            order.setUpdatedAt(LocalDateTime.now());
 
-                case "completed":
-                    returnRequest.getOrder().setStatus("return_completed");
-                    // ====== RESTOCK VARIANTS HERE ======
-//                    Order order = returnRequest.getOrder();
-//
-//                    if (order.getOrderDetails() == null || order.getOrderDetails().isEmpty()) {
-//                        log.warn("⚠️ Order #{} không có OrderDetails nào – bỏ qua restock", order.getId());
-//                    } else {
-//                        log.info("🔄 Restocking inventory for Order #{} – {} items",
-//                                order.getId(), order.getOrderDetails().size());
-//
-//                        for (OrderDetail detail : order.getOrderDetails()) {
-//                            ProductVariant variant = detail.getVariant();
-//
-//                            if (variant == null) {
-//                                log.error("⚠️ OrderDetail #{} không có ProductVariant → SKIP restock",
-//                                        detail.getId());
-//                                continue;
-//                            }
-//
-//                            int qty = detail.getQuantity();
-//                            int oldStock = variant.getStockQuantity();
-//                            int newStock = oldStock + qty;
-//
-//                            variant.setStockQuantity(newStock);
-//                            variantRepository.save(variant);
-//
-//                            log.info("🟢 Restocked Variant #{} | {} → {} (+{})",
-//                                    variant.getId(), oldStock, newStock, qty);
-//                        }
-//                    }
-                    break;
+            // ===== SAVE HISTORY (chỉ khi đổi trạng thái) =====
+            if (isStatusChanged) {
+                OrderStatusHistory history = new OrderStatusHistory();
+                history.setOrder(order);
+                history.setStatus(newOrderStatus);
+                history.setChangedAt(LocalDateTime.now());
+                history.setNote(returnRequest.getAdminNote());
+                statusHistoryRepository.save(history);
 
-                default:
-                    throw new ApiException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: " + status);
+                if (order.getStatusHistories() != null) {
+                    order.getStatusHistories().add(history);
+                }
+            } else {
+                log.info("ℹ️ ReturnRequest #{} status unchanged ({}). Skip history + notification.", returnRequest.getId(), normalizedStatus);
             }
-
-            returnRequest.getOrder().setUpdatedAt(LocalDateTime.now());
-
-            // ====== SAVE ORDER STATUS HISTORY ======
-            OrderStatusHistory history = new OrderStatusHistory();
-            history.setOrder(returnRequest.getOrder());
-            history.setStatus(returnRequest.getOrder().getStatus());
-            history.setChangedAt(LocalDateTime.now());
-            history.setNote(adminNote);
-            statusHistoryRepository.save(history);
-
-            returnRequest.getOrder().getStatusHistories().add(history);
 
             // Save entity
             returnRequestRepository.save(returnRequest);
-            
-            // Reload with all relationships to ensure they are properly loaded after save
+
+            // ===== NOTIFICATION (chỉ khi đổi trạng thái) =====
+            if (isStatusChanged) {
+                try {
+                    createReturnStatusNotification(returnRequest, normalizedStatus);
+                } catch (Exception ex) {
+                    log.error("❌ Failed to create notification for ReturnRequest #{}: {}", returnRequest.getId(), ex.getMessage(), ex);
+                }
+            }
+
             ReturnRequest updated = returnRequestRepository.findByIdWithDetails(id)
                     .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả sau khi cập nhật"));
-            
-            // Convert to DTO
+
             return convertToDto(updated);
-            
+
         } catch (ApiException e) {
             log.error("Error updating return status: {}", e.getMessage(), e);
             throw e;
@@ -188,6 +181,10 @@ public class AdminReturnService {
         ReturnRequest returnRequest = returnRequestRepository.findByIdWithDetails(Objects.requireNonNull(id))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
 
+        String oldStatus = returnRequest.getStatus();
+        String oldNormalizedStatus = (oldStatus == null) ? "" : oldStatus.trim().toLowerCase();
+        boolean wasCompleted = "completed".equals(oldNormalizedStatus);
+
         if (!"approved".equals(returnRequest.getStatus())) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Yêu cầu chưa được duyệt");
         }
@@ -206,6 +203,16 @@ public class AdminReturnService {
         // Save entity (changes will be flushed when transaction commits)
         // Note: We use the entity loaded with findByIdWithDetails, so all relationships are already loaded
         ReturnRequest saved = returnRequestRepository.save(returnRequest);
+
+        // ===== NOTIFICATION: return completed =====
+        if (!wasCompleted) {
+            try {
+                createReturnStatusNotification(saved, "completed");
+            } catch (Exception ex) {
+                log.error("❌ Failed to create completed notification for ReturnRequest #{}: {}",
+                        saved.getId(), ex.getMessage(), ex);
+            }
+        }
 
         // Convert to DTO using the saved entity (relationships are already loaded from findByIdWithDetails)
         return convertToDto(saved);
@@ -344,6 +351,10 @@ public class AdminReturnService {
     public AdminReturnDto confirmReturnItemConditions(ConfirmReturnConditionRequest request, Long adminId) {
         ReturnRequest returnRequest = returnRequestRepository.findByIdWithDetails(request.getReturnRequestId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy yêu cầu đổi trả"));
+
+        String oldStatus = returnRequest.getStatus();
+        String oldNormalizedStatus = (oldStatus == null) ? "" : oldStatus.trim().toLowerCase();
+        boolean wasCompleted = "completed".equals(oldNormalizedStatus);
 
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Không tìm thấy admin"));
@@ -516,6 +527,18 @@ public class AdminReturnService {
 
         ReturnRequest saved = returnRequestRepository.save(returnRequest);
 
+        // ===== NOTIFICATION: return completed =====
+        if (!wasCompleted) {
+            try {
+                createReturnStatusNotification(saved, "completed");
+            } catch (Exception ex) {
+                log.error("❌ Failed to create completed notification for ReturnRequest #{}: {}",
+                        saved.getId(), ex.getMessage(), ex);
+            }
+        } else {
+            log.info("ℹ️ ReturnRequest #{} already completed before. Skip completed notification.", saved.getId());
+        }
+
         // 🔹 convertToDto sẽ tự đọc itemConditionsJson để set good/damaged
         return convertToDto(saved);
     }
@@ -558,5 +581,68 @@ public class AdminReturnService {
             return Collections.emptyMap();
         }
     }
+
+    /**
+     * Tạo notification DB cho customer khi admin cập nhật trạng thái return.
+     * Dùng NotificationService#createNotification(...) hiện tại của bạn.
+     */
+    private void createReturnStatusNotification(ReturnRequest returnRequest, String normalizedStatus) {
+        if (returnRequest == null || returnRequest.getUser() == null || returnRequest.getOrder() == null) {
+            log.warn("⚠️ Cannot create return status notification because returnRequest/user/order is null");
+            return;
+        }
+
+        User customer = returnRequest.getUser();
+        Order order = returnRequest.getOrder();
+
+        Long userId = customer.getId();
+        Long orderId = order.getId();
+        String orderNumber = order.getOrderNumber();
+
+        String type;
+        String title;
+        String message;
+
+        switch (normalizedStatus) {
+            case "approved" -> {
+                type = "return_approved";
+                title = "Yêu cầu trả hàng đã được duyệt";
+                message = "Yêu cầu trả hàng cho đơn " + orderNumber + " đã được shop duyệt."
+                        + (returnRequest.getAdminNote() != null && !returnRequest.getAdminNote().isBlank()
+                        ? " Ghi chú: " + returnRequest.getAdminNote().trim()
+                        : "");
+            }
+            case "rejected" -> {
+                type = "return_rejected";
+                title = "Yêu cầu trả hàng bị từ chối";
+                message = "Yêu cầu trả hàng cho đơn " + orderNumber + " đã bị từ chối."
+                        + (returnRequest.getAdminNote() != null && !returnRequest.getAdminNote().isBlank()
+                        ? " Lý do: " + returnRequest.getAdminNote().trim()
+                        : "");
+            }
+            case "completed" -> {
+                type = "return_completed";
+                title = "Yêu cầu trả hàng đã hoàn tất";
+                message = "Yêu cầu trả hàng cho đơn " + orderNumber + " đã được xử lý hoàn tất."
+                        + (returnRequest.getAdminNote() != null && !returnRequest.getAdminNote().isBlank()
+                        ? " Ghi chú: " + returnRequest.getAdminNote().trim()
+                        : "");
+            }
+            default -> {
+                type = "return_status";
+                title = "Cập nhật trạng thái trả hàng";
+                message = "Yêu cầu trả hàng cho đơn " + orderNumber + " đã được cập nhật trạng thái.";
+            }
+        }
+
+        notificationService.createNotification(
+                userId,
+                type,
+                title,
+                message,
+                "/user/orders/" + orderId
+        );
+    }
+
 }
 

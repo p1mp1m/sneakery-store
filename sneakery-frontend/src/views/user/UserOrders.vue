@@ -749,7 +749,7 @@
           </button>
           <!-- ⭐ Nút Trả hàng / Hoàn tiền -->
           <button
-            v-if="canRequestReturn(selectedOrder?.status)"
+            v-if="canRequestReturn(selectedOrder?.status, selectedOrder)"
             @click="openReturnModal"
             class="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
           >
@@ -1085,6 +1085,26 @@ const normalizeStatusForDisplay = (status) => {
   };
 
   return statusMap[status.toLowerCase()] || status;
+};
+
+const isPosOrder = (order) => {
+  if (!order) return false;
+
+  // 1) Ưu tiên check theo orderNumber
+  if (typeof order.orderNumber === "string" && order.orderNumber.startsWith("POS-")) {
+    return true;
+  }
+
+  // 2) Fallback: check theo địa chỉ giao hàng có keyword POS
+  const line2 = order.addressShipping?.line2 || "";
+  if (typeof line2 === "string" && line2.toLowerCase().includes("pos")) {
+    return true;
+  }
+
+  // 3) (Optional) nếu sau này backend thêm field type/source/channel
+  // if (order.orderSource === "POS") return true;
+
+  return false;
 };
 
 // Methods
@@ -1639,9 +1659,19 @@ const closeReturnModal = () => {
   returnFormErrors.value = {};
 };
 
-const canRequestReturn = (status) => {
+// const canRequestReturn = (status) => {
+//   const normalized = getNormalizedStatus(status);
+//   return normalized === "Completed";
+// };
+
+const canRequestReturn = (status, order = null) => {
   const normalized = getNormalizedStatus(status);
-  return normalized === "Completed";
+  if (normalized !== "Completed") return false;
+
+  // Ẩn với đơn POS
+  if (isPosOrder(order)) return false;
+
+  return true;
 };
 
 const openReturnModal = () => {

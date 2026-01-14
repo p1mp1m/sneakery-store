@@ -821,10 +821,60 @@ const validateSku = () => {
 };
 
 const validateSkuFormat = () => {
-  const SKU_REGEX = /^[A-Z0-9]{2,10}-[A-Z0-9]{2,10}-[A-Z0-9]{2,6}-\d{1,3}$/;
+  const sku = (formData.sku ?? "").trim();
 
-  if (formData.sku && !SKU_REGEX.test(formData.sku)) {
+  // Nếu SKU rỗng, để validateSku() xử lý
+  if (!sku) {
+    errors.skuFormat = "";
+    return true;
+  }
+
+  // Case 1: SKU đơn (chuẩn hiện tại)
+  const SINGLE_SKU_REGEX =
+    /^[A-Z0-9]{2,10}-[A-Z0-9]{2,10}-[A-Z0-9]{2,6}-\d{1,3}$/;
+
+  if (SINGLE_SKU_REGEX.test(sku)) {
+    errors.skuFormat = "";
+    return true;
+  }
+
+  // Case 2: SKU ghép nhiều size: PREFIX + "-" + "37, 38, 39"
+  // - Prefix: AAA-BBB-CCC-
+  // - Sizes: number list separated by comma (spaces optional)
+  const MULTI_SKU_REGEX =
+    /^([A-Z0-9]{2,10}-[A-Z0-9]{2,10}-[A-Z0-9]{2,6}-)(\d{1,3})(\s*,\s*\d{1,3})+$/;
+
+  const match = sku.match(MULTI_SKU_REGEX);
+  if (!match) {
     errors.skuFormat = "Định dạng SKU không đúng theo chuẩn hệ thống";
+    return false;
+  }
+
+  // Validate nâng cao: sizes không trùng, không rỗng
+  // Lấy phần sizes sau prefix
+  const prefix = match[1]; // AAA-BBB-CCC-
+  const sizesPart = sku.slice(prefix.length); // "37, 38, 39"
+
+  const sizes = sizesPart
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
+  // nếu parse lỗi
+  if (sizes.length < 2) {
+    errors.skuFormat = "SKU ghép phải có ít nhất 2 kích thước";
+    return false;
+  }
+
+  const nums = sizes.map((s) => Number(s));
+  if (nums.some((n) => Number.isNaN(n) || n <= 0 || n > 999)) {
+    errors.skuFormat = "Danh sách kích thước trong SKU không hợp lệ";
+    return false;
+  }
+
+  const set = new Set(nums);
+  if (set.size !== nums.length) {
+    errors.skuFormat = "Danh sách kích thước trong SKU không được trùng nhau";
     return false;
   }
 
@@ -1245,10 +1295,7 @@ const handleSubmit = async () => {
   try {
     // ==== Validate tất cả fields trước khi submit ====
     if (!validateAll()) {
-      notificationService.warning({
-        message: "Vui lòng kiểm tra và sửa các lỗi trong form",
-        duration: 3000,
-      });
+      notificationService.warning("Cảnh báo", "Vui lòng kiểm tra và nhập đầy đủ form");
       return;
     }
 
@@ -1388,22 +1435,98 @@ const handleSubmit = async () => {
     // ===== Nhánh 2: CREATE =====
 
     // ==== build & gửi variants ====
-    const sizes =
-      selectedSizes.value.length > 0 ? selectedSizes.value : [formData.size];
-    const product = products.value.find((p) => p.id === formData.productId);
+    // ===== Nhánh 2: CREATE =====
 
-    const variantList = sizes.map((size) => ({
-      productId: formData.productId,
-      sku: generateSku(product?.name, formData.color, size),
-      color: formData.color,
-      size,
-      priceBase: formData.priceBase,
-      priceSale: formData.priceSale,
-      stockQuantity: formData.stockQuantity,
-      lowStockThreshold: formData.lowStockThreshold,
-      imageUrl: null, // CREATE => để null, upload xong mới gán
-      isActive: formData.isActive,
-    }));
+// Helper: parse sizes từ formData.size ("41, 42") -> [41,42]
+const parseSizesFromForm = (val) => {
+  if (val === null || val === undefined) return [];
+  // nếu là number -> [number]
+  if (typeof val === "number") return Number.isFinite(val) ? [val] : [];
+  const str = String(val).trim();
+  if (!str) return [];
+  return str
+    .split(",")
+    .map((s) => Number(String(s).trim()))
+    .filter((n) => Number.isFinite(n) && n > 0 && n <= 999);
+};
+
+// Helper: lấy prefix "AAA-BBB-CCC-" từ SKU input
+const extractSkuPrefix = (skuRaw) => {
+  const sku = String(skuRaw ?? "").trim().toUpperCase();
+
+  // SKU đơn: AAA-BBB-CCC-41
+  const SINGLE_SKU_REGEX =
+    /^[A-Z0-9]{2,10}-[A-Z0-9]{2,10}-[A-Z0-9]{2,6}-\d{1,3}$/;
+
+  // SKU multi-size: AAA-BBB-CCC-41, 42, 43
+  const MULTI_SKU_REGEX =
+    /^([A-Z0-9]{2,10}-[A-Z0-9]{2,10}-[A-Z0-9]{2,6}-)(\d{1,3})(\s*,\s*\d{1,3})+$/;
+
+  if (MULTI_SKU_REGEX.test(sku)) {
+    return sku.match(MULTI_SKU_REGEX)[1]; // group 1: prefix
+  }
+
+  if (SINGLE_SKU_REGEX.test(sku)) {
+    // bỏ phần size cuối để lấy prefix
+    return sku.replace(/\d{1,3}$/, ""); // "AAA-BBB-CCC-"
+  }
+
+  return null;
+};
+
+// ==== build & gửi variants ====
+
+// 1) Sizes ưu tiên selectedSizes (popup), nếu rỗng thì parse từ formData.size
+let sizes =
+  Array.isArray(selectedSizes.value) && selectedSizes.value.length > 0
+    ? selectedSizes.value
+        .map((s) => Number(s))
+        .filter((n) => Number.isFinite(n) && n > 0 && n <= 999)
+    : parseSizesFromForm(formData.size);
+
+// Chặn trường hợp vẫn rỗng
+if (!sizes || sizes.length === 0) {
+  notificationService.warning("Cảnh báo", "Vui lòng chọn ít nhất một kích thước");
+  return;
+}
+
+// 2) Không cho trùng size
+sizes = Array.from(new Set(sizes));
+
+// 3) Lấy prefix từ SKU đang hiển thị (autoGenerateSku render đúng)
+const skuPrefix = extractSkuPrefix(formData.sku);
+
+// Nếu SKU không đúng format, bạn có 2 lựa chọn:
+// A) chặn luôn để user sửa (khuyến nghị)
+// B) fallback generateSku như cũ
+if (!skuPrefix) {
+  // A) chặn
+  notificationService.warning(
+    "Cảnh báo",
+    "SKU không đúng định dạng để tạo nhiều biến thể. Ví dụ: NIK-MAX90-EN-38, 37 hoặc NIK-MAX90-EN-38"
+  );
+  return;
+
+  // B) fallback (nếu bạn muốn):
+  // const product = products.value.find((p) => p.id === formData.productId);
+  // skuPrefix = generateSku(product?.name, formData.color, 0).replace(/-0$/, "-");
+}
+
+// 4) Build list: SKU = prefix + size
+const variantList = sizes.map((size) => ({
+  productId: formData.productId,
+  sku: `${skuPrefix}${size}`, // <-- quan trọng: payload lấy theo SKU input
+  color: formData.color,
+  size,
+  priceBase: formData.priceBase,
+  priceSale: formData.priceSale,
+  stockQuantity: formData.stockQuantity,
+  lowStockThreshold: formData.lowStockThreshold,
+  imageUrl: null,
+  isActive: formData.isActive,
+}));
+
+console.log("✅ CREATE variantList payload:", variantList);
 
     // CREATE variants -> lấy danh sách variantId
     const createdVariants = await adminStore.createMultipleProductVariants(

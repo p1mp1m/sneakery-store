@@ -757,7 +757,7 @@
                     <i class="material-icons text-xs text-gray-400"
                       >location_city</i
                     >
-                    {{ newAddress.district }}, {{ newAddress.city }}
+                    {{ newAddress.ward}}, {{ newAddress.district }}, {{ newAddress.city }}
                   </div>
                 </div>
                 <div
@@ -784,6 +784,7 @@
                     <i class="material-icons text-xs text-gray-400"
                       >location_city</i
                     >
+                    {{ selectedAddressData.ward}},
                     {{ selectedAddressData.district }},
                     {{ selectedAddressData.city }}
                   </div>
